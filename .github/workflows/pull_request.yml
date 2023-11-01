@@ -1,0 +1,16 @@
+name: reviewdog
+# ***************************************************************************************
+# https://github.com/marketplace/actions/checkstyle-for-java
+# ***************************************************************************************
+on: [pull_request]
+jobs:
+  checkstyle:
+    name: runner / checkstyle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dbelyaev/action-checkstyle@master
+        with:
+          github_token: ${{ secrets.PA_TOKEN }}
+          reporter: github-pr-review
+          checkstyle_config: google_checks.xml
