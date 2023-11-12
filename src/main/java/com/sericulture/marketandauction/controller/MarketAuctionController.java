@@ -27,7 +27,33 @@ public class MarketAuctionController {
 
     @Operation(summary = "Insert Caste Details", description = "Creates Caste Details in to DB")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ok Response"),
+            @ApiResponse(responseCode = "200", description = "Ok Response", content = {
+                    @Content(mediaType = "application/json", schema =
+                    @Schema(example = "{\n" +
+                            "    \"content\": {\n" +
+                            "        \"transactionId\": 9,\n" +
+                            "        \"marketId\": 1,\n" +
+                            "        \"godownId\": 0,\n" +
+                            "        \"farmerId\": 1,\n" +
+                            "        \"allotedLotList\": [\n" +
+                            "            1,\n" +
+                            "            2,\n" +
+                            "            3\n" +
+                            "        ],\n" +
+                            "        \"allotedSmallBinList\": [\n" +
+                            "            5,\n" +
+                            "            6,\n" +
+                            "            7,\n" +
+                            "            8\n" +
+                            "        ],\n" +
+                            "        \"allotedBigBinList\": [\n" +
+                            "            4,\n" +
+                            "            5\n" +
+                            "        ]\n" +
+                            "    },\n" +
+                            "    \"errorMessages\": []\n" +
+                            "}"))
+            }),
             @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
                     content =
                             {
