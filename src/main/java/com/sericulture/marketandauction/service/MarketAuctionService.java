@@ -93,6 +93,7 @@ public class MarketAuctionService {
             lotList.add(allotedLot);
             lot.setMarketAuctionId(id);
             lot.setMarketId(marketId);
+            lot.setAuctionDate(LocalDate.now());
             if (godownId != 0) {
                 lot.setGodownId(godownId);
             }
@@ -120,19 +121,24 @@ public class MarketAuctionService {
         if (bc != null) {
             smallBinStart = bc.getSmallBinNextNumber();
             bigBinStart = bc.getBigBinNextNumber();
+        }else{
+            smallBinStart--;
+            bigBinStart--;
         }
 
         smallSequenceEnd = saveEachTypeOfBin(marketAuctionId, marketId, godownId, "small", smallBinStart, binCounterMaster.getSmallBinEnd(), numberOfSmallBin, allotedBins);
 
         bigSequenceEnd = saveEachTypeOfBin(marketAuctionId, marketId, godownId, "big", bigBinStart, binCounterMaster.getBigBinEnd(), numberOfBigBin, allotedBins);
 
-        BinCounter bcSave = new BinCounter();
-        bcSave.setMarketId(marketId);
-        bcSave.setGodownId(godownId);
-        bcSave.setBigBinNextNumber(bigSequenceEnd);
-        bcSave.setSmallBinNextNumber(smallSequenceEnd);
-        bcSave.setAuctionDate(LocalDate.now());
-        binCounterRepository.save(bcSave);
+        if(bc==null){
+            bc = new BinCounter();
+            bc.setMarketId(marketId);
+            bc.setGodownId(godownId);
+            bc.setAuctionDate(LocalDate.now());
+        }
+        bc.setBigBinNextNumber(bigSequenceEnd);
+        bc.setSmallBinNextNumber(smallSequenceEnd);
+        binCounterRepository.save(bc);
         binRepository.saveAll(binList);
         return allotedBins;
     }
@@ -145,6 +151,7 @@ public class MarketAuctionService {
         List<Bin> binList = new ArrayList<>();
         for (int i = 0; i < limit; i++) {
             Bin bin = new Bin(bins.get(i), marketAuctionId, type);
+            bin.setAuctionDate(LocalDate.now());
             binList.add(bin);
             nextSequence = bins.get(i);
             allotedList.add(nextSequence);
