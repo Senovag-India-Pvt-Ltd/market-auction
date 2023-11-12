@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 
 @AllArgsConstructor
 @Getter
@@ -45,4 +46,6 @@ public class MarketAuctionRequest extends RequestBody {
 
     @Schema(name = "numberOfBigBin", example = "number of big bins assigned to this transaction", required = true)
     private int numberOfBigBin;
+
+    private LocalDate marketAuctionDate;
 }

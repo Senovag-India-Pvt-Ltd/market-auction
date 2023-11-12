@@ -58,6 +58,7 @@ public class MarketAuctionService {
         MarketAuction marketAuction = mapper.marketAuctionObjectToEntity(marketAuctionRequest, MarketAuction.class);
         validator.validate(marketAuction);
         marketAuction.setMarketAuctionDate(LocalDate.now());
+        marketAuction.setStatus("generated");
 
         marketAuction = marketAuctionRepository.save(marketAuction);
 
@@ -65,6 +66,7 @@ public class MarketAuctionService {
         marketAuctionResponse.setMarketId(marketAuction.getMarketId());
         marketAuctionResponse.setGodownId(marketAuction.getGodownId());
         marketAuctionResponse.setFarmerId(marketAuction.getFarmerId());
+
 
         Map<String, List<Integer>> allotedBins = saveBin(marketAuction.getId(), marketAuction.getNumberOfSmallBin(), marketAuction.getNumberOfBigBin(), marketAuction.getMarketId(), marketAuction.getGodownId());
 
@@ -136,7 +138,9 @@ public class MarketAuctionService {
             bc.setGodownId(godownId);
             bc.setAuctionDate(LocalDate.now());
         }
+        if(numberOfBigBin!=0)
         bc.setBigBinNextNumber(bigSequenceEnd);
+        if(numberOfSmallBin!=0)
         bc.setSmallBinNextNumber(smallSequenceEnd);
         binCounterRepository.save(bc);
         binRepository.saveAll(binList);
@@ -156,8 +160,43 @@ public class MarketAuctionService {
             nextSequence = bins.get(i);
             allotedList.add(nextSequence);
         }
+        binRepository.saveAll(binList);
         allotedBins.put(type, allotedList);
         return nextSequence;
+    }
+
+    public List<MarketAuctionResponse> getAuctionDetailsByFarmerForAuctionDate(MarketAuctionRequest marketAuctionRequest){
+        List<MarketAuctionResponse> marketAuctionResponseList = new ArrayList<>();
+        List<MarketAuction> marketAuctionList = marketAuctionRepository.findAllByFarmerIdAndMarketAuctionDate(marketAuctionRequest.getFarmerId(),marketAuctionRequest.getMarketAuctionDate());
+        if(marketAuctionList!=null && !marketAuctionList.isEmpty()){
+            prepareMarketResponse(marketAuctionList,marketAuctionResponseList);
+        }
+        return marketAuctionResponseList;
+    }
+
+    public List<MarketAuctionResponse> getAuctionDetailsByStateForAuctionDate(MarketAuctionRequest marketAuctionRequest){
+        List<MarketAuctionResponse> marketAuctionResponseList = new ArrayList<>();
+        List<MarketAuction> marketAuctionList = marketAuctionRepository.findAllByStatusAndMarketAuctionDate(marketAuctionRequest.getStatus(),marketAuctionRequest.getMarketAuctionDate());
+        if(marketAuctionList!=null && !marketAuctionList.isEmpty()){
+            prepareMarketResponse(marketAuctionList,marketAuctionResponseList);
+        }
+        return marketAuctionResponseList;
+    }
+
+    private void prepareMarketResponse(List<MarketAuction> marketAuctionList,List<MarketAuctionResponse> marketAuctionResponseList){
+
+        for(MarketAuction marketAuction: marketAuctionList){
+            MarketAuctionResponse marketAuctionResponse = new MarketAuctionResponse();
+            marketAuctionResponse.setFarmerId(marketAuction.getFarmerId());
+            marketAuctionResponse.setTransactionId(marketAuction.getId());
+            marketAuctionResponse.setAllotedBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuction.getId(),"big"));
+            marketAuctionResponse.setAllotedSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuction.getId(),"small"));
+            marketAuctionResponse.setAllotedLotList(lotRepository.findAllByMarketAuctionId(marketAuction.getId()));
+            marketAuctionResponse.setMarketId(marketAuction.getMarketId());
+            marketAuctionResponse.setGodownId(marketAuction.getGodownId());
+            marketAuctionResponseList.add(marketAuctionResponse);
+        }
+
     }
 }
 
