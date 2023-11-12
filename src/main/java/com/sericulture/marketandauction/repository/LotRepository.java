@@ -21,4 +21,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query("select max(l.allottedLotId) from Lot l where l.marketId=:marketId and l.godownId =:godownId and l.auctionDate=:auctionDate")
     public Integer findByMarketIdAndGodownIdAndAuctionDate(@Param("marketId") int marketId,@Param("godownId") int godownId, @Param("auctionDate") LocalDate auctionDate);
+
+    @Query("select l.allottedLotId from Lot l where l.marketAuctionId=:marketAuctionId")
+    public List<Integer> findAllByMarketAuctionId(@Param("marketAuctionId") BigInteger marketAuctionId);
 }
