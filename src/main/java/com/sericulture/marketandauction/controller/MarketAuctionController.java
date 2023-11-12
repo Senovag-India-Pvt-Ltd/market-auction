@@ -10,15 +10,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/caste")
+@RequestMapping("/v1/auction")
 public class MarketAuctionController {
 
     @Autowired
@@ -35,7 +34,7 @@ public class MarketAuctionController {
                             }),
             @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.")
     })
-    @PostMapping("/add")
+    @PostMapping("/allot")
     public ResponseEntity<?> addCasteDetails(@RequestBody MarketAuctionRequest marketAuctionRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionResponse.class);
 
