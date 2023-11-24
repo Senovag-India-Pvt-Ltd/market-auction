@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.marketandauction.model.api.marketauction.CancellationRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
 import com.sericulture.marketandauction.model.entity.*;
@@ -191,11 +192,60 @@ public class MarketAuctionService {
             marketAuctionResponse.setTransactionId(marketAuction.getId());
             marketAuctionResponse.setAllotedBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuction.getId(),"big"));
             marketAuctionResponse.setAllotedSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuction.getId(),"small"));
-            marketAuctionResponse.setAllotedLotList(lotRepository.findAllByMarketAuctionId(marketAuction.getId()));
+            marketAuctionResponse.setAllotedLotList(lotRepository.findAllAllottedLotsByMarketAuctionId(marketAuction.getId()));
             marketAuctionResponse.setMarketId(marketAuction.getMarketId());
             marketAuctionResponse.setGodownId(marketAuction.getGodownId());
             marketAuctionResponseList.add(marketAuctionResponse);
         }
+
+    }
+
+    @Transactional
+    public boolean cancelBidByFarmerId(CancellationRequest cancellationRequest){
+        try{
+            MarketAuction marketAuction = marketAuctionRepository.findById(cancellationRequest.getAuctionId());
+
+            marketAuction.setStatus("cancelled");
+            marketAuction.setReasonForCancellation(cancellationRequest.getCancellationReason());
+
+            marketAuctionRepository.save(marketAuction);
+            List<Lot> lotList = lotRepository.findAllByMarketAuctionId(cancellationRequest.getAuctionId());
+
+            for(Lot lot:lotList){
+                lot.setStatus("cancelled");
+                lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
+                lot.setRejectedBy("MO");
+            }
+
+            lotRepository.saveAll(lotList);
+
+        }catch (Exception ex){
+            return false;
+        }
+
+        return true;
+
+    }
+
+    @Transactional
+    public boolean cancelLot(CancellationRequest cancellationRequest){
+        try{
+
+            Lot lot = lotRepository.findByMarketAuctionIdAndAllottedLotId(cancellationRequest.getAuctionId(),cancellationRequest.getAllottedLotId());
+
+
+                lot.setStatus("cancelled");
+                lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
+                lot.setRejectedBy("farmer");
+
+
+            lotRepository.save(lot);
+
+        }catch (Exception ex){
+            return false;
+        }
+
+        return true;
 
     }
 }

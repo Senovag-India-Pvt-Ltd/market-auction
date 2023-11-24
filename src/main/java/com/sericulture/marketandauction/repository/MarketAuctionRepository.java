@@ -18,5 +18,9 @@ public interface MarketAuctionRepository extends PagingAndSortingRepository<Mark
 
     public List<MarketAuction> findAllByStatusAndMarketAuctionDate(String status,LocalDate date);
 
+    public MarketAuction findById(BigInteger id);
+
+
+
 
 }

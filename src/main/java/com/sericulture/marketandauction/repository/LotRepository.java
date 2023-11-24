@@ -1,7 +1,6 @@
 package com.sericulture.marketandauction.repository;
 
 import com.sericulture.marketandauction.model.entity.Lot;
-import com.sericulture.marketandauction.model.entity.MarketAuction;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -23,5 +22,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public Integer findByMarketIdAndGodownIdAndAuctionDate(@Param("marketId") int marketId,@Param("godownId") int godownId, @Param("auctionDate") LocalDate auctionDate);
 
     @Query("select l.allottedLotId from Lot l where l.marketAuctionId=:marketAuctionId")
-    public List<Integer> findAllByMarketAuctionId(@Param("marketAuctionId") BigInteger marketAuctionId);
+    public List<Integer> findAllAllottedLotsByMarketAuctionId(@Param("marketAuctionId") BigInteger marketAuctionId);
+
+    public List<Lot> findAllByMarketAuctionId(BigInteger marketAuctionId);
+
+    public Lot findByMarketAuctionIdAndAllottedLotId(BigInteger marketAuctionId,int allottedLotId);
 }
