@@ -1,7 +1,9 @@
 package com.sericulture.marketandauction.model.mapper;
 
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
+import com.sericulture.marketandauction.model.api.marketauction.ReelerAuctionRequest;
 import com.sericulture.marketandauction.model.entity.MarketAuction;
+import com.sericulture.marketandauction.model.entity.ReelerAuction;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -19,7 +21,7 @@ public class Mapper {
     ModelMapper mapper;
 
     /**
-     * Maps Education Entity to Education Response Object
+     * Maps marketauction Entity to marketauction Response Object
      * @param marketAuctionEntity
      * @param <T>
      */
@@ -30,7 +32,7 @@ public class Mapper {
     }
 
     /**
-     * Maps Education Entity to Education Response Object
+     * Maps marketauction Entity to marketauction Response Object
      * @param marketAuctionRequest
      * @param <T>
      */
@@ -38,6 +40,28 @@ public class Mapper {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         log.info("Value of mapper is:",mapper, marketAuctionRequest);
         return (T) mapper.map(marketAuctionRequest, claaz);
+    }
+
+    /**
+     * Maps reelerAuction Entity to marketauction Response Object
+     * @param reelerAuctionEntity
+     * @param <T>
+     */
+    public <T> T reelerAuctionEntityToObject(ReelerAuction reelerAuctionEntity, Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, reelerAuctionEntity);
+        return (T) mapper.map(reelerAuctionEntity, claaz);
+    }
+
+    /**
+     * Maps reelerAuction Entity to marketauction Response Object
+     * @param reelerAuctionRequest
+     * @param <T>
+     */
+    public <T> T reelerAuctionObjectToEntity(ReelerAuctionRequest reelerAuctionRequest, Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, reelerAuctionRequest);
+        return (T) mapper.map(reelerAuctionRequest, claaz);
     }
 
 

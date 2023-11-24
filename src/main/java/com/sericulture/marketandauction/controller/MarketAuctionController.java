@@ -1,8 +1,10 @@
 package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.api.marketauction.CancellationRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
+import com.sericulture.marketandauction.model.api.marketauction.ReelerAuctionRequest;
 import com.sericulture.marketandauction.service.MarketAuctionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -84,7 +86,6 @@ public class MarketAuctionController {
 
 
     }
-
     @PostMapping("/getAllAuctionSlipForStatusByAuctionDate")
     public ResponseEntity<?> getAuctionDetailsByStateForAuctionDate(@RequestBody MarketAuctionRequest marketAuctionRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -94,10 +95,29 @@ public class MarketAuctionController {
             rw.setErrorMessages(List.of("No data found"));
         }
         rw.setContent(responses);
-
         return ResponseEntity.ok(rw);
+    }
 
+    @PostMapping("/cancelfarmerAuction")
+    public ResponseEntity<?> cancellFarmerBid(@RequestBody CancellationRequest cancellationRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        boolean success = marketAuctionService.cancelBidByFarmerId(cancellationRequest);
+        if(!success){
+            rw.setErrorCode(-1);
+            rw.setErrorMessages(List.of("unable to cancel bid"));
+        }
+        return ResponseEntity.ok(rw);
+    }
 
+    @PostMapping("/cancelLot")
+    public ResponseEntity<?> cancellLot(@RequestBody CancellationRequest cancellationRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        boolean success = marketAuctionService.cancelBidByFarmerId(cancellationRequest);
+        if(!success){
+            rw.setErrorCode(-1);
+            rw.setErrorMessages(List.of("unable to cancel lot"));
+        }
+        return ResponseEntity.ok(rw);
     }
 
 

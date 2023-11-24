@@ -39,9 +39,8 @@ public class Lot extends BaseEntity implements Serializable {
     @Size( message = "either market officer or farmer")
     private String rejectedBy;
 
-    @Column(name = "REJECTION_REASON")
-    @Size( message = "reason for rejection")
-    private String rejectionReason;
+    @Column(name = "REASON_FOR_CANCELLATION")
+    private int reasonForCancellation;
 
     @Column(name = "MARKET_ID")
     private int marketId;
