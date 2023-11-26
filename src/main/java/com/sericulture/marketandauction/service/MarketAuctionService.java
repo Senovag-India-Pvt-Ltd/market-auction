@@ -6,6 +6,8 @@ import com.sericulture.marketandauction.model.api.marketauction.CancellationRequ
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
 import com.sericulture.marketandauction.model.entity.*;
+import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
+import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.*;
 import jakarta.persistence.EntityManager;
@@ -19,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -56,14 +61,17 @@ public class MarketAuctionService {
     private MarketAuctionHelper marketAuctionHelper;
     public  ResponseEntity<?> marketAuctionFacade(MarketAuctionRequest marketAuctionRequest) {
 
+        LocalDateTime tStart = LocalDateTime.now();
+
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionResponse.class);
         MarketAuctionResponse marketAuctionResponse = new MarketAuctionResponse();
         //validator.validate(marketAuctionResponse);
         boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.ISSUEBIDSLIP,marketAuctionRequest.getMarketId());
 
         if(!canIssue){
+            ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),"Cannot issue slip as time is  either over or not started","-1");
             rw.setErrorCode(-1);
-            rw.setErrorMessages(List.of("Cannot issue slip as time is over"));
+            rw.setErrorMessages(List.of(validationMessage));
             return ResponseEntity.ok(rw);
         }
         boolean hasException = false;
@@ -75,7 +83,10 @@ public class MarketAuctionService {
             marketAuctionResponse.setGodownId(marketAuction.getGodownId());
             marketAuctionResponse.setFarmerId(marketAuction.getFarmerId());
             // saves bin and the lot
+            log.info("data prep work before lot and bin creation "+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
             saveBinAndLot(marketAuctionResponse, marketAuction);
+
+            rw.setContent(marketAuctionResponse);
         } catch (Exception e) {
             hasException = true;
             e.printStackTrace();
@@ -90,6 +101,9 @@ public class MarketAuctionService {
                 marketAuctionRepository.save(marketAuction);
             }
         }
+
+        log.info("total time is: "+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
+
         return ResponseEntity.ok(rw);
     }
 
@@ -111,6 +125,7 @@ public class MarketAuctionService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     private void saveBinAndLot(MarketAuctionResponse marketAuctionResponse, MarketAuction marketAuction) {
+        LocalDateTime tStart = LocalDateTime.now();
         Map<String, List<Integer>> allotedBins = saveBin(marketAuction.getId(), marketAuction.getNumberOfSmallBin(), marketAuction.getNumberOfBigBin(), marketAuction.getMarketId(), marketAuction.getGodownId());
 
         marketAuctionResponse.setAllotedBigBinList(allotedBins.get("big"));
@@ -118,6 +133,7 @@ public class MarketAuctionService {
 
         List<Integer> lotList = saveLot(marketAuction.getId(), marketAuction.getNumberOfLot(), marketAuction.getMarketId(), marketAuction.getGodownId());
         marketAuctionResponse.setAllotedLotList(lotList);
+        log.info("total time  to save bin and lot"+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
 
     }
     private List<Integer> saveLot(BigInteger id, int numberOfLot, int marketId, int godownId) {
@@ -156,12 +172,13 @@ public class MarketAuctionService {
         bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, LocalDate.now());
         // in case its null its inserts the new record in separate transaction locking the row, thus syncing the process allowing only one row.
         if (bc == null) {
-            checkAndInsertForMaster(marketId, godownId);
+           bc = checkAndInsertForMaster(marketId, godownId);
 
         }
         // locks the row for that market for all
-        bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, LocalDate.now());
+        LocalDateTime tStart = LocalDateTime.now();
         bc = binCounterRepository.getByMarketEntryForTheDayLocked(bc.getId().longValue());
+        log.info("total time  acquire lock "+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
         smallBinStart = bc.getSmallBinNextNumber();
         bigBinStart = bc.getBigBinNextNumber();
 
@@ -190,7 +207,7 @@ public class MarketAuctionService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    private void checkAndInsertForMaster( int marketId, int godownId) {
+    private BinCounter checkAndInsertForMaster( int marketId, int godownId) {
         //fetch pk to lock only that row
         BinCounterMaster byMarketIdAndGodownId = binCounterMasterRepository.findByMarketIdAndGodownId(marketId, godownId);
         //Master fetched to get the last count
@@ -207,6 +224,7 @@ public class MarketAuctionService {
             bc.setAuctionDate(LocalDate.now());
             binCounterRepository.save(bc);
         }
+        return bc;
     }
 
     private int saveEachTypeOfBin(BigInteger marketAuctionId, int marketId, int godownId, String type, int binStart, int binEnd, int limit, Map<String, List<Integer>> allotedBins) {
@@ -291,7 +309,7 @@ public class MarketAuctionService {
     @Transactional
     public boolean cancelLot(CancellationRequest cancellationRequest) {
         try {
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotId(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId());
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId(),LocalDate.now());
             lot.setStatus("cancelled");
             lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
             lot.setRejectedBy("farmer");

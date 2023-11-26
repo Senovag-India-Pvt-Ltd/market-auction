@@ -14,7 +14,7 @@ public class ValidationException extends RuntimeException{
     private List<Message> errorMessages = new ArrayList<>();
 
     public ValidationException(String errorMessage) {
-        errorMessages.add(new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), errorMessage));
+        errorMessages.add(new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), errorMessage,""));
     }
 
     public ValidationException(List<ValidationMessage> errorMessage) {

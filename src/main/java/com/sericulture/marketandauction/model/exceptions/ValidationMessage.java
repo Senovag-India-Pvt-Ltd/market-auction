@@ -11,8 +11,11 @@ public class ValidationMessage extends Message{
     private String label;
     private String locale;
 
-    public ValidationMessage(String label, String message){
+    private String errorCode;
+
+    public ValidationMessage(String label, String message,String errorCode){
         super(message);
         this.label = label;
+        this.errorCode=errorCode;
     }
 }

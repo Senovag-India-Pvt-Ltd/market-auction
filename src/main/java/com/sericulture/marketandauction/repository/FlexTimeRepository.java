@@ -12,4 +12,6 @@ public interface FlexTimeRepository extends PagingAndSortingRepository<FlexTime,
     public List<FlexTime> findAll();
 
     public FlexTime findByActivityType(String activityType);
+
+    public FlexTime findByActivityTypeAndMarketId(String activityType,int marketId);
 }

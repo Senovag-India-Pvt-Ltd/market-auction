@@ -40,7 +40,7 @@ public class Lot extends BaseEntity implements Serializable {
     private String rejectedBy;
 
     @Column(name = "REASON_FOR_CANCELLATION")
-    private int reasonForCancellation;
+    private Integer reasonForCancellation;
 
     @Column(name = "MARKET_ID")
     private int marketId;

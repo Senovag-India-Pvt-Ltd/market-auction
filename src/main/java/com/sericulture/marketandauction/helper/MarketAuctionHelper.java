@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
-import java.util.Date;
+import java.time.temporal.ChronoUnit;
 
 @Component
 public class MarketAuctionHelper {
@@ -31,9 +31,9 @@ public class MarketAuctionHelper {
 
     public boolean canPerformActivity(activityType activity, int marketId) {
         MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        FlexTime flexTime = flexTimeRepository.findByActivityType(activity.toString());
+        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketId(activity.toString(), marketId);
 
-        LocalTime time = LocalTime.now();
+        LocalTime time = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
 
         LocalTime starttime = null;
         LocalTime endTime = null;
@@ -46,16 +46,20 @@ public class MarketAuctionHelper {
             case AUCTION1:
                 starttime = marketMaster.getAuction1StartTime();
                 endTime = marketMaster.getAuction1EndTime();
+                break;
             case AUCTION2:
                 starttime = marketMaster.getAuction2StartTime();
                 endTime = marketMaster.getAuction2EndTime();
+                break;
             case AUCTION3:
                 starttime = marketMaster.getAuction3StartTime();
                 endTime = marketMaster.getAuction3EndTime();
+                break;
 
         }
-        return time.equals(starttime) || time.isAfter(starttime)
-                || time.equals(endTime) || time.isBefore(endTime) || flexTime.isStart();
+        //in between todo
+        return (time.isAfter(starttime) && time.isBefore(endTime)) || time.equals(starttime)
+                || time.equals(endTime) || flexTime.isStart();
 
     }
 }
