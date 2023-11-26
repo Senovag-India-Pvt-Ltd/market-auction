@@ -31,4 +31,6 @@ public class ReelerAuctionRequest extends RequestBody {
 
 
     private boolean surrogateBid;
+
+    private String auctionNumber;
 }

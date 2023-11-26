@@ -20,7 +20,7 @@ public class CustomValidator {
     public <T extends BaseEntity> void validate(T entity) {
         Set<ConstraintViolation<T>> violations = validator.validate(entity);
         violations.stream()
-                        .map(cv -> new ValidationMessage(cv.getPropertyPath().toString(), cv.getMessage()))
+                        .map(cv -> new ValidationMessage(cv.getPropertyPath().toString(), cv.getMessage(),"-1"))
                         .collect(Collectors.collectingAndThen(Collectors.toList(),
                         result -> {
                             if (!result.isEmpty()) throw new ValidationException(result);

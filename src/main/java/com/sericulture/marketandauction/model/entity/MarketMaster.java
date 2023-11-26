@@ -47,35 +47,35 @@ public class MarketMaster extends BaseEntity implements Serializable {
     @Column(name = "TALUK_ID")
     private int talukId;
 
-    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "ISSUE_BID_SLIP_START_TIME")
     private LocalTime issueBidSlipStartTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "ISSUE_BID_SLIP_END_TIME")
     private LocalTime issueBidSlipEndTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "AUCTION_1_START_TIME")
     private LocalTime auction1StartTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "AUCTION_2_START_TIME")
     private LocalTime auction2StartTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "AUCTION_3_START_TIME")
     private LocalTime auction3StartTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "AUCTION_1_END_TIME")
     private LocalTime auction1EndTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "AUCTION_2_END_TIME")
     private LocalTime auction2EndTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "AUCTION_3_END_TIME")
     private LocalTime auction3EndTime;
 

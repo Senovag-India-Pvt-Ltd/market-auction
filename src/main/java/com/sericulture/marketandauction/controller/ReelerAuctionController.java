@@ -22,24 +22,11 @@ public class ReelerAuctionController {
 
     @PostMapping("/submitBid")
     public ResponseEntity<?> submitBid(@RequestBody ReelerAuctionRequest reelerAuctionRequest){
-        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        boolean success = reelerAuctionService.submitbid(reelerAuctionRequest);
-        if(!success){
-            rw.setErrorCode(-1);
-            rw.setErrorMessages(List.of("unable to submit bid"));
-        }
-        return ResponseEntity.ok(rw);
+        return reelerAuctionService.submitbid(reelerAuctionRequest);
     }
 
     @PostMapping("/submitSurrogateBid")
     public ResponseEntity<?> submitSurrogateBid(@RequestBody ReelerAuctionRequest reelerAuctionRequest){
-        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        reelerAuctionRequest.setSurrogateBid(true);
-        boolean success = reelerAuctionService.submitbid(reelerAuctionRequest);
-        if(!success){
-            rw.setErrorCode(-1);
-            rw.setErrorMessages(List.of("unable to submit bid"));
-        }
-        return ResponseEntity.ok(rw);
+        return  reelerAuctionService.submitbid(reelerAuctionRequest);
     }
 }
