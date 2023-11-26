@@ -67,7 +67,9 @@ public class MarketAuctionController {
     @PostMapping("/allot")
     public ResponseEntity<?> allotBidToFarmer(@RequestBody MarketAuctionRequest marketAuctionRequest){
 
+
         return marketAuctionService.saveMarketAuction(marketAuctionRequest);
+
     }
 
     @PostMapping("/getAllAuctionSlipForFarmerByAuctionDate")
