@@ -14,6 +14,8 @@ public class CancellationRequest extends RequestBody {
 
     private int marketId;
 
+    private int goDownId;
+
     private int cancellationReason;
 
     private BigInteger auctionId;
