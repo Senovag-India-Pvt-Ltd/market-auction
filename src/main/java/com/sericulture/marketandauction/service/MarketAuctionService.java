@@ -11,14 +11,12 @@ import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -51,24 +49,57 @@ public class MarketAuctionService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Transactional
-    public MarketAuctionResponse saveMarketAuction(MarketAuctionRequest marketAuctionRequest) {
+    public MarketAuctionResponse marketAuctionFacade(MarketAuctionRequest marketAuctionRequest) {
 
         MarketAuctionResponse marketAuctionResponse = new MarketAuctionResponse();
+        //validator.validate(marketAuctionResponse);
+        boolean hasException = false;
+        MarketAuction marketAuction = null;
+        try {
+            marketAuction = saveMarketAuction(marketAuctionRequest);
+            marketAuctionResponse.setTransactionId(marketAuction.getId());
+            marketAuctionResponse.setMarketId(marketAuction.getMarketId());
+            marketAuctionResponse.setGodownId(marketAuction.getGodownId());
+            marketAuctionResponse.setFarmerId(marketAuction.getFarmerId());
 
+            saveBinAndLot(marketAuctionResponse, marketAuction);
+        } catch (Exception e) {
+            hasException = true;
+            e.printStackTrace();
+            log.error("Error occurred while processing the request %s", marketAuctionRequest);
+        } finally {
+            if(Objects.nonNull(marketAuction)) {
+                if(hasException) {
+                    marketAuction.setStatus("error");
+                } else {
+                    marketAuction.setStatus("generated");
+                }
+                marketAuctionRepository.save(marketAuction);
+            }
+
+        }
+        return marketAuctionResponse;
+
+    }
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private MarketAuction saveMarketAuction(MarketAuctionRequest marketAuctionRequest) {
         MarketAuction marketAuction = mapper.marketAuctionObjectToEntity(marketAuctionRequest, MarketAuction.class);
         validator.validate(marketAuction);
         marketAuction.setMarketAuctionDate(LocalDate.now());
-        marketAuction.setStatus("generated");
+        marketAuction.setStatus("in creation");
 
-        marketAuction = marketAuctionRepository.save(marketAuction);
+        return marketAuctionRepository.save(marketAuction);
+    }
 
-        marketAuctionResponse.setTransactionId(marketAuction.getId());
-        marketAuctionResponse.setMarketId(marketAuction.getMarketId());
-        marketAuctionResponse.setGodownId(marketAuction.getGodownId());
-        marketAuctionResponse.setFarmerId(marketAuction.getFarmerId());
-
-
+    /** Runs ina single transaction to allocate bins and lot together rollbacks if there are any exception during the process
+     *
+     * @param marketAuctionResponse
+     * @param marketAuction
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    private void saveBinAndLot(MarketAuctionResponse marketAuctionResponse, MarketAuction marketAuction) {
         Map<String, List<Integer>> allotedBins = saveBin(marketAuction.getId(), marketAuction.getNumberOfSmallBin(), marketAuction.getNumberOfBigBin(), marketAuction.getMarketId(), marketAuction.getGodownId());
 
         marketAuctionResponse.setAllotedBigBinList(allotedBins.get("big"));
@@ -76,15 +107,11 @@ public class MarketAuctionService {
 
         List<Integer> lotList = saveLot(marketAuction.getId(), marketAuction.getNumberOfLot(), marketAuction.getMarketId(), marketAuction.getGodownId());
         marketAuctionResponse.setAllotedLotList(lotList);
-
-        return marketAuctionResponse;
-
     }
-
     private List<Integer> saveLot(BigInteger id, int numberOfLot, int marketId, int godownId) {
         List<Integer> lotList = new ArrayList<>();
         Integer lotCounter = 0;
-        lotCounter = lotRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, LocalDate.now());
+        lotCounter = lotRepository.findByMarketIdAndAuctionDate(marketId, LocalDate.now());
         if (lotCounter == null) {
             lotCounter = 0;
         }
@@ -97,14 +124,12 @@ public class MarketAuctionService {
             lot.setMarketAuctionId(id);
             lot.setMarketId(marketId);
             lot.setAuctionDate(LocalDate.now());
-            if (godownId != 0) {
-                lot.setGodownId(godownId);
-            }
             lots.add(lot);
         }
         lotRepository.saveAll(lots);
         return lotList;
     }
+
 
     private Map<String, List<Integer>> saveBin(BigInteger marketAuctionId, int numberOfSmallBin, int numberOfBigBin, int marketId, int godownId) {
         BinCounter bc = null;
@@ -117,17 +142,21 @@ public class MarketAuctionService {
         List<Integer> smallAlloted = new ArrayList<>();
         List<Bin> binList = new ArrayList<>();
         bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, LocalDate.now());
-        BinCounterMaster binCounterMaster = binCounterMasterRepository.findByMarketIdAndGodownId(marketId, godownId);
-        smallBinStart = binCounterMaster.getSmallBinStart();
-        bigBinStart = binCounterMaster.getBigBinStart();
+        // in case its null its inserts the new record in separate transaction locking the row, thus syncing the process allowing only one row.
+        if (bc == null) {
+            checkAndInsertForMaster(marketId, godownId);
 
-        if (bc != null) {
-            smallBinStart = bc.getSmallBinNextNumber();
-            bigBinStart = bc.getBigBinNextNumber();
-        }else{
-            smallBinStart--;
-            bigBinStart--;
         }
+        // locks the row for that market for all
+        bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, LocalDate.now());
+        bc = binCounterRepository.getByMarketEntryForTheDayLocked(bc.getId().longValue());
+        smallBinStart = bc.getSmallBinNextNumber();
+        bigBinStart = bc.getBigBinNextNumber();
+
+        BinCounterMaster binCounterMaster = binCounterMasterRepository.findByMarketIdAndGodownId(marketId, godownId);
+        //Master fetched to get the last count /** NOT REQUIRED TO LOCK THE MASTER FOR NOW */
+        //BinCounterMaster binCounterMaster = binCounterMasterRepository.getByMarketIdAndAuction(byMarketIdAndGodownId.getId());
+
 
         smallSequenceEnd = saveEachTypeOfBin(marketAuctionId, marketId, godownId, "small", smallBinStart, binCounterMaster.getSmallBinEnd(), numberOfSmallBin, allotedBins);
 
@@ -140,15 +169,35 @@ public class MarketAuctionService {
             bc.setAuctionDate(LocalDate.now());
         }
         if(numberOfBigBin!=0)
-        bc.setBigBinNextNumber(bigSequenceEnd);
+        bc.setBigBinNextNumber(++bigSequenceEnd);
         if(numberOfSmallBin!=0)
-        bc.setSmallBinNextNumber(smallSequenceEnd);
+        bc.setSmallBinNextNumber(++smallSequenceEnd);
         binCounterRepository.save(bc);
         binRepository.saveAll(binList);
         return allotedBins;
     }
 
-    public int saveEachTypeOfBin(BigInteger marketAuctionId, int marketId, int godownId, String type, int binStart, int binEnd, int limit, Map<String, List<Integer>> allotedBins) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    private void checkAndInsertForMaster( int marketId, int godownId) {
+        //fetch pk to lock only that row
+        BinCounterMaster byMarketIdAndGodownId = binCounterMasterRepository.findByMarketIdAndGodownId(marketId, godownId);
+        //Master fetched to get the last count
+        BinCounterMaster binCounterMaster = binCounterMasterRepository.getByMarketIdAndAuction(byMarketIdAndGodownId.getId());
+        BinCounter bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, LocalDate.now());
+        if(Objects.isNull(bc)) {
+            int smallBinStart = binCounterMaster.getSmallBinStart();
+            int bigBinStart = binCounterMaster.getBigBinStart();
+            bc = new BinCounter();
+            bc.setBigBinNextNumber(smallBinStart);
+            bc.setBigBinNextNumber(bigBinStart);
+            bc.setMarketId(marketId);
+            bc.setGodownId(godownId);
+            bc.setAuctionDate(LocalDate.now());
+            binCounterRepository.save(bc);
+        }
+    }
+
+    private int saveEachTypeOfBin(BigInteger marketAuctionId, int marketId, int godownId, String type, int binStart, int binEnd, int limit, Map<String, List<Integer>> allotedBins) {
         List<Integer> bins = binMasterRepository.
                 findByMarketIdAndGodownIdAndTypeAndStatusAndBinNumber(marketId, godownId, type, "available", binStart, binEnd, limit);
         int nextSequence = 0;

@@ -68,7 +68,7 @@ public class MarketAuctionController {
     public ResponseEntity<?> addCasteDetails(@RequestBody MarketAuctionRequest marketAuctionRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionResponse.class);
 
-        rw.setContent(marketAuctionService.saveMarketAuction(marketAuctionRequest));
+        rw.setContent(marketAuctionService.marketAuctionFacade(marketAuctionRequest));
         return ResponseEntity.ok(rw);
     }
 
