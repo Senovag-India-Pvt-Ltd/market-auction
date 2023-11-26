@@ -45,9 +45,6 @@ public class Lot extends BaseEntity implements Serializable {
     @Column(name = "MARKET_ID")
     private int marketId;
 
-    @Column(name = "GODOWN_ID")
-    private int godownId;
-
     @Temporal(TemporalType.DATE)
     @Column(name = "AUCTION_DATE")
     private LocalDate auctionDate;

@@ -5,7 +5,6 @@ import com.sericulture.marketandauction.model.entity.BinMaster;
 import com.sericulture.marketandauction.model.entity.GodownMaster;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.repository.*;
-import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

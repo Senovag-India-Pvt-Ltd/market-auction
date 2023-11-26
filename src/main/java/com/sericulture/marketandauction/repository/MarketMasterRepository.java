@@ -10,4 +10,6 @@ public interface MarketMasterRepository extends PagingAndSortingRepository<Marke
     public Iterable<MarketMaster> saveAll(Iterable<MarketMaster> marketMasterList);
 
     public MarketMaster save(MarketMaster marketMaster);
+
+    public MarketMaster findById(int id);
 }

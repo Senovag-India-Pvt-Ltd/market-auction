@@ -23,8 +23,8 @@ public class ReelerAuction extends BaseEntity implements Serializable {
     @Column(name = "REELER_AUCTION_ID")
     private BigInteger id;
 
-    @Column(name = "MARKET_AUCTION_ID")
-    private BigInteger marketAuctionId;
+    @Column(name = "MARKET_ID")
+    private int marketId;
 
     @Column(name = "ALLOTTED_LOT_ID")
     private int allottedLotId;
