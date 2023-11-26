@@ -65,11 +65,11 @@ public class MarketAuctionController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.")
     })
     @PostMapping("/allot")
-    public ResponseEntity<?> addCasteDetails(@RequestBody MarketAuctionRequest marketAuctionRequest){
-        ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionResponse.class);
+    public ResponseEntity<?> allotBidToFarmer(@RequestBody MarketAuctionRequest marketAuctionRequest){
 
-        rw.setContent(marketAuctionService.marketAuctionFacade(marketAuctionRequest));
-        return ResponseEntity.ok(rw);
+
+        return marketAuctionService.marketAuctionFacade(marketAuctionRequest);
+
     }
 
     @PostMapping("/getAllAuctionSlipForFarmerByAuctionDate")

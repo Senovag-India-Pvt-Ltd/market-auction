@@ -1,5 +1,5 @@
 # market-auction
 
 Swagger :
-http://localhost:8200/farmer-registration/swagger-ui.html
+http://localhost:8200/market-auction/swagger-ui.html
 

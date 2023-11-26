@@ -1,5 +1,7 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.marketandauction.helper.MarketAuctionHelper;
+import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.CancellationRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
@@ -10,6 +12,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,10 +52,20 @@ public class MarketAuctionService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public MarketAuctionResponse marketAuctionFacade(MarketAuctionRequest marketAuctionRequest) {
+    @Autowired
+    private MarketAuctionHelper marketAuctionHelper;
+    public  ResponseEntity<?> marketAuctionFacade(MarketAuctionRequest marketAuctionRequest) {
 
+        ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionResponse.class);
         MarketAuctionResponse marketAuctionResponse = new MarketAuctionResponse();
         //validator.validate(marketAuctionResponse);
+        boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.ISSUEBIDSLIP,marketAuctionRequest.getMarketId());
+
+        if(!canIssue){
+            rw.setErrorCode(-1);
+            rw.setErrorMessages(List.of("Cannot issue slip as time is over"));
+            return ResponseEntity.ok(rw);
+        }
         boolean hasException = false;
         MarketAuction marketAuction = null;
         try {
@@ -78,7 +91,7 @@ public class MarketAuctionService {
             }
 
         }
-        return marketAuctionResponse;
+        return ResponseEntity.ok(rw);
 
     }
 
@@ -107,6 +120,7 @@ public class MarketAuctionService {
 
         List<Integer> lotList = saveLot(marketAuction.getId(), marketAuction.getNumberOfLot(), marketAuction.getMarketId(), marketAuction.getGodownId());
         marketAuctionResponse.setAllotedLotList(lotList);
+
     }
     private List<Integer> saveLot(BigInteger id, int numberOfLot, int marketId, int godownId) {
         List<Integer> lotList = new ArrayList<>();
@@ -169,9 +183,9 @@ public class MarketAuctionService {
             bc.setAuctionDate(LocalDate.now());
         }
         if(numberOfBigBin!=0)
-        bc.setBigBinNextNumber(++bigSequenceEnd);
+            bc.setBigBinNextNumber(++bigSequenceEnd);
         if(numberOfSmallBin!=0)
-        bc.setSmallBinNextNumber(++smallSequenceEnd);
+            bc.setSmallBinNextNumber(++smallSequenceEnd);
         binCounterRepository.save(bc);
         binRepository.saveAll(binList);
         return allotedBins;
@@ -277,17 +291,12 @@ public class MarketAuctionService {
     }
 
     @Transactional
-    public boolean cancelLot(CancellationRequest cancellationRequest){
-        try{
-
-            Lot lot = lotRepository.findByMarketAuctionIdAndAllottedLotId(cancellationRequest.getAuctionId(),cancellationRequest.getAllottedLotId());
-
-
-                lot.setStatus("cancelled");
-                lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
-                lot.setRejectedBy("farmer");
-
-
+    public boolean cancelLot(CancellationRequest cancellationRequest) {
+        try {
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotId(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId());
+            lot.setStatus("cancelled");
+            lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
+            lot.setRejectedBy("farmer");
             lotRepository.save(lot);
 
         }catch (Exception ex){
