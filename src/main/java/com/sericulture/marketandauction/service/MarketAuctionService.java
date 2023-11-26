@@ -74,7 +74,7 @@ public class MarketAuctionService {
             marketAuctionResponse.setMarketId(marketAuction.getMarketId());
             marketAuctionResponse.setGodownId(marketAuction.getGodownId());
             marketAuctionResponse.setFarmerId(marketAuction.getFarmerId());
-
+            // saves bin and the lot
             saveBinAndLot(marketAuctionResponse, marketAuction);
         } catch (Exception e) {
             hasException = true;
@@ -89,10 +89,8 @@ public class MarketAuctionService {
                 }
                 marketAuctionRepository.save(marketAuction);
             }
-
         }
         return ResponseEntity.ok(rw);
-
     }
 
 

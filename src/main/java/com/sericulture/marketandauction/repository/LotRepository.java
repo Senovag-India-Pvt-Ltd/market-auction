@@ -27,5 +27,4 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     public List<Lot> findAllByMarketAuctionId(BigInteger marketAuctionId);
 
-    public Lot findByMarketAuctionIdAndAllottedLotId(BigInteger marketAuctionId,int allottedLotId);
-}
+    public Lot findByMarketIdAndAllottedLotId(int marketId,int allottedLotId);}
