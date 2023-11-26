@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public class ReelerAuctionRequest extends RequestBody {
 
-    private BigInteger marketAuctionId;
+    private int marketId;
 
 
     private int allottedLotId;
