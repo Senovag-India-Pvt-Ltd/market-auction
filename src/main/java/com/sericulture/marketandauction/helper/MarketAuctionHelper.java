@@ -32,7 +32,7 @@ public class MarketAuctionHelper {
     public boolean canPerformActivity(activityType activity, int marketId) {
         MarketMaster marketMaster = marketMasterRepository.findById(marketId);
         FlexTime flexTime = flexTimeRepository.findByActivityType(activity.toString());
-        
+
         LocalTime time = LocalTime.now();
 
         LocalTime starttime = null;
