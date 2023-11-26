@@ -68,7 +68,7 @@ public class MarketAuctionController {
     public ResponseEntity<?> allotBidToFarmer(@RequestBody MarketAuctionRequest marketAuctionRequest){
 
 
-        return marketAuctionService.saveMarketAuction(marketAuctionRequest);
+        return marketAuctionService.marketAuctionFacade(marketAuctionRequest);
 
     }
 

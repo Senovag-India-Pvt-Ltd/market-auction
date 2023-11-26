@@ -41,7 +41,7 @@ public class MarketAuctionHelper {
         switch (activity) {
             case ISSUEBIDSLIP:
                 starttime = marketMaster.getIssueBidSlipStartTime();
-                starttime = marketMaster.getIssueBidSlipEndTime();
+                endTime = marketMaster.getIssueBidSlipEndTime();
                 break;
             case AUCTION1:
                 starttime = marketMaster.getAuction1StartTime();

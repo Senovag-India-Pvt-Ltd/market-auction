@@ -25,4 +25,8 @@ public class FlexTime  extends BaseEntity implements Serializable {
 
     @Column(name = "FLEX_TIME_START")
     private boolean start;
+
+    @Column(name = "FLEX_TIME_END")
+    private boolean end;
+
 }
