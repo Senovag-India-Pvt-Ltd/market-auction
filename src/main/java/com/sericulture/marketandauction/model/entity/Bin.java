@@ -40,9 +40,13 @@ public class Bin extends BaseEntity implements Serializable {
     @Column(name = "AUCTION_DATE")
     private LocalDate auctionDate;
 
-    public Bin(int allottedBinId, BigInteger marketAuctionId, String type) {
+    @Column(name = "MARKET_ID")
+    private int marketId;
+
+    public Bin(int allottedBinId, BigInteger marketAuctionId, String type,int marketId) {
         this.allottedBinId = allottedBinId;
         this.marketAuctionId = marketAuctionId;
         this.type = type;
+        this.marketId = marketId;
     }
 }
