@@ -7,6 +7,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -55,7 +56,7 @@ public class BeanConfiguration implements WebMvcConfigurer {
     @Bean
     public LocaleResolver localeResolver() {
         SessionLocaleResolver slr = new SessionLocaleResolver();
-        slr.setDefaultLocale(Locale.US);
+        slr.setDefaultLocale(Locale.ENGLISH);
         return slr;
     }
 
@@ -64,5 +65,13 @@ public class BeanConfiguration implements WebMvcConfigurer {
         LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
         lci.setParamName("lang");
         return lci;
+    }
+
+    @Bean
+    public ResourceBundleMessageSource messageSource() {
+        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+        source.setBasename("messages");
+        source.setCacheSeconds(3600); // Refresh cache once per hour.
+        return source;
     }
 }

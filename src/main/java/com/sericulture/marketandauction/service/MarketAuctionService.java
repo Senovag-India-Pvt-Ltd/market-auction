@@ -1,6 +1,7 @@
 package com.sericulture.marketandauction.service;
 
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
+import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.CancellationRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
@@ -14,6 +15,7 @@ import com.sericulture.marketandauction.repository.*;
 import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -53,6 +55,8 @@ public class MarketAuctionService {
     Mapper mapper;
 
     @Autowired
+    Util util;
+    @Autowired
     private CustomValidator validator;
 
     @PersistenceUnit
@@ -70,7 +74,8 @@ public class MarketAuctionService {
         boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.ISSUEBIDSLIP,marketAuctionRequest.getMarketId());
 
         if(!canIssue){
-            ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),"Cannot issue slip as time is  either over or not started","-1");
+            ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),
+                    util.getMessageByCode("MA00002.GEN.FLEXTIME"),"MA00002.GEN.FLEXTIME");
             rw.setErrorCode(-1);
             rw.setErrorMessages(List.of(validationMessage));
             return ResponseEntity.ok(rw);

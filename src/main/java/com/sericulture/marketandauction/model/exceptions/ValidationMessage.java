@@ -2,6 +2,8 @@ package com.sericulture.marketandauction.model.exceptions;
 
 import lombok.*;
 
+import java.util.Locale;
+
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -17,5 +19,6 @@ public class ValidationMessage extends Message{
         super(message);
         this.label = label;
         this.errorCode=errorCode;
+        this.locale = Locale.ENGLISH.getDisplayName();
     }
 }
