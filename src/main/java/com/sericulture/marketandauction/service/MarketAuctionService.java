@@ -3,9 +3,7 @@ package com.sericulture.marketandauction.service;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
-import com.sericulture.marketandauction.model.api.marketauction.CancellationRequest;
-import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
-import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
+import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.*;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
@@ -15,17 +13,14 @@ import com.sericulture.marketandauction.repository.*;
 import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -290,18 +285,18 @@ public class MarketAuctionService {
         return nextSequence;
     }
 
-    public List<MarketAuctionResponse> getAuctionDetailsByFarmerForAuctionDate(MarketAuctionRequest marketAuctionRequest){
+    public List<MarketAuctionResponse> getAuctionDetailsByFarmerForAuctionDate(SearchMarketByFarmerAndAuctionDateRequest searchMarketByFarmerAndAuctionDateRequest){
         List<MarketAuctionResponse> marketAuctionResponseList = new ArrayList<>();
-        List<MarketAuction> marketAuctionList = marketAuctionRepository.findAllByFarmerIdAndMarketAuctionDate(marketAuctionRequest.getFarmerId(),marketAuctionRequest.getMarketAuctionDate());
+        List<MarketAuction> marketAuctionList = marketAuctionRepository.findAllByFarmerIdAndMarketAuctionDate(searchMarketByFarmerAndAuctionDateRequest.getFarmerId(), searchMarketByFarmerAndAuctionDateRequest.getAuctionDate());
         if(marketAuctionList!=null && !marketAuctionList.isEmpty()){
             prepareMarketResponse(marketAuctionList,marketAuctionResponseList);
         }
         return marketAuctionResponseList;
     }
 
-    public List<MarketAuctionResponse> getAuctionDetailsByStateForAuctionDate(MarketAuctionRequest marketAuctionRequest){
+    public List<MarketAuctionResponse> getAuctionDetailsByStateForAuctionDate(SearchMarketByStatusAndAuctionDateRequest marketAuctionRequest){
         List<MarketAuctionResponse> marketAuctionResponseList = new ArrayList<>();
-        List<MarketAuction> marketAuctionList = marketAuctionRepository.findAllByStatusAndMarketAuctionDate(marketAuctionRequest.getStatus(),marketAuctionRequest.getMarketAuctionDate());
+        List<MarketAuction> marketAuctionList = marketAuctionRepository.findAllByStatusAndMarketAuctionDate(marketAuctionRequest.getStatus(),marketAuctionRequest.getAuctionDate());
         if(marketAuctionList!=null && !marketAuctionList.isEmpty()){
             prepareMarketResponse(marketAuctionList,marketAuctionResponseList);
         }

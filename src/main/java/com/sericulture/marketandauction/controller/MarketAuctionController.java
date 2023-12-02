@@ -1,10 +1,8 @@
 package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.model.ResponseWrapper;
-import com.sericulture.marketandauction.model.api.marketauction.CancellationRequest;
-import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
-import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerAuctionRequest;
+import com.sericulture.marketandauction.model.api.marketauction.*;
+import com.sericulture.marketandauction.service.CustomValidator;
 import com.sericulture.marketandauction.service.MarketAuctionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,7 +25,10 @@ public class MarketAuctionController {
     @Autowired
     MarketAuctionService marketAuctionService;
 
-    @Operation(summary = "Insert Caste Details", description = "Creates Caste Details in to DB")
+    @Autowired
+    CustomValidator customValidator;
+
+    @Operation(summary = "Allocates bin and generates a lot", description = "Majorly creates a record in market auction, bin and lot.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
                     @Content(mediaType = "application/json", schema =
@@ -67,15 +68,28 @@ public class MarketAuctionController {
     @PostMapping("/allot")
     public ResponseEntity<?> allotBidToFarmer(@RequestBody MarketAuctionRequest marketAuctionRequest){
 
-
+        //customValidator.validate(marketAuctionRequest);
         return marketAuctionService.marketAuctionFacade(marketAuctionRequest);
 
     }
 
+    @Operation(summary = "Searches by farmer id and auction date", description = "Provides results for the farmer and the auction date provided.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ok Response", content = {
+                    @Content(mediaType = "application/json", schema =
+                    @Schema(example = "{  \"content\": [{\"transactionId\": 1225,\"marketId\": 9,\"godownId\": 0,\"farmerId\": 123,\"allotedLotList\": [],\"allotedSmallBinList\": [],\"allotedBigBinList\": []},{\"transactionId\": 1226,\"marketId\": 9,\"godownId\": 0,\"farmerId\": 123,\"allotedLotList\": [],\"allotedSmallBinList\": [],\"allotedBigBinList\": []}  ],  \"errorMessages\": [],  \"errorCode\": 0}"))
+            }),
+            @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = "{\"errorType\":\"VALIDATION\",\"message\":[{\"message\":\"Title should be more than 1 characters.\",\"label\":\"name\",\"locale\":null}]}"))
+                            }),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.") })
     @PostMapping("/getAllAuctionSlipForFarmerByAuctionDate")
-    public ResponseEntity<?> getAuctionDetailsByFarmerForAuctionDate(@RequestBody MarketAuctionRequest marketAuctionRequest){
+    public ResponseEntity<?> getAuctionDetailsByFarmerForAuctionDate(@RequestBody SearchMarketByFarmerAndAuctionDateRequest searchMarketByFarmerAndAuctionDateRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<MarketAuctionResponse> responses = marketAuctionService.getAuctionDetailsByFarmerForAuctionDate(marketAuctionRequest);
+        List<MarketAuctionResponse> responses = marketAuctionService.getAuctionDetailsByFarmerForAuctionDate(searchMarketByFarmerAndAuctionDateRequest);
         if(responses.isEmpty()){
             rw.setErrorCode(-1);
             rw.setErrorMessages(List.of("No data found"));
@@ -86,10 +100,23 @@ public class MarketAuctionController {
 
 
     }
+    @Operation(summary = "Searches by status and auction date", description = "Provides results for the status and the auction date provided.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ok Response", content = {
+                    @Content(mediaType = "application/json", schema =
+                    @Schema(example = "{\"content\":[{\"transactionId\":95,\"marketId\":1,\"godownId\":0,\"farmerId\":104,\"allotedLotList\":[],\"allotedSmallBinList\":[],\"allotedBigBinList\":[]}],\"errorMessages\":[],\"errorCode\":0}"))
+            }),
+            @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = "{\"errorType\":\"VALIDATION\",\"message\":[{\"message\":\"Title should be more than 1 characters.\",\"label\":\"name\",\"locale\":null}]}"))
+                            }),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.") })
     @PostMapping("/getAllAuctionSlipForStatusByAuctionDate")
-    public ResponseEntity<?> getAuctionDetailsByStateForAuctionDate(@RequestBody MarketAuctionRequest marketAuctionRequest){
+    public ResponseEntity<?> getAuctionDetailsByStateForAuctionDate(@RequestBody SearchMarketByStatusAndAuctionDateRequest searchRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<MarketAuctionResponse> responses = marketAuctionService.getAuctionDetailsByStateForAuctionDate(marketAuctionRequest);
+        List<MarketAuctionResponse> responses = marketAuctionService.getAuctionDetailsByStateForAuctionDate(searchRequest);
         if(responses.isEmpty()){
             rw.setErrorCode(-1);
             rw.setErrorMessages(List.of("No data found"));
@@ -98,14 +125,27 @@ public class MarketAuctionController {
         return ResponseEntity.ok(rw);
     }
 
+    @Operation(summary = "Searches by status and auction date", description = "Provides results for the status and the auction date provided.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ok Response", content = {
+                    @Content(mediaType = "application/json", schema =
+                    @Schema(example = ""))
+            }),
+            @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = "{\"errorType\":\"VALIDATION\",\"message\":[{\"message\":\"Title should be more than 1 characters.\",\"label\":\"name\",\"locale\":null}]}"))
+                            }),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.") })
     @PostMapping("/cancelfarmerAuction")
     public ResponseEntity<?> cancellFarmerBid(@RequestBody CancellationRequest cancellationRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         boolean success = marketAuctionService.cancelBidByFarmerId(cancellationRequest);
-        if(!success){
-            rw.setErrorCode(-1);
-            rw.setErrorMessages(List.of("unable to cancel bid"));
-        }
+            if(!success){
+                rw.setErrorCode(-1);
+                rw.setErrorMessages(List.of("unable to cancel bid"));
+            }
         return ResponseEntity.ok(rw);
     }
 
