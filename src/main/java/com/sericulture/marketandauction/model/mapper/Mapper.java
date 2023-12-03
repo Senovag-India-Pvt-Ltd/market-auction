@@ -2,7 +2,7 @@ package com.sericulture.marketandauction.model.mapper;
 
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerAuctionRequest;
+import com.sericulture.marketandauction.model.api.marketauction.ReelerBidRequest;
 import com.sericulture.marketandauction.model.entity.FlexTime;
 import com.sericulture.marketandauction.model.entity.MarketAuction;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
@@ -57,13 +57,13 @@ public class Mapper {
 
     /**
      * Maps reelerAuction Entity to marketauction Response Object
-     * @param reelerAuctionRequest
+     * @param reelerBidRequest
      * @param <T>
      */
-    public <T> T reelerAuctionObjectToEntity(ReelerAuctionRequest reelerAuctionRequest, Class<T> claaz) {
+    public <T> T reelerAuctionObjectToEntity(ReelerBidRequest reelerBidRequest, Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, reelerAuctionRequest);
-        return (T) mapper.map(reelerAuctionRequest, claaz);
+        log.info("Value of mapper is:",mapper, reelerBidRequest);
+        return (T) mapper.map(reelerBidRequest, claaz);
     }
 
     /**

@@ -3,10 +3,9 @@ package com.sericulture.marketandauction.service;
 
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.model.ResponseWrapper;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerAuctionRequest;
+import com.sericulture.marketandauction.model.api.marketauction.ReelerBidRequest;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
-import com.sericulture.marketandauction.model.exceptions.Message;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
@@ -41,10 +40,10 @@ public class ReelerAuctionService {
     LotRepository lotRepository;
 
     @Transactional
-    public ResponseEntity<?> submitbid(ReelerAuctionRequest reelerAuctionRequest) {
+    public ResponseEntity<?> submitbid(ReelerBidRequest reelerBidRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.valueOf(reelerAuctionRequest.getAuctionNumber()), reelerAuctionRequest.getMarketId(),reelerAuctionRequest.getGodownId());
+            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.valueOf(reelerBidRequest.getAuctionNumber()), reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
 
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),"Cannot accept bid as time either over or not started","-1");
@@ -53,7 +52,7 @@ public class ReelerAuctionService {
                 return ResponseEntity.ok(rw);
             }
 
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuctionRequest.getMarketId(), reelerAuctionRequest.getAllottedLotId(),LocalDate.now());
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerBidRequest.getMarketId(), reelerBidRequest.getAllottedLotId(),LocalDate.now());
 
             if(lot==null){
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),"lot not found","-1");
@@ -76,7 +75,7 @@ public class ReelerAuctionService {
                 return ResponseEntity.ok(rw);
             }
 
-            ReelerAuction reelerAuction = mapper.reelerAuctionObjectToEntity(reelerAuctionRequest, ReelerAuction.class);
+            ReelerAuction reelerAuction = mapper.reelerAuctionObjectToEntity(reelerBidRequest, ReelerAuction.class);
             validator.validate(reelerAuction);
             reelerAuction.setAuctionDate(LocalDate.now());
             reelerAuctionRepository.save(reelerAuction);

@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.controller;
 
+import com.sericulture.marketandauction.helper.MAConstants;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.service.CustomValidator;
@@ -32,38 +33,20 @@ public class MarketAuctionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
                     @Content(mediaType = "application/json", schema =
-                    @Schema(example = "{\n" +
-                            "    \"content\": {\n" +
-                            "        \"transactionId\": 9,\n" +
-                            "        \"marketId\": 1,\n" +
-                            "        \"godownId\": 0,\n" +
-                            "        \"farmerId\": 1,\n" +
-                            "        \"allotedLotList\": [\n" +
-                            "            1,\n" +
-                            "            2,\n" +
-                            "            3\n" +
-                            "        ],\n" +
-                            "        \"allotedSmallBinList\": [\n" +
-                            "            5,\n" +
-                            "            6,\n" +
-                            "            7,\n" +
-                            "            8\n" +
-                            "        ],\n" +
-                            "        \"allotedBigBinList\": [\n" +
-                            "            4,\n" +
-                            "            5\n" +
-                            "        ]\n" +
-                            "    },\n" +
-                            "    \"errorMessages\": []\n" +
-                            "}"))
+                    @Schema(example = MAConstants.SUCCESS_LOT_ALLOTMENT_OUTPUT))
             }),
             @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
                     content =
                             {
                                     @Content(mediaType = "application/json", schema =
-                                    @Schema(example = "{\"errorType\":\"VALIDATION\",\"message\":[{\"message\":\"Title should be more than 1 characters.\",\"label\":\"name\",\"locale\":null}]}"))
+                                    @Schema(example = MAConstants.VALIDATION_ERROR_LOT_ALLOTMENT))
                             }),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.")
+            @ApiResponse(responseCode = "500", description = MAConstants.INTERNAL_SERVER_ERROR_MESSAGE,
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = MAConstants.INTERNAL_SERVER_ERROR_OUTPUT_FORMAT))
+                            })
     })
     @PostMapping("/allot")
     public ResponseEntity<?> allotBidToFarmer(@RequestBody MarketAuctionRequest marketAuctionRequest){
@@ -73,19 +56,26 @@ public class MarketAuctionController {
 
     }
 
-    @Operation(summary = "Searches by farmer id and auction date", description = "Provides results for the farmer and the auction date provided.")
+    @Operation(summary = "Searches by farmer id and auction date to get all the auction slips",
+            description = "Provides all the auction slips generated for the farmer for the auction date entered.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
                     @Content(mediaType = "application/json", schema =
-                    @Schema(example = "{  \"content\": [{\"transactionId\": 1225,\"marketId\": 9,\"godownId\": 0,\"farmerId\": 123,\"allotedLotList\": [],\"allotedSmallBinList\": [],\"allotedBigBinList\": []},{\"transactionId\": 1226,\"marketId\": 9,\"godownId\": 0,\"farmerId\": 123,\"allotedLotList\": [],\"allotedSmallBinList\": [],\"allotedBigBinList\": []}  ],  \"errorMessages\": [],  \"errorCode\": 0}"))
+                    @Schema(example = MAConstants.ALL_SLIPS_MESSAGE_FARMER_AUC_DATE_OUTPUT))
             }),
             @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
                     content =
                             {
                                     @Content(mediaType = "application/json", schema =
-                                    @Schema(example = "{\"errorType\":\"VALIDATION\",\"message\":[{\"message\":\"Title should be more than 1 characters.\",\"label\":\"name\",\"locale\":null}]}"))
+                                    @Schema(example = MAConstants.VALIDATION_ERROR_LOT_ALLOTMENT))
                             }),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.") })
+            @ApiResponse(responseCode = "500", description = MAConstants.INTERNAL_SERVER_ERROR_MESSAGE,
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = MAConstants.INTERNAL_SERVER_ERROR_OUTPUT_FORMAT))
+                            })
+    })
     @PostMapping("/getAllAuctionSlipForFarmerByAuctionDate")
     public ResponseEntity<?> getAuctionDetailsByFarmerForAuctionDate(@RequestBody SearchMarketByFarmerAndAuctionDateRequest searchMarketByFarmerAndAuctionDateRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -100,19 +90,25 @@ public class MarketAuctionController {
 
 
     }
-    @Operation(summary = "Searches by status and auction date", description = "Provides results for the status and the auction date provided.")
+    @Operation(summary = "Searches by status and auction date to get all the auction slips.", description = "Provides all the auction slips generated for the status and the auction date provided.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
                     @Content(mediaType = "application/json", schema =
-                    @Schema(example = "{\"content\":[{\"transactionId\":95,\"marketId\":1,\"godownId\":0,\"farmerId\":104,\"allotedLotList\":[],\"allotedSmallBinList\":[],\"allotedBigBinList\":[]}],\"errorMessages\":[],\"errorCode\":0}"))
+                    @Schema(example = MAConstants.ALL_SLIPS_STATUS_AND_AUC_DATE_OUTPUT))
             }),
             @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
                     content =
                             {
                                     @Content(mediaType = "application/json", schema =
-                                    @Schema(example = "{\"errorType\":\"VALIDATION\",\"message\":[{\"message\":\"Title should be more than 1 characters.\",\"label\":\"name\",\"locale\":null}]}"))
+                                    @Schema(example = MAConstants.VALIDATION_ERROR_LOT_ALLOTMENT))
                             }),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.") })
+            @ApiResponse(responseCode = "500", description = MAConstants.INTERNAL_SERVER_ERROR_MESSAGE,
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = MAConstants.INTERNAL_SERVER_ERROR_OUTPUT_FORMAT))
+                            })
+    })
     @PostMapping("/getAllAuctionSlipForStatusByAuctionDate")
     public ResponseEntity<?> getAuctionDetailsByStateForAuctionDate(@RequestBody SearchMarketByStatusAndAuctionDateRequest searchRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -125,7 +121,7 @@ public class MarketAuctionController {
         return ResponseEntity.ok(rw);
     }
 
-    @Operation(summary = "Searches by status and auction date", description = "Provides results for the status and the auction date provided.")
+    @Operation(summary = "Cancels the market auction slip ", description = "Cancels the market auction slip.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
                     @Content(mediaType = "application/json", schema =
@@ -135,9 +131,15 @@ public class MarketAuctionController {
                     content =
                             {
                                     @Content(mediaType = "application/json", schema =
-                                    @Schema(example = "{\"errorType\":\"VALIDATION\",\"message\":[{\"message\":\"Title should be more than 1 characters.\",\"label\":\"name\",\"locale\":null}]}"))
+                                    @Schema(example = MAConstants.VALIDATION_ERROR_LOT_ALLOTMENT))
                             }),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.") })
+            @ApiResponse(responseCode = "500", description = MAConstants.INTERNAL_SERVER_ERROR_MESSAGE,
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = MAConstants.INTERNAL_SERVER_ERROR_OUTPUT_FORMAT))
+                            })
+    })
     @PostMapping("/cancelfarmerAuction")
     public ResponseEntity<?> cancellFarmerBid(@RequestBody CancellationRequest cancellationRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
