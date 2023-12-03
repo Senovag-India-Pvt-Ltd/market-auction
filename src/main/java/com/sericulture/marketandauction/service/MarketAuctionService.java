@@ -320,7 +320,7 @@ public class MarketAuctionService {
     }
 
     @Transactional
-    public boolean cancelBidByFarmerId(CancellationRequest cancellationRequest){
+    public boolean cancelBidByFarmerId(CancelAuctionByFarmerIdRequest cancellationRequest){
         try{
             MarketAuction marketAuction = marketAuctionRepository.findById(cancellationRequest.getAuctionId());
 
@@ -347,7 +347,7 @@ public class MarketAuctionService {
     }
 
     @Transactional
-    public boolean cancelLot(CancellationRequest cancellationRequest) {
+    public boolean cancelLot(CancelAuctionByLotRequest cancellationRequest) {
         try {
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId(),LocalDate.now());
             lot.setStatus("cancelled");

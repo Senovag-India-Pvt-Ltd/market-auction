@@ -29,7 +29,8 @@ public class MarketAuctionController {
     @Autowired
     CustomValidator customValidator;
 
-    @Operation(summary = "Allocates bin and generates a lot", description = "Majorly creates a record in market auction, bin and lot.")
+    @Operation(summary = "This API allocates bin and generates a lot",
+            description = "Majorly creates a record in market auction, bin and lot. This allowing the farmer to participate in the auction.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
                     @Content(mediaType = "application/json", schema =
@@ -56,7 +57,7 @@ public class MarketAuctionController {
 
     }
 
-    @Operation(summary = "Searches by farmer id and auction date to get all the auction slips",
+    @Operation(summary = "This API facilitates search by farmer id and auction date to get all the auction slips",
             description = "Provides all the auction slips generated for the farmer for the auction date entered.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
@@ -90,7 +91,8 @@ public class MarketAuctionController {
 
 
     }
-    @Operation(summary = "Searches by status and auction date to get all the auction slips.", description = "Provides all the auction slips generated for the status and the auction date provided.")
+    @Operation(summary = "This API facilitates search by status and auction date to get all the auction slips.",
+            description = "Provides all the auction slips generated for the status and the auction date provided.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
                     @Content(mediaType = "application/json", schema =
@@ -121,7 +123,8 @@ public class MarketAuctionController {
         return ResponseEntity.ok(rw);
     }
 
-    @Operation(summary = "Cancels the market auction slip ", description = "Cancels the market auction slip.")
+    @Operation(summary = "This API cancels the market auction slip by farmer Id ",
+            description = "Cancels the market auction slip for the farmer")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok Response", content = {
                     @Content(mediaType = "application/json", schema =
@@ -141,7 +144,7 @@ public class MarketAuctionController {
                             })
     })
     @PostMapping("/cancelfarmerAuction")
-    public ResponseEntity<?> cancellFarmerBid(@RequestBody CancellationRequest cancellationRequest){
+    public ResponseEntity<?> cancellFarmerBid(@RequestBody CancelAuctionByFarmerIdRequest cancellationRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         boolean success = marketAuctionService.cancelBidByFarmerId(cancellationRequest);
             if(!success){
@@ -150,11 +153,30 @@ public class MarketAuctionController {
             }
         return ResponseEntity.ok(rw);
     }
-
+    @Operation(summary = "This API cancels the market auction slip by lot Id ",
+            description = "Cancels the lot allocated to the farmer by Id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ok Response", content = {
+                    @Content(mediaType = "application/json", schema =
+                    @Schema(example = ""))
+            }),
+            @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = MAConstants.VALIDATION_ERROR_LOT_ALLOTMENT))
+                            }),
+            @ApiResponse(responseCode = "500", description = MAConstants.INTERNAL_SERVER_ERROR_MESSAGE,
+                    content =
+                            {
+                                    @Content(mediaType = "application/json", schema =
+                                    @Schema(example = MAConstants.INTERNAL_SERVER_ERROR_OUTPUT_FORMAT))
+                            })
+    })
     @PostMapping("/cancelLot")
-    public ResponseEntity<?> cancellLot(@RequestBody CancellationRequest cancellationRequest){
+    public ResponseEntity<?> cancelLot(@RequestBody CancelAuctionByLotRequest cancellationRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        boolean success = marketAuctionService.cancelBidByFarmerId(cancellationRequest);
+        boolean success = marketAuctionService.cancelLot(cancellationRequest);
         if(!success){
             rw.setErrorCode(-1);
             rw.setErrorMessages(List.of("unable to cancel lot"));
