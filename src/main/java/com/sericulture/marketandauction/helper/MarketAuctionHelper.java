@@ -29,9 +29,9 @@ public class MarketAuctionHelper {
     }
 
 
-    public boolean canPerformActivity(activityType activity, int marketId) {
+    public boolean canPerformActivity(activityType activity, int marketId,int godownId) {
         MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketId(activity.toString(), marketId);
+        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId(activity.toString(), marketId,godownId);
 
         LocalTime time = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
 

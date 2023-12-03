@@ -15,6 +15,8 @@ public class ReelerAuctionRequest extends RequestBody {
 
     private int marketId;
 
+    private int godownId;
+
     private int allottedLotId;
 
 

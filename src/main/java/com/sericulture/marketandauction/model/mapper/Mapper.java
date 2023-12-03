@@ -1,7 +1,9 @@
 package com.sericulture.marketandauction.model.mapper;
 
+import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.api.marketauction.ReelerAuctionRequest;
+import com.sericulture.marketandauction.model.entity.FlexTime;
 import com.sericulture.marketandauction.model.entity.MarketAuction;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,28 @@ public class Mapper {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         log.info("Value of mapper is:",mapper, reelerAuctionRequest);
         return (T) mapper.map(reelerAuctionRequest, claaz);
+    }
+
+    /**
+     * Maps flexTimeRequest Entity to flexTimeEntity Response Object
+     * @param flexTimeEntity
+     * @param <T>
+     */
+    public <T> T flexTimeEntityToObject(FlexTime flexTimeEntity, Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, flexTimeEntity);
+        return (T) mapper.map(flexTimeEntity, claaz);
+    }
+
+    /**
+     * Maps flexTime Entity to flexTimeEntity Response Object
+     * @param fLexTimeRequest
+     * @param <T>
+     */
+    public <T> T flextimeObjectToEntity(FLexTimeRequest fLexTimeRequest, Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, fLexTimeRequest);
+        return (T) mapper.map(fLexTimeRequest, claaz);
     }
 
 

@@ -66,7 +66,7 @@ public class MarketAuctionService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionResponse.class);
         MarketAuctionResponse marketAuctionResponse = new MarketAuctionResponse();
         //validator.validate(marketAuctionResponse);
-        boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.ISSUEBIDSLIP,marketAuctionRequest.getMarketId());
+        boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.ISSUEBIDSLIP,marketAuctionRequest.getMarketId(), marketAuctionRequest.getGodownId());
 
         if(!canIssue){
             ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),

@@ -16,5 +16,6 @@ TODO:
 2. Specific validation message and error codes to be defined and shared with UI team.
 3. Reeler auction validation message, pagination for highest bid  
 4. Weighment API needs to be built. 
-
+5. statuses for all the applicable tables 
+6. DB Field varchars number of character validation 
 
