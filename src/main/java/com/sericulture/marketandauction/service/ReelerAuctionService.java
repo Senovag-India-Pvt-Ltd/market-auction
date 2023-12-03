@@ -44,7 +44,7 @@ public class ReelerAuctionService {
     public ResponseEntity<?> submitbid(ReelerAuctionRequest reelerAuctionRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.valueOf(reelerAuctionRequest.getAuctionNumber()), reelerAuctionRequest.getMarketId());
+            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.valueOf(reelerAuctionRequest.getAuctionNumber()), reelerAuctionRequest.getMarketId(),reelerAuctionRequest.getGodownId());
 
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),"Cannot accept bid as time either over or not started","-1");

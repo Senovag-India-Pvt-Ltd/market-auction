@@ -1,6 +1,7 @@
 package com.sericulture.marketandauction.model.api.marketauction;
 
 import com.sericulture.marketandauction.model.api.RequestBody;
+import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.validators.PresentDate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -9,6 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -66,4 +69,11 @@ public class MarketAuctionRequest extends RequestBody {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @PresentDate(message = "MA00212.LOT.PRESENT_DATE")
     private LocalDate marketAuctionDate;
+
+    @Override
+    public List<ValidationMessage> validate(){
+        List<ValidationMessage> validationMessageList = new ArrayList<ValidationMessage>();
+
+        return validationMessageList;
+    }
 }

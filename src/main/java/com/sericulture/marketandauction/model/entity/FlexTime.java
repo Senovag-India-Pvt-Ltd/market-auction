@@ -29,4 +29,7 @@ public class FlexTime  extends BaseEntity implements Serializable {
     @Column(name = "MARKET_ID")
     private int marketId;
 
+    @Column(name = "GODOWN_ID")
+    private int godownId;
+
 }
