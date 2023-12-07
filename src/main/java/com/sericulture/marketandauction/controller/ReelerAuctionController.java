@@ -72,4 +72,25 @@ public class ReelerAuctionController {
     public ResponseEntity<?> submitSurrogateBid(@RequestBody ReelerSurrogateBidRequest reelerBidRequest){
         return  reelerAuctionService.submitbid(reelerBidRequest);
     }
+
+    @PostMapping("/getHighestBidPerLot")
+    public ResponseEntity<?> getHighestBid(@RequestBody ReelerBidRequest reelerBidRequest){
+        return reelerAuctionService.getHighestBidPerLot(reelerBidRequest);
+
+    }
+
+    @PostMapping("/getHighestBidPerLotDetails")
+    public ResponseEntity<?> getHighestBidDetails(@RequestBody ReelerBidRequest reelerBidRequest){
+        return reelerAuctionService.getHighestBidPerLotDetails(reelerBidRequest);
+
+    }
+
+
+    @PostMapping("/acceptReelerBidForGivenLot")
+    public ResponseEntity<?> acceptReelerBidForGivenLot(@RequestBody ReelerBidRequest reelerBidRequest){
+        return reelerAuctionService.acceptReelerBidForGivenLot(reelerBidRequest);
+
+    }
+
+
 }

@@ -33,4 +33,7 @@ public class ReelerBidRequest extends RequestBody {
 
     @Schema(name = "auctionNumber", example = "1", required = true)
     private String auctionNumber;
+
+    @Schema(name = "reelerAuctionId", example = "1", required = true)
+    private BigInteger reelerAuctionId;
 }

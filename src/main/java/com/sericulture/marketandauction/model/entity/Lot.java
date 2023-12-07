@@ -48,4 +48,16 @@ public class Lot extends BaseEntity implements Serializable {
     @Temporal(TemporalType.DATE)
     @Column(name = "AUCTION_DATE")
     private LocalDate auctionDate;
+
+    @Column(name = "REELER_AUCTION_ID")
+    private BigInteger reelerAuctionId;
+
+    @Column(name = "NO_OF_CRATES")
+    private int noOfCrates;
+
+    @Column(name = "TOTAL_CRATES_CAPACITY_WEIGHT")
+    private float totalCratesCapacityWeight;
+
+    @Column(name = "REMARKS")
+    private String remarks;
 }
