@@ -118,9 +118,11 @@ public class ReelerAuctionService {
                 lbdr.setFarmerFirstName(  lbdrDeatilsList.get(0)[0] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[0]));
                 lbdr.setFarmerMiddleName(lbdrDeatilsList.get(0)[1] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[1]));
                 lbdr.setFarmerLastName(lbdrDeatilsList.get(0)[2] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[2]));
-                lbdr.setFarmerFruitsId(lbdrDeatilsList.get(0)[3] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[3]));
+                lbdr.setFarmerNumber(lbdrDeatilsList.get(0)[3] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[3]));
                 lbdr.setReelerName(lbdrDeatilsList.get(0)[4] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[4]));
                 lbdr.setReelerFruitsId(lbdrDeatilsList.get(0)[5] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[5]));
+                lbdr.setFarmervillageName(lbdrDeatilsList.get(0)[6] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[6]));
+                lbdr.setLotApproxWeightBeforeWeighment(lbdrDeatilsList.get(0)[7] == null ? 0 : Integer.valueOf( String.valueOf(lbdrDeatilsList.get(0)[7])));
             }
 
         }

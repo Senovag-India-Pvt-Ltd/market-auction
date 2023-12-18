@@ -23,7 +23,7 @@ public class MarketAuctionRequest extends RequestBody {
     @Schema(name = "marketId", example = "1", required = true)
     private int marketId;
 
-    @Schema(name = "gowdownId", example = "1", required = false)
+    @Schema(name = "godownId", example = "1", required = false)
     private int godownId;
 
     @Schema(name = "farmerId", example = "123", required = true)

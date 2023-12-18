@@ -140,7 +140,7 @@ public class MarketAuctionService {
             marketAuctionResponse.setAllotedBigBinList(allotedBins.get("big"));
             marketAuctionResponse.setAllotedSmallBinList(allotedBins.get("small"));
 
-            List<Integer> lotList = saveLot(marketAuction.getId(), marketAuction.getNumberOfLot(), marketAuction.getMarketId(), marketAuction.getGodownId(),entityManager);
+            List<Integer> lotList = saveLot(marketAuction.getId(), marketAuction.getNumberOfLot(), marketAuction.getMarketId(), marketAuction.getGodownId(),marketAuction.getEstimatedWeight(),entityManager);
             marketAuctionResponse.setAllotedLotList(lotList);
             entityManager.getTransaction().commit();
             log.info("total time  to save bin and lot"+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
@@ -155,13 +155,14 @@ public class MarketAuctionService {
 
 
     }
-    private List<Integer> saveLot(BigInteger id, int numberOfLot, int marketId, int godownId,EntityManager entityManager) {
+    private List<Integer> saveLot(BigInteger id, int numberOfLot, int marketId, int godownId,int estimatedWeight,EntityManager entityManager) {
         List<Integer> lotList = new ArrayList<>();
         Integer lotCounter = 0;
         lotCounter = lotRepository.findByMarketIdAndAuctionDate(marketId, LocalDate.now());
         if (lotCounter == null) {
             lotCounter = 0;
         }
+        int approxWeightPerLot = estimatedWeight / numberOfLot;
         List<Lot> lots = new ArrayList<>();
         for (int i = 0; i < numberOfLot; i++) {
             Lot lot = new Lot();
@@ -171,6 +172,7 @@ public class MarketAuctionService {
             lot.setMarketAuctionId(id);
             lot.setMarketId(marketId);
             lot.setAuctionDate(LocalDate.now());
+            lot.setLotApproxWeightBeforeWeighment(approxWeightPerLot);
             lots.add(lot);
             entityManager.persist(lot);
         }

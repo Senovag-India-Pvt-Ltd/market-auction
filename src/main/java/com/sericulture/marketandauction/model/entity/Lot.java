@@ -56,8 +56,14 @@ public class Lot extends BaseEntity implements Serializable {
     private int noOfCrates;
 
     @Column(name = "TOTAL_CRATES_CAPACITY_WEIGHT")
-    private float totalCratesCapacityWeight;
+    private double totalCratesCapacityWeight;
 
     @Column(name = "REMARKS")
     private String remarks;
+
+    @Column(name = "LOT_WEIGHT_AFTER_WEIGHMENT")
+    private float lotWeightAfterWeighment;
+
+    @Column(name = "LOT_APPROX_WEIGHT_BEFORE_WEIGHMENT")
+    private int lotApproxWeightBeforeWeighment;
 }
