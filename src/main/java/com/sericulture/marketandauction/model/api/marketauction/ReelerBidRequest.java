@@ -19,7 +19,7 @@ public class ReelerBidRequest extends RequestBody {
     @Schema(name = "godownId", example = "1")
     private int godownId;
 
-    @Schema(name = "allotedLotId", example = "1", required = true)
+    @Schema(name = "allottedLotId", example = "1", required = true)
     private int allottedLotId;
 
     @Schema(name = "reelerId", example = "1", required = true)

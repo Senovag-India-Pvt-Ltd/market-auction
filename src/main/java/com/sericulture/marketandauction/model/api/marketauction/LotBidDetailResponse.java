@@ -25,7 +25,7 @@ public class LotBidDetailResponse extends ResponseBody {
 
     private String farmerLastName;
 
-    private String farmerFruitsId;
+    private String farmerNumber;
 
     private String reelerName;
 
@@ -35,5 +35,9 @@ public class LotBidDetailResponse extends ResponseBody {
 
     @Schema(name = "reelerAuctionId", example = "1", required = true)
     private BigInteger reelerAuctionId;
+
+    private int lotApproxWeightBeforeWeighment;
+
+    private String farmervillageName;
 
 }
