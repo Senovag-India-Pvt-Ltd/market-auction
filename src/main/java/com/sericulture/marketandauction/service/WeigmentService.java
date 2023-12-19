@@ -82,8 +82,8 @@ public class WeigmentService {
             Query insertRVBAQuery = entityManager.createNativeQuery("INSERT INTO REELER_VID_BLOCKED_AMOUNT " +
                     "(MARKET_AUCTION_ID, ALLOTTED_LOT_ID, " +
                     "MARKET_ID, AUCTION_DATE, REELER_ID, AMOUNT, reeler_virtual_account_number, STATUS, CREATED_BY, MODIFIED_BY, CREATED_DATE, MODIFIED_DATE, ACTIVE)" +
-                    "SELECT  TOP  1 0, " + canContinueToWeighmentRequest.getAllottedLotId() + "," + canContinueToWeighmentRequest.getMarketId() + ",'" + LocalDate.now() + "', '" + lotWeightResponse.getReelerId() + "'," + amountForBlock + ",'" + lotWeightResponse.getReelerVirtualAccountNumber() + "', 'blocked', '', '', CURRENT_TIMESTAMP , CURRENT_TIMESTAMP, 1 from REELER_VID_BLOCKED_AMOUNT " +
-                    "WHERE " + count + " = (SELECT COUNT(*) from REELER_VID_BLOCKED_AMOUNT " +
+                    "SELECT  0, " + canContinueToWeighmentRequest.getAllottedLotId() + "," + canContinueToWeighmentRequest.getMarketId() + ",'" + LocalDate.now() + "', '" + lotWeightResponse.getReelerId() + "'," + amountForBlock + ",'" + lotWeightResponse.getReelerVirtualAccountNumber() + "', 'blocked', '', '', CURRENT_TIMESTAMP , CURRENT_TIMESTAMP, 1 from DUAL " +
+                    "  WHERE " + count + " = (SELECT COUNT(*) from REELER_VID_BLOCKED_AMOUNT " +
                     "where reeler_virtual_account_number= ? and AUCTION_DATE= ?)");
             insertRVBAQuery.setParameter(1, lotWeightResponse.getReelerVirtualAccountNumber());
             insertRVBAQuery.setParameter(2, LocalDate.now());
@@ -119,8 +119,8 @@ public class WeigmentService {
 
         Query nativeQuery = entityManager.createNativeQuery("select  f.farmer_number,f.fruits_id,r.reeling_license_number,f.first_name ,f.middle_name,f.last_name,r.name," +
                 " ra.AMOUNT,ma.RACE_MASTER_ID,v.VILLAGE_NAME ,rvcb.CURRENT_BALANCE," +
-                " (select sum(amount) from REELER_VID_BLOCKED_AMOUNT b where b.status='blocked' and  b.auction_date=ma.market_auction_date  and b.reeler_virtual_account_number=rvcb.reeler_virtual_account_number) blocked_amount," +
-                " rvcb.CURRENT_BALANCE - (select sum(amount) from REELER_VID_BLOCKED_AMOUNT b  where b.status='blocked' and  auction_date=ma.market_auction_date  and reeler_virtual_account_number=rvcb.reeler_virtual_account_number) available_amount," +
+                " isnull( (select sum(amount) from REELER_VID_BLOCKED_AMOUNT b where b.status='blocked' and  b.auction_date=ma.market_auction_date  and b.reeler_virtual_account_number=rvcb.reeler_virtual_account_number) ,0) blocked_amount," +
+                " rvcb.CURRENT_BALANCE - isnull((select sum(amount) from REELER_VID_BLOCKED_AMOUNT b  where b.status='blocked' and  auction_date=ma.market_auction_date  and reeler_virtual_account_number=rvcb.reeler_virtual_account_number),0) available_amount," +
                 " rvba.virtual_account_number,r.reeler_id " +
                 " from " +
                 " FARMER f" +
