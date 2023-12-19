@@ -38,12 +38,12 @@ public class MarketAuction extends BaseEntity implements Serializable {
     @Column(name = "FARMER_ID")
     private BigInteger farmerId;
 
-    @Size( message = "Source of the cocoon")
-    @Column(name = "SOURCE")
-    private String source;
 
-    @Column(name = "RACE")
-    private String race;
+    @Column(name = "SOURCE_MASTER_ID")
+    private int sourceMasterId;
+
+    @Column(name = "RACE_MASTER_ID")
+    private int raceMasterId;
 
     @Column(name = "DFL_COUNT")
     private int dflCount;

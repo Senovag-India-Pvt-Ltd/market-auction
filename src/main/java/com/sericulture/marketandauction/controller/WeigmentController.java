@@ -1,7 +1,7 @@
 package com.sericulture.marketandauction.controller;
 
-import com.sericulture.marketandauction.model.api.marketauction.MISCRequest;
-import com.sericulture.marketandauction.service.MISCService;
+import com.sericulture.marketandauction.model.api.marketauction.CanContinueToWeighmentRequest;
+import com.sericulture.marketandauction.model.api.marketauction.LotStatusRequest;
 import com.sericulture.marketandauction.service.WeigmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,19 +18,19 @@ public class WeigmentController {
     private WeigmentService weigmentService;
 
     @PostMapping("/getUpdateWeighmentByLotId")
-    public ResponseEntity<?> getLotUpdateWeighmentScreenPrep(MISCRequest miscRequest){
+    public ResponseEntity<?> getLotUpdateWeighmentScreenPrep(LotStatusRequest lotStatusRequest){
 
-       return weigmentService.getWeigmentByLotAndMarketAndAuctionDate(miscRequest);
+       return weigmentService.getWeigmentByLotAndMarketAndAuctionDate(lotStatusRequest);
 
     }
 
     @PostMapping("/canContinuetoWeighment")
-    public ResponseEntity<?> canContinuetoWeighment(MISCRequest miscRequest){
-        return weigmentService.canContinueToWeighmentProcess(miscRequest,false);
+    public ResponseEntity<?> canContinuetoWeighment(CanContinueToWeighmentRequest canContinueToWeighmentRequest){
+        return weigmentService.canContinueToWeighmentProcess(canContinueToWeighmentRequest,false);
     }
 
     @PostMapping("/updateWeightToContinueToWeighment")
-    public ResponseEntity<?> updateWeightToContinueToWeighment(MISCRequest miscRequest){
-        return weigmentService.canContinueToWeighmentProcess(miscRequest,true);
+    public ResponseEntity<?> updateWeightToContinueToWeighment(CanContinueToWeighmentRequest updateLotWeightRequest){
+        return weigmentService.canContinueToWeighmentProcess(updateLotWeightRequest,true);
     }
 }

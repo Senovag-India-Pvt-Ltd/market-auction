@@ -13,8 +13,7 @@ import java.math.BigInteger;
 @EqualsAndHashCode
 public class CancelAuctionRequest extends RequestBody {
 
-    @Schema(name = "marketId", example = "1", required = true)
-    private int marketId;
+
     @Schema(name = "cancellationReason", example = "do not want to participate", required = true)
     private int cancellationReason;
 

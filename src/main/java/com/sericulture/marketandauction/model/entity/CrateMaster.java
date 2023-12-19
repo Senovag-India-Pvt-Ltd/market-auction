@@ -21,8 +21,8 @@ public class CrateMaster extends BaseEntity implements Serializable {
     @Column(name = "CRATE_MASTER_ID")
     private int id;
 
-    @Column(name="RACE")
-    private String race;
+    @Column(name="RACE_MASTER_ID")
+    private int raceMasterId;
 
     @Column(name = "MARKET_ID")
     private int marketId;

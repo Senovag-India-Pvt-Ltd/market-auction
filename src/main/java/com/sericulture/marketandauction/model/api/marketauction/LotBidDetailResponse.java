@@ -40,4 +40,8 @@ public class LotBidDetailResponse extends ResponseBody {
 
     private String farmervillageName;
 
+    private String status;
+
+    private String bidAcceptedBy;
+
 }

@@ -3,8 +3,7 @@ package com.sericulture.marketandauction.service;
 
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.model.ResponseWrapper;
-import com.sericulture.marketandauction.model.api.marketauction.LotBidDetailResponse;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerBidRequest;
+import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
@@ -44,14 +43,6 @@ public class ReelerAuctionService {
     public ResponseEntity<?> submitbid(ReelerBidRequest reelerBidRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.valueOf(reelerBidRequest.getAuctionNumber()), reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
-
-            if (!canIssue) {
-                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
-                rw.setErrorCode(-1);
-                rw.setErrorMessages(List.of(validationMessage));
-                return ResponseEntity.ok(rw);
-            }
 
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerBidRequest.getMarketId(), reelerBidRequest.getAllottedLotId(), LocalDate.now());
 
@@ -62,15 +53,17 @@ public class ReelerAuctionService {
                 return ResponseEntity.ok(rw);
             }
 
-            if ("accepted".equals(lot.getStatus())) {
-                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "lot already accepted", "-1");
+            if (lot.getStatus() != null && !lot.getStatus().trim().isEmpty()) {
+                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "cannot bid as the status is: " + lot.getStatus(), "-1");
                 rw.setErrorCode(-1);
                 rw.setErrorMessages(List.of(validationMessage));
                 return ResponseEntity.ok(rw);
             }
 
-            if ("cancelled".equals(lot.getStatus())) {
-                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "lot is cancelled", "-1");
+            boolean canIssue = marketAuctionHelper.canPerformInAnyOneAuction(reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
+
+            if (!canIssue) {
+                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
                 rw.setErrorCode(-1);
                 rw.setErrorMessages(List.of(validationMessage));
                 return ResponseEntity.ok(rw);
@@ -90,41 +83,54 @@ public class ReelerAuctionService {
         return ResponseEntity.ok(rw);
     }
 
-    public ResponseEntity<?> getHighestBidPerLot(ReelerBidRequest reelerBidRequest) {
-        ResponseWrapper rw = ResponseWrapper.createWrapper(LotBidDetailResponse.class);
+    public ResponseEntity<?> getHighestBidPerLot(LotStatusRequest lotStatusRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(GetHighestBidPerLotResponse.class);
 
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(reelerBidRequest.getAllottedLotId(), reelerBidRequest.getMarketId(), LocalDate.now());
-        LotBidDetailResponse lbdr = new LotBidDetailResponse();
-        lbdr.setAllottedlotid(reelerBidRequest.getAllottedLotId());
+        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), LocalDate.now());
+        GetHighestBidPerLotResponse getHighestBidPerLotResponse = new GetHighestBidPerLotResponse();
+        getHighestBidPerLotResponse.setAllottedLotId(ra.getAllottedLotId());
         if (ra != null) {
-            lbdr.setAmount(ra.getAmount());
+            getHighestBidPerLotResponse.setHighestBidAmount(ra.getAmount());
         }
-        rw.setContent(lbdr);
+        rw.setContent(getHighestBidPerLotResponse);
         return ResponseEntity.ok(rw);
 
     }
 
-    public ResponseEntity<?> getHighestBidPerLotDetails(ReelerBidRequest reelerBidRequest) {
+    public ResponseEntity<?> getHighestBidPerLotDetails(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(LotBidDetailResponse.class);
 
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(reelerBidRequest.getAllottedLotId(), reelerBidRequest.getMarketId(), LocalDate.now());
+        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), LocalDate.now());
         LotBidDetailResponse lbdr = new LotBidDetailResponse();
-        lbdr.setAllottedlotid(reelerBidRequest.getAllottedLotId());
+        lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
         if (ra != null) {
-            lbdr.setAmount(ra.getAmount());
-            lbdr.setReelerAuctionId(ra.getId());
-            List<java.lang.Object[]> lbdrDeatilsList = reelerAuctionRepository.getLotBidDetailResponse(reelerBidRequest.getAllottedLotId(),LocalDate.now(),reelerBidRequest.getMarketId(),ra.getReelerId());
-            if(lbdrDeatilsList!=null && !lbdrDeatilsList.isEmpty() && lbdrDeatilsList.size()==1){
-                lbdr.setFarmerFirstName(  lbdrDeatilsList.get(0)[0] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[0]));
-                lbdr.setFarmerMiddleName(lbdrDeatilsList.get(0)[1] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[1]));
-                lbdr.setFarmerLastName(lbdrDeatilsList.get(0)[2] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[2]));
-                lbdr.setFarmerNumber(lbdrDeatilsList.get(0)[3] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[3]));
-                lbdr.setReelerName(lbdrDeatilsList.get(0)[4] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[4]));
-                lbdr.setReelerFruitsId(lbdrDeatilsList.get(0)[5] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[5]));
-                lbdr.setFarmervillageName(lbdrDeatilsList.get(0)[6] == null ? "" : String.valueOf(lbdrDeatilsList.get(0)[6]));
-                lbdr.setLotApproxWeightBeforeWeighment(lbdrDeatilsList.get(0)[7] == null ? 0 : Integer.valueOf( String.valueOf(lbdrDeatilsList.get(0)[7])));
+            Object[][] reelerDetails = reelerAuctionRepository.getReelerDetailsForHighestBid(ra.getId());
+            if (reelerDetails == null || reelerDetails.length == 0) {
+                rw.setErrorCode(-1);
+                rw.setErrorMessages(List.of("No reeler found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
+
+                return ResponseEntity.ok(rw);
             }
 
+            lbdr.setAmount(ra.getAmount());
+            lbdr.setReelerAuctionId(ra.getId());
+            Object[][] ldrDetails = reelerAuctionRepository.getLotBidDetailResponse(lotStatusRequest.getAllottedLotId(), LocalDate.now(), lotStatusRequest.getMarketId());
+            if (ldrDetails == null || ldrDetails.length == 0) {
+                rw.setErrorCode(-1);
+                rw.setErrorMessages(List.of("No farmer details found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
+
+                return ResponseEntity.ok(rw);
+            }
+            lbdr.setFarmerFirstName(ldrDetails[0][0] == null ? "" : String.valueOf(ldrDetails[0][0]));
+            lbdr.setFarmerMiddleName(ldrDetails[0][1] == null ? "" : String.valueOf(ldrDetails[0][1]));
+            lbdr.setFarmerLastName(ldrDetails[0][2] == null ? "" : String.valueOf(ldrDetails[0][2]));
+            lbdr.setFarmerNumber(ldrDetails[0][3] == null ? "" : String.valueOf(ldrDetails[0][3]));
+            lbdr.setReelerName(reelerDetails[0][0] == null ? "" : String.valueOf(reelerDetails[0][0]));
+            lbdr.setReelerFruitsId(reelerDetails[0][1] == null ? "" : String.valueOf(reelerDetails[0][1]));
+            lbdr.setFarmervillageName(ldrDetails[0][4] == null ? "" : String.valueOf(ldrDetails[0][4]));
+            lbdr.setLotApproxWeightBeforeWeighment(ldrDetails[0][5] == null ? 0 : Integer.valueOf(String.valueOf(ldrDetails[0][5])));
+            lbdr.setStatus(ldrDetails[0][6] == null ? "" : String.valueOf(ldrDetails[0][6]));
+            lbdr.setBidAcceptedBy(ldrDetails[0][7] == null ? "" : String.valueOf(ldrDetails[0][7]));
         }
         rw.setContent(lbdr);
         return ResponseEntity.ok(rw);
@@ -132,20 +138,21 @@ public class ReelerAuctionService {
     }
 
     @Transactional
-    public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidRequest reelerBidRequest) {
+    public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest reelerBidAcceptRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
-        ReelerAuction ra = reelerAuctionRepository.findById(reelerBidRequest.getReelerAuctionId());
+        ReelerAuction ra = reelerAuctionRepository.findById(reelerBidAcceptRequest.getReelerAuctionId());
 
 
         if (ra != null) {
-           Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(ra.getMarketId(),ra.getAllottedLotId(),LocalDate.now());
-           l.setStatus("accepted");
-           l.setReelerAuctionId(ra.getId());
-           ra.setStatus("accepted");
-           lotRepository.save(l);
-           reelerAuctionRepository.save(ra);
-        }else {
+            Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(ra.getMarketId(), ra.getAllottedLotId(), LocalDate.now());
+            l.setStatus("accepted");
+            l.setReelerAuctionId(ra.getId());
+            l.setBidAcceptedBy(reelerBidAcceptRequest.getBidAcceptedBy());
+            ra.setStatus("accepted");
+            lotRepository.save(l);
+            reelerAuctionRepository.save(ra);
+        } else {
 
             ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "no Reeler auction found", "-1");
             rw.setErrorCode(-1);
