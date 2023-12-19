@@ -1,6 +1,8 @@
 package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.helper.MAConstants;
+import com.sericulture.marketandauction.model.api.marketauction.LotStatusRequest;
+import com.sericulture.marketandauction.model.api.marketauction.ReelerBidAcceptRequest;
 import com.sericulture.marketandauction.model.api.marketauction.ReelerBidRequest;
 import com.sericulture.marketandauction.model.api.marketauction.ReelerSurrogateBidRequest;
 import com.sericulture.marketandauction.service.ReelerAuctionService;
@@ -74,21 +76,21 @@ public class ReelerAuctionController {
     }
 
     @PostMapping("/getHighestBidPerLot")
-    public ResponseEntity<?> getHighestBid(@RequestBody ReelerBidRequest reelerBidRequest){
-        return reelerAuctionService.getHighestBidPerLot(reelerBidRequest);
+    public ResponseEntity<?> getHighestBid(@RequestBody LotStatusRequest lotStatusRequest){
+        return reelerAuctionService.getHighestBidPerLot(lotStatusRequest);
 
     }
 
     @PostMapping("/getHighestBidPerLotDetails")
-    public ResponseEntity<?> getHighestBidDetails(@RequestBody ReelerBidRequest reelerBidRequest){
-        return reelerAuctionService.getHighestBidPerLotDetails(reelerBidRequest);
+    public ResponseEntity<?> getHighestBidDetails(@RequestBody LotStatusRequest lotStatusRequest){
+        return reelerAuctionService.getHighestBidPerLotDetails(lotStatusRequest);
 
     }
 
 
     @PostMapping("/acceptReelerBidForGivenLot")
-    public ResponseEntity<?> acceptReelerBidForGivenLot(@RequestBody ReelerBidRequest reelerBidRequest){
-        return reelerAuctionService.acceptReelerBidForGivenLot(reelerBidRequest);
+    public ResponseEntity<?> acceptReelerBidForGivenLot(@RequestBody ReelerBidAcceptRequest reelerBidAcceptRequest){
+        return reelerAuctionService.acceptReelerBidForGivenLot(reelerBidAcceptRequest);
 
     }
 

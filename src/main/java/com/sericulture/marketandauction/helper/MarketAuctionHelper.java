@@ -25,12 +25,32 @@ public class MarketAuctionHelper {
         AUCTION1,
         AUCTION2,
         AUCTION3,
-        ACCEPTBID
+        ACCEPTBID,
+
     }
 
 
     public boolean canPerformActivity(activityType activity, int marketId,int godownId) {
         MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+        return canPerformAnyoneActivity(marketMaster,activity,marketId,godownId);
+
+    }
+
+    public boolean canPerformInAnyOneAuction(int marketId,int godownId){
+        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+        boolean auction1 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION1,marketId,godownId);
+        if(auction1)
+            return true;
+        boolean auction2 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION2,marketId,godownId);
+        if(auction2)
+            return true;
+        boolean auction3 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION3,marketId,godownId);
+        if(auction3)
+            return true;
+        return false;
+    }
+
+    public boolean canPerformAnyoneActivity(MarketMaster marketMaster,activityType activity,int marketId,int godownId){
         FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId(activity.toString(), marketId,godownId);
 
         LocalTime time = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
@@ -60,6 +80,5 @@ public class MarketAuctionHelper {
         //in between todo
         return (time.isAfter(starttime) && time.isBefore(endTime)) || time.equals(starttime)
                 || time.equals(endTime) || flexTime.isStart();
-
     }
 }

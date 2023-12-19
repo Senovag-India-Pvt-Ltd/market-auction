@@ -9,21 +9,12 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class MISCRequest extends RequestBody {
+public class CanContinueToWeighmentRequest extends LotStatusRequest {
 
-
-    @Schema(name = "allottedLotId", example = "1", required = true)
-    private int allottedLotId;
-
-    private String race;
-
-    private float reelerCurrentBalance;
-
-    private float bidAmount;
-
+    @Schema(name = "noOfCrates", example = "2", required = true)
     private int noOfCrates;
 
-    private double weight;
-
+    @Schema(name = "remarks", example = "remarks if any", required = true)
     private String remarks;
+
 }

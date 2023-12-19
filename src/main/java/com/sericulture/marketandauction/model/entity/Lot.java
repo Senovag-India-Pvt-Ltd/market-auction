@@ -66,4 +66,7 @@ public class Lot extends BaseEntity implements Serializable {
 
     @Column(name = "LOT_APPROX_WEIGHT_BEFORE_WEIGHMENT")
     private int lotApproxWeightBeforeWeighment;
+
+    @Column(name = "BID_ACCEPTED_BY")
+    private String bidAcceptedBy;
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CrateMasterRepository extends PagingAndSortingRepository<CrateMaster, Integer> {
 
-    public CrateMaster findByMarketIdAndGodownIdAndRace(int marketId,int godownId,String race);
+    public CrateMaster findByMarketIdAndGodownIdAndRaceMasterId(int marketId,int godownId,int raceMasterId);
 
     public CrateMaster save(CrateMaster crateMaster);
 

@@ -1,7 +1,7 @@
 package com.sericulture.marketandauction.model.api.marketauction;
 
-import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.model.api.RequestBody;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 @AllArgsConstructor
@@ -9,12 +9,8 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class FLexTimeRequest extends RequestBody {
+public class LotStatusRequest extends RequestBody {
 
-    private MarketAuctionHelper.activityType activityType;
-
-    private boolean start;
-
-
-
+    @Schema(name = "allottedLotId", example = "1", required = true)
+    private int allottedLotId;
 }
