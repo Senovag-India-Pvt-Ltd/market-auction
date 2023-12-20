@@ -132,14 +132,18 @@ public class WeigmentService {
         Object[] lotWeightDetails = (Object[]) nativeQuery.getSingleResult();
         entityManager.close();
 
+
         float reelerCurrentBalance = lotWeightDetails[10] == null ? (float) 0.0 : Float.valueOf(String.valueOf(lotWeightDetails[10]));
         float blockedAmount = lotWeightDetails[11] == null ? (float) 0.0 : Float.valueOf(String.valueOf(lotWeightDetails[11]));
         float availableAmount = lotWeightDetails[12] == null ? (float) 0.0 : Float.valueOf(String.valueOf(lotWeightDetails[12]));
+
         LotWeightResponse lotWeightResponse = new LotWeightResponse
                 (String.valueOf(lotWeightDetails[0]), String.valueOf(lotWeightDetails[1]),
                         String.valueOf(lotWeightDetails[2]), String.valueOf(lotWeightDetails[3]),String.valueOf(lotWeightDetails[4]),String.valueOf(lotWeightDetails[5]),String.valueOf(lotWeightDetails[6]),
                         Float.valueOf(String.valueOf(lotWeightDetails[7])),Integer.parseInt(String.valueOf(lotWeightDetails[8])),String.valueOf(lotWeightDetails[9]),
+
                         reelerCurrentBalance,blockedAmount,availableAmount,String.valueOf(lotWeightDetails[13]),
+
                         Integer.valueOf(String.valueOf(lotWeightDetails[14])));
 
         return lotWeightResponse;
