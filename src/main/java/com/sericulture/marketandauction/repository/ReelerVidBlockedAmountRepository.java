@@ -19,4 +19,6 @@ public interface ReelerVidBlockedAmountRepository extends PagingAndSortingReposi
     public Long findByReelerVirtualAccountNumberAndAuctionDate(String reelerVirtualAccountNumber,LocalDate auctionDate);
 
 
+
+
 }

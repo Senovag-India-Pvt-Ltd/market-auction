@@ -30,4 +30,12 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
 
     @Query(nativeQuery = true, value = "SELECT r.name ,r.fruits_id  from REELER_AUCTION ra, reeler r  where ra.REELER_ID = r.reeler_id  and REELER_AUCTION_ID =:reelerAuctionId")
     public Object[][] getReelerDetailsForHighestBid(BigInteger reelerAuctionId);
+
+    @Query("SELECT DISTINCT allottedLotId  from ReelerAuction ra  where ra.auctionDate =:today and ra.marketId =:marketId and ra.reelerId  =:reelerId")
+    public List<Integer> findByAuctionDateAndMarketIdAndReelerId(LocalDate today,int marketId,int reelerId);
+
+    @Query(nativeQuery = true, value = "SELECT MAX(AMOUNT) as bidAmount,ALLOTTED_LOT_ID ,'h' as highestbid from REELER_AUCTION ra where AUCTION_DATE =:today and ALLOTTED_LOT_ID in (:lotList) GROUP by ALLOTTED_LOT_ID " +
+            "UNION ALL " +
+            "SELECT MAX(AMOUNT) as bidAmount,ALLOTTED_LOT_ID ,'c' as myHighestBid from REELER_AUCTION ra where AUCTION_DATE =:today and ALLOTTED_LOT_ID in (:lotList) and REELER_ID =:reelerId GROUP by ALLOTTED_LOT_ID")
+    public Object[][] getHighestAndReelerBidAmountForLotList(LocalDate today,List<Integer> lotList,int reelerId);
 }

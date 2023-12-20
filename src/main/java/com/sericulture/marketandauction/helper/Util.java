@@ -17,4 +17,8 @@ public final class Util {
     public  String getMessageByCode(String code){
         return resourceBundleMessageSource.getMessage(code, null, Locale.ENGLISH);
     }
+
+    public boolean isNullOrEmptyOrBlank(String s){
+        return (s==null || s.isBlank());
+    }
 }
