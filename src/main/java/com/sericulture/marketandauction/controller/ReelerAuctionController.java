@@ -1,10 +1,7 @@
 package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.helper.MAConstants;
-import com.sericulture.marketandauction.model.api.marketauction.LotStatusRequest;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerBidAcceptRequest;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerBidRequest;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerSurrogateBidRequest;
+import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.service.ReelerAuctionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -92,6 +89,11 @@ public class ReelerAuctionController {
     public ResponseEntity<?> acceptReelerBidForGivenLot(@RequestBody ReelerBidAcceptRequest reelerBidAcceptRequest){
         return reelerAuctionService.acceptReelerBidForGivenLot(reelerBidAcceptRequest);
 
+    }
+
+    @PostMapping("/getHighestAndCurrentBidByEachLotForReeler")
+    public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest){
+        return reelerAuctionService.getReelerLotWithHighestBidDetails(reelerLotRequest);
     }
 
 
