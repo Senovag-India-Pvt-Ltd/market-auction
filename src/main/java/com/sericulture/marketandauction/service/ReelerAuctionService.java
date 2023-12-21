@@ -214,32 +214,6 @@ public class ReelerAuctionService {
         return ResponseEntity.ok(rw);
     }
 
-
-
-    public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest){
-        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<Integer> reelerLotList = reelerAuctionRepository.findByAuctionDateAndMarketIdAndReelerId(LocalDate.now(),reelerLotRequest.getMarketId(),reelerLotRequest.getReelerId());
-        Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(LocalDate.now(),reelerLotList, reelerLotRequest.getReelerId());
-        Map<Integer, ReelerLotResponse> reelerLotResponseMap = new HashMap<>();
-
-        if(reelerLotHighestAndHisBidList!=null && reelerLotHighestAndHisBidList.length>0){
-            for(Object[] bidDetail : reelerLotHighestAndHisBidList){
-                boolean notFound = true;
-                int allottedLot = Integer.parseInt(String.valueOf(bidDetail[1]));
-                int bidAmount = Integer.parseInt(String.valueOf(bidDetail[0]));
-
-                ReelerLotResponse reelerLotResponse = reelerLotResponseMap.get(allottedLot);
-                if(reelerLotResponse==null){
-                     reelerLotResponse = new ReelerLotResponse();
-                     reelerLotResponseMap.put(allottedLot,reelerLotResponse);
-                }
-                setReelerLotResponse(reelerLotResponse,allottedLot,String.valueOf(bidDetail[2]),bidAmount);
-            }
-        }
-        rw.setContent(reelerLotResponseMap.values());
-        return ResponseEntity.ok(rw);
-    }
-
     private void setReelerLotResponse(ReelerLotResponse reelerLotResponse,int allottedLot,String highest,int bidAmount){
         reelerLotResponse.setAllottedLotId(allottedLot);
         if(highest.equals("h")){
