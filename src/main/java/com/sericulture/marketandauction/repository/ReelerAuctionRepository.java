@@ -17,12 +17,12 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     public ReelerAuction getHighestBidForLot(int lotId,int marketId, LocalDate auctionDate);
 
     @Query(nativeQuery = true , value = """
-            select f.first_name,f.middle_name,f.last_name ,f.farmer_number ,v.Village_Name,l.LOT_APPROX_WEIGHT_BEFORE_WEIGHMENT,l.status,l.BID_ACCEPTED_BY  from\s
+            select f.first_name,f.middle_name,f.last_name ,f.farmer_number ,v.Village_Name,l.LOT_APPROX_WEIGHT_BEFORE_WEIGHMENT,l.status,l.BID_ACCEPTED_BY  from 
             FARMER f
-            INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID\s
-            INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date\s
+            INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 
+            INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
             LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1
-            LEFT JOIN  Village v ON   fa.Village_ID=v.village_id where\s
+            LEFT JOIN  Village v ON   fa.Village_ID=v.village_id where 
             l.auction_date =:auctionDate and l.market_id =:marketId and l.allotted_lot_id =:lotId""")
     public Object[][] getLotBidDetailResponse(int lotId, LocalDate auctionDate, int marketId);
 
@@ -34,8 +34,28 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     @Query("SELECT DISTINCT allottedLotId  from ReelerAuction ra  where ra.auctionDate =:today and ra.marketId =:marketId and ra.reelerId  =:reelerId")
     public List<Integer> findByAuctionDateAndMarketIdAndReelerId(LocalDate today,int marketId,int reelerId);
 
-    @Query(nativeQuery = true, value = "SELECT MAX(AMOUNT) as bidAmount,ALLOTTED_LOT_ID ,'h' as highestbid from REELER_AUCTION ra where AUCTION_DATE =:today and ALLOTTED_LOT_ID in (:lotList) GROUP by ALLOTTED_LOT_ID " +
-            "UNION ALL " +
-            "SELECT MAX(AMOUNT) as bidAmount,ALLOTTED_LOT_ID ,'c' as myHighestBid from REELER_AUCTION ra where AUCTION_DATE =:today and ALLOTTED_LOT_ID in (:lotList) and REELER_ID =:reelerId GROUP by ALLOTTED_LOT_ID")
-    public Object[][] getHighestAndReelerBidAmountForLotList(LocalDate today,List<Integer> lotList,int reelerId);
+    @Query(nativeQuery = true, value = """
+            SELECT REELER_AUCTION_ID,AMOUNT ,ALLOTTED_LOT_ID, 'HIGHEST',R.Name  
+            FROM REELER_AUCTION RAA INNER JOIN REELER R ON RAA.REELER_ID = R.REELER_ID 
+            INNER JOIN (
+            select MIN(REELER_AUCTION_ID) ID, RA.ALLOTTED_LOT_ID as AL from REELER_AUCTION RA,
+            ( 
+            SELECT MAX(AMOUNT) AMT, ALLOTTED_LOT_ID  from REELER_AUCTION ra
+            where AUCTION_DATE = :today and ALLOTTED_LOT_ID in ( :lotList) AND MARKET_ID =15 GROUP by ALLOTTED_LOT_ID ) as RAB 
+            WHERE RAB.AMT=RA.AMOUNT AND  RA.MARKET_ID =15 AND RA.ALLOTTED_LOT_ID = RAB.ALLOTTED_LOT_ID AND AUCTION_DATE = :today
+            GROUP by  RA.ALLOTTED_LOT_ID ) RA ON RA.ID= RAA.REELER_AUCTION_ID
+            UNION
+            SELECT REELER_AUCTION_ID,AMOUNT ,ALLOTTED_LOT_ID, 'MYBID',R.Name  
+            FROM REELER_AUCTION RAA INNER JOIN REELER R ON RAA.REELER_ID = R.REELER_ID 
+            INNER JOIN (
+            select MIN(REELER_AUCTION_ID) ID, RA.ALLOTTED_LOT_ID as AL from REELER_AUCTION RA,
+            ( 
+            SELECT MAX(AMOUNT) AMT, ALLOTTED_LOT_ID  from REELER_AUCTION ra
+            where AUCTION_DATE = :today and ALLOTTED_LOT_ID in ( :lotList) AND MARKET_ID =:marketId AND ra.REELER_ID =:reelerId  GROUP by ALLOTTED_LOT_ID ) as RAB 
+            WHERE RAB.AMT=RA.AMOUNT AND  RA.MARKET_ID =:marketId AND RA.ALLOTTED_LOT_ID = RAB.ALLOTTED_LOT_ID AND AUCTION_DATE = :today AND ra.REELER_ID =:reelerId
+            GROUP by  RA.ALLOTTED_LOT_ID ) RA ON RA.ID= RAA.REELER_AUCTION_ID""")
+    public Object[][] getHighestAndReelerBidAmountForLotList(LocalDate today,int marketId,List<Integer> lotList,int reelerId);
+
+
+    public long deleteByIdAndMarketIdAndAllottedLotIdAndReelerId(BigInteger id,int marketId,int allottedLotId,BigInteger reelerId);
 }

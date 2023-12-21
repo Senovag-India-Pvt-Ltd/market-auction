@@ -9,9 +9,8 @@ import java.math.BigInteger;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class ReelerBidAcceptRequest {
+public class ReelerBidAcceptRequest extends LotStatusRequest{
 
-    private BigInteger reelerAuctionId;
 
     private String bidAcceptedBy;
 }
