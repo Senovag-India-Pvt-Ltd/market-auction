@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -143,29 +144,74 @@ public class ReelerAuctionService {
     }
 
     @Transactional
-    public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest reelerBidAcceptRequest) {
+    public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-
-        ReelerAuction ra = reelerAuctionRepository.findById(reelerBidAcceptRequest.getReelerAuctionId());
-
-
-        if (ra != null) {
-            Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(ra.getMarketId(), ra.getAllottedLotId(), LocalDate.now());
+        ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(),lotStatusRequest.getMarketId(),LocalDate.now());
+        if (reelerAuction != null) {
+            Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), LocalDate.now());
             l.setStatus("accepted");
-            l.setReelerAuctionId(ra.getId());
-            l.setBidAcceptedBy(reelerBidAcceptRequest.getBidAcceptedBy());
-            ra.setStatus("accepted");
+            l.setReelerAuctionId(reelerAuction.getId());
+            l.setBidAcceptedBy(lotStatusRequest.getBidAcceptedBy());
+            reelerAuction.setStatus("accepted");
             lotRepository.save(l);
-            reelerAuctionRepository.save(ra);
+            reelerAuctionRepository.save(reelerAuction);
         } else {
 
             ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "no Reeler auction found", "-1");
             rw.setErrorCode(-1);
             rw.setErrorMessages(List.of(validationMessage));
         }
-
         return ResponseEntity.ok(rw);
+    }
 
+
+    public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<Integer> reelerLotList = reelerAuctionRepository.findByAuctionDateAndMarketIdAndReelerId(LocalDate.now(), reelerLotRequest.getMarketId(), reelerLotRequest.getReelerId());
+        Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(LocalDate.now(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId());
+        Map<Integer, ReelerLotResponse> reelerLotResponseMap = new HashMap<>();
+
+        if (reelerLotHighestAndHisBidList != null && reelerLotHighestAndHisBidList.length > 0) {
+            for (Object[] bidDetail : reelerLotHighestAndHisBidList) {
+                boolean notFound = true;
+                int allottedLot = Integer.parseInt(String.valueOf(bidDetail[2]));
+                int bidAmount = Integer.parseInt(String.valueOf(bidDetail[1]));
+                BigInteger reelerAuctionId = BigInteger.valueOf(Long.parseLong(String.valueOf(bidDetail[0])));
+
+                ReelerLotResponse reelerLotResponse = reelerLotResponseMap.get(allottedLot);
+                if (reelerLotResponse == null) {
+                    reelerLotResponse = new ReelerLotResponse();
+                    reelerLotResponseMap.put(allottedLot, reelerLotResponse);
+                }
+                setReelerLotResponse(reelerLotResponse, allottedLot, String.valueOf(bidDetail[3]), bidAmount, reelerAuctionId);
+            }
+        }
+        rw.setContent(reelerLotResponseMap.values());
+        return ResponseEntity.ok(rw);
+    }
+
+    private void setReelerLotResponse(ReelerLotResponse reelerLotResponse, int allottedLot, String highest, int bidAmount, BigInteger reelerAuctionId) {
+        reelerLotResponse.setAllottedLotId(allottedLot);
+        if (reelerLotResponse.getReelerAuctionId() != null && reelerLotResponse.getReelerAuctionId().equals(reelerAuctionId)) {
+            reelerLotResponse.setAwarded(true);
+        }
+        if (highest.equals("HIGHEST")) {
+            reelerLotResponse.setHighestBidAmount(bidAmount);
+            if (reelerLotResponse.getReelerAuctionId() == null) {
+                reelerLotResponse.setReelerAuctionId(reelerAuctionId);
+            }
+        } else {
+            reelerLotResponse.setReelerAuctionId(reelerAuctionId);
+            reelerLotResponse.setMyBidAmount(bidAmount);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<?> removeReelerHighestBid(RemoveReelerHighestBidRequest removeReelerHighestBidRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        log.warn("Removing the reeler Bid for:"+removeReelerHighestBidRequest);
+        long deletedrows = reelerAuctionRepository.deleteByIdAndMarketIdAndAllottedLotIdAndReelerId(removeReelerHighestBidRequest.getReelerAuctionId(),removeReelerHighestBidRequest.getMarketId(), removeReelerHighestBidRequest.getAllottedLotId(), removeReelerHighestBidRequest.getReelerId());
+        return ResponseEntity.ok(rw);
     }
 
 

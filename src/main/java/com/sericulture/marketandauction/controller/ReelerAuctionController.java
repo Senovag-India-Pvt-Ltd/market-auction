@@ -97,4 +97,11 @@ public class ReelerAuctionController {
     }
 
 
+    @PostMapping("/removeReelerHighestBid")
+    public ResponseEntity<?> removeReelerHighestBid(@RequestBody RemoveReelerHighestBidRequest removeReelerHighestBidRequest){
+        return reelerAuctionService.removeReelerHighestBid(removeReelerHighestBidRequest);
+    }
+
+
+
 }

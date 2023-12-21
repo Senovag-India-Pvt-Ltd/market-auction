@@ -7,6 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
+import java.math.BigInteger;
+
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,4 +23,10 @@ public class ReelerLotResponse extends ResponseBody {
     private int highestBidAmount;
 
     private int myBidAmount;
+
+
+    private BigInteger reelerAuctionId;
+
+    private boolean awarded;
+
 }
