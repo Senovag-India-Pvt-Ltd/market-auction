@@ -18,7 +18,7 @@ public final class Util {
         return resourceBundleMessageSource.getMessage(code, null, Locale.ENGLISH);
     }
 
-    public boolean isNullOrEmptyOrBlank(String s){
+    public static boolean isNullOrEmptyOrBlank(String s){
         return (s==null || s.isBlank());
     }
 }

@@ -10,7 +10,6 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
 @AllArgsConstructor
@@ -75,4 +74,13 @@ public class Lot extends BaseEntity implements Serializable {
 
     @Column(name = "LOT_SOLD_OUT_AMOUNT")
     private double lotSoldOutAmount;
+
+    @Column(name = "MARKET_FEE_REELER")
+    private double marketFeeReeler;
+
+    @Column(name = "MARKET_FEE_FARMER")
+    private double marketFeeFarmer;
+
+    @Column(name = "MARKET_FEE_TRADER")
+    private double marketFeeTrader;
 }

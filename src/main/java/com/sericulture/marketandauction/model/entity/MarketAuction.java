@@ -2,10 +2,7 @@ package com.sericulture.marketandauction.model.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -18,6 +15,7 @@ import java.util.Date;
 @Getter
 @Setter
 //@Where(clause = "active=1")
+@ToString
 public class MarketAuction extends BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MARKET_AUCTION_SEQ")

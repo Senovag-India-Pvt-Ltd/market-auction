@@ -2,6 +2,7 @@ package com.sericulture.marketandauction.service;
 
 
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
+import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
@@ -11,7 +12,6 @@ import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.LotRepository;
 import com.sericulture.marketandauction.repository.ReelerAuctionRepository;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +43,9 @@ public class ReelerAuctionService {
 
     @Autowired
     LotRepository lotRepository;
+
+    @Autowired
+    Util util;
 
     @Transactional
     public ResponseEntity<?> submitbid(ReelerBidRequest reelerBidRequest) {
@@ -146,6 +148,10 @@ public class ReelerAuctionService {
     @Transactional
     public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(),LocalDate.now());
+        if(!Util.isNullOrEmptyOrBlank(lot.getStatus())){
+            return retrunIfError(rw,"expected Lot status is blank but found: "+lot.getStatus()+" for the allottedLotId: "+lot.getAllottedLotId());
+        }
         ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(),lotStatusRequest.getMarketId(),LocalDate.now());
         if (reelerAuction != null) {
             Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), LocalDate.now());
@@ -221,6 +227,14 @@ public class ReelerAuctionService {
         }else{
             reelerLotResponse.setMyBidAmount(bidAmount);
         }
+    }
+
+    private ResponseEntity<?> retrunIfError(ResponseWrapper rw,String err){
+        ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),
+                util.getMessageByCode("MA00002.GEN.FLEXTIME"), "MA00002.GEN.FLEXTIME");
+        rw.setErrorCode(-1);
+        rw.setErrorMessages(List.of(err));
+        return ResponseEntity.ok(rw);
     }
 }
 

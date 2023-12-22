@@ -84,17 +84,19 @@ public class MarketAuctionService {
             marketAuctionResponse.setGodownId(marketAuction.getGodownId());
             marketAuctionResponse.setFarmerId(marketAuction.getFarmerId());
             // saves bin and the lot
-            log.info("data prep work before lot and bin creation "+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
+            log.info(String.format("marketAuction: processing the Requrest for marketId: %s gowdownId: %s and farmer: %s"
+                    ,marketAuction.getMarketId(),marketAuction.getGodownId(),marketAuction.getFarmerId()));
             saveBinAndLot(marketAuctionResponse, marketAuction);
 
             rw.setContent(marketAuctionResponse);
+            log.info(String.format("marketAuction: succesfull generation of market auction Requrest for marketId: %s gowdownId: %s and farmer: %s"
+                    ,marketAuction.getMarketId(),marketAuction.getGodownId(),marketAuction.getFarmerId()));
+            saveBinAndLot(marketAuctionResponse, marketAuction);
         } catch (Exception e) {
             hasException = true;
             e.printStackTrace();
             log.error("Error occurred while processing the request %s", marketAuctionRequest);
-
                 throw e;
-
         } finally {
             if(Objects.nonNull(marketAuction)) {
                 if(hasException) {
@@ -143,12 +145,13 @@ public class MarketAuctionService {
             List<Integer> lotList = saveLot(marketAuction.getId(), marketAuction.getNumberOfLot(), marketAuction.getMarketId(), marketAuction.getGodownId(),marketAuction.getEstimatedWeight(),entityManager);
             marketAuctionResponse.setAllotedLotList(lotList);
             entityManager.getTransaction().commit();
-            log.info("total time  to save bin and lot"+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
+            log.info("lots saved successfully for the request: "+marketAuction);
         }catch (Exception ex){
             entityManager.getTransaction().rollback();
+            log.error("Error while creating lots for the request: "+marketAuction);
             throw ex;
         }finally {
-            if(entityManager!=null){
+            if(entityManager!=null && entityManager.isOpen()){
                 entityManager.close();
             }
         }
