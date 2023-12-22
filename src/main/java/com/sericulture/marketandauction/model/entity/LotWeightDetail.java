@@ -32,4 +32,11 @@ public class LotWeightDetail {
 
     @Column(name = "NET_WEIGHT")
     private float netWeight;
+
+    public LotWeightDetail(BigInteger lotId, int crateNumber, float grossWeight, float netWeight) {
+        this.lotId = lotId;
+        this.crateNumber = crateNumber;
+        this.grossWeight = grossWeight;
+        this.netWeight = netWeight;
+    }
 }

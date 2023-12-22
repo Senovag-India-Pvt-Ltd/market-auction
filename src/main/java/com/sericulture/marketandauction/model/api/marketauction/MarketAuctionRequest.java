@@ -15,6 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class MarketAuctionRequest extends RequestBody {
 
     @Schema(name = "farmerId", example = "123", required = true)

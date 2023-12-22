@@ -1,10 +1,7 @@
 package com.sericulture.marketandauction.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -15,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
+
 public class ReelerVidDebitTxn extends BaseEntity implements Serializable {
 
     @Id
@@ -40,5 +38,16 @@ public class ReelerVidDebitTxn extends BaseEntity implements Serializable {
 
     @Column(name = "AMOUNT")
     private double amount;
+
+    public ReelerVidDebitTxn(int allottedLotId, int marketId, LocalDate auctionDate, int reelerId, String reelerVirtualAccountNumber, double amount) {
+        this.allottedLotId = allottedLotId;
+        this.marketId = marketId;
+        this.auctionDate = auctionDate;
+        this.reelerId = reelerId;
+        this.reelerVirtualAccountNumber = reelerVirtualAccountNumber;
+        this.amount = amount;
+    }
+
+
 
 }

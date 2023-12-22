@@ -79,6 +79,6 @@ public class MarketAuctionHelper {
         }
         //in between todo
         return (time.isAfter(starttime) && time.isBefore(endTime)) || time.equals(starttime)
-                || time.equals(endTime) || flexTime.isStart();
+                || time.equals(endTime) || (flexTime==null ? false : flexTime.isStart());
     }
 }

@@ -11,6 +11,7 @@ import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.CrateMasterRepository;
 import com.sericulture.marketandauction.repository.LotRepository;
+import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import com.sericulture.marketandauction.repository.ReelerVidBlockedAmountRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -22,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -40,6 +40,9 @@ public class WeigmentService {
 
     @Autowired
     private LotRepository lotRepository;
+    
+    @Autowired
+    private MarketMasterRepository marketMasterRepository;
 
     @Autowired
     Util util;
@@ -163,56 +166,40 @@ public class WeigmentService {
         try{
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
-
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
-
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(),LocalDate.now());
-
-
-            LotWeightResponse lotWeightResponse = getLotWeightResponse(completeLotWeighmentRequest);
-
-            double reelerCurrentBalance = lotWeightResponse.getReelerCurrentBalance();
-
-            if(reelerCurrentBalance < 0){
-                return retrunIfError(rw,"Reeler current balance is low and the currentBalance is: "+ reelerCurrentBalance);
+            if(!lot.getStatus().equals("accepted")){
+                return retrunIfError(rw,"expected Lot status is accepted but found: "+lot.getStatus()+" for the allottedLotId: "+lot.getAllottedLotId());
             }
-
+            LotWeightResponse lotWeightResponse = getLotWeightResponse(completeLotWeighmentRequest);
+            double reelerCurrentBalance = lotWeightResponse.getReelerCurrentBalance();
+            if(Util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber())){
+                return retrunIfError(rw,"Reeler Virtual account cannot be null: "+ Util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber()));
+            }
             float totalWeightOfAllottedLot = 0;
-
             for(Weighment weight : completeLotWeighmentRequest.getWeighmentList()){
-                LotWeightDetail lotWeightDetail = new LotWeightDetail();
-                lotWeightDetail.setLotId(lot.getId());
-                lotWeightDetail.setCrateNumber(weight.getCrateNumber());
-                lotWeightDetail.setGrossWeight(weight.getGrossWeight());
-                lotWeightDetail.setNetWeight(lotWeightDetail.getNetWeight());
+                LotWeightDetail lotWeightDetail = new LotWeightDetail(lot.getId(),weight.getCrateNumber(),weight.getGrossWeight(),weight.getNetWeight());
                 entityManager.persist(lotWeightDetail);
                 totalWeightOfAllottedLot+=weight.getNetWeight();
             }
-
-            double amountToBeDebited = totalWeightOfAllottedLot * lotWeightResponse.getBidAmount() * 1.01;
-
-            if(amountToBeDebited > reelerCurrentBalance){
-                entityManager.getTransaction().rollback();
-                return retrunIfError(rw,"Reeler current balance is less than amount to be debited: reelerCurrentBalance :"+ reelerCurrentBalance+" and amountTobeDebited is: "+amountToBeDebited);
-            }
-
-            ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn();
-            reelerVidDebitTxn.setAuctionDate(LocalDate.now());
-            reelerVidDebitTxn.setMarketId(lot.getMarketId());
-            reelerVidDebitTxn.setAllottedLotId(lot.getAllottedLotId());
-            reelerVidDebitTxn.setAmount(amountToBeDebited);
-            reelerVidDebitTxn.setReelerId(lotWeightResponse.getReelerId());
-            reelerVidDebitTxn.setReelerVirtualAccountNumber(lotWeightResponse.getReelerVirtualAccountNumber());
-
+            double lotSoldOutAmount = totalWeightOfAllottedLot * lotWeightResponse.getBidAmount() ;
+            Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(lot.getMarketId());
+            double reelerBrokarage = Double.valueOf(String.valueOf( marketBrokarage[0][1]));
+            double farmerBrokarage = Double.valueOf(String.valueOf( marketBrokarage[0][2]));
+            double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
+            double farmerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
+            double amountDebitedFromReeler = lotSoldOutAmount + reelerMarketFee;
+            ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(),lot.getMarketId(),LocalDate.now(),lotWeightResponse.getReelerId(),lotWeightResponse.getReelerVirtualAccountNumber(),amountDebitedFromReeler);
             entityManager.persist(reelerVidDebitTxn);
-
             lot.setWeighmentCompletedBy(completeLotWeighmentRequest.getUserName());
             lot.setStatus("weighmentComplete");
             lot.setLotWeightAfterWeighment(totalWeightOfAllottedLot);
-            lot.setLotSoldOutAmount(amountToBeDebited);
+            lot.setLotSoldOutAmount(lotSoldOutAmount);
+            lot.setMarketFeeReeler(reelerMarketFee);
+            lot.setMarketFeeFarmer(farmerMarketFee);
             entityManager.merge(lot);
             completeLotWeighmentResponse.setAllottedLotId(completeLotWeighmentRequest.getAllottedLotId());
-            completeLotWeighmentResponse.setTotalAmountDebited(amountToBeDebited);
+            completeLotWeighmentResponse.setTotalAmountDebited(amountDebitedFromReeler);
             rw.setContent(completeLotWeighmentResponse);
             entityManager.getTransaction().commit();
         }catch (Exception ex){
@@ -225,8 +212,6 @@ public class WeigmentService {
                 entityManager.close();
             }
         }
-
         return ResponseEntity.ok(rw);
-
     }
 }
