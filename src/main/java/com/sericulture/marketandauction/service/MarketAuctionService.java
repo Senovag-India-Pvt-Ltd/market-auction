@@ -5,6 +5,7 @@ import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.*;
+import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
@@ -175,6 +176,7 @@ public class MarketAuctionService {
             lot.setMarketAuctionId(id);
             lot.setMarketId(marketId);
             lot.setAuctionDate(LocalDate.now());
+            lot.setCustomerReferenceNumber(Util.getCRN(LocalDate.now(),marketId,allotedLot));
             lot.setLotApproxWeightBeforeWeighment(approxWeightPerLot);
             lots.add(lot);
             entityManager.persist(lot);
@@ -338,7 +340,7 @@ public class MarketAuctionService {
             List<Lot> lotList = lotRepository.findAllByMarketAuctionId(cancellationRequest.getAuctionId());
 
             for(Lot lot:lotList){
-                lot.setStatus("cancelled");
+                lot.setStatus(LotStatus.CANCELLED.getLabel());
                 lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
                 lot.setRejectedBy("MO");
             }
@@ -357,7 +359,7 @@ public class MarketAuctionService {
     public boolean cancelLot(CancelAuctionByLotRequest cancellationRequest) {
         try {
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId(),LocalDate.now());
-            lot.setStatus("cancelled");
+            lot.setStatus(LotStatus.CANCELLED.getLabel());
             lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
             lot.setRejectedBy("farmer");
             lotRepository.save(lot);

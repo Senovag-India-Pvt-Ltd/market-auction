@@ -83,4 +83,12 @@ public class Lot extends BaseEntity implements Serializable {
 
     @Column(name = "MARKET_FEE_TRADER")
     private double marketFeeTrader;
+
+    @Column(name = "CUSTOMER_REFERENCE_NUMBER")
+    private String customerReferenceNumber;
+
+    @Column(name = "COMMENTS")
+    private String comments;
+
+
 }
