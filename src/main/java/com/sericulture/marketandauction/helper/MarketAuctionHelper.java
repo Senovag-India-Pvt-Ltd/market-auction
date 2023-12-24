@@ -1,15 +1,20 @@
 package com.sericulture.marketandauction.helper;
 
 
+import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.entity.FlexTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
+import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
+import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.FlexTimeRepository;
 import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Component
 public class MarketAuctionHelper {
@@ -19,6 +24,9 @@ public class MarketAuctionHelper {
 
     @Autowired
     FlexTimeRepository flexTimeRepository;
+
+    @Autowired
+    Util util;
 
     public enum activityType {
         ISSUEBIDSLIP,
@@ -80,5 +88,14 @@ public class MarketAuctionHelper {
         //in between todo
         return (time.isAfter(starttime) && time.isBefore(endTime)) || time.equals(starttime)
                 || time.equals(endTime) || (flexTime==null ? false : flexTime.isStart());
+    }
+
+
+    public  ResponseEntity<?> retrunIfError(ResponseWrapper rw, String err){
+        ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),
+                util.getMessageByCode("MA00002.GEN.FLEXTIME"), "MA00002.GEN.FLEXTIME");
+        rw.setErrorCode(-1);
+        rw.setErrorMessages(List.of(err));
+        return ResponseEntity.ok(rw);
     }
 }

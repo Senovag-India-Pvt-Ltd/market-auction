@@ -7,6 +7,7 @@ import com.sericulture.marketandauction.model.entity.CrateMaster;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.LotWeightDetail;
 import com.sericulture.marketandauction.model.entity.ReelerVidDebitTxn;
+import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.CrateMasterRepository;
@@ -99,7 +100,7 @@ public class WeigmentService {
                 return retrunIfError(rw,"concurrent modification exception, reeler is trying parellel transaction at same time");
             }
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(canContinueToWeighmentRequest.getMarketId(), canContinueToWeighmentRequest.getAllottedLotId(), LocalDate.now());
-            lot.setStatus("inUpdateWeight");
+            lot.setStatus(LotStatus.CANCELLED.getLabel());
             lot.setNoOfCrates(canContinueToWeighmentRequest.getNoOfCrates());
             lot.setTotalCratesCapacityWeight(totalCrateCapacityWeight);
             lot.setRemarks(canContinueToWeighmentRequest.getRemarks());
@@ -115,7 +116,6 @@ public class WeigmentService {
         Query nativeQuery = entityManager.createNativeQuery("select  f.farmer_number,f.fruits_id,r.reeling_license_number,f.first_name ,f.middle_name,f.last_name,r.name," +
                 " ra.AMOUNT,ma.RACE_MASTER_ID,v.VILLAGE_NAME ,rvcb.CURRENT_BALANCE," +
                 " isnull( (select sum(amount) from REELER_VID_BLOCKED_AMOUNT b where b.status='blocked' and  b.auction_date=ma.market_auction_date  and b.reeler_virtual_account_number=rvcb.reeler_virtual_account_number) ,0) blocked_amount," +
-                " rvcb.CURRENT_BALANCE - isnull((select sum(amount) from REELER_VID_BLOCKED_AMOUNT b  where b.status='blocked' and  auction_date=ma.market_auction_date  and reeler_virtual_account_number=rvcb.reeler_virtual_account_number),0) available_amount," +
                 " rvba.virtual_account_number,r.reeler_id " +
                 " from " +
                 " FARMER f" +
@@ -138,16 +138,14 @@ public class WeigmentService {
 
         float reelerCurrentBalance = lotWeightDetails[10] == null ? (float) 0.0 : Float.valueOf(String.valueOf(lotWeightDetails[10]));
         float blockedAmount = lotWeightDetails[11] == null ? (float) 0.0 : Float.valueOf(String.valueOf(lotWeightDetails[11]));
-        float availableAmount = lotWeightDetails[12] == null ? (float) 0.0 : Float.valueOf(String.valueOf(lotWeightDetails[12]));
+        float availableAmount = reelerCurrentBalance - blockedAmount;
 
         LotWeightResponse lotWeightResponse = new LotWeightResponse
                 (String.valueOf(lotWeightDetails[0]), String.valueOf(lotWeightDetails[1]),
                         String.valueOf(lotWeightDetails[2]), String.valueOf(lotWeightDetails[3]),String.valueOf(lotWeightDetails[4]),String.valueOf(lotWeightDetails[5]),String.valueOf(lotWeightDetails[6]),
                         Float.valueOf(String.valueOf(lotWeightDetails[7])),Integer.parseInt(String.valueOf(lotWeightDetails[8])),String.valueOf(lotWeightDetails[9]),
-
-                        reelerCurrentBalance,blockedAmount,availableAmount,String.valueOf(lotWeightDetails[13]),
-
-                        Integer.valueOf(String.valueOf(lotWeightDetails[14])));
+                        reelerCurrentBalance,blockedAmount,availableAmount,String.valueOf(lotWeightDetails[12]),
+                        Integer.valueOf(String.valueOf(lotWeightDetails[13])));
 
         return lotWeightResponse;
     }
@@ -192,7 +190,7 @@ public class WeigmentService {
             ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(),lot.getMarketId(),LocalDate.now(),lotWeightResponse.getReelerId(),lotWeightResponse.getReelerVirtualAccountNumber(),amountDebitedFromReeler);
             entityManager.persist(reelerVidDebitTxn);
             lot.setWeighmentCompletedBy(completeLotWeighmentRequest.getUserName());
-            lot.setStatus("weighmentComplete");
+            lot.setStatus(LotStatus.WEIGHMENTCOMPLETED.getLabel());
             lot.setLotWeightAfterWeighment(totalWeightOfAllottedLot);
             lot.setLotSoldOutAmount(lotSoldOutAmount);
             lot.setMarketFeeReeler(reelerMarketFee);
