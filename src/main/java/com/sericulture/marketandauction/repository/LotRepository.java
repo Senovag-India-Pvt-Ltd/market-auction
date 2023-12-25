@@ -80,4 +80,47 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             ORDER by l.lot_id""")
     public Object[][] getWeighmentCompletedTxnByLotList(LocalDate paymentDate,int marketId,List<Integer> lotList);
 
+
+
+    @Query(nativeQuery = true, value = """
+            select  f.farmer_number,f.first_name ,f.middle_name,f.last_name,fa.address_text,t.TALUK_NAME,v.VILLAGE_NAME,
+            fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
+            l.allotted_lot_id,l.auction_date,ma.estimated_weight,
+            r.reeling_license_number, r.name,
+            r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
+            l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
+            ra.AMOUNT,rvcb.CURRENT_BALANCE,l.lot_id 
+            from 
+            FARMER f
+            INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 
+            INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
+            INNER JOIN REELER_AUCTION ra ON ra.ALLOTTED_LOT_ID = l.allotted_lot_id and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date 
+            INNER JOIN reeler r ON r.reeler_id =ra.REELER_ID  
+            LEFT JOIN reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
+            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
+            LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 
+            LEFT JOIN  Village v ON   fa.Village_ID = v.village_id 
+            LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID 
+            LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+            WHERE l.auction_date =:paymentDate and l.market_id =:marketId and  l.allotted_lot_id =:allottedLotId""")
+    public Object[][] getAcceptedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
+
+    
+    @Query(nativeQuery = true,value = """
+            select  f.farmer_number,f.first_name ,f.middle_name,
+            f.last_name,fa.address_text,t.TALUK_NAME,v.VILLAGE_NAME,
+            fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
+            l.allotted_lot_id,l.auction_date,ma.estimated_weight
+            from  
+            FARMER f
+            INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
+            INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
+            and l.auction_date = ma.market_auction_date  
+            LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1  
+            LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
+            LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID  
+            LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+            WHERE l.auction_date =:paymentDate and l.market_id =:marketId and  l.allotted_lot_id =:allottedLotId""")
+    public Object[][] getNewlyCreatedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
+
 }
