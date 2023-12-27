@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class ReelerBidRequest extends LotStatusRequest {
 
     @Schema(name = "reelerId", example = "1", required = true)

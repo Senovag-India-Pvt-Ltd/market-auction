@@ -11,7 +11,7 @@ import lombok.*;
 @EqualsAndHashCode
 public class FLexTimeRequest extends RequestBody {
 
-    private MarketAuctionHelper.activityType activityType;
+    private String activityType;
 
     private boolean start;
 

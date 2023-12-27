@@ -8,6 +8,7 @@ import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.FlexTimeRepository;
 import com.sericulture.marketandauction.repository.MarketMasterRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
+@Slf4j
 public class MarketAuctionHelper {
 
     @Autowired
@@ -33,19 +35,29 @@ public class MarketAuctionHelper {
         AUCTION1,
         AUCTION2,
         AUCTION3,
-        ACCEPTBID,
+        AUCTION1ACCEPT,
+        AUCTION2ACCEPT,
+        AUCTION3ACCEPT;
 
     }
 
 
     public boolean canPerformActivity(activityType activity, int marketId,int godownId) {
         MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId(activity.toString(), marketId,godownId);
+        if(flexTime!=null && flexTime.isStart()){
+            return true;
+        }
         return canPerformAnyoneActivity(marketMaster,activity,marketId,godownId);
 
     }
 
     public boolean canPerformInAnyOneAuction(int marketId,int godownId){
         MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId("AUCTION", marketId,godownId);
+        if(flexTime!=null && flexTime.isStart()){
+            return true;
+        }
         boolean auction1 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION1,marketId,godownId);
         if(auction1)
             return true;
@@ -58,9 +70,25 @@ public class MarketAuctionHelper {
         return false;
     }
 
-    public boolean canPerformAnyoneActivity(MarketMaster marketMaster,activityType activity,int marketId,int godownId){
-        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId(activity.toString(), marketId,godownId);
+    public boolean canPerformAnyOneAuctionAccept(int marketId,int godownId){
+        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId("AUCTIONACCEPT", marketId,godownId);
+        if(flexTime!=null && flexTime.isStart()){
+            return true;
+        }
+        boolean auction1 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION1ACCEPT,marketId,godownId);
+        if(auction1)
+            return true;
+        boolean auction2 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION2ACCEPT,marketId,godownId);
+        if(auction2)
+            return true;
+        boolean auction3 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION3ACCEPT,marketId,godownId);
+        if(auction3)
+            return true;
+        return false;
+    }
 
+    public boolean canPerformAnyoneActivity(MarketMaster marketMaster,activityType activity,int marketId,int godownId){
         LocalTime time = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
 
         LocalTime starttime = null;
@@ -83,11 +111,27 @@ public class MarketAuctionHelper {
                 starttime = marketMaster.getAuction3StartTime();
                 endTime = marketMaster.getAuction3EndTime();
                 break;
+            case AUCTION1ACCEPT:
+                starttime = marketMaster.getAuction1AcceptStartTime();
+                endTime = marketMaster.getAuction1AcceptEndTime();
+                break;
+            case AUCTION2ACCEPT:
+                starttime = marketMaster.getAuction2AcceptStartTime();
+                endTime = marketMaster.getAuction2AcceptEndTime();
+                break;
+            case AUCTION3ACCEPT:
+                starttime = marketMaster.getAuction3AcceptStartTime();
+                endTime = marketMaster.getAuction3AcceptEndTime();
+                break;
 
+        }
+        if(starttime==null || endTime==null){
+            log.error("No start time or end time defined for "+marketId+" godown "+godownId+" and activity: "+activity);
+            return false;
         }
         //in between todo
         return (time.isAfter(starttime) && time.isBefore(endTime)) || time.equals(starttime)
-                || time.equals(endTime) || (flexTime==null ? false : flexTime.isStart());
+                || time.equals(endTime) ;
     }
 
 

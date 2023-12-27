@@ -25,7 +25,7 @@ public class MISCService {
     public ResponseEntity<?> flipFlexTime(FLexTimeRequest fLexTimeRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
-        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId(fLexTimeRequest.getActivityType().name(), fLexTimeRequest.getMarketId(), fLexTimeRequest.getGodownId());
+        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId(fLexTimeRequest.getActivityType(), fLexTimeRequest.getMarketId(), fLexTimeRequest.getGodownId());
         if(flexTime==null){
             flexTime = mapper.flextimeObjectToEntity(fLexTimeRequest,FlexTime.class);
         }else{

@@ -9,6 +9,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class LotStatusRequest extends RequestBody {
 
     @Schema(name = "allottedLotId", example = "1", required = true)

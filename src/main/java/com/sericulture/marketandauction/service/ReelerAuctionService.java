@@ -49,44 +49,36 @@ public class ReelerAuctionService {
 
     @Transactional
     public ResponseEntity<?> submitbid(ReelerBidRequest reelerBidRequest) {
+        log.info("Bid submission request:"+reelerBidRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerBidRequest.getMarketId(), reelerBidRequest.getAllottedLotId(), LocalDate.now());
-
-            if (lot == null) {
-                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "lot not found", "-1");
-                rw.setErrorCode(-1);
-                rw.setErrorMessages(List.of(validationMessage));
-                return ResponseEntity.ok(rw);
-            }
-
-            if (lot.getStatus() != null && !lot.getStatus().trim().isEmpty()) {
-                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "cannot bid as the status is: " + lot.getStatus(), "-1");
-                rw.setErrorCode(-1);
-                rw.setErrorMessages(List.of(validationMessage));
-                return ResponseEntity.ok(rw);
-            }
-
             boolean canIssue = marketAuctionHelper.canPerformInAnyOneAuction(reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
-
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
                 rw.setErrorCode(-1);
                 rw.setErrorMessages(List.of(validationMessage));
                 return ResponseEntity.ok(rw);
             }
-
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerBidRequest.getMarketId(), reelerBidRequest.getAllottedLotId(), LocalDate.now());
+            if (lot == null) {
+                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "lot not found", "-1");
+                rw.setErrorCode(-1);
+                rw.setErrorMessages(List.of(validationMessage));
+                return ResponseEntity.ok(rw);
+            }
+            if (lot.getStatus() != null && !lot.getStatus().trim().isEmpty()) {
+                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "cannot bid as the status is: " + lot.getStatus(), "-1");
+                rw.setErrorCode(-1);
+                rw.setErrorMessages(List.of(validationMessage));
+                return ResponseEntity.ok(rw);
+            }
             ReelerAuction reelerAuction = mapper.reelerAuctionObjectToEntity(reelerBidRequest, ReelerAuction.class);
             validator.validate(reelerAuction);
             reelerAuction.setAuctionDate(LocalDate.now());
             reelerAuctionRepository.save(reelerAuction);
         } catch (Exception ex) {
-            ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "error occurred while submitting bid", "-1");
-            rw.setErrorCode(-1);
-            rw.setErrorMessages(List.of(validationMessage));
-
-            return ResponseEntity.ok(rw);
+            log.error("Error While submitting the bid for the Request:"+reelerBidRequest+" error id: "+ex);
+            return marketAuctionHelper.retrunIfError(rw,"error occurred while submitting bid");
         }
         return ResponseEntity.ok(rw);
     }
@@ -107,7 +99,6 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getHighestBidPerLotDetails(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(LotBidDetailResponse.class);
-
         ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), LocalDate.now());
         LotBidDetailResponse lbdr = new LotBidDetailResponse();
         lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
@@ -147,27 +138,38 @@ public class ReelerAuctionService {
 
     @Transactional
     public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
+        log.info("Accept bid received for request: "+lotStatusRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(),LocalDate.now());
-        if(!Util.isNullOrEmptyOrBlank(lot.getStatus())){
-            return retrunIfError(rw,"expected Lot status is blank but found: "+lot.getStatus()+" for the allottedLotId: "+lot.getAllottedLotId());
+        try {
+            boolean canIssue = marketAuctionHelper.canPerformAnyOneAuctionAccept(lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
+            if (!canIssue) {
+                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
+                rw.setErrorCode(-1);
+                rw.setErrorMessages(List.of(validationMessage));
+                return ResponseEntity.ok(rw);
+            }
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(),LocalDate.now());
+            if(!Util.isNullOrEmptyOrBlank(lot.getStatus())){
+                return marketAuctionHelper.retrunIfError(rw,"expected Lot status is blank but found: "+lot.getStatus()+" for the allottedLotId: "+lot.getAllottedLotId());
+            }
+            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(),lotStatusRequest.getMarketId(),LocalDate.now());
+            if (reelerAuction != null) {
+                Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), LocalDate.now());
+                l.setStatus("accepted");
+                l.setReelerAuctionId(reelerAuction.getId());
+                l.setBidAcceptedBy(lotStatusRequest.getBidAcceptedBy());
+                reelerAuction.setStatus("accepted");
+                lotRepository.save(l);
+                reelerAuctionRepository.save(reelerAuction);
+            } else {
+                return marketAuctionHelper.retrunIfError(rw,"no Reeler auction found");
+            }
+            log.info("Accept bid completed for request: "+lotStatusRequest);
+            return ResponseEntity.ok(rw);
+        }catch (Exception ex){
+            log.error("Error while processing request: "+lotStatusRequest+"with error:"+ex);
+            return marketAuctionHelper.retrunIfError(rw,"error while processing the request");
         }
-        ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(),lotStatusRequest.getMarketId(),LocalDate.now());
-        if (reelerAuction != null) {
-            Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), LocalDate.now());
-            l.setStatus("accepted");
-            l.setReelerAuctionId(reelerAuction.getId());
-            l.setBidAcceptedBy(lotStatusRequest.getBidAcceptedBy());
-            reelerAuction.setStatus("accepted");
-            lotRepository.save(l);
-            reelerAuctionRepository.save(reelerAuction);
-        } else {
-
-            ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "no Reeler auction found", "-1");
-            rw.setErrorCode(-1);
-            rw.setErrorMessages(List.of(validationMessage));
-        }
-        return ResponseEntity.ok(rw);
     }
 
 
@@ -229,13 +231,7 @@ public class ReelerAuctionService {
         }
     }
 
-    private ResponseEntity<?> retrunIfError(ResponseWrapper rw,String err){
-        ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),
-                util.getMessageByCode("MA00002.GEN.FLEXTIME"), "MA00002.GEN.FLEXTIME");
-        rw.setErrorCode(-1);
-        rw.setErrorMessages(List.of(err));
-        return ResponseEntity.ok(rw);
-    }
+
 }
 
 
