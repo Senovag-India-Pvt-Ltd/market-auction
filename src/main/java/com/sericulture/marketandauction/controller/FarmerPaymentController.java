@@ -47,7 +47,12 @@ public class FarmerPaymentController {
 
     @PostMapping("/getAuctionDateListForBulkSend")
     public ResponseEntity<?> getAllWeighmentCompletedAuctionDatesByMarket(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
-        return farmerPaymentService.getAllWeighmentCompletedAuctionDatesByMarket(requestBody);
+        return farmerPaymentService.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody,LotStatus.WEIGHMENTCOMPLETED.getLabel());
+    }
+
+    @PostMapping("/getAuctionDateListForBankStatement")
+    public ResponseEntity<?> getAuctionDateListForBankStatement(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
+        return farmerPaymentService.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody,LotStatus.READYFORPAYMENT.getLabel());
     }
 
     @PostMapping("/removeSelectedLotlistfromReadyForPayment")

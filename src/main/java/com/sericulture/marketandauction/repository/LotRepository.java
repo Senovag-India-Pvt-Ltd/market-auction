@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 public interface LotRepository extends PagingAndSortingRepository<Lot, BigInteger> {
 
@@ -130,7 +129,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public Object[][] getNewlyCreatedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
 
 
-    @Query("select distinct auctionDate from Lot where status='weighmentcompleted' and marketId=:marketId")
-    public List<LocalDate> getAllWeighmentCompletedAuctionDatesByMarket(int marketId);
+    @Query("select distinct auctionDate from Lot where status=:status and marketId=:marketId")
+    public List<LocalDate> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(int marketId,String status);
 
 }

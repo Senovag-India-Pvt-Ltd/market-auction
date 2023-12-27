@@ -118,9 +118,9 @@ public class FarmerPaymentService {
         return ResponseEntity.ok(rw);
     }
 
-    public ResponseEntity<?> getAllWeighmentCompletedAuctionDatesByMarket(RequestBody requestBody) {
+    public ResponseEntity<?> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(RequestBody requestBody,String status) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<LocalDate> auctionDates = lotRepository.getAllWeighmentCompletedAuctionDatesByMarket(requestBody.getMarketId());
+        List<LocalDate> auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody.getMarketId(),status);
         if (Util.isNullOrEmptyList(auctionDates)) {
             return marketAuctionHelper.retrunIfError(rw, "No Auction dates found for bulk send");
         }
