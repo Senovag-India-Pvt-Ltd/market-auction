@@ -12,4 +12,6 @@ public interface BinCounterMasterRepository extends PagingAndSortingRepository<B
 
     @Query(value = "select * from bin_counter_master with(ROWLOCK, XLOCK) where bin_counter_master_id=:id",  nativeQuery = true)
     public BinCounterMaster getByMarketIdAndAuction(int id);
+
+    BinCounterMaster deleteById(int id);
 }

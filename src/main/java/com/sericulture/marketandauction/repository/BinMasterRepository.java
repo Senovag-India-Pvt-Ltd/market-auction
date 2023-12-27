@@ -21,4 +21,8 @@ public interface BinMasterRepository extends PagingAndSortingRepository<BinMaste
     @Query("select bm.binNumber from BinMaster bm where bm.marketId=:marketId and bm.godownId=:godownId and bm.type=:type and bm.status=:status and bm.binNumber>=:binNumberStart  and bm.binNumber<=:binNumberEnd order by bm.binNumber limit:totalBins")
     public List<Integer> findByMarketIdAndGodownIdAndTypeAndStatusAndBinNumber(@Param("marketId") int marketId,@Param("godownId")int godownId, @Param("type") String type,@Param("status") String status,@Param("binNumberStart") int binNumberStart,@Param("binNumberEnd") int binNumberEnd,@Param("totalBins") int totalBins);
 
+
+    public List<BinMaster> findByMarketIdAndGodownIdAndType(int marketId, int godownId, String type);
+
+    Iterable<BinMaster> deleteAll(Iterable<BinMaster> binMasters);
 }

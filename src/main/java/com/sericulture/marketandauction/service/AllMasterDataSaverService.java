@@ -60,7 +60,10 @@ public class AllMasterDataSaverService {
     }
 
     public void saveBinMaster(String type,int marketId,int godownId,int startNumber,int EndNumber){
-
+        List<BinMaster> deleteBinMasterList = binMasterRepository.findByMarketIdAndGodownIdAndType(marketId, godownId, type);
+        if(deleteBinMasterList.size()>0){
+            binMasterRepository.deleteAll(deleteBinMasterList);
+        }
         List<BinMaster> binMasterList = new ArrayList<>();
 
         for(int i=startNumber;i<=EndNumber;i++){
@@ -78,6 +81,11 @@ public class AllMasterDataSaverService {
     }
 
     public void saveBinCounterMaster(int bigBinstart,int bigBinEnd,int smallBinStart,int smallBinEnd,int marketId,int godownId){
+        BinCounterMaster deleteBinCounterMaster = binCounterMasterRepository.findByMarketIdAndGodownId(marketId, godownId);
+        if(deleteBinCounterMaster != null){
+            binCounterMasterRepository.deleteById(deleteBinCounterMaster.getId());
+        }
+
         BinCounterMaster binCounterMaster = new BinCounterMaster();
 
         binCounterMaster.setBigBinStart(bigBinstart);
