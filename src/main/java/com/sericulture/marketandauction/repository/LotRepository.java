@@ -43,7 +43,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             dbo.FARMER f
             INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID 
             INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
-            INNER JOIN dbo.REELER_AUCTION ra ON ra.ALLOTTED_LOT_ID = l.allotted_lot_id and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date 
+            INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date 
             INNER JOIN dbo.reeler r ON r.reeler_id =ra.REELER_ID  
             LEFT JOIN dbo.reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
             LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
@@ -68,7 +68,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             dbo.FARMER f
             INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID 
             INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
-            INNER JOIN dbo.REELER_AUCTION ra ON ra.ALLOTTED_LOT_ID = l.allotted_lot_id and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date 
+            INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date 
             INNER JOIN dbo.reeler r ON r.reeler_id =ra.REELER_ID  
             LEFT JOIN dbo.reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
             LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
