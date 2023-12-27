@@ -35,7 +35,7 @@ public class FarmerPaymentController {
         return ResponseEntity.ok(rw);
     }
 
-    @PostMapping("/updateSelectedLotlistToReadyForPayment")
+    @PostMapping("/addSelectedLotlistToReadyForPayment")
     public ResponseEntity<?> updateLotlistToReadyForPayment(@RequestBody FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList){
         return farmerPaymentService.updateLotlistByChangingTheStatus(farmerPaymentInfoRequestByLotList,true,LotStatus.WEIGHMENTCOMPLETED.getLabel(),LotStatus.READYFORPAYMENT.getLabel());
     }
