@@ -5,10 +5,7 @@ import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentCSVRequest;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequest;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequestByLotList;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoResponse;
+import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.TransactionFileGenQueue;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.repository.LotRepository;
@@ -53,32 +50,36 @@ public class FarmerPaymentService {
     public ResponseEntity<?> getWeighmentCompletedTxnByAuctionDateAndMarket(FarmerPaymentInfoRequest farmerPaymentInfoRequest, final Pageable pageable) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnByMarket(pageable, farmerPaymentInfoRequest.getMarketId());
-
         if (paginatedResponse == null || paginatedResponse.isEmpty()) {
             rw.setErrorCode(-1);
             rw.setErrorMessages(List.of("No lot  found"));
             return ResponseEntity.ok(rw);
         }
-
         List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = new ArrayList<>();
-        prepareFarmerPaymentInfoResponseList(paginatedResponse.getContent(), farmerPaymentInfoResponseList);
-        rw.setContent(farmerPaymentInfoResponseList);
+        FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = new FarmerReadyForPaymentResponse();
+        farmerReadyForPaymentResponse.setTotalAmountToFarmer(prepareFarmerPaymentInfoResponseList(paginatedResponse.getContent(), farmerPaymentInfoResponseList));
+        farmerReadyForPaymentResponse.setFarmerPaymentInfoResponseList(farmerPaymentInfoResponseList);
+        rw.setContent(farmerReadyForPaymentResponse);
         return ResponseEntity.ok(rw);
     }
 
-    private void prepareFarmerPaymentInfoResponseList(List<Object[]> paginatedResponse, List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList) {
+    private double prepareFarmerPaymentInfoResponseList(List<Object[]> paginatedResponse, List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList) {
+        double totalFarmerAmount = 0;
         for (Object[] response : paginatedResponse) {
+            float lotSoldAmount = Util.objectToFloat(response[14]);
+            float farmerMarketFee = Util.objectToFloat(response[15]);
+            double farmerAmount = lotSoldAmount - farmerMarketFee;
+            totalFarmerAmount = farmerAmount + totalFarmerAmount;
             FarmerPaymentInfoResponse farmerPaymentInfoResponse = new FarmerPaymentInfoResponse
                     (Integer.parseInt(Util.objectToString(response[0])), Integer.parseInt(Util.objectToString(response[2])),
                             Util.objectToString(response[3]), Util.objectToString(response[4]), Util.objectToString(response[5]), Util.objectToString(response[6])
                             , Util.objectToString(response[7]), Util.objectToString(response[8]),
                             Util.objectToString(response[9]), Util.objectToString(response[10]), Util.objectToString(response[11]),
-                            Util.objectToString(response[12]), Util.objectToString(response[13]), Util.objectToFloat(response[14]),
-                            Util.objectToFloat(response[15]), Util.objectToFloat(response[16]), Long.valueOf(Util.objectToString(response[1])));
-
+                            Util.objectToString(response[12]), Util.objectToString(response[13]), lotSoldAmount,
+                            farmerMarketFee, Util.objectToFloat(response[16]), Long.valueOf(Util.objectToString(response[1])),farmerAmount);
             farmerPaymentInfoResponseList.add(farmerPaymentInfoResponse);
-
         }
+        return totalFarmerAmount;
     }
 
     public ResponseEntity<?> updateLotlistByChangingTheStatus(FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList, boolean selectedLot, String fromlotStatus, String toLotStatus) {
@@ -89,14 +90,12 @@ public class FarmerPaymentService {
             if (exists) {
                 return marketAuctionHelper.retrunIfError(rw, "Payment Request is under process please try after sometime.");
             }
-            List<Integer> lotList = farmerPaymentInfoRequestByLotList.getAllottedLotList();
-            if (Util.isNullOrEmptyList(lotList)) {
-                lotList = null;
-                if (selectedLot) {
-                    rw.setErrorMessages(List.of("Lot list is empty"));
-                    rw.setErrorCode(-1);
-                    return ResponseEntity.ok(rw);
-                }
+            List<Integer> lotList = null;
+            if(selectedLot){
+                lotList = farmerPaymentInfoRequestByLotList.getAllottedLotList();
+            }
+            if (selectedLot && Util.isNullOrEmptyList(lotList)) {
+                return marketAuctionHelper.retrunIfError(rw,"Lot list is empty");
             }
             List<Object[]> paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatus(farmerPaymentInfoRequestByLotList.getPaymentDate(), farmerPaymentInfoRequestByLotList.getMarketId(), lotList, fromlotStatus);
 
@@ -105,22 +104,15 @@ public class FarmerPaymentService {
             }
             List<Long> lotIds = new ArrayList<>();
             for (Object[] response : paginatedResponse) {
-                lotIds.add(Util.objectToLong(response[0]));
+                lotIds.add(Util.objectToLong(response[1]));
             }
-
             entityManager = entityManagerFactory.createEntityManager();
-
             entityManager.getTransaction().begin();
-
             Query nativeQuery = entityManager.createNativeQuery("UPDATE Lot set status = ? where lot_id in ( ? )");
             nativeQuery.setParameter(1, toLotStatus);
             nativeQuery.setParameter(2, lotIds);
-
-
             nativeQuery.executeUpdate();
-
             entityManager.getTransaction().commit();
-
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             return marketAuctionHelper.retrunIfError(rw, "Exception while updating the readyForPayement to list:" + farmerPaymentInfoRequestByLotList + " error: " + ex);
@@ -135,34 +127,33 @@ public class FarmerPaymentService {
 
     public ResponseEntity<?> getAllWeighmentCompletedAuctionDatesByMarket(RequestBody requestBody) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-
         List<LocalDate> auctionDates = lotRepository.getAllWeighmentCompletedAuctionDatesByMarket(requestBody.getMarketId());
         if (Util.isNullOrEmptyList(auctionDates)) {
             return marketAuctionHelper.retrunIfError(rw, "No Auction dates found for bulk send");
         }
         rw.setContent(auctionDates);
-
         return ResponseEntity.ok(rw);
-
     }
 
     public ResponseEntity<?> generateBankStatementForAuctionDate(FarmerPaymentInfoRequest farmerPaymentInfoRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = getReadyForPaymentTxns(farmerPaymentInfoRequest.getPaymentDate(), farmerPaymentInfoRequest.getMarketId());
-        rw.setContent(farmerPaymentInfoResponseList);
+        FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = getReadyForPaymentTxns(farmerPaymentInfoRequest.getPaymentDate(), farmerPaymentInfoRequest.getMarketId());
+        rw.setContent(farmerReadyForPaymentResponse);
         return ResponseEntity.ok(rw);
     }
 
-    private List<FarmerPaymentInfoResponse> getReadyForPaymentTxns(LocalDate auctionDate, int marketId) {
+    private FarmerReadyForPaymentResponse getReadyForPaymentTxns(LocalDate auctionDate, int marketId) {
+        FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = new FarmerReadyForPaymentResponse();
         List<Object[]> paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatus(auctionDate, marketId, null, LotStatus.READYFORPAYMENT.getLabel());
         List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = new ArrayList<>();
-        prepareFarmerPaymentInfoResponseList(paginatedResponse, farmerPaymentInfoResponseList);
-        return farmerPaymentInfoResponseList;
+        farmerReadyForPaymentResponse.setTotalAmountToFarmer(prepareFarmerPaymentInfoResponseList(paginatedResponse, farmerPaymentInfoResponseList));
+        farmerReadyForPaymentResponse.setFarmerPaymentInfoResponseList(farmerPaymentInfoResponseList);
+        return farmerReadyForPaymentResponse;
     }
 
-    public ByteArrayInputStream generateCSV(FarmerPaymentInfoRequest farmerPaymentInfoRequest) {
+    public ByteArrayInputStream generateCSV(int marketId,LocalDate auctionDate) {
 
-        List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = getReadyForPaymentTxns(farmerPaymentInfoRequest.getPaymentDate(), farmerPaymentInfoRequest.getMarketId());
+        FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = getReadyForPaymentTxns(auctionDate, marketId);
         final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -170,7 +161,7 @@ public class FarmerPaymentService {
 
             csvPrinter.printRecord(Arrays.asList("Serial Number", "Lot Id", " Farmer Name", "Farmer Number", "Farmer Mobile Number",
                     "Reeler License Number", "Farmer Bank", "IFSC", "Account Number", "Amount"));
-            for (FarmerPaymentInfoResponse farmerPaymentInfoResponse : farmerPaymentInfoResponseList) {
+            for (FarmerPaymentInfoResponse farmerPaymentInfoResponse : farmerReadyForPaymentResponse.getFarmerPaymentInfoResponseList()) {
                 List<? extends Serializable> data = Arrays.asList(
                         farmerPaymentInfoResponse.getSerialNumber(),
                         farmerPaymentInfoResponse.getAllottedLotId(),
@@ -182,6 +173,7 @@ public class FarmerPaymentService {
 
                 csvPrinter.printRecord(data);
             }
+            csvPrinter.printRecord("Total Amount to be given to farmer is: "+farmerReadyForPaymentResponse.getTotalAmountToFarmer());
             csvPrinter.flush();
             return new ByteArrayInputStream(out.toByteArray());
         } catch (IOException e) {

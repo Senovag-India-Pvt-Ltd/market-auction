@@ -7,9 +7,7 @@ import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInf
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.service.FarmerPaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -58,10 +56,10 @@ public class FarmerPaymentController {
     }
 
     @GetMapping("/generateCSVFile")
-    public ResponseEntity<InputStreamResource> generateCSVFile(@RequestBody FarmerPaymentInfoRequest farmerPaymentInfoRequest) {
-        InputStreamResource file = new InputStreamResource(farmerPaymentService.generateCSV(farmerPaymentInfoRequest));
+    public ResponseEntity<InputStreamResource> generateCSVFile(@RequestParam int marketId,@RequestParam LocalDate auctionDate,@RequestParam String fileName) {
+        InputStreamResource file = new InputStreamResource(farmerPaymentService.generateCSV(marketId,auctionDate));
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + farmerPaymentInfoRequest.getFileName()+".csv")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName+".csv")
                 .contentType(MediaType.parseMediaType("application/csv"))
                 .body(file);
     }
@@ -69,6 +67,11 @@ public class FarmerPaymentController {
     @PostMapping("/requestJobToProcessPayment")
     public ResponseEntity<?> requestJobToProcessPayment(@RequestBody FarmerPaymentInfoRequest farmerPaymentInfoRequest){
         return farmerPaymentService.requestJobToProcessPayment(farmerPaymentInfoRequest);
+    }
+
+    @PostMapping("/generateBankStatementForAuctionDate")
+    public ResponseEntity<?> generateBankStatementForAuctionDate(@RequestBody FarmerPaymentInfoRequest farmerPaymentInfoRequest){
+        return farmerPaymentService.generateBankStatementForAuctionDate(farmerPaymentInfoRequest);
     }
 
 }

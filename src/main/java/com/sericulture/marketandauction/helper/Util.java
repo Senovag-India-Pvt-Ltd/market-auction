@@ -34,6 +34,10 @@ public final class Util {
         return object == null ? 0 :  Float.parseFloat(String.valueOf(object));
     }
 
+    public static int objectToInteger(Object object) {
+        return object == null ? 0 :  Integer.parseInt(String.valueOf(object));
+    }
+
     public static long objectToLong(Object object){
         return object == null ? 0 :  Long.parseLong(String.valueOf(object));
     }
