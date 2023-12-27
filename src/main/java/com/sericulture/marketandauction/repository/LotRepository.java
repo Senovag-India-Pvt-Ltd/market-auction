@@ -58,7 +58,12 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
 
     @Query(nativeQuery = true, value = """
-            select  l.lot_id as FARMER_PAYMENT_ID 
+            select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.lot_id as FARMER_PAYMENT_ID ,l.allotted_lot_id,l.auction_date ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
+            f.mobile_number,r.reeling_license_number,
+            fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number ,
+            l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER 
+            ,rvcb.CURRENT_BALANCE,
+            rvba.virtual_account_number
             from 
             dbo.FARMER f
             INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID 
@@ -93,8 +98,8 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             from 
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 
-            INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
-            INNER JOIN REELER_AUCTION ra ON ra.ALLOTTED_LOT_ID = l.allotted_lot_id and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date 
+            INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
+            INNER JOIN REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID
             INNER JOIN reeler r ON r.reeler_id =ra.REELER_ID  
             LEFT JOIN reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
             LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
@@ -102,7 +107,8 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id 
             LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID 
             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
-            WHERE l.auction_date =:paymentDate and l.market_id =:marketId and  l.allotted_lot_id =:allottedLotId""")
+            WHERE l.auction_date =:paymentDate and l.market_id =:marketId and  l.allotted_lot_id =:allottedLotId 
+            and f.ACTIVE =1 and ma.active = 1 and r.active =1""")
     public Object[][] getAcceptedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
 
     

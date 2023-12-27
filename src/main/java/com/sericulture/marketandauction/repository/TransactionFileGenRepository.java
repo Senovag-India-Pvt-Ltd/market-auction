@@ -12,9 +12,6 @@ public interface TransactionFileGenRepository extends CrudRepository<Transaction
 
     public TransactionFileGeneration save(TransactionFileGeneration at) ;
 
-    @Query("select tfg from TransactionFileGeneration tfg where tfg.status in ('processing') and tfg.transactionFileGenId=:transactionFileGenId")
-    public TransactionFileGeneration getRowIfExists(String transactionFileGenId);
-
     @Query("select tfg from TransactionFileGeneration tfg where tfg.status in ('generated') order by createdDate limit 5")
     public List<TransactionFileGeneration> getRowsByStatusAsGenerated();
 

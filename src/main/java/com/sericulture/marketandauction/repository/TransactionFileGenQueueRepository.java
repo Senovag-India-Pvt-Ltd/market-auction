@@ -15,10 +15,6 @@ public interface TransactionFileGenQueueRepository extends CrudRepository<Transa
     @Query("select tq from TransactionFileGenQueue tq where (tq.status = 'requested' or (tq.retryCount < 2 and tq.status = 'failed')) order by tq.createdDate limit 1")
     public TransactionFileGenQueue getQueueEntry();
 
-    @Modifying
-    @Query("update TransactionFileGenQueue tq set tq.status = :status, tq.retryCount = nullif(tq.retryCount,0)+1 where tq.transactionFileGenId=:tgId")
-    public void updateQueueByStatusAndGenId(String status, String tgId);
-
     public boolean existsTransactionFileGenQueueByMarketIdAndAuctionDateAndStatusIn(int marketId, LocalDate auctionDate, Set<String> status);
 
     public boolean existsTransactionFileGenQueueByMarketIdAndFileName(int marketId,String fileName);

@@ -13,41 +13,28 @@ import java.math.BigInteger;
 @NoArgsConstructor
 @EqualsAndHashCode
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Builder
 public class LotWeightResponse extends ResponseBody {
-
     private String farmerNumber;
-
     private String farmerFruitsId;
-
     private String reelerLicense;
-
     private String farmerFirstName;
-
     private String farmerMiddleName;
-
     private String farmerLastName;
-
     private String reelerName;
-
     private float bidAmount;
-
+    @JsonIgnore
     private int raceMasterId;
-
     private String farmerVillage;
-
     private double reelerCurrentBalance;
-
     private double blockedAmount;
-
     private double reelerCurrentAvailableBalance;
-
     @JsonIgnore
     private String reelerVirtualAccountNumber;
-
     @JsonIgnore
     private int reelerId;
-
-
-
-
+    private String marketName;
+    private String race;
+    private String source;
+    private float tareWeight;
 }

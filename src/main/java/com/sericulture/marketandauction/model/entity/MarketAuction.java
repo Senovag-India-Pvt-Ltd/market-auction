@@ -22,46 +22,31 @@ public class MarketAuction extends BaseEntity implements Serializable {
     @SequenceGenerator(name = "MARKET_AUCTION_SEQ", sequenceName = "MARKET_AUCTION_SEQ", allocationSize = 1)
     @Column(name = "MARKET_AUCTION_ID")
     private BigInteger id;
-
     @Temporal(TemporalType.DATE)
     @Column(name = "MARKET_AUCTION_DATE")
     private LocalDate marketAuctionDate;
-
     @Column(name = "MARKET_ID")
     private int marketId;
-
     @Column(name = "GODOWN_ID")
     private int godownId;
-
     @Column(name = "FARMER_ID")
     private BigInteger farmerId;
-
-
     @Column(name = "SOURCE_MASTER_ID")
     private int sourceMasterId;
-
     @Column(name = "RACE_MASTER_ID")
     private int raceMasterId;
-
     @Column(name = "DFL_COUNT")
     private int dflCount;
-
     @Column(name = "ESTIMATED_WEIGHT")
     private int estimatedWeight;
-
     @Column(name = "STATUS")
     private String status;
-
     @Column(name = "NUMBER_OF_LOT")
     private int numberOfLot;
-
     @Column(name = "NUMBER_OF_SMALL_BIN")
     private int numberOfSmallBin;
-
     @Column(name = "NUMBER_OF_BIG_BIN")
     private int numberOfBigBin;
-
     @Column(name = "REASON_FOR_CANCELLATION")
     private int reasonForCancellation;
-
 }

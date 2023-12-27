@@ -20,9 +20,6 @@ public class TransactionFileGenQueue extends BaseEntity implements Serializable 
     @Column(name = "TRANSACTION_FILE_GEN_QUEUE_ID")
     @Setter(AccessLevel.NONE)
     private Long transFileGenQueueId;
-    @Column(name = "TRANSACTION_FILE_GEN_ID")
-    @Setter(AccessLevel.NONE)
-    private String transactionFileGenId;
     @Column(name = "MARKET_ID")
     private int marketId;
     @Column(name = "AUCTION_DATE")
