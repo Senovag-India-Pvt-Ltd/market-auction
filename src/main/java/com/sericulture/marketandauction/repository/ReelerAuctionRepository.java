@@ -42,8 +42,8 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
             select MIN(REELER_AUCTION_ID) ID, RA.ALLOTTED_LOT_ID as AL from REELER_AUCTION RA,
             ( 
             SELECT MAX(AMOUNT) AMT, ALLOTTED_LOT_ID  from REELER_AUCTION ra
-            where AUCTION_DATE = :today and ALLOTTED_LOT_ID in ( :lotList) AND MARKET_ID =15 GROUP by ALLOTTED_LOT_ID ) as RAB 
-            WHERE RAB.AMT=RA.AMOUNT AND  RA.MARKET_ID =15 AND RA.ALLOTTED_LOT_ID = RAB.ALLOTTED_LOT_ID AND AUCTION_DATE = :today
+            where AUCTION_DATE = :today and ALLOTTED_LOT_ID in ( :lotList) AND MARKET_ID =:marketId GROUP by ALLOTTED_LOT_ID ) as RAB 
+            WHERE RAB.AMT=RA.AMOUNT AND  RA.MARKET_ID =:marketId AND RA.ALLOTTED_LOT_ID = RAB.ALLOTTED_LOT_ID AND AUCTION_DATE = :today
             GROUP by  RA.ALLOTTED_LOT_ID ) RA ON RA.ID= RAA.REELER_AUCTION_ID
             UNION
             SELECT REELER_AUCTION_ID,AMOUNT ,ALLOTTED_LOT_ID, 'MYBID',R.Name  

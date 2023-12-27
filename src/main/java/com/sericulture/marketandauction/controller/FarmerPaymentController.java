@@ -4,12 +4,19 @@ package com.sericulture.marketandauction.controller;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequest;
 import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequestByLotList;
+import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.service.FarmerPaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -32,12 +39,36 @@ public class FarmerPaymentController {
 
     @PostMapping("/updateSelectedLotlistToReadyForPayment")
     public ResponseEntity<?> updateLotlistToReadyForPayment(@RequestBody FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList){
-        return farmerPaymentService.updateLotlistToReadyForPayment(farmerPaymentInfoRequestByLotList,true);
+        return farmerPaymentService.updateLotlistByChangingTheStatus(farmerPaymentInfoRequestByLotList,true,LotStatus.WEIGHMENTCOMPLETED.getLabel(),LotStatus.READYFORPAYMENT.getLabel());
     }
 
-    @PostMapping("/updateLotstatusByAuctionToReadyForPayment")
+    @PostMapping("/bulkSendToReadyForPayment")
     public ResponseEntity<?> updateLotstatusByAuctionToReadyForPayment(@RequestBody FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList){
-        return farmerPaymentService.updateLotlistToReadyForPayment(farmerPaymentInfoRequestByLotList,false);
+        return farmerPaymentService.updateLotlistByChangingTheStatus(farmerPaymentInfoRequestByLotList,false, LotStatus.WEIGHMENTCOMPLETED.getLabel(),LotStatus.READYFORPAYMENT.getLabel());
+    }
+
+    @PostMapping("/getAuctionDateListForBulkSend")
+    public ResponseEntity<?> getAllWeighmentCompletedAuctionDatesByMarket(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
+        return farmerPaymentService.getAllWeighmentCompletedAuctionDatesByMarket(requestBody);
+    }
+
+    @PostMapping("/removeSelectedLotlistfromReadyForPayment")
+    public ResponseEntity<?> removeSelectedLotlistfromReadyForPayment(@RequestBody FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList){
+        return farmerPaymentService.updateLotlistByChangingTheStatus(farmerPaymentInfoRequestByLotList,true,LotStatus.READYFORPAYMENT.getLabel(),LotStatus.WEIGHMENTCOMPLETED.getLabel());
+    }
+
+    @GetMapping("/generateCSVFile")
+    public ResponseEntity<InputStreamResource> generateCSVFile(@RequestBody FarmerPaymentInfoRequest farmerPaymentInfoRequest) {
+        InputStreamResource file = new InputStreamResource(farmerPaymentService.generateCSV(farmerPaymentInfoRequest));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + farmerPaymentInfoRequest.getFileName()+".csv")
+                .contentType(MediaType.parseMediaType("application/csv"))
+                .body(file);
+    }
+
+    @PostMapping("/requestJobToProcessPayment")
+    public ResponseEntity<?> requestJobToProcessPayment(@RequestBody FarmerPaymentInfoRequest farmerPaymentInfoRequest){
+        return farmerPaymentService.requestJobToProcessPayment(farmerPaymentInfoRequest);
     }
 
 }
