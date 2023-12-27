@@ -5,7 +5,10 @@ import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
-import com.sericulture.marketandauction.model.api.marketauction.*;
+import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequest;
+import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequestByLotList;
+import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoResponse;
+import com.sericulture.marketandauction.model.api.marketauction.FarmerReadyForPaymentResponse;
 import com.sericulture.marketandauction.model.entity.TransactionFileGenQueue;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.repository.LotRepository;
@@ -27,7 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -40,6 +46,7 @@ public class FarmerPaymentService {
     MarketAuctionHelper marketAuctionHelper;
     @Autowired
     TransactionFileGenQueueRepository transactionFileGenQueueRepository;
+
     public ResponseEntity<?> getWeighmentCompletedTxnByAuctionDateAndMarket(FarmerPaymentInfoRequest farmerPaymentInfoRequest, final Pageable pageable) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnByMarket(pageable, farmerPaymentInfoRequest.getMarketId());
@@ -69,7 +76,7 @@ public class FarmerPaymentService {
                             , Util.objectToString(response[7]), Util.objectToString(response[8]),
                             Util.objectToString(response[9]), Util.objectToString(response[10]), Util.objectToString(response[11]),
                             Util.objectToString(response[12]), Util.objectToString(response[13]), lotSoldAmount,
-                            farmerMarketFee, Util.objectToFloat(response[16]), Long.valueOf(Util.objectToString(response[1])),farmerAmount);
+                            farmerMarketFee, Util.objectToFloat(response[16]), Long.valueOf(Util.objectToString(response[1])), farmerAmount);
             farmerPaymentInfoResponseList.add(farmerPaymentInfoResponse);
         }
         return totalFarmerAmount;
@@ -84,11 +91,11 @@ public class FarmerPaymentService {
                 return marketAuctionHelper.retrunIfError(rw, "Payment Request is under process please try after sometime.");
             }
             List<Integer> lotList = null;
-            if(selectedLot){
+            if (selectedLot) {
                 lotList = farmerPaymentInfoRequestByLotList.getAllottedLotList();
             }
             if (selectedLot && Util.isNullOrEmptyList(lotList)) {
-                return marketAuctionHelper.retrunIfError(rw,"Lot list is empty");
+                return marketAuctionHelper.retrunIfError(rw, "Lot list is empty");
             }
             List<Object[]> paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatus(farmerPaymentInfoRequestByLotList.getPaymentDate(), farmerPaymentInfoRequestByLotList.getMarketId(), lotList, fromlotStatus);
 
@@ -118,9 +125,9 @@ public class FarmerPaymentService {
         return ResponseEntity.ok(rw);
     }
 
-    public ResponseEntity<?> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(RequestBody requestBody,String status) {
+    public ResponseEntity<?> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(RequestBody requestBody, String status) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<LocalDate> auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody.getMarketId(),status);
+        List<LocalDate> auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody.getMarketId(), status);
         if (Util.isNullOrEmptyList(auctionDates)) {
             return marketAuctionHelper.retrunIfError(rw, "No Auction dates found for bulk send");
         }
@@ -144,7 +151,7 @@ public class FarmerPaymentService {
         return farmerReadyForPaymentResponse;
     }
 
-    public ByteArrayInputStream generateCSV(int marketId,LocalDate auctionDate) {
+    public ByteArrayInputStream generateCSV(int marketId, LocalDate auctionDate) {
 
         FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = getReadyForPaymentTxns(auctionDate, marketId);
         final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL);
@@ -166,7 +173,7 @@ public class FarmerPaymentService {
 
                 csvPrinter.printRecord(data);
             }
-            csvPrinter.printRecord("Total Amount to be given to farmer is: "+farmerReadyForPaymentResponse.getTotalAmountToFarmer());
+            csvPrinter.printRecord("Total Amount to be given to farmer is: " + farmerReadyForPaymentResponse.getTotalAmountToFarmer());
             csvPrinter.flush();
             return new ByteArrayInputStream(out.toByteArray());
         } catch (IOException e) {
@@ -191,7 +198,10 @@ public class FarmerPaymentService {
                     status("requested")
                     .fileName(farmerPaymentInfoRequest.getFileName())
                     .marketId(farmerPaymentInfoRequest.getMarketId())
-                    .auctionDate(farmerPaymentInfoRequest.getPaymentDate()).build();
+                    .auctionDate(farmerPaymentInfoRequest.getPaymentDate())
+                    .createdBy("system")
+                    .modifiedBy("system")
+                    .build();
             transactionFileGenQueueRepository.save(transactionFileGenQueue);
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
