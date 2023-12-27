@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public interface LotRepository extends PagingAndSortingRepository<Lot, BigInteger> {
 
@@ -51,10 +52,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN dbo.market_master mm on mm.market_master_id = ma.market_auction_id 
             LEFT JOIN dbo.market_type_master mtm ON mtm.market_type_master_id = mm.market_master_id 
              where l.status ='weighmentcompleted' 
-             and l.auction_date =:paymentDate 
              and l.market_id =:marketId 
             ORDER by l.lot_id""")
-    public Page<Object[]> getWeighmentCompletedTxnByAuctionDateAndMarket(final Pageable pageable,LocalDate paymentDate,int marketId);
+    public Page<Object[]> getAllWeighmentCompletedTxnByMarket(final Pageable pageable, int marketId);
 
 
     @Query(nativeQuery = true, value = """
@@ -70,7 +70,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 
             LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID  = f.FARMER_ID 
             LEFT JOIN dbo.market_master mm on mm.market_master_id = ma.market_auction_id 
-            where l.status ='weighmentcompleted' 
+            where l.status =:lotStatus 
              and l.auction_date =:paymentDate
              and l.market_id =:marketId 
              and (:lotList is null OR l.allotted_lot_id in (:lotList))
@@ -78,7 +78,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
              and fba.farmer_bank_ifsc_code !='' 
              and rvcb.CURRENT_BALANCE > 0.0
             ORDER by l.lot_id""")
-    public Object[][] getWeighmentCompletedTxnByLotList(LocalDate paymentDate,int marketId,List<Integer> lotList);
+    public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatus(LocalDate paymentDate, int marketId, List<Integer> lotList,String lotStatus);
 
 
 
@@ -122,5 +122,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
             WHERE l.auction_date =:paymentDate and l.market_id =:marketId and  l.allotted_lot_id =:allottedLotId""")
     public Object[][] getNewlyCreatedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
+
+
+    @Query("select distinct auctionDate from Lot where status='weighmentcompleted' and marketId=:marketId")
+    public List<LocalDate> getAllWeighmentCompletedAuctionDatesByMarket(int marketId);
 
 }

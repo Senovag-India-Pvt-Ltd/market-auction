@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 @Component
 public final class Util {
@@ -44,6 +45,10 @@ public final class Util {
 
     public static boolean isNullOrEmptyList(List list) {
         return list == null ? true : list.isEmpty() ? true : false;
+    }
+
+    public static boolean isNullOrEmptySet(Set set) {
+        return set == null ? true : set.isEmpty() ? true : false;
     }
 
 }

@@ -13,4 +13,6 @@ import java.time.LocalDate;
 public class FarmerPaymentInfoRequest extends RequestBody {
 
     private LocalDate paymentDate;
+
+    private String fileName;
 }
