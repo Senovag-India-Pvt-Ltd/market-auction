@@ -18,7 +18,8 @@ public interface TransactionFileGenRepository extends CrudRepository<Transaction
     @Query("select tfg from TransactionFileGeneration tfg where tfg.status in ('pushed')  order by createdDate limit 5")
     public List<TransactionFileGeneration> getRowsByStatusAsPushed();
 
-    @Query("select tfg from TransactionFileGeneration tfg where tfg.transactionFileGenId=:transactionFileGenId")
-    public TransactionFileGeneration getRowForCSV(String transactionFileGenId);
+    @Query("select tfg from TransactionFileGeneration tfg,TransactionFileGenQueue tfgq where tfg.transactionFileGenQueueId = tfgq.transFileGenQueueId and " +
+            " tfgq.marketId=:marketId and tfgq.fileName=:fileName")
+    public TransactionFileGeneration getRowForCSV(int marketId,String fileName);
 
 }

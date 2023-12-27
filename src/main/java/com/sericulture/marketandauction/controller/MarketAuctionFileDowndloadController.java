@@ -21,9 +21,9 @@ public class MarketAuctionFileDowndloadController {
 
 
     @GetMapping("/download")
-    public ResponseEntity<InputStreamResource> getFile(@RequestParam String transactionFileGenId, @RequestParam String fileName) {
+    public ResponseEntity<InputStreamResource> getFile(@RequestParam int marketId, @RequestParam String fileName) {
 
-        InputStreamResource file = new InputStreamResource(marketAuctionFileDowndloadService.generateCSV(transactionFileGenId));
+        InputStreamResource file = new InputStreamResource(marketAuctionFileDowndloadService.generateCSV(marketId,fileName));
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName+ LocalDate.now()+".csv")

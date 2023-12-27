@@ -10,6 +10,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class CompleteLotWeighmentRequest extends LotStatusRequest {
 
     List<Weighment> weighmentList;

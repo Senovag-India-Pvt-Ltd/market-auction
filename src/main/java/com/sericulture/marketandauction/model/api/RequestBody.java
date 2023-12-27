@@ -12,6 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class RequestBody implements Serializable {
 
     @Schema(name = "marketId", example = "1", required = true)

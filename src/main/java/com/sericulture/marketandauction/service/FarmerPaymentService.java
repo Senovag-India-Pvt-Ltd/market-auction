@@ -32,21 +32,14 @@ import java.util.*;
 @Service
 @Slf4j
 public class FarmerPaymentService {
-
-
     @Autowired
     LotRepository lotRepository;
-
     @PersistenceUnit
     private EntityManagerFactory entityManagerFactory;
-
     @Autowired
     MarketAuctionHelper marketAuctionHelper;
-
     @Autowired
     TransactionFileGenQueueRepository transactionFileGenQueueRepository;
-
-
     public ResponseEntity<?> getWeighmentCompletedTxnByAuctionDateAndMarket(FarmerPaymentInfoRequest farmerPaymentInfoRequest, final Pageable pageable) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnByMarket(pageable, farmerPaymentInfoRequest.getMarketId());
@@ -186,7 +179,11 @@ public class FarmerPaymentService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         EntityManager entityManager = null;
         try {
-            boolean exists = transactionFileGenQueueRepository.existsTransactionFileGenQueueByMarketIdAndFileName(farmerPaymentInfoRequest.getMarketId(), farmerPaymentInfoRequest.getFileName());
+            boolean exists = transactionFileGenQueueRepository.existsTransactionFileGenQueueByMarketIdAndAuctionDateAndStatusIn(farmerPaymentInfoRequest.getMarketId(), farmerPaymentInfoRequest.getPaymentDate(), Set.of("requested", "processing"));
+            if (exists) {
+                return marketAuctionHelper.retrunIfError(rw, "Payment Request is under process please try after sometime.");
+            }
+            exists = transactionFileGenQueueRepository.existsTransactionFileGenQueueByMarketIdAndFileName(farmerPaymentInfoRequest.getMarketId(), farmerPaymentInfoRequest.getFileName());
             if (exists) {
                 return marketAuctionHelper.retrunIfError(rw, "Cannot create duplicate request for same fileName");
             }
