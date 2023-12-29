@@ -90,10 +90,11 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             select  f.farmer_number,f.first_name ,f.middle_name,f.last_name,fa.address_text,t.TALUK_NAME,v.VILLAGE_NAME,
             fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
             l.allotted_lot_id,l.auction_date,ma.estimated_weight,
+            mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
             r.reeling_license_number, r.name,
             r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
             l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
-            ra.AMOUNT,rvcb.CURRENT_BALANCE,l.lot_id 
+            ra.AMOUNT,rvcb.CURRENT_BALANCE,l.lot_id
             from 
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 
@@ -106,6 +107,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id 
             LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID 
             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+            LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id  
+            LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
+            LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID  
             WHERE l.auction_date =:paymentDate and l.market_id =:marketId and  l.allotted_lot_id =:allottedLotId 
             and f.ACTIVE =1 and ma.active = 1 and r.active =1""")
     public Object[][] getAcceptedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
@@ -115,7 +119,8 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             select  f.farmer_number,f.first_name ,f.middle_name,
             f.last_name,fa.address_text,t.TALUK_NAME,v.VILLAGE_NAME,
             fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
-            l.allotted_lot_id,l.auction_date,ma.estimated_weight
+            l.allotted_lot_id,l.auction_date,ma.estimated_weight,
+             mm.market_name,rm.race_name,sm.source_name,mm.box_weight
             from  
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
@@ -125,6 +130,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
             LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID  
             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+            LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id  
+            LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
+            LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID 
             WHERE l.auction_date =:paymentDate and l.market_id =:marketId and  l.allotted_lot_id =:allottedLotId""")
     public Object[][] getNewlyCreatedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
 
