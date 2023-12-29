@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -16,6 +17,8 @@ public final class Util {
 
     @Autowired
     private ResourceBundleMessageSource resourceBundleMessageSource;
+
+   static DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
 
     public String getMessageByCode(String code) {
@@ -31,7 +34,7 @@ public final class Util {
     }
 
     public static float objectToFloat(Object object) {
-        return object == null ? 0 :  Float.parseFloat(String.valueOf(object));
+        return object == null ? 0 : Float.valueOf(decimalFormat.format(Float.parseFloat(String.valueOf(object)))) ;
     }
 
     public static int objectToInteger(Object object) {
