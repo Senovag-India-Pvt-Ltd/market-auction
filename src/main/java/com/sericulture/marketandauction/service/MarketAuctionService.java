@@ -92,7 +92,6 @@ public class MarketAuctionService {
             rw.setContent(marketAuctionResponse);
             log.info(String.format("marketAuction: succesfull generation of market auction Requrest for marketId: %s gowdownId: %s and farmer: %s"
                     ,marketAuction.getMarketId(),marketAuction.getGodownId(),marketAuction.getFarmerId()));
-            saveBinAndLot(marketAuctionResponse, marketAuction);
         } catch (Exception e) {
             hasException = true;
             e.printStackTrace();
