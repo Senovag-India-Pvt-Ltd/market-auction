@@ -239,9 +239,9 @@ public class MarketAuctionService {
             bc.setAuctionDate(LocalDate.now());
         }
 
-        if(numberOfBigBin!=0)
+        if(numberOfBigBin>0)
             bc.setBigBinNextNumber(++bigSequenceEnd);
-        if(numberOfSmallBin!=0)
+        if(numberOfSmallBin>0)
             bc.setSmallBinNextNumber(++smallSequenceEnd);
         //binCounterRepository.save(bc);
 
