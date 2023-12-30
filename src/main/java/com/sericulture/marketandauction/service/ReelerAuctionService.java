@@ -7,11 +7,13 @@ import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
+import com.sericulture.marketandauction.model.entity.UserMaster;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.LotRepository;
 import com.sericulture.marketandauction.repository.ReelerAuctionRepository;
+import com.sericulture.marketandauction.repository.UserMasterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,9 @@ public class ReelerAuctionService {
     LotRepository lotRepository;
 
     @Autowired
+    UserMasterRepository userMasterRepository;
+
+    @Autowired
     Util util;
 
     @Transactional
@@ -72,6 +77,13 @@ public class ReelerAuctionService {
                 rw.setErrorMessages(List.of(validationMessage));
                 return ResponseEntity.ok(rw);
             }
+
+            //Fetch reelerId by userId
+            UserMaster userMaster = userMasterRepository.findByUserMasterIdAndActive(Long.valueOf(reelerBidRequest.getReelerId().toString()), true);
+            if(userMaster != null){
+                reelerBidRequest.setReelerId(BigInteger.valueOf(userMaster.getUserTypeId()));
+            }
+
             ReelerAuction reelerAuction = mapper.reelerAuctionObjectToEntity(reelerBidRequest, ReelerAuction.class);
             validator.validate(reelerAuction);
             reelerAuction.setAuctionDate(LocalDate.now());
