@@ -187,6 +187,13 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        //Fetch reelerId by userId
+        UserMaster userMaster = userMasterRepository.findByUserMasterIdAndActive(Long.valueOf(reelerLotRequest.getReelerId()), true);
+        if(userMaster != null){
+            reelerLotRequest.setReelerId(Integer.parseInt(userMaster.getUserTypeId().toString()));
+        }
+
         List<Integer> reelerLotList = reelerAuctionRepository.findByAuctionDateAndMarketIdAndReelerId(LocalDate.now(), reelerLotRequest.getMarketId(), reelerLotRequest.getReelerId());
         Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(LocalDate.now(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId());
         Map<Integer, ReelerLotResponse> reelerLotResponseMap = new HashMap<>();
