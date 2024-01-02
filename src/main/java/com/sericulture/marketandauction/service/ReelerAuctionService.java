@@ -7,13 +7,11 @@ import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
-import com.sericulture.marketandauction.model.entity.UserMaster;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.LotRepository;
 import com.sericulture.marketandauction.repository.ReelerAuctionRepository;
-import com.sericulture.marketandauction.repository.UserMasterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,10 +43,7 @@ public class ReelerAuctionService {
 
     @Autowired
     LotRepository lotRepository;
-
-    @Autowired
-    UserMasterRepository userMasterRepository;
-
+    
     @Autowired
     Util util;
 
@@ -76,12 +71,6 @@ public class ReelerAuctionService {
                 rw.setErrorCode(-1);
                 rw.setErrorMessages(List.of(validationMessage));
                 return ResponseEntity.ok(rw);
-            }
-
-            //Fetch reelerId by userId
-            UserMaster userMaster = userMasterRepository.findByUserMasterIdAndActive(Long.valueOf(reelerBidRequest.getReelerId().toString()), true);
-            if(userMaster != null){
-                reelerBidRequest.setReelerId(BigInteger.valueOf(userMaster.getUserTypeId()));
             }
 
             ReelerAuction reelerAuction = mapper.reelerAuctionObjectToEntity(reelerBidRequest, ReelerAuction.class);
@@ -187,12 +176,6 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-
-        //Fetch reelerId by userId
-        UserMaster userMaster = userMasterRepository.findByUserMasterIdAndActive(Long.valueOf(reelerLotRequest.getReelerId()), true);
-        if(userMaster != null){
-            reelerLotRequest.setReelerId(Integer.parseInt(userMaster.getUserTypeId().toString()));
-        }
 
         List<Integer> reelerLotList = reelerAuctionRepository.findByAuctionDateAndMarketIdAndReelerId(LocalDate.now(), reelerLotRequest.getMarketId(), reelerLotRequest.getReelerId());
         Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(LocalDate.now(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId());
