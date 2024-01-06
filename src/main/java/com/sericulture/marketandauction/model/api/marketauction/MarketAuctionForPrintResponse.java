@@ -40,4 +40,5 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String race;
     private String source;
     private float tareWeight;
+    private String serialNumber;
 }

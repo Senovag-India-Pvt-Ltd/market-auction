@@ -37,7 +37,7 @@ public class MarketAuctionPrinterService {
         boolean foundAcceptedLot = false;
         if (lotDetails != null && lotDetails.length > 0) {
             foundAcceptedLot = true;
-            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][24]);
+            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][26]);
             if (reelerCurrentBalance < 0) {
                 return marketAuctionHelper.retrunIfError(rw, "cannot generate bidding slip as reeler balance is negative and balance is: "+reelerCurrentBalance);
             }
@@ -46,6 +46,7 @@ public class MarketAuctionPrinterService {
         }
         if (foundAcceptedLot || (lotDetails != null && lotDetails.length > 0)) {
             for (Object[] response : lotDetails) {
+                BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
                 marketAuctionForPrintResponse = MarketAuctionForPrintResponse.builder().
                         farmerNumber(Util.objectToString(response[0]))
                         .farmerFirstName(Util.objectToString(response[1]))
@@ -63,18 +64,19 @@ public class MarketAuctionPrinterService {
                         .source(Util.objectToString(response[13]))
                         .race(Util.objectToString(response[14]))
                         .tareWeight(Util.objectToFloat(response[15]))
+                        .serialNumber(Util.objectToString(response[16])+lotId)
                         .build();
                 if (foundAcceptedLot) {
-                    marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[16]));
-                    marketAuctionForPrintResponse.setReelerName(Util.objectToString(response[17]));
-                    marketAuctionForPrintResponse.setReelerAddress(Util.objectToString(response[18]));
-                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[19]));
-                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[20]));
-                    marketAuctionForPrintResponse.setFarmerMarketFee(Util.objectToFloat(response[21]));
-                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[22]));
-                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[23]));
+                    marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[18]));
+                    marketAuctionForPrintResponse.setReelerName(Util.objectToString(response[19]));
+                    marketAuctionForPrintResponse.setReelerAddress(Util.objectToString(response[20]));
+                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[21]));
+                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[22]));
+                    marketAuctionForPrintResponse.setFarmerMarketFee(Util.objectToFloat(response[23]));
+                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[24]));
+                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[25]));
                     marketAuctionForPrintResponse.setReelerCurrentBalance(reelerCurrentBalance);
-                    BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[25])));
+
                     List<Float> lotWeightList = lotWeightDetailRepository.findAllByLotId(lotId);
                     if(!Util.isNullOrEmptyList(lotWeightList))
                     marketAuctionForPrintResponse.setLotWeightDetail(lotWeightList);

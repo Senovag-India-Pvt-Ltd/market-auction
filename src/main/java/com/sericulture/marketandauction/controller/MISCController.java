@@ -48,4 +48,9 @@ public class MISCController {
     public ResponseEntity<?> submitBid(@RequestBody FLexTimeRequest fLexTimeRequest){
         return miscService.flipFlexTime(fLexTimeRequest);
     }
+
+    @PostMapping("/getFlexTime")
+    public ResponseEntity<?> getFlexTime(@RequestBody FLexTimeRequest fLexTimeRequest){
+        return miscService.getFlexTime(fLexTimeRequest);
+    }
 }
