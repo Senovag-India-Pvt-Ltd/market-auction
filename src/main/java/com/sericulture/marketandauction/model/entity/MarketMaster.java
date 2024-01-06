@@ -67,4 +67,6 @@ public class MarketMaster extends BaseEntity implements Serializable {
     private LocalTime auction2AcceptEndTime;
     @Column(name = "AUCTION3_ACCEPT_END_TIME")
     private LocalTime auction3AcceptEndTime;
+    @Column(name="SERIAL_NUMBER_PREFIX")
+    private String serailNumberPrefix;
 }

@@ -1,6 +1,8 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
 import com.sericulture.marketandauction.model.entity.FlexTime;
 import com.sericulture.marketandauction.model.mapper.Mapper;
@@ -20,6 +22,9 @@ public class MISCService {
     FlexTimeRepository flexTimeRepository;
 
     @Autowired
+    MarketAuctionHelper marketAuctionHelper;
+
+    @Autowired
     Mapper mapper;
 
     public ResponseEntity<?> flipFlexTime(FLexTimeRequest fLexTimeRequest){
@@ -32,6 +37,17 @@ public class MISCService {
             flexTime.setStart(fLexTimeRequest.isStart());
         }
         flexTimeRepository.save(flexTime);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getFlexTime(FLexTimeRequest fLexTimeRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId(fLexTimeRequest.getActivityType(), fLexTimeRequest.getMarketId(), fLexTimeRequest.getGodownId());
+        if(flexTime==null){
+            return marketAuctionHelper.retrunIfError(rw,"No Data found for the given request");
+        }
+        rw.setContent(flexTime);
         return ResponseEntity.ok(rw);
     }
 }
