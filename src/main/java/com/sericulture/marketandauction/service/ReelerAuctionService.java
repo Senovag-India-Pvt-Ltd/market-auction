@@ -59,7 +59,7 @@ public class ReelerAuctionService {
                 rw.setErrorMessages(List.of(validationMessage));
                 return ResponseEntity.ok(rw);
             }
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerBidRequest.getMarketId(), reelerBidRequest.getAllottedLotId(), LocalDate.now());
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerBidRequest.getMarketId(), reelerBidRequest.getAllottedLotId(), Util.getISTLocalDate());
             if (lot == null) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "lot not found", "-1");
                 rw.setErrorCode(-1);
@@ -75,7 +75,7 @@ public class ReelerAuctionService {
 
             ReelerAuction reelerAuction = mapper.reelerAuctionObjectToEntity(reelerBidRequest, ReelerAuction.class);
             validator.validate(reelerAuction);
-            reelerAuction.setAuctionDate(LocalDate.now());
+            reelerAuction.setAuctionDate(Util.getISTLocalDate());
             reelerAuctionRepository.save(reelerAuction);
         } catch (Exception ex) {
             log.error("Error While submitting the bid for the Request:"+reelerBidRequest+" error id: "+ex);
@@ -87,7 +87,7 @@ public class ReelerAuctionService {
     public ResponseEntity<?> getHighestBidPerLot(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(GetHighestBidPerLotResponse.class);
 
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), LocalDate.now());
+        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
         GetHighestBidPerLotResponse getHighestBidPerLotResponse = new GetHighestBidPerLotResponse();
         getHighestBidPerLotResponse.setAllottedLotId(ra.getAllottedLotId());
         if (ra != null) {
@@ -100,7 +100,7 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getHighestBidPerLotDetails(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(LotBidDetailResponse.class);
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), LocalDate.now());
+        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
         LotBidDetailResponse lbdr = new LotBidDetailResponse();
         lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
         if (ra != null) {
@@ -114,7 +114,7 @@ public class ReelerAuctionService {
 
             lbdr.setAmount(ra.getAmount());
             lbdr.setReelerAuctionId(ra.getId());
-            Object[][] ldrDetails = reelerAuctionRepository.getLotBidDetailResponse(lotStatusRequest.getAllottedLotId(), LocalDate.now(), lotStatusRequest.getMarketId());
+            Object[][] ldrDetails = reelerAuctionRepository.getLotBidDetailResponse(lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate(), lotStatusRequest.getMarketId());
             if (ldrDetails == null || ldrDetails.length == 0) {
                 rw.setErrorCode(-1);
                 rw.setErrorMessages(List.of("No farmer details found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
@@ -149,13 +149,13 @@ public class ReelerAuctionService {
                 rw.setErrorMessages(List.of(validationMessage));
                 return ResponseEntity.ok(rw);
             }
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(),LocalDate.now());
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(),Util.getISTLocalDate());
             if(!Util.isNullOrEmptyOrBlank(lot.getStatus())){
                 return marketAuctionHelper.retrunIfError(rw,"expected Lot status is blank but found: "+lot.getStatus()+" for the allottedLotId: "+lot.getAllottedLotId());
             }
-            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(),lotStatusRequest.getMarketId(),LocalDate.now());
+            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(),lotStatusRequest.getMarketId(),Util.getISTLocalDate());
             if (reelerAuction != null) {
-                Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), LocalDate.now());
+                Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
                 l.setStatus("accepted");
                 l.setReelerAuctionId(reelerAuction.getId());
                 l.setBidAcceptedBy(lotStatusRequest.getBidAcceptedBy());
@@ -177,8 +177,8 @@ public class ReelerAuctionService {
     public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
-        List<Integer> reelerLotList = reelerAuctionRepository.findByAuctionDateAndMarketIdAndReelerId(LocalDate.now(), reelerLotRequest.getMarketId(), reelerLotRequest.getReelerId());
-        Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(LocalDate.now(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId());
+        List<Integer> reelerLotList = reelerAuctionRepository.findByAuctionDateAndMarketIdAndReelerId(Util.getISTLocalDate(), reelerLotRequest.getMarketId(), reelerLotRequest.getReelerId());
+        Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(Util.getISTLocalDate(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId());
         Map<Integer, ReelerLotResponse> reelerLotResponseMap = new HashMap<>();
 
         if (reelerLotHighestAndHisBidList != null && reelerLotHighestAndHisBidList.length > 0) {

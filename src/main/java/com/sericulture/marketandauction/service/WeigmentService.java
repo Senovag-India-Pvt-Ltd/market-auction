@@ -84,15 +84,15 @@ public class WeigmentService {
             return marketAuctionHelper.retrunIfError(rw, "Reeler current balance is not enough and he need " + Math.abs(hasEnoughMoney) + " more money");
         }
         if (updateWeight) {
-            long count = reelerVidBlockedAmountRepository.findByReelerVirtualAccountNumberAndAuctionDate(lotWeightResponse.getReelerVirtualAccountNumber(), LocalDate.now());
+            long count = reelerVidBlockedAmountRepository.findByReelerVirtualAccountNumberAndAuctionDate(lotWeightResponse.getReelerVirtualAccountNumber(), Util.getISTLocalDate());
             Query insertRVBAQuery = entityManager.createNativeQuery("INSERT INTO REELER_VID_BLOCKED_AMOUNT " +
                     "(MARKET_AUCTION_ID, ALLOTTED_LOT_ID, " +
                     "MARKET_ID, AUCTION_DATE, REELER_ID, AMOUNT, reeler_virtual_account_number, STATUS, CREATED_BY, MODIFIED_BY, CREATED_DATE, MODIFIED_DATE, ACTIVE)" +
-                    "SELECT  0, " + canContinueToWeighmentRequest.getAllottedLotId() + "," + canContinueToWeighmentRequest.getMarketId() + ",'" + LocalDate.now() + "', '" + lotWeightResponse.getReelerId() + "'," + amountForBlock + ",'" + lotWeightResponse.getReelerVirtualAccountNumber() + "', 'blocked', '', '', CURRENT_TIMESTAMP , CURRENT_TIMESTAMP, 1 from DUAL " +
+                    "SELECT  0, " + canContinueToWeighmentRequest.getAllottedLotId() + "," + canContinueToWeighmentRequest.getMarketId() + ",'" + Util.getISTLocalDate() + "', '" + lotWeightResponse.getReelerId() + "'," + amountForBlock + ",'" + lotWeightResponse.getReelerVirtualAccountNumber() + "', 'blocked', '', '', CURRENT_TIMESTAMP , CURRENT_TIMESTAMP, 1 from DUAL " +
                     "  WHERE " + count + " = (SELECT COUNT(*) from REELER_VID_BLOCKED_AMOUNT " +
                     "where reeler_virtual_account_number= ? and AUCTION_DATE= ?)");
             insertRVBAQuery.setParameter(1, lotWeightResponse.getReelerVirtualAccountNumber());
-            insertRVBAQuery.setParameter(2, LocalDate.now());
+            insertRVBAQuery.setParameter(2, Util.getISTLocalDate());
             int upodateRows = insertRVBAQuery.executeUpdate();
             if (upodateRows != 1) {
                 if (entityManager.isOpen()) {
@@ -100,7 +100,7 @@ public class WeigmentService {
                 }
                 return marketAuctionHelper.retrunIfError(rw, "concurrent modification exception, reeler is trying parellel transaction at same time");
             }
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(canContinueToWeighmentRequest.getMarketId(), canContinueToWeighmentRequest.getAllottedLotId(), LocalDate.now());
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(canContinueToWeighmentRequest.getMarketId(), canContinueToWeighmentRequest.getAllottedLotId(), Util.getISTLocalDate());
             lot.setStatus(LotStatus.CANCELLED.getLabel());
             lot.setNoOfCrates(canContinueToWeighmentRequest.getNoOfCrates());
             lot.setTotalCratesCapacityWeight(totalCrateCapacityWeight);
@@ -137,7 +137,7 @@ public class WeigmentService {
                 and f.ACTIVE =1 and ma.active = 1 and r.active =1  """);
 
         nativeQuery.setParameter(1, lotStatusRequest.getAllottedLotId());
-        nativeQuery.setParameter(2, LocalDate.now());
+        nativeQuery.setParameter(2, Util.getISTLocalDate());
         nativeQuery.setParameter(3, lotStatusRequest.getMarketId());
 
         Object[] lotWeightDetails = (Object[]) nativeQuery.getSingleResult();
@@ -177,7 +177,7 @@ public class WeigmentService {
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(), LocalDate.now());
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(), Util.getISTLocalDate());
             if (!lot.getStatus().equals(LotStatus.ACCEPTED.getLabel())) {
                 return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lot.getStatus() + " for the allottedLotId: " + lot.getAllottedLotId());
             }
@@ -199,7 +199,7 @@ public class WeigmentService {
             double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
             double farmerMarketFee = (lotSoldOutAmount * farmerBrokarage) / 100;
             double amountDebitedFromReeler = lotSoldOutAmount + reelerMarketFee;
-            ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), LocalDate.now(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
+            ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
             entityManager.persist(reelerVidDebitTxn);
             lot.setWeighmentCompletedBy(completeLotWeighmentRequest.getUserName());
             lot.setStatus(LotStatus.WEIGHMENTCOMPLETED.getLabel());

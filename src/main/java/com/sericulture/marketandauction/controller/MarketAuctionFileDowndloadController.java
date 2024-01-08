@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.controller;
 
+import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentCSVRequest;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.service.MarketAuctionFileDowndloadService;
@@ -26,7 +27,7 @@ public class MarketAuctionFileDowndloadController {
         InputStreamResource file = new InputStreamResource(marketAuctionFileDowndloadService.generateCSV(marketId,fileName));
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName+ LocalDate.now()+".csv")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName+ Util.getISTLocalDate()+".csv")
                 .contentType(MediaType.parseMediaType("application/csv"))
                 .body(file);
     }
