@@ -118,7 +118,7 @@ public class MarketAuctionService {
     private MarketAuction saveMarketAuction(MarketAuctionRequest marketAuctionRequest) {
         MarketAuction marketAuction = mapper.marketAuctionObjectToEntity(marketAuctionRequest, MarketAuction.class);
         validator.validate(marketAuction);
-        marketAuction.setMarketAuctionDate(LocalDate.now());
+        marketAuction.setMarketAuctionDate(Util.getISTLocalDate());
         marketAuction.setStatus("in creation");
 
         return marketAuctionRepository.save(marketAuction);
@@ -161,7 +161,7 @@ public class MarketAuctionService {
     private List<Integer> saveLot(BigInteger id, int numberOfLot, int marketId, int godownId,int estimatedWeight,EntityManager entityManager) {
         List<Integer> lotList = new ArrayList<>();
         Integer lotCounter = 0;
-        lotCounter = lotRepository.findByMarketIdAndAuctionDate(marketId, LocalDate.now());
+        lotCounter = lotRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
         if (lotCounter == null) {
             lotCounter = 0;
         }
@@ -174,8 +174,8 @@ public class MarketAuctionService {
             lotList.add(allotedLot);
             lot.setMarketAuctionId(id);
             lot.setMarketId(marketId);
-            lot.setAuctionDate(LocalDate.now());
-            lot.setCustomerReferenceNumber(Util.getCRN(LocalDate.now(),marketId,allotedLot));
+            lot.setAuctionDate(Util.getISTLocalDate());
+            lot.setCustomerReferenceNumber(Util.getCRN(Util.getISTLocalDate(),marketId,allotedLot));
             lot.setLotApproxWeightBeforeWeighment(approxWeightPerLot);
             lots.add(lot);
             entityManager.persist(lot);
@@ -196,7 +196,7 @@ public class MarketAuctionService {
         List<Integer> smallBins = new ArrayList<>();
         List<Integer> smallAlloted = new ArrayList<>();
         List<Bin> binList = new ArrayList<>();
-        bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, LocalDate.now());
+        bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, Util.getISTLocalDate());
         // in case its null its inserts the new record in separate transaction locking the row, thus syncing the process allowing only one row.
         if (bc == null) {
            bc = checkAndInsertForMaster(marketId, godownId);
@@ -235,7 +235,7 @@ public class MarketAuctionService {
             bc = new BinCounter();
             bc.setMarketId(marketId);
             bc.setGodownId(godownId);
-            bc.setAuctionDate(LocalDate.now());
+            bc.setAuctionDate(Util.getISTLocalDate());
         }
 
         if(numberOfBigBin>0)
@@ -256,7 +256,7 @@ public class MarketAuctionService {
         BinCounterMaster byMarketIdAndGodownId = binCounterMasterRepository.findByMarketIdAndGodownId(marketId, godownId);
         //Master fetched to get the last count
         BinCounterMaster binCounterMaster = binCounterMasterRepository.getByMarketIdAndAuction(byMarketIdAndGodownId.getId());
-        BinCounter bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, LocalDate.now());
+        BinCounter bc = binCounterRepository.findByMarketIdAndGodownIdAndAuctionDate(marketId, godownId, Util.getISTLocalDate());
         if(Objects.isNull(bc)) {
             int smallBinStart = binCounterMaster.getSmallBinStart();
             int bigBinStart = binCounterMaster.getBigBinStart();
@@ -265,7 +265,7 @@ public class MarketAuctionService {
             bc.setBigBinNextNumber(bigBinStart);
             bc.setMarketId(marketId);
             bc.setGodownId(godownId);
-            bc.setAuctionDate(LocalDate.now());
+            bc.setAuctionDate(Util.getISTLocalDate());
             binCounterRepository.save(bc);
         }
         return bc;
@@ -282,7 +282,7 @@ public class MarketAuctionService {
         }
         for (int i = 0; i < limit; i++) {
             Bin bin = new Bin(bins.get(i), marketAuctionId, type,marketId);
-            bin.setAuctionDate(LocalDate.now());
+            bin.setAuctionDate(Util.getISTLocalDate());
             binList.add(bin);
             nextSequence = bins.get(i);
             allotedList.add(nextSequence);
@@ -357,7 +357,7 @@ public class MarketAuctionService {
     @Transactional
     public boolean cancelLot(CancelAuctionByLotRequest cancellationRequest) {
         try {
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId(),LocalDate.now());
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId(),Util.getISTLocalDate());
             lot.setStatus(LotStatus.CANCELLED.getLabel());
             lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
             lot.setRejectedBy("farmer");

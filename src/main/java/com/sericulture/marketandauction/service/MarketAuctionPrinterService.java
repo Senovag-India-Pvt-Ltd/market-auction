@@ -64,7 +64,7 @@ public class MarketAuctionPrinterService {
                         .source(Util.objectToString(response[13]))
                         .race(Util.objectToString(response[14]))
                         .tareWeight(Util.objectToFloat(response[15]))
-                        .serialNumber(Util.objectToString(response[16])+lotId)
+                        .serialNumber(Util.objectToString(response[17])+lotId)
                         .build();
                 if (foundAcceptedLot) {
                     marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[18]));

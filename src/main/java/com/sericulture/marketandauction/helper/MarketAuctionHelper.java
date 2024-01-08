@@ -89,7 +89,7 @@ public class MarketAuctionHelper {
     }
 
     public boolean canPerformAnyoneActivity(MarketMaster marketMaster,activityType activity,int marketId,int godownId){
-        LocalTime time = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalTime time = Util.getISTLocalTime().truncatedTo(ChronoUnit.SECONDS);
 
         LocalTime starttime = null;
         LocalTime endTime = null;

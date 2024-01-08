@@ -11,12 +11,9 @@ import java.util.Date;
 public class BaseEntity {
 
     @Column(name = "CREATED_BY")
-    @GenericGenerator(name = "uuid", strategy = "uuid2") //TODO once security is added we need to add the user if from principal
-    private int createdBy;
-
-    @GenericGenerator(name = "uuid", strategy = "uuid2") //TODO once security is added we need to add the user if from principal
+    private String createdBy = "";
     @Column(name = "MODIFIED_BY")
-    private int modifiedBy;
+    private String modifiedBy ="";
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "CREATED_DATE")
@@ -25,7 +22,6 @@ public class BaseEntity {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "MODIFIED_DATE")
     private Date modifiedDate;
-
     @Getter
     @Setter
     @Column(name = "ACTIVE", columnDefinition = "TINYINT")
