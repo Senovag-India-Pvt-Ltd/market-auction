@@ -1,13 +1,17 @@
 package com.sericulture.marketandauction.helper;
 
-import lombok.experimental.UtilityClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.*;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @Component
 public final class Util {
@@ -68,6 +72,13 @@ public final class Util {
     public static LocalTime getISTLocalTime() {
         LocalDateTime l = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
         return l.toLocalTime();
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 
 }
