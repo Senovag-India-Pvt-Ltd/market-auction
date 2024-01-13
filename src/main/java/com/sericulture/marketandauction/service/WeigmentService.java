@@ -198,7 +198,7 @@ public class WeigmentService {
             double farmerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][2]));
             double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
             double farmerMarketFee = (lotSoldOutAmount * farmerBrokarage) / 100;
-            double amountDebitedFromReeler = lotSoldOutAmount + reelerMarketFee;
+            double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee,2);
             ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
             entityManager.persist(reelerVidDebitTxn);
             lot.setWeighmentCompletedBy(completeLotWeighmentRequest.getUserName());
@@ -214,7 +214,7 @@ public class WeigmentService {
             entityManager.getTransaction().commit();
         } catch (Exception ex) {
             log.info("completeLotWeighMent Error while preocessing for request: "+completeLotWeighmentRequest+" error:"+ex);
-            return marketAuctionHelper.retrunIfError(rw,"error while processing completeLotWeighMent");
+            return marketAuctionHelper.retrunIfError(rw,"error while processing completeLotWeighMent: "+ex);
         } finally {
             if (entityManager != null && entityManager.isOpen()) {
                 entityManager.close();

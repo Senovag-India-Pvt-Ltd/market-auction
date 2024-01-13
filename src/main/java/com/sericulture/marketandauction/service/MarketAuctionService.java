@@ -354,21 +354,6 @@ public class MarketAuctionService {
 
     }
 
-    @Transactional
-    public boolean cancelLot(CancelAuctionByLotRequest cancellationRequest) {
-        try {
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId(),Util.getISTLocalDate());
-            lot.setStatus(LotStatus.CANCELLED.getLabel());
-            lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
-            lot.setRejectedBy("farmer");
-            lotRepository.save(lot);
 
-        }catch (Exception ex){
-            return false;
-        }
-
-        return true;
-
-    }
 }
 

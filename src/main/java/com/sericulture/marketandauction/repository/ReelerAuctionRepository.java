@@ -60,4 +60,8 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
 
     public long deleteByIdAndMarketIdAndAllottedLotIdAndReelerId(BigInteger id,int marketId,int allottedLotId,BigInteger reelerId);
 
+    @Query(nativeQuery = true,value = """
+            SELECT virtual_account_number  from reeler_virtual_bank_account rvba WHERE reeler_id = :reelerId and market_master_id = :marketId""")
+    public String getReelerVirtualAccountByReelerIdAndMarketId(int reelerId,int marketId);
+
 }

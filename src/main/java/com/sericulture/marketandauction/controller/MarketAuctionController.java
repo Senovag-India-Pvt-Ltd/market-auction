@@ -4,6 +4,7 @@ import com.sericulture.marketandauction.helper.MAConstants;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.service.CustomValidator;
+import com.sericulture.marketandauction.service.MarketAuctionCancelService;
 import com.sericulture.marketandauction.service.MarketAuctionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,6 +26,9 @@ public class MarketAuctionController {
 
     @Autowired
     MarketAuctionService marketAuctionService;
+
+    @Autowired
+    MarketAuctionCancelService marketAuctionCancelService;
 
     @Autowired
     CustomValidator customValidator;
@@ -175,13 +179,7 @@ public class MarketAuctionController {
     })
     @PostMapping("/cancelLot")
     public ResponseEntity<?> cancelLot(@RequestBody CancelAuctionByLotRequest cancellationRequest){
-        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        boolean success = marketAuctionService.cancelLot(cancellationRequest);
-        if(!success){
-            rw.setErrorCode(-1);
-            rw.setErrorMessages(List.of("unable to cancel lot"));
-        }
-        return ResponseEntity.ok(rw);
+        return marketAuctionCancelService.cancelLot(cancellationRequest);
     }
 
 
