@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.repository;
 
+import com.sericulture.marketandauction.model.api.marketauction.ReelerBalanceResponse;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -63,5 +64,21 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     @Query(nativeQuery = true,value = """
             SELECT virtual_account_number  from reeler_virtual_bank_account rvba WHERE reeler_id = :reelerId and market_master_id = :marketId""")
     public String getReelerVirtualAccountByReelerIdAndMarketId(int reelerId,int marketId);
+    
+    @Query(nativeQuery = true,value = """
+            SELECT r.reeler_id,rvba.virtual_account_number ,rvcb.CURRENT_BALANCE ,mm.releer_minimum_balance 
+            from reeler r
+            LEFT JOIN
+            reeler_virtual_bank_account rvba
+            on rvba.reeler_Id = r.reeler_Id
+            LEFT JOIN
+            REELER_VID_CURRENT_BALANCE rvcb
+            on rvcb.reeler_virtual_account_number = rvba.virtual_account_number
+            LEFT JOIN
+            market_master mm
+            on mm.market_master_id = rvba.market_master_id
+            WHERE
+            r.reeler_id = :reelerId and rvba.market_master_id = :marketId""")
+    public Object[][] getReelerBalance(int reelerId,int marketId);
 
 }

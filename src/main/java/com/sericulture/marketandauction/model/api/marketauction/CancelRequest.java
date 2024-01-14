@@ -4,16 +4,17 @@ import com.sericulture.marketandauction.model.api.RequestBody;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import java.math.BigInteger;
+import java.time.LocalDate;
 
 @AllArgsConstructor
 @Getter
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class CancelAuctionRequest extends CancelRequest {
+public class CancelRequest extends RequestBody {
 
-    @Schema(name = "auctionId", example = "1", required = true)
-    private BigInteger auctionId;
+    @Schema(name = "cancellationReason", example = "do not want to participate", required = true)
+    private int cancellationReason;
 
+    private LocalDate auctionDate;
 }

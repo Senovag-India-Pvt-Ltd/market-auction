@@ -10,9 +10,8 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class CancelAuctionByLotRequest extends CancelAuctionRequest{
+public class CancelAuctionByLotRequest extends CancelRequest{
     @Schema(name = "allottedLotId", example = "1", required = true)
     private int allottedLotId;
 
-    private LocalDate auctionDate;
 }

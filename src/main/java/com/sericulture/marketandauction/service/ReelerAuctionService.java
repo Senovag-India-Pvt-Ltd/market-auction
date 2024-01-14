@@ -43,13 +43,13 @@ public class ReelerAuctionService {
 
     @Autowired
     LotRepository lotRepository;
-    
+
     @Autowired
     Util util;
 
     @Transactional
     public ResponseEntity<?> submitbid(ReelerBidRequest reelerBidRequest) {
-        log.info("Bid submission request:"+reelerBidRequest);
+        log.info("Bid submission request:" + reelerBidRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
             boolean canIssue = marketAuctionHelper.canPerformInAnyOneAuction(reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
@@ -78,8 +78,8 @@ public class ReelerAuctionService {
             reelerAuction.setAuctionDate(Util.getISTLocalDate());
             reelerAuctionRepository.save(reelerAuction);
         } catch (Exception ex) {
-            log.error("Error While submitting the bid for the Request:"+reelerBidRequest+" error id: "+ex);
-            return marketAuctionHelper.retrunIfError(rw,"error occurred while submitting bid");
+            log.error("Error While submitting the bid for the Request:" + reelerBidRequest + " error id: " + ex);
+            return marketAuctionHelper.retrunIfError(rw, "error occurred while submitting bid");
         }
         return ResponseEntity.ok(rw);
     }
@@ -139,7 +139,7 @@ public class ReelerAuctionService {
 
     @Transactional
     public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
-        log.info("Accept bid received for request: "+lotStatusRequest);
+        log.info("Accept bid received for request: " + lotStatusRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
             boolean canIssue = marketAuctionHelper.canPerformAnyOneAuctionAccept(lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
@@ -149,11 +149,11 @@ public class ReelerAuctionService {
                 rw.setErrorMessages(List.of(validationMessage));
                 return ResponseEntity.ok(rw);
             }
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(),Util.getISTLocalDate());
-            if(!Util.isNullOrEmptyOrBlank(lot.getStatus())){
-                return marketAuctionHelper.retrunIfError(rw,"expected Lot status is blank but found: "+lot.getStatus()+" for the allottedLotId: "+lot.getAllottedLotId());
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate());
+            if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
+                return marketAuctionHelper.retrunIfError(rw, "expected Lot status is blank but found: " + lot.getStatus() + " for the allottedLotId: " + lot.getAllottedLotId());
             }
-            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(),lotStatusRequest.getMarketId(),Util.getISTLocalDate());
+            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
             if (reelerAuction != null) {
                 Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
                 l.setStatus("accepted");
@@ -163,13 +163,13 @@ public class ReelerAuctionService {
                 lotRepository.save(l);
                 reelerAuctionRepository.save(reelerAuction);
             } else {
-                return marketAuctionHelper.retrunIfError(rw,"no Reeler auction found");
+                return marketAuctionHelper.retrunIfError(rw, "no Reeler auction found");
             }
-            log.info("Accept bid completed for request: "+lotStatusRequest);
+            log.info("Accept bid completed for request: " + lotStatusRequest);
             return ResponseEntity.ok(rw);
-        }catch (Exception ex){
-            log.error("Error while processing request: "+lotStatusRequest+"with error:"+ex);
-            return marketAuctionHelper.retrunIfError(rw,"error while processing the request");
+        } catch (Exception ex) {
+            log.error("Error while processing request: " + lotStatusRequest + "with error:" + ex);
+            return marketAuctionHelper.retrunIfError(rw, "error while processing the request");
         }
     }
 
@@ -219,21 +219,37 @@ public class ReelerAuctionService {
     @Transactional
     public ResponseEntity<?> removeReelerHighestBid(RemoveReelerHighestBidRequest removeReelerHighestBidRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        log.warn("Removing the reeler Bid for:"+removeReelerHighestBidRequest);
-        long deletedrows = reelerAuctionRepository.deleteByIdAndMarketIdAndAllottedLotIdAndReelerId(removeReelerHighestBidRequest.getReelerAuctionId(),removeReelerHighestBidRequest.getMarketId(), removeReelerHighestBidRequest.getAllottedLotId(), removeReelerHighestBidRequest.getReelerId());
+        log.warn("Removing the reeler Bid for:" + removeReelerHighestBidRequest);
+        long deletedrows = reelerAuctionRepository.deleteByIdAndMarketIdAndAllottedLotIdAndReelerId(removeReelerHighestBidRequest.getReelerAuctionId(), removeReelerHighestBidRequest.getMarketId(), removeReelerHighestBidRequest.getAllottedLotId(), removeReelerHighestBidRequest.getReelerId());
         return ResponseEntity.ok(rw);
     }
 
-    private void setReelerLotResponse(ReelerLotResponse reelerLotResponse,int allottedLot,String highest,int bidAmount){
+    private void setReelerLotResponse(ReelerLotResponse reelerLotResponse, int allottedLot, String highest, int bidAmount) {
         reelerLotResponse.setAllottedLotId(allottedLot);
-        if(highest.equals("h")){
+        if (highest.equals("h")) {
             reelerLotResponse.setHighestBidAmount(bidAmount);
-        }else{
+        } else {
             reelerLotResponse.setMyBidAmount(bidAmount);
         }
     }
 
+    public ResponseEntity<?> getReelerBalance(ReelerBalanceRequest reelerBalanceRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(ReelerBalanceResponse.class);
 
+        Object[][] reelerBalanceRespObject = reelerAuctionRepository.getReelerBalance(reelerBalanceRequest.getReelerId(), reelerBalanceRequest.getMarketId());
+
+        if (reelerBalanceRespObject == null) {
+            marketAuctionHelper.retrunIfError(rw, "Reeler data not found for the reelerId and market" + reelerBalanceRequest.getReelerId() + " market: " + reelerBalanceRequest.getMarketId());
+        }
+        ReelerBalanceResponse reelerBalanceResponse = ReelerBalanceResponse.builder()
+                .reelerId(Util.objectToInteger(reelerBalanceRespObject[0][0]))
+                .reelerVirtualAccount(Util.objectToString(reelerBalanceRespObject[0][1]))
+                .balance(Util.objectToFloat(reelerBalanceRespObject[0][2]))
+                .minimumMarketBalance(Util.objectToFloat(reelerBalanceRespObject[0][3]))
+                .build();
+        rw.setContent(reelerBalanceResponse);
+        return ResponseEntity.ok(rw);
+    }
 }
 
 

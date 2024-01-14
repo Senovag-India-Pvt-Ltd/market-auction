@@ -102,6 +102,11 @@ public class ReelerAuctionController {
         return reelerAuctionService.removeReelerHighestBid(removeReelerHighestBidRequest);
     }
 
+    @PostMapping("/getReelerBalance")
+    public ResponseEntity<?> getReelerBalance(@RequestBody ReelerBalanceRequest reelerBalanceRequest){
+        return reelerAuctionService.getReelerBalance(reelerBalanceRequest);
+    }
+
 
 
 }
