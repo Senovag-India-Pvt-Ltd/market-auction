@@ -48,32 +48,30 @@ public class MarketAuctionCancelService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId(), cancellationRequest.getAuctionDate());
-            if (lot.getStatus() != null && !eligibleStatusForCancellation.contains(lot.getStatus())) {
-                marketAuctionHelper.retrunIfError(rw, "Lot cannot be rejected as the status of lot is :" + lot.getStatus());
-            }
+            if(lot.getStatus()!=null){
+                if (lot.getStatus().equals(LotStatus.WEIGHMENTCOMPLETED.getLabel())) {
+                    ReelerAuction reelerAuction = reelerAuctionRepository.findById(lot.getReelerAuctionId());
+                    double lotSoldOutAmount = lot.getLotWeightAfterWeighment() * reelerAuction.getAmount();
+                    Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(lot.getMarketId());
+                    double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
+                    double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
+                    double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee, 2) * (-1);
+                    String reelerVirtualBankAccount = reelerAuctionRepository.getReelerVirtualAccountByReelerIdAndMarketId(reelerAuction.getReelerId(), reelerAuction.getMarketId());
+                    ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), reelerAuction.getReelerId(), reelerVirtualBankAccount, amountDebitedFromReeler);
+                    reelerVidDebitTxnRepository.save(reelerVidDebitTxn);
 
-            if (lot.getStatus().equals(LotStatus.WEIGHMENTCOMPLETED.getLabel())) {
-                ReelerAuction reelerAuction = reelerAuctionRepository.findById(lot.getReelerAuctionId());
-                double lotSoldOutAmount = lot.getLotWeightAfterWeighment() * reelerAuction.getAmount();
-                Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(lot.getMarketId());
-                double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
-                double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
-                double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee, 2) * (-1);
-                String reelerVirtualBankAccount = reelerAuctionRepository.getReelerVirtualAccountByReelerIdAndMarketId(reelerAuction.getReelerId(), reelerAuction.getMarketId());
-                ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), reelerAuction.getReelerId(), reelerVirtualBankAccount, amountDebitedFromReeler);
-                reelerVidDebitTxnRepository.save(reelerVidDebitTxn);
-
+                }
+                if (!eligibleStatusForCancellation.contains(lot.getStatus())) {
+                    marketAuctionHelper.retrunIfError(rw, "Lot cannot be rejected as the status of lot is :" + lot.getStatus());
+                }
             }
             lot.setStatus(LotStatus.CANCELLED.getLabel());
             lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
             lot.setRejectedBy("farmer");
-
             lotRepository.save(lot);
-
         } catch (Exception ex) {
             return marketAuctionHelper.retrunIfError(rw, "Error while cancelling lot : " + ex);
         }
-
         return ResponseEntity.ok(rw);
 
     }
