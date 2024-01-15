@@ -4,6 +4,7 @@ package com.sericulture.marketandauction.service;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.api.ResponseBody;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
@@ -99,7 +100,7 @@ public class ReelerAuctionService {
     }
 
     public ResponseEntity<?> getHighestBidPerLotDetails(LotStatusRequest lotStatusRequest) {
-        ResponseWrapper rw = ResponseWrapper.createWrapper(LotBidDetailResponse.class);
+        ResponseWrapper rw = ResponseWrapper.createWrapper(ResponseBody.class);
         ReelerAuction ra = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
         LotBidDetailResponse lbdr = new LotBidDetailResponse();
         lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
@@ -131,8 +132,10 @@ public class ReelerAuctionService {
             lbdr.setLotApproxWeightBeforeWeighment(ldrDetails[0][5] == null ? 0 : Integer.valueOf(String.valueOf(ldrDetails[0][5])));
             lbdr.setStatus(ldrDetails[0][6] == null ? "" : String.valueOf(ldrDetails[0][6]));
             lbdr.setBidAcceptedBy(ldrDetails[0][7] == null ? "" : String.valueOf(ldrDetails[0][7]));
+            rw.setContent(lbdr);
+        }else {
+            marketAuctionHelper.retrunIfError(rw,"No bid found for the given lot please check the input");
         }
-        rw.setContent(lbdr);
         return ResponseEntity.ok(rw);
 
     }

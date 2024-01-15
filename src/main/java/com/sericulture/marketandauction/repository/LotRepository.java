@@ -91,7 +91,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
             l.allotted_lot_id,l.auction_date,ma.estimated_weight,
             mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
-            l.lot_id,mm.SERIAL_NUMBER_PREFIX,
+            l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,
             r.reeling_license_number, r.name,
             r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
             l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
@@ -122,7 +122,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
             l.allotted_lot_id,l.auction_date,ma.estimated_weight,
              mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
-             l.lot_id,mm.SERIAL_NUMBER_PREFIX
+             l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status
             from  
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
@@ -141,5 +141,8 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query("select distinct auctionDate from Lot where status=:status and marketId=:marketId")
     public List<LocalDate> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(int marketId,String status);
+
+    @Query("select allottedLotId from Lot lot where status!='cancelled' and auctionDate=:auctionDate and marketId=:marketId and createdBy=:userName order by createdDate limit 1")
+    public int findByMarketIdAndAuctionDateAndCreatedBy(int marketId, LocalDate auctionDate,String userName);
 
 }
