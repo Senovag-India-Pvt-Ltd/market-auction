@@ -13,9 +13,15 @@ import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.LotRepository;
 import com.sericulture.marketandauction.repository.ReelerAuctionRepository;
+import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,6 +53,70 @@ public class ReelerAuctionService {
 
     @Autowired
     Util util;
+
+    @PersistenceUnit
+    private EntityManagerFactory entityManagerFactory;
+
+    public ResponseEntity<?> submitbidSP(ReelerBidRequest reelerBidRequest) {
+        log.info("Bid Submission request:"+reelerBidRequest);
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        try {
+             EntityManager entityManager = entityManagerFactory.createEntityManager();
+            /* entityManager.getTransaction().begin();
+            Object singleResult = entityManager.createNativeQuery("{  CALL REELER_VID_CREDIT_TXN_SP(:UserId, :MarketId, :GodownId, :LotId, :ReelerId,:AuctionDate, :SurrogateBid, :Amount) }")
+                    .setParameter("UserId", "")
+                    .setParameter("MarketId", reelerBidRequest.getMarketId())
+                    .setParameter("GodownId", reelerBidRequest.getGodownId())
+                    .setParameter("LotId", reelerBidRequest.getAllottedLotId())
+                    .setParameter("ReelerId", reelerBidRequest.getReelerId())
+                    .setParameter("AuctionDate", Util.getISTLocalDate())
+                    .setParameter("SurrogateBid", 0)
+                    .setParameter("Amount", reelerBidRequest.getAmount())
+                    .getSingleResult();*/
+
+
+
+            StoredProcedureQuery procedureQuery = entityManager
+                    .createStoredProcedureQuery("SUBMIT_BID");
+            procedureQuery.registerStoredProcedureParameter("UserId", String.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("GodownId", Integer.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("LotId", Integer.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("ReelerId", Integer.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("AuctionDate", LocalDate.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("SurrogateBid", Integer.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("Amount", Integer.class, ParameterMode.IN);
+
+            procedureQuery.registerStoredProcedureParameter("Error", String.class, ParameterMode.OUT);
+            procedureQuery.registerStoredProcedureParameter("Success", Integer.class, ParameterMode.OUT);
+
+            entityManager.getTransaction().begin();
+            procedureQuery.setParameter("UserId", "");
+            procedureQuery.setParameter("MarketId", reelerBidRequest.getMarketId());
+            procedureQuery.setParameter("GodownId",  reelerBidRequest.getGodownId());
+            procedureQuery.setParameter("LotId", reelerBidRequest.getAllottedLotId());
+            procedureQuery.setParameter("ReelerId", reelerBidRequest.getReelerId());
+            procedureQuery.setParameter("AuctionDate", Util.getISTLocalDate());
+            procedureQuery.setParameter("SurrogateBid",0);
+            procedureQuery.setParameter("Amount", reelerBidRequest.getAmount());
+            procedureQuery.execute();
+            String error = (String)procedureQuery.getOutputParameterValue("Error");
+            Object success = procedureQuery.getOutputParameterValue("Success");
+            System.out.println("Out status: " + success);
+            entityManager.getTransaction().commit();
+            if(StringUtils.isNotEmpty(error)) {
+                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), error, "-1");
+                rw.setErrorCode(-1);
+                rw.setErrorMessages(List.of(validationMessage));
+                return ResponseEntity.ok(rw);
+            }
+        } catch (Exception ex) {
+            log.error("Error While submitting the bid for the Request:"+reelerBidRequest+" error id: "+ex);
+            return marketAuctionHelper.retrunIfError(rw,"error occurred while submitting bid.");
+        }
+        return ResponseEntity.ok(rw);
+    }
+
 
     @Transactional
     public ResponseEntity<?> submitbid(ReelerBidRequest reelerBidRequest) {
