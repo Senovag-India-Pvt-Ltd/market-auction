@@ -63,7 +63,7 @@ public class FarmerPaymentService {
         return ResponseEntity.ok(rw);
     }
 
-    private double prepareFarmerPaymentInfoResponseList(List<Object[]> paginatedResponse, List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList) {
+    public static double prepareFarmerPaymentInfoResponseList(List<Object[]> paginatedResponse, List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList) {
         double totalFarmerAmount = 0;
         for (Object[] response : paginatedResponse) {
             float lotSoldAmount = Util.objectToFloat(response[14]);
