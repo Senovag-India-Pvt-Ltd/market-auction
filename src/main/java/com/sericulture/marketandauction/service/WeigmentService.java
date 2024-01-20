@@ -64,6 +64,9 @@ public class WeigmentService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(CanContinueToWeighmentResponse.class);
         CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
         LotWeightResponse lotWeightResponse = getLotWeightResponse(canContinueToWeighmentRequest);
+        if(!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())){
+            return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
+        }
         if (util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber())) {
             if (entityManager.isOpen()) {
                 entityManager.close();
@@ -72,8 +75,12 @@ public class WeigmentService {
         }
         CrateMaster crateMaster = crateMasterRepository.findByMarketIdAndGodownIdAndRaceMasterId(canContinueToWeighmentRequest.getMarketId(), canContinueToWeighmentRequest.getGodownId(), lotWeightResponse.getRaceMasterId());
         int totalCrateCapacityWeight = canContinueToWeighmentRequest.getNoOfCrates() * crateMaster.getApproxWeightPerCrate();
-        double amountForBlock = totalCrateCapacityWeight * lotWeightResponse.getBidAmount() * 1.01;
-        double hasEnoughMoney = lotWeightResponse.getReelerCurrentAvailableBalance() - amountForBlock;
+        double lotSoldOutAmount = totalCrateCapacityWeight * lotWeightResponse.getBidAmount();
+        Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(canContinueToWeighmentRequest.getMarketId());
+        double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
+        double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
+        double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee,2);
+        double hasEnoughMoney = lotWeightResponse.getReelerCurrentAvailableBalance() - amountDebitedFromReeler;
         canContinueToWeighmentResponse.setWeight(totalCrateCapacityWeight);
         rw.setContent(canContinueToWeighmentResponse);
 
@@ -88,7 +95,7 @@ public class WeigmentService {
             Query insertRVBAQuery = entityManager.createNativeQuery("INSERT INTO REELER_VID_BLOCKED_AMOUNT " +
                     "(MARKET_AUCTION_ID, ALLOTTED_LOT_ID, " +
                     "MARKET_ID, AUCTION_DATE, REELER_ID, AMOUNT, reeler_virtual_account_number, STATUS, CREATED_BY, MODIFIED_BY, CREATED_DATE, MODIFIED_DATE, ACTIVE)" +
-                    "SELECT  0, " + canContinueToWeighmentRequest.getAllottedLotId() + "," + canContinueToWeighmentRequest.getMarketId() + ",'" + Util.getISTLocalDate() + "', '" + lotWeightResponse.getReelerId() + "'," + amountForBlock + ",'" + lotWeightResponse.getReelerVirtualAccountNumber() + "', 'blocked', '', '', CURRENT_TIMESTAMP , CURRENT_TIMESTAMP, 1 from DUAL " +
+                    "SELECT  0, " + canContinueToWeighmentRequest.getAllottedLotId() + "," + canContinueToWeighmentRequest.getMarketId() + ",'" + Util.getISTLocalDate() + "', '" + lotWeightResponse.getReelerId() + "'," + amountDebitedFromReeler + ",'" + lotWeightResponse.getReelerVirtualAccountNumber() + "', 'blocked', '', '', CURRENT_TIMESTAMP , CURRENT_TIMESTAMP, 1 from DUAL " +
                     "  WHERE " + count + " = (SELECT COUNT(*) from REELER_VID_BLOCKED_AMOUNT " +
                     "where reeler_virtual_account_number= ? and AUCTION_DATE= ?)");
             insertRVBAQuery.setParameter(1, lotWeightResponse.getReelerVirtualAccountNumber());
@@ -119,7 +126,7 @@ public class WeigmentService {
                 ra.AMOUNT,ma.RACE_MASTER_ID,v.VILLAGE_NAME ,rvcb.CURRENT_BALANCE,
                 isnull( (select sum(amount) from REELER_VID_BLOCKED_AMOUNT b where b.status='blocked' and   
                 b.auction_date=ma.market_auction_date  and b.reeler_virtual_account_number=rvcb.reeler_virtual_account_number) ,0) blocked_amount,
-                rvba.virtual_account_number,r.reeler_id,mm.market_name,rm.race_name,sm.source_name,mm.box_weight
+                rvba.virtual_account_number,r.reeler_id,mm.market_name,rm.race_name,sm.source_name,mm.box_weight,l.status
                 from  
                 FARMER f
                 INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
@@ -166,6 +173,7 @@ public class WeigmentService {
                 .race(Util.objectToString(lotWeightDetails[15]))
                 .source(Util.objectToString(lotWeightDetails[16]))
                 .tareWeight(Util.objectToFloat(lotWeightDetails[17]))
+                .lotStatus(Util.objectToString(lotWeightDetails[18]))
                 .build();
         return lotWeightResponse;
     }
@@ -178,7 +186,7 @@ public class WeigmentService {
             entityManager.getTransaction().begin();
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(), Util.getISTLocalDate());
-            if (!lot.getStatus().equals(LotStatus.ACCEPTED.getLabel())) {
+            if (lot.getStatus()==null || !lot.getStatus().equals(LotStatus.ACCEPTED.getLabel())) {
                 return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lot.getStatus() + " for the allottedLotId: " + lot.getAllottedLotId());
             }
             LotWeightResponse lotWeightResponse = getLotWeightResponse(completeLotWeighmentRequest);

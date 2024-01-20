@@ -1,9 +1,23 @@
 package com.sericulture.marketandauction.controller;
 
+import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
+import com.sericulture.marketandauction.service.MarketAuctionReportService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/v1/auction/report")
 public class MarketAuctionReportController {
+
+    @Autowired
+    private MarketAuctionReportService marketAuctionReportService;
+
+    @PostMapping("/getAllHighestBidsByMarketIdAndOptionalGodownId")
+    public ResponseEntity<?> getAllHighestBidsByMarketIdAndOptionalGodownId(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
+        return marketAuctionReportService.getAllHighestBidsByMarketIdAndOptionalGodownId(requestBody);
+    }
 }
