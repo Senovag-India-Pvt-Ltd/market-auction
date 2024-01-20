@@ -48,7 +48,7 @@ public class MarketAuctionReportService {
             SELECT l.allotted_lot_id  from lot l
             INNER JOIN market_auction ma
             on ma.market_auction_id = l.market_auction_id
-            where ma.market_auction_date =:auctionDate and ma.market_id = :marketId """;
+            where ma.market_auction_date =:auctionDate and ma.market_id = :marketId  and l.status is NULL """;
 
     public static final String ALLTTOTED_LOT_LIST_PER_MARKET_ID_AND_GODOWNID = ALLTTOTED_LOT_LIST_PER_MARKET_ID + " and ma.godown_id =:godownId";
 
@@ -82,12 +82,7 @@ public class MarketAuctionReportService {
                 lotHighestBidResponseList.add(lotHighestBidResponse);
             }
         }
-        allottedLotList.removeAll(highestBidsFoundList);
-        if(!allottedLotList.isEmpty()){
-            for (Integer lot: allottedLotList){
-                lotHighestBidResponseList.add(new LotHighestBidResponse(lot,0,""));
-            }
-        }
+
         rw.setContent(lotHighestBidResponseList);
         return ResponseEntity.ok(rw);
     }
