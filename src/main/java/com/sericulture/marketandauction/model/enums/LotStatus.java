@@ -12,6 +12,7 @@ public enum LotStatus {
     PAYMENTSUCCESS("paymentsuccess"),
     PAYMENTFAILED("paymentfailed"),
     PAYMENTVALIDATIONFAILED("paymentvalidationfailed"),
+    PAYMENTPROCESSING("paymentprocessing"),
     CANCELLED("cancelled"),
     INUPDATEWEIGHT("inupdateweight");
 
