@@ -37,4 +37,5 @@ public class LotWeightResponse extends ResponseBody {
     private String race;
     private String source;
     private float tareWeight;
+    private String lotStatus;
 }

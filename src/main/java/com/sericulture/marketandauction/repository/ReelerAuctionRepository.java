@@ -2,6 +2,7 @@ package com.sericulture.marketandauction.repository;
 
 import com.sericulture.marketandauction.model.api.marketauction.ReelerBalanceResponse;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
+import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -80,5 +81,14 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
             WHERE
             r.reeler_id = :reelerId and rvba.market_master_id = :marketId""")
     public Object[][] getReelerBalance(int reelerId,int marketId);
+
+    @Query(nativeQuery = true, value = MarketAuctionReportService.getAllHighestBids)
+    public Object[][] getHighestBidAmountForAllLotList(LocalDate today,int marketId,List<Integer> lotList);
+
+    @Query(nativeQuery = true, value = MarketAuctionReportService.ALLTTOTED_LOT_LIST_PER_MARKET_ID)
+    public List<Integer> getAllottedLotListByMarketId(LocalDate auctionDate,int marketId);
+
+    @Query(nativeQuery = true, value = MarketAuctionReportService.ALLTTOTED_LOT_LIST_PER_MARKET_ID_AND_GODOWNID)
+    public List<Integer> getAllottedLotListByMarketIdAndGoDownId(LocalDate auctionDate,int marketId,int godownId);
 
 }
