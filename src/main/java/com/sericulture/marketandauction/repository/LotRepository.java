@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.repository;
 
+import com.sericulture.marketandauction.helper.MarketAuctionQueryConstants;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import org.springframework.cglib.core.Local;
@@ -147,7 +148,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query("select allottedLotId from Lot lot where status!='cancelled' and auctionDate=:auctionDate and marketId=:marketId and createdBy=:userName order by createdDate limit 1")
     public int findByMarketIdAndAuctionDateAndCreatedBy(int marketId, LocalDate auctionDate,String userName);
 
-    @Query(nativeQuery = true,value = MarketAuctionReportService.DTR_ONLINE_REPORT_QUERY)
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY)
     public List<Object[]> getDTROnlineReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
 }
