@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.security.Principal;
 import java.util.Date;
 @MappedSuperclass
 @FilterDef(name = "activeEducationFilter", parameters = @ParamDef(name = "active", type = Boolean.class))
@@ -31,11 +33,16 @@ public class BaseEntity {
     public void prePersist() {
         if(active == null)
             active = true;
+        Principal principal = SecurityContextHolder.getContext().getAuthentication();
+        this.createdBy = principal.getName();
+        this.modifiedBy = principal.getName();
     }
 
     @PreUpdate
     public void preUpdate() {
         if(active == null)
             active = true;
+        Principal principal = SecurityContextHolder.getContext().getAuthentication();
+        this.modifiedBy = principal.getName();
     }
 }
