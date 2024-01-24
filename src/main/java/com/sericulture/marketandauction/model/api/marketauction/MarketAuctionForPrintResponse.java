@@ -55,5 +55,6 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private double reelerAmount;
     private List<Integer> smallBinList;
     private List<Integer> bigBinList;
+    private String loginName;
 
 }
