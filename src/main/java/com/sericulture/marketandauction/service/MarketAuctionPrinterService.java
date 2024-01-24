@@ -6,6 +6,7 @@ import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionForPrintRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionForPrintResponse;
 import com.sericulture.marketandauction.model.enums.LotStatus;
+import com.sericulture.marketandauction.repository.BinRepository;
 import com.sericulture.marketandauction.repository.LotRepository;
 import com.sericulture.marketandauction.repository.LotWeightDetailRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -27,6 +30,9 @@ public class MarketAuctionPrinterService {
     LotWeightDetailRepository lotWeightDetailRepository;
 
     @Autowired
+    BinRepository binRepository;
+
+    @Autowired
     MarketAuctionHelper marketAuctionHelper;
 
     public ResponseEntity<?> getPrintableDataForLot(MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
@@ -38,10 +44,8 @@ public class MarketAuctionPrinterService {
         boolean foundAcceptedLot = false;
         if (lotDetails != null && lotDetails.length > 0) {
             foundAcceptedLot = true;
-            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][27]);
-            if (reelerCurrentBalance < 0) {
-                return marketAuctionHelper.retrunIfError(rw, "cannot generate bidding slip as reeler balance is negative and balance is: "+reelerCurrentBalance);
-            }
+            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][32]);
+
         } else {
             lotDetails = lotRepository.getNewlyCreatedLotDetails(marketAuctionForPrintRequest.getAuctionDate(), marketAuctionForPrintRequest.getMarketId(), marketAuctionForPrintRequest.getAllottedLotId());
         }
@@ -69,21 +73,37 @@ public class MarketAuctionPrinterService {
                         .race(Util.objectToString(response[14]))
                         .tareWeight(Util.objectToFloat(response[15]))
                         .serialNumber(Util.objectToString(response[17])+lotId)
+                        .marketNameKannada(Util.objectToString(response[19]))
+                        .farmerMobileNumber(Util.objectToString(response[20]))
+
+                        .farmerMobileNumber(Util.objectToString(21))
+                        .marketAuctionId((BigDecimal) response[22])
                         .build();
+                marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
+                marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));
+
+
                 if (foundAcceptedLot) {
-                    marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[19]));
-                    marketAuctionForPrintResponse.setReelerName(Util.objectToString(response[20]));
-                    marketAuctionForPrintResponse.setReelerAddress(Util.objectToString(response[21]));
-                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[22]));
-                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[23]));
-                    marketAuctionForPrintResponse.setFarmerMarketFee(Util.objectToFloat(response[24]));
-                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[25]));
-                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[26]));
+                    marketAuctionForPrintResponse.setAuctionDateWithTime((Date)(response[23]));
+                    marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[24]));
+                    marketAuctionForPrintResponse.setReelerName(Util.objectToString(response[25]));
+                    marketAuctionForPrintResponse.setReelerAddress(Util.objectToString(response[26]));
+                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[27]));
+                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[28]));
+                    marketAuctionForPrintResponse.setFarmerMarketFee(Util.objectToFloat(response[29]));
+                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[30]));
+                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[31]));
                     marketAuctionForPrintResponse.setReelerCurrentBalance(reelerCurrentBalance);
+                    marketAuctionForPrintResponse.setReelerNameKannada(Util.objectToString(response[33]));
+                    marketAuctionForPrintResponse.setReelerMobileNumber(Util.objectToString(response[34]));
+                    marketAuctionForPrintResponse.setFarmerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() - marketAuctionForPrintResponse.getFarmerMarketFee());
+                    marketAuctionForPrintResponse.setReelerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() + marketAuctionForPrintResponse.getReelerMarketFee());
+
 
                     List<Float> lotWeightList = lotWeightDetailRepository.findAllByLotId(lotId);
                     if(!Util.isNullOrEmptyList(lotWeightList))
                     marketAuctionForPrintResponse.setLotWeightDetail(lotWeightList);
+
                 }
             }
         } else {

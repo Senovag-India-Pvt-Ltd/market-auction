@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sericulture.marketandauction.model.api.ResponseBody;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 
 @AllArgsConstructor
@@ -41,4 +44,16 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String source;
     private float tareWeight;
     private String serialNumber;
+    private BigDecimal marketAuctionId;
+    private String marketNameKannada;
+    private String farmerNameKannada;
+    private Date auctionDateWithTime;
+    private String farmerMobileNumber;
+    private String reelerMobileNumber;
+    private String reelerNameKannada;
+    private double farmerAmount;
+    private double reelerAmount;
+    private List<Integer> smallBinList;
+    private List<Integer> bigBinList;
+
 }
