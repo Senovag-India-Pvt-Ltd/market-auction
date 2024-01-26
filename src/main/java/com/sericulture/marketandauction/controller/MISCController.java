@@ -57,7 +57,7 @@ public class MISCController {
     }
 
     @PostMapping("/updateExceptionalTime")
-    public ResponseEntity<?> saveOrUpdateExceptionalTime(ExceptionalTimeRequest exceptionalTime){
+    public ResponseEntity<?> saveOrUpdateExceptionalTime(@RequestBody ExceptionalTimeRequest exceptionalTime){
         return miscService.saveOrUpdateExceptionalTime(exceptionalTime);
     }
 }
