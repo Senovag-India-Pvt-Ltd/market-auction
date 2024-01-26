@@ -22,16 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +61,7 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> submitbidSP(ReelerBidRequest reelerBidRequest) {
         log.info("Bid Submission request:"+reelerBidRequest);
+        LocalDateTime tStart = LocalDateTime.now();
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
             JwtPayloadData token = marketAuctionHelper.getAuthToken(reelerBidRequest);
@@ -113,6 +112,7 @@ public class ReelerAuctionService {
             Object success = procedureQuery.getOutputParameterValue("Success");
             System.out.println("Out status: " + success);
             entityManager.getTransaction().commit();
+            log.info("total time to complete reelerAuction is: "+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
             if(StringUtils.isNotEmpty(error)) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), error, "-1");
                 rw.setErrorCode(-1);

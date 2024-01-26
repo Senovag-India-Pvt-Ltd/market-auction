@@ -30,8 +30,8 @@ import java.util.List;
 @Slf4j
 public class WeigmentService {
 
-    @PersistenceUnit
-    private EntityManagerFactory entityManagerFactory;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private CrateMasterRepository crateMasterRepository;
@@ -58,7 +58,6 @@ public class WeigmentService {
 
 
     public ResponseEntity<?> canContinueToWeighmentProcess(CanContinueToWeighmentRequest canContinueToWeighmentRequest, boolean updateWeight) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         ResponseWrapper rw = ResponseWrapper.createWrapper(CanContinueToWeighmentResponse.class);
         CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
@@ -119,7 +118,6 @@ public class WeigmentService {
     }
 
     private LotWeightResponse getLotWeightResponse(LotStatusRequest lotStatusRequest) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
         Query nativeQuery = entityManager.createNativeQuery("""
                 select  f.farmer_number,f.fruits_id,r.reeling_license_number,f.first_name ,f.middle_name,f.last_name,r.name,
                 ra.AMOUNT,ma.RACE_MASTER_ID,v.VILLAGE_NAME ,rvcb.CURRENT_BALANCE,
@@ -187,7 +185,6 @@ public class WeigmentService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
         try {
             JwtPayloadData token = marketAuctionHelper.getAuthToken(completeLotWeighmentRequest);
-            entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(), Util.getISTLocalDate());
