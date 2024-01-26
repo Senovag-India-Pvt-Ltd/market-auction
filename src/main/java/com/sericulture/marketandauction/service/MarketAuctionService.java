@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
@@ -12,6 +13,7 @@ import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.*;
 import jakarta.persistence.*;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +68,13 @@ public class MarketAuctionService {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionResponse.class);
         MarketAuctionResponse marketAuctionResponse = new MarketAuctionResponse();
+
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketAuctionRequest);
+
+        int marketId = Util.getMarketId(token);
+        int goDownId = Util.getGodownId(token);
+
+
         //validator.validate(marketAuctionResponse);
         boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.ISSUEBIDSLIP,marketAuctionRequest.getMarketId(), marketAuctionRequest.getGodownId());
 
@@ -331,8 +340,9 @@ public class MarketAuctionService {
     public boolean cancelBidByFarmerId(CancelAuctionByFarmerIdRequest cancellationRequest){
         try{
             MarketAuction marketAuction = marketAuctionRepository.findById(cancellationRequest.getAuctionId());
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(cancellationRequest);
 
-            marketAuction.setStatus("cancelled");
+            marketAuction.setStatus(LotStatus.CANCELLED.getLabel());
             marketAuction.setReasonForCancellation(cancellationRequest.getCancellationReason());
 
             marketAuctionRepository.save(marketAuction);
@@ -341,9 +351,8 @@ public class MarketAuctionService {
             for(Lot lot:lotList){
                 lot.setStatus(LotStatus.CANCELLED.getLabel());
                 lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
-                lot.setRejectedBy("MO");
+                lot.setRejectedBy(token.getUsername());
             }
-
             lotRepository.saveAll(lotList);
 
         }catch (Exception ex){

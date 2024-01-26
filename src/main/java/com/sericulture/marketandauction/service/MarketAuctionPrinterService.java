@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
@@ -36,6 +37,8 @@ public class MarketAuctionPrinterService {
     MarketAuctionHelper marketAuctionHelper;
 
     public ResponseEntity<?> getPrintableDataForLot(MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketAuctionForPrintRequest);
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionForPrintResponse.class);
         MarketAuctionForPrintResponse marketAuctionForPrintResponse = null;
@@ -81,7 +84,7 @@ public class MarketAuctionPrinterService {
                         .build();
                 marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
                 marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));
-
+                marketAuctionForPrintResponse.setLoginName(token.getUsername());
 
                 if (foundAcceptedLot) {
                     marketAuctionForPrintResponse.setAuctionDateWithTime((Date)(response[23]));

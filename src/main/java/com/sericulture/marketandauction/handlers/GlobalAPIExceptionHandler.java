@@ -33,6 +33,7 @@ public class GlobalAPIExceptionHandler {
         List<ErrorResponse> errorResponses = Arrays.asList(new ErrorResponse(exception.getErrorMessages(), ErrorType.VALIDATION));
         ResponseWrapper wr = new ResponseWrapper();
         wr.setErrorMessages(errorResponses);
+        wr.setErrorCode(-1);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(wr);
@@ -51,6 +52,7 @@ public class GlobalAPIExceptionHandler {
 
                 exception.getMessage());
         wr.setErrorMessages(Arrays.asList(new ErrorResponse(Arrays.asList(gem), ErrorType.INTERNAL_SERVER_ERROR)));
+        wr.setErrorCode(-1);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(wr);

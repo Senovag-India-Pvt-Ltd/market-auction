@@ -1,16 +1,21 @@
 package com.sericulture.marketandauction.helper;
 
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.entity.FlexTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
+import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.FlexTimeRepository;
 import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.csrf.InvalidCsrfTokenException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
@@ -141,5 +146,13 @@ public class MarketAuctionHelper {
         rw.setErrorCode(-1);
         rw.setErrorMessages(List.of(err));
         return ResponseEntity.ok(rw);
+    }
+
+    public JwtPayloadData getAuthToken(RequestBody requestBody) {
+        JwtPayloadData jwtPayloadData = Util.getTokenValues();
+        if (jwtPayloadData.getMarketId() != requestBody.getMarketId()) {
+            throw new ValidationException(String.format("expected market is %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(), jwtPayloadData.getUsername()));
+        }
+        return jwtPayloadData;
     }
 }

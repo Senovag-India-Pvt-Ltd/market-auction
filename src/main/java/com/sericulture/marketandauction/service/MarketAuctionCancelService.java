@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
@@ -47,6 +48,7 @@ public class MarketAuctionCancelService {
     public ResponseEntity<?> cancelLot(CancelAuctionByLotRequest cancellationRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(cancellationRequest);
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(cancellationRequest.getMarketId(), cancellationRequest.getAllottedLotId(), cancellationRequest.getAuctionDate());
             if(lot.getStatus()!=null){
                 if (lot.getStatus().equals(LotStatus.WEIGHMENTCOMPLETED.getLabel())) {
@@ -59,7 +61,6 @@ public class MarketAuctionCancelService {
                     String reelerVirtualBankAccount = reelerAuctionRepository.getReelerVirtualAccountByReelerIdAndMarketId(reelerAuction.getReelerId(), reelerAuction.getMarketId());
                     ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), reelerAuction.getReelerId(), reelerVirtualBankAccount, amountDebitedFromReeler);
                     reelerVidDebitTxnRepository.save(reelerVidDebitTxn);
-
                 }
                 if (!eligibleStatusForCancellation.contains(lot.getStatus())) {
                     marketAuctionHelper.retrunIfError(rw, "Lot cannot be rejected as the status of lot is :" + lot.getStatus());
@@ -67,7 +68,7 @@ public class MarketAuctionCancelService {
             }
             lot.setStatus(LotStatus.CANCELLED.getLabel());
             lot.setReasonForCancellation(cancellationRequest.getCancellationReason());
-            lot.setRejectedBy("farmer");
+            lot.setRejectedBy(token.getUsername());
             lotRepository.save(lot);
         } catch (Exception ex) {
             return marketAuctionHelper.retrunIfError(rw, "Error while cancelling lot : " + ex);
