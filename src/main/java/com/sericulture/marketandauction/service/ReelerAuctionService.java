@@ -64,10 +64,8 @@ public class ReelerAuctionService {
         LocalDateTime tStart = LocalDateTime.now();
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            JwtPayloadData token = marketAuctionHelper.getAuthToken(reelerBidRequest);
-            if(token.getUserType()!= USERTYPE.REELER.getType()){
-                throw new ValidationException(String.format("expected user type is %s but found %s for user %s",USERTYPE.REELER.getType(),token.getUserType(),token.getUsername()));
-            }
+            JwtPayloadData token = marketAuctionHelper.getReelerAuthToken(reelerBidRequest);
+
 
              EntityManager entityManager = entityManagerFactory.createEntityManager();
             /* entityManager.getTransaction().begin();
@@ -135,7 +133,7 @@ public class ReelerAuctionService {
         log.info("Bid submission request:" + reelerBidRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            boolean canIssue = marketAuctionHelper.canPerformInAnyOneAuction(reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
+            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTION, reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
                 rw.setErrorCode(-1);
@@ -229,7 +227,7 @@ public class ReelerAuctionService {
         try {
             JwtPayloadData token = marketAuctionHelper.getAuthToken(lotStatusRequest);
 
-            boolean canIssue = marketAuctionHelper.canPerformAnyOneAuctionAccept(lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
+            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTIONACCEPT, lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
                 rw.setErrorCode(-1);

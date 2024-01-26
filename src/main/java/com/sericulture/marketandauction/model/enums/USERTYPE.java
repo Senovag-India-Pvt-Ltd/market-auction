@@ -5,7 +5,9 @@ import lombok.Getter;
 @Getter
 public enum USERTYPE {
 
-    REELER(2);
+    REELER(2),
+
+    MO(0);
 
     private int type ;
 

@@ -4,11 +4,14 @@ package com.sericulture.marketandauction.helper;
 import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
+import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.FlexTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
+import com.sericulture.marketandauction.model.enums.USERTYPE;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
+import com.sericulture.marketandauction.repository.ExceptionalTimeRepository;
 import com.sericulture.marketandauction.repository.FlexTimeRepository;
 import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -28,117 +31,81 @@ public class MarketAuctionHelper {
 
     @Autowired
     MarketMasterRepository marketMasterRepository;
-
+    
     @Autowired
-    FlexTimeRepository flexTimeRepository;
-
+    ExceptionalTimeRepository exceptionalTimeRepository;
     @Autowired
     Util util;
 
     public enum activityType {
         ISSUEBIDSLIP,
-        AUCTION1,
-        AUCTION2,
-        AUCTION3,
-        AUCTION1ACCEPT,
-        AUCTION2ACCEPT,
-        AUCTION3ACCEPT;
+        AUCTION,
+        AUCTIONACCEPT;
 
     }
 
 
     public boolean canPerformActivity(activityType activity, int marketId,int godownId) {
-        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId(activity.toString(), marketId,godownId);
-        if(flexTime!=null && flexTime.isStart()){
-            return true;
+        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId,Util.getISTLocalDate());
+        if(exceptionalTime!=null){
+            return canPerformAnyoneActivityExceptionally(exceptionalTime,activity);
         }
-        return canPerformAnyoneActivity(marketMaster,activity,marketId,godownId);
-
+        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+        return canPerformAnyoneActivityNormally(marketMaster,activity);
     }
 
-    public boolean canPerformInAnyOneAuction(int marketId,int godownId){
-        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId("AUCTION", marketId,godownId);
-        if(flexTime!=null && flexTime.isStart()){
-            return true;
-        }
-        boolean auction1 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION1,marketId,godownId);
-        if(auction1)
-            return true;
-        boolean auction2 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION2,marketId,godownId);
-        if(auction2)
-            return true;
-        boolean auction3 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION3,marketId,godownId);
-        if(auction3)
-            return true;
-        return false;
-    }
-
-    public boolean canPerformAnyOneAuctionAccept(int marketId,int godownId){
-        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        FlexTime flexTime = flexTimeRepository.findByActivityTypeAndMarketIdAndGodownId("AUCTIONACCEPT", marketId,godownId);
-        if(flexTime!=null && flexTime.isStart()){
-            return true;
-        }
-        boolean auction1 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION1ACCEPT,marketId,godownId);
-        if(auction1)
-            return true;
-        boolean auction2 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION2ACCEPT,marketId,godownId);
-        if(auction2)
-            return true;
-        boolean auction3 = canPerformAnyoneActivity(marketMaster,activityType.AUCTION3ACCEPT,marketId,godownId);
-        if(auction3)
-            return true;
-        return false;
-    }
-
-    public boolean canPerformAnyoneActivity(MarketMaster marketMaster,activityType activity,int marketId,int godownId){
+    public boolean canPerformAnyoneActivityExceptionally(ExceptionalTime exceptionalTime, activityType activity) {
         LocalTime time = Util.getISTLocalTime().truncatedTo(ChronoUnit.SECONDS);
-
-        LocalTime starttime = null;
-        LocalTime endTime = null;
-
         switch (activity) {
             case ISSUEBIDSLIP:
-                starttime = marketMaster.getIssueBidSlipStartTime();
-                endTime = marketMaster.getIssueBidSlipEndTime();
-                break;
-            case AUCTION1:
-                starttime = marketMaster.getAuction1StartTime();
-                endTime = marketMaster.getAuction1EndTime();
-                break;
-            case AUCTION2:
-                starttime = marketMaster.getAuction2StartTime();
-                endTime = marketMaster.getAuction2EndTime();
-                break;
-            case AUCTION3:
-                starttime = marketMaster.getAuction3StartTime();
-                endTime = marketMaster.getAuction3EndTime();
-                break;
-            case AUCTION1ACCEPT:
-                starttime = marketMaster.getAuction1AcceptStartTime();
-                endTime = marketMaster.getAuction1AcceptEndTime();
-                break;
-            case AUCTION2ACCEPT:
-                starttime = marketMaster.getAuction2AcceptStartTime();
-                endTime = marketMaster.getAuction2AcceptEndTime();
-                break;
-            case AUCTION3ACCEPT:
-                starttime = marketMaster.getAuction3AcceptStartTime();
-                endTime = marketMaster.getAuction3AcceptEndTime();
-                break;
-
+                return compareTime(time, exceptionalTime.getIssueBidSlipStartTime(), exceptionalTime.getIssueBidSlipEndTime());
+            case AUCTION:
+                if (compareTime(time, exceptionalTime.getAuction1StartTime(), exceptionalTime.getAuction1EndTime())) {
+                    return true;
+                }
+                if (compareTime(time, exceptionalTime.getAuction2StartTime(), exceptionalTime.getAuction2EndTime())) {
+                    return true;
+                }
+                return compareTime(time, exceptionalTime.getAuction3StartTime(), exceptionalTime.getAuction3EndTime());
+            case AUCTIONACCEPT:
+                if (compareTime(time, exceptionalTime.getAuction1AcceptStartTime(), exceptionalTime.getAuction1AcceptEndTime())) {
+                    return true;
+                }
+                if (compareTime(time, exceptionalTime.getAuction2AcceptStartTime(), exceptionalTime.getAuction2AcceptEndTime())) {
+                    return true;
+                }
+                return compareTime(time, exceptionalTime.getAuction3AcceptStartTime(), exceptionalTime.getAuction3AcceptEndTime());
         }
-        if(starttime==null || endTime==null){
-            log.error("No start time or end time defined for "+marketId+" godown "+godownId+" and activity: "+activity);
-            return false;
-        }
-        //in between todo
-        return (time.isAfter(starttime) && time.isBefore(endTime)) || time.equals(starttime)
-                || time.equals(endTime) ;
+        return false;
     }
-
+    public boolean canPerformAnyoneActivityNormally(MarketMaster exceptionalTime, activityType activity) {
+        LocalTime time = Util.getISTLocalTime().truncatedTo(ChronoUnit.SECONDS);
+        switch (activity) {
+            case ISSUEBIDSLIP:
+                return compareTime(time, exceptionalTime.getIssueBidSlipStartTime(), exceptionalTime.getIssueBidSlipEndTime());
+            case AUCTION:
+                if (compareTime(time, exceptionalTime.getAuction1StartTime(), exceptionalTime.getAuction1EndTime())) {
+                    return true;
+                }
+                if (compareTime(time, exceptionalTime.getAuction2StartTime(), exceptionalTime.getAuction2EndTime())) {
+                    return true;
+                }
+                return compareTime(time, exceptionalTime.getAuction3StartTime(), exceptionalTime.getAuction3EndTime());
+            case AUCTIONACCEPT:
+                if (compareTime(time, exceptionalTime.getAuction1AcceptStartTime(), exceptionalTime.getAuction1AcceptEndTime())) {
+                    return true;
+                }
+                if (compareTime(time, exceptionalTime.getAuction2AcceptStartTime(), exceptionalTime.getAuction2AcceptEndTime())) {
+                    return true;
+                }
+                return compareTime(time, exceptionalTime.getAuction3AcceptStartTime(), exceptionalTime.getAuction3AcceptEndTime());
+        }
+        return false;
+    }
+    private boolean compareTime(LocalTime time,LocalTime starTime,LocalTime endTime){
+        return (time.isAfter(starTime) && time.isBefore(endTime)) || time.equals(starTime)
+                || time.equals(endTime);
+    }
 
     public  ResponseEntity<?> retrunIfError(ResponseWrapper rw, String err){
         ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(),
@@ -150,8 +117,16 @@ public class MarketAuctionHelper {
 
     public JwtPayloadData getAuthToken(RequestBody requestBody) {
         JwtPayloadData jwtPayloadData = Util.getTokenValues();
-        if (jwtPayloadData.getMarketId() != requestBody.getMarketId()) {
-            throw new ValidationException(String.format("expected market is %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(), jwtPayloadData.getUsername()));
+        if (jwtPayloadData.getMarketId() != requestBody.getMarketId() || jwtPayloadData.getUserType()!= USERTYPE.MO.getType()) {
+            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(),USERTYPE.MO.getType(),jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
+        }
+        return jwtPayloadData;
+    }
+
+    public JwtPayloadData getReelerAuthToken(RequestBody requestBody) {
+        JwtPayloadData jwtPayloadData = Util.getTokenValues();
+        if (jwtPayloadData.getMarketId() != requestBody.getMarketId() || jwtPayloadData.getUserType()!= USERTYPE.REELER.getType()) {
+            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(),USERTYPE.REELER.getType(),jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
         }
         return jwtPayloadData;
     }

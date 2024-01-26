@@ -8,6 +8,7 @@ import com.sericulture.marketandauction.model.api.marketauction.ExceptionalTimeR
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.FlexTime;
+import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.ExceptionalTimeRepository;
 import com.sericulture.marketandauction.repository.FlexTimeRepository;
@@ -89,6 +90,15 @@ public class MISCService {
         exceptionalTime.setIssueBidSlipStartTime(LocalTime.parse(exceptionalTimeRequest.getIssueBidSlipStartTime()));
         exceptionalTime.setIssueBidSlipEndTime(LocalTime.parse(exceptionalTimeRequest.getIssueBidSlipEndTime()));
         exceptionalTimeRepository.save(exceptionalTime);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getExceptionalTime(RequestBody requestBody){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(requestBody.getMarketId(),Util.getISTLocalDate());
+        if(exceptionalTime==null)
+            throw new ValidationException("No data found");
+        rw.setContent(exceptionalTime);
         return ResponseEntity.ok(rw);
     }
 

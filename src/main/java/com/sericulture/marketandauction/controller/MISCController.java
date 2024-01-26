@@ -60,4 +60,9 @@ public class MISCController {
     public ResponseEntity<?> saveOrUpdateExceptionalTime(@RequestBody ExceptionalTimeRequest exceptionalTime){
         return miscService.saveOrUpdateExceptionalTime(exceptionalTime);
     }
+
+    @PostMapping("/getExceptionalTime")
+    public ResponseEntity<?> getExceptionalTime(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
+        return miscService.getExceptionalTime(requestBody);
+    }
 }
