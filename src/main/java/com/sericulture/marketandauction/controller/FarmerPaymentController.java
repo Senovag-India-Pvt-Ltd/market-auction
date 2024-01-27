@@ -26,7 +26,7 @@ public class FarmerPaymentController {
 
 
     @PostMapping("/getWeighMentCompletedList")
-    public ResponseEntity<?> getWeighMentCompletedList(@RequestBody  FarmerPaymentInfoRequest farmerPaymentInfoRequest,
+    public ResponseEntity<?> getWeighMentCompletedList(@RequestBody com.sericulture.marketandauction.model.api.RequestBody farmerPaymentInfoRequest,
                                                        @RequestParam(defaultValue = "0") final Integer pageNumber,
                                                        @RequestParam(defaultValue = "5") final Integer size
     ) {

@@ -15,7 +15,7 @@ import java.util.Date;
 @Setter
 @Table(name = "TRANSACTION_FILE_GEN")
 @Builder
-public class TransactionFileGeneration implements Serializable {
+public class TransactionFileGeneration extends BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TRANSACTION_FILE_GEN_SEQ")
     @SequenceGenerator(name = "TRANSACTION_FILE_GEN_SEQ", sequenceName = "TRANSACTION_FILE_GEN_SEQ", allocationSize = 1)
@@ -34,20 +34,6 @@ public class TransactionFileGeneration implements Serializable {
     private String status;
     @Column(name = "FILE_NAME")
     private String fileName;
-
-    @Column(name = "CREATED_BY")
-    private String createdBy = "";
-
-    @Column(name = "MODIFIED_BY")
-    private String modifiedBy ="";
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "CREATED_DATE", updatable = false)
-    private Date createdDate;
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "MODIFIED_DATE", updatable = true)
-    private Date modifiedDate;
 
     @Getter
     @Setter

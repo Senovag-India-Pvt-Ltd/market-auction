@@ -16,7 +16,7 @@ import java.util.Date;
 @Setter
 @Table(name = "TRANSACTION_FILE_GEN_QUEUE")
 @Builder
-public class TransactionFileGenQueue  implements Serializable {
+public class TransactionFileGenQueue extends BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TRANSACTION_FILE_GEN_QUEUE_SEQ")
     @SequenceGenerator(name = "TRANSACTION_FILE_GEN_QUEUE_SEQ", sequenceName = "TRANSACTION_FILE_GEN_QUEUE_SEQ", allocationSize = 1)
@@ -35,20 +35,6 @@ public class TransactionFileGenQueue  implements Serializable {
     private Integer retryCount;
     @Column(name = "FILE_NAME")
     private String fileName;
-
-    @Column(name = "CREATED_BY")
-    private String createdBy = "";
-
-    @Column(name = "MODIFIED_BY")
-    private String modifiedBy ="";
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "CREATED_DATE", updatable = false)
-    private Date createdDate;
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "MODIFIED_DATE", updatable = true)
-    private Date modifiedDate;
 
     @Getter
     @Setter

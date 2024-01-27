@@ -145,8 +145,8 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public Object[][] getNewlyCreatedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
 
 
-    @Query("select distinct auctionDate from Lot where status=:status and marketId=:marketId")
-    public List<LocalDate> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(int marketId,String status);
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.AUCTION_DATE_LIST_BY_LOT_STATUS)
+    public List<Object> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(int marketId,String lotStatus);
 
     @Query("select allottedLotId from Lot lot where status!='cancelled' and auctionDate=:auctionDate and marketId=:marketId and createdBy=:userName order by createdDate limit 1")
     public int findByMarketIdAndAuctionDateAndCreatedBy(int marketId, LocalDate auctionDate,String userName);

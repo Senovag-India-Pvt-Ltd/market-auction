@@ -14,7 +14,9 @@ public enum LotStatus {
     PAYMENTVALIDATIONFAILED("paymentvalidationfailed"),
     PAYMENTPROCESSING("paymentprocessing"),
     CANCELLED("cancelled"),
-    INUPDATEWEIGHT("inupdateweight");
+    INUPDATEWEIGHT("inupdateweight"),
+    REQUESTED("requested"),
+    PROCESSING("processing");
 
     private String label ;
 
