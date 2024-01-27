@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
@@ -61,6 +62,7 @@ public class MISCService {
     }
     public ResponseEntity<?> saveOrUpdateExceptionalTime(ExceptionalTimeRequest exceptionalTimeRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        marketAuctionHelper.getAuthToken(exceptionalTimeRequest);
         ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(exceptionalTimeRequest.getMarketId(), Util.getISTLocalDate());
         if(exceptionalTime==null){
             exceptionalTime = new ExceptionalTime();

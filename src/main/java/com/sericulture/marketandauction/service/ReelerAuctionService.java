@@ -83,7 +83,7 @@ public class ReelerAuctionService {
 
 
             StoredProcedureQuery procedureQuery = entityManager
-                    .createStoredProcedureQuery("SUBMIT_BID");
+                    .createStoredProcedureQuery("SUBMIT_BID_EXCEPTIONAL");
             procedureQuery.registerStoredProcedureParameter("UserId", String.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("GodownId", Integer.class, ParameterMode.IN);
@@ -130,9 +130,11 @@ public class ReelerAuctionService {
 
     @Transactional
     public ResponseEntity<?> submitbid(ReelerBidRequest reelerBidRequest) {
+        LocalDateTime tStart = LocalDateTime.now();
         log.info("Bid submission request:" + reelerBidRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
+            JwtPayloadData token = marketAuctionHelper.getReelerAuthToken(reelerBidRequest);
             boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTION, reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
@@ -155,9 +157,11 @@ public class ReelerAuctionService {
             }
 
             ReelerAuction reelerAuction = mapper.reelerAuctionObjectToEntity(reelerBidRequest, ReelerAuction.class);
-            validator.validate(reelerAuction);
+            //validator.validate(reelerAuction);
             reelerAuction.setAuctionDate(Util.getISTLocalDate());
+            reelerAuction.setReelerId(Math.toIntExact(token.getUserTypeId()));
             reelerAuctionRepository.save(reelerAuction);
+            log.info("total time to complete reelerAuction is: "+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
         } catch (Exception ex) {
             log.error("Error While submitting the bid for the Request:" + reelerBidRequest + " error id: " + ex);
             return marketAuctionHelper.retrunIfError(rw, "error occurred while submitting bid");
