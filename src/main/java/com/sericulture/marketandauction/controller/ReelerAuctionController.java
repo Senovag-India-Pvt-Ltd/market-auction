@@ -44,7 +44,7 @@ public class ReelerAuctionController {
     })
     @PostMapping("/submitBid")
     public ResponseEntity<?> submitBid(@RequestBody ReelerBidRequest reelerBidRequest){
-        return reelerAuctionService.submitbid(reelerBidRequest);
+        return reelerAuctionService.submitbidSP(reelerBidRequest);
     }
 
     @Operation(summary = "This API allows to submit surrogate bid.",

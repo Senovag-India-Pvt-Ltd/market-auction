@@ -1,17 +1,22 @@
 package com.sericulture.marketandauction.helper;
 
+import com.sericulture.authentication.model.JwtPayloadData;
+import com.sericulture.authentication.service.JwtService;
+import com.sericulture.authentication.service.UserInfoDetails;
+import com.sericulture.authentication.utils.TokenDecrypterUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.security.Principal;
 import java.text.DecimalFormat;
 import java.time.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public final class Util {
@@ -20,6 +25,9 @@ public final class Util {
     private ResourceBundleMessageSource resourceBundleMessageSource;
 
     static DecimalFormat decimalFormat = new DecimalFormat("#.##");
+
+    @Autowired
+    ApplicationContext applicationContext;
 
 
     public String getMessageByCode(String code) {
@@ -81,4 +89,21 @@ public final class Util {
         return bd.doubleValue();
     }
 
+    public static JwtPayloadData getTokenValues() {
+        Principal principal = SecurityContextHolder.getContext().getAuthentication();
+        String token = ((UserInfoDetails)((UsernamePasswordAuthenticationToken) principal).getPrincipal()).getJwtToken();
+        return TokenDecrypterUtil.extractJwtPayload(token);
+    }
+    public static Integer getMarketId(JwtPayloadData jwtPayloadData) {
+        return jwtPayloadData.getMarketId();
+    }
+    public static Integer getGodownId(JwtPayloadData jwtPayloadData) {
+        return jwtPayloadData.getGodownId();
+    }
+    public static Integer getUserType(JwtPayloadData jwtPayloadData) {
+        return jwtPayloadData.getUserType();
+    }
+    public static String getUserId(JwtPayloadData jwtPayloadData) {
+        return jwtPayloadData.getUsername();
+    }
 }

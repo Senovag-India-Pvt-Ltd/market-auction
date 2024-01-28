@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
@@ -35,7 +36,10 @@ public class MarketAuctionPrinterService {
     @Autowired
     MarketAuctionHelper marketAuctionHelper;
 
+
     public ResponseEntity<?> getPrintableDataForLot(MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketAuctionForPrintRequest);
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionForPrintResponse.class);
         MarketAuctionForPrintResponse marketAuctionForPrintResponse = null;
@@ -55,33 +59,7 @@ public class MarketAuctionPrinterService {
                     return marketAuctionHelper.retrunIfError(rw,"Lot is cancelled and hence cannot be printed");
                 }
                 BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
-                marketAuctionForPrintResponse = MarketAuctionForPrintResponse.builder().
-                        farmerNumber(Util.objectToString(response[0]))
-                        .farmerFirstName(Util.objectToString(response[1]))
-                        .farmerMiddleName(Util.objectToString(response[2]))
-                        .farmerLastName(Util.objectToString(response[3]))
-                        .farmerAddress(Util.objectToString(response[4]))
-                        .farmerTaluk(Util.objectToString(response[5]))
-                        .farmerVillage(Util.objectToString(response[6]))
-                        .ifscCode(Util.objectToString(response[7]))
-                        .accountNumber(Util.objectToString(response[8]))
-                        .allottedLotId(Integer.parseInt(String.valueOf(response[9])))
-                        .auctionDate(Util.objectToString(response[10]))
-                        .farmerEstimatedWeight(Integer.parseInt(String.valueOf(response[11])))
-                        .marketName(Util.objectToString(response[12]))
-                        .source(Util.objectToString(response[13]))
-                        .race(Util.objectToString(response[14]))
-                        .tareWeight(Util.objectToFloat(response[15]))
-                        .serialNumber(Util.objectToString(response[17])+lotId)
-                        .marketNameKannada(Util.objectToString(response[19]))
-                        .farmerMobileNumber(Util.objectToString(response[20]))
-
-                        .farmerMobileNumber(Util.objectToString(21))
-                        .marketAuctionId((BigDecimal) response[22])
-                        .build();
-                marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
-                marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));
-
+                marketAuctionForPrintResponse = prepareResponseForLotBaseResponse(token, response, lotId);
 
                 if (foundAcceptedLot) {
                     marketAuctionForPrintResponse.setAuctionDateWithTime((Date)(response[23]));
@@ -114,5 +92,35 @@ public class MarketAuctionPrinterService {
 
     }
 
+    public MarketAuctionForPrintResponse prepareResponseForLotBaseResponse(JwtPayloadData token, Object[] response, BigInteger lotId) {
+        MarketAuctionForPrintResponse marketAuctionForPrintResponse;
+        marketAuctionForPrintResponse = MarketAuctionForPrintResponse.builder().
+                farmerNumber(Util.objectToString(response[0]))
+                .farmerFirstName(Util.objectToString(response[1]))
+                .farmerMiddleName(Util.objectToString(response[2]))
+                .farmerLastName(Util.objectToString(response[3]))
+                .farmerAddress(Util.objectToString(response[4]))
+                .farmerTaluk(Util.objectToString(response[5]))
+                .farmerVillage(Util.objectToString(response[6]))
+                .ifscCode(Util.objectToString(response[7]))
+                .accountNumber(Util.objectToString(response[8]))
+                .allottedLotId(Integer.parseInt(String.valueOf(response[9])))
+                .auctionDate(Util.objectToString(response[10]))
+                .farmerEstimatedWeight(Integer.parseInt(String.valueOf(response[11])))
+                .marketName(Util.objectToString(response[12]))
+                .source(Util.objectToString(response[13]))
+                .race(Util.objectToString(response[14]))
+                .tareWeight(Util.objectToFloat(response[15]))
+                .serialNumber(Util.objectToString(response[17])+ lotId)
+                .marketNameKannada(Util.objectToString(response[19]))
+                .farmerMobileNumber(Util.objectToString(response[20]))
 
+                .farmerMobileNumber(Util.objectToString(21))
+                .marketAuctionId((BigDecimal) response[22])
+                .build();
+        marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
+        marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));
+        marketAuctionForPrintResponse.setLoginName(token.getUsername());
+        return marketAuctionForPrintResponse;
+    }
 }

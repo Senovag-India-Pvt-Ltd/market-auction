@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
@@ -10,15 +11,13 @@ import com.sericulture.marketandauction.model.entity.LotWeightDetail;
 import com.sericulture.marketandauction.model.entity.ReelerVidDebitTxn;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
+import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.CrateMasterRepository;
 import com.sericulture.marketandauction.repository.LotRepository;
 import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import com.sericulture.marketandauction.repository.ReelerVidBlockedAmountRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.PersistenceUnit;
-import jakarta.persistence.Query;
+import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -147,9 +146,14 @@ public class WeigmentService {
         nativeQuery.setParameter(2, Util.getISTLocalDate());
         nativeQuery.setParameter(3, lotStatusRequest.getMarketId());
 
-        Object[] lotWeightDetails = (Object[]) nativeQuery.getSingleResult();
-        entityManager.close();
-
+        Object[] lotWeightDetails = null;
+        try {
+            lotWeightDetails = (Object[]) nativeQuery.getSingleResult();
+            entityManager.close();
+        }catch (NoResultException ex){
+            entityManager.close();
+            throw new ValidationException(String.format("No data found for the given lot %s",lotStatusRequest.getAllottedLotId()));
+        }
         float reelerCurrentBalance = Util.objectToFloat(lotWeightDetails[10]);
         float blockedAmount =Util.objectToFloat(lotWeightDetails[11]);
         float availableAmount = reelerCurrentBalance - blockedAmount;
@@ -182,18 +186,19 @@ public class WeigmentService {
         EntityManager entityManager = null;
         ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
         try {
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(completeLotWeighmentRequest);
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(), Util.getISTLocalDate());
             if (lot.getStatus()==null || !lot.getStatus().equals(LotStatus.ACCEPTED.getLabel())) {
-                return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lot.getStatus() + " for the allottedLotId: " + lot.getAllottedLotId());
+                throw new ValidationException(String.format("expected Lot status is accepted but found: %s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
             }
             LotWeightResponse lotWeightResponse = getLotWeightResponse(completeLotWeighmentRequest);
-            double reelerCurrentBalance = lotWeightResponse.getReelerCurrentBalance();
             if (Util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber())) {
-                return marketAuctionHelper.retrunIfError(rw, "Reeler Virtual account cannot be null: " + Util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber()));
+                throw new ValidationException(String.format("Reeler Virtual account cannot be null:"));
             }
+            double reelerCurrentBalance = lotWeightResponse.getReelerCurrentBalance();
             float totalWeightOfAllottedLot = 0;
             for (Weighment weight : completeLotWeighmentRequest.getWeighmentList()) {
                 LotWeightDetail lotWeightDetail = new LotWeightDetail(lot.getId(), weight.getCrateNumber(), weight.getGrossWeight(), weight.getNetWeight());
@@ -209,7 +214,7 @@ public class WeigmentService {
             double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee,2);
             ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
             entityManager.persist(reelerVidDebitTxn);
-            lot.setWeighmentCompletedBy(completeLotWeighmentRequest.getUserName());
+            lot.setWeighmentCompletedBy(token.getUsername());
             lot.setStatus(LotStatus.WEIGHMENTCOMPLETED.getLabel());
             lot.setLotWeightAfterWeighment(totalWeightOfAllottedLot);
             lot.setLotSoldOutAmount(lotSoldOutAmount);
@@ -221,6 +226,9 @@ public class WeigmentService {
             rw.setContent(completeLotWeighmentResponse);
             entityManager.getTransaction().commit();
         } catch (Exception ex) {
+            if(ex instanceof ValidationException){
+                throw ex;
+            }
             log.info("completeLotWeighMent Error while preocessing for request: "+completeLotWeighmentRequest+" error:"+ex);
             return marketAuctionHelper.retrunIfError(rw,"error while processing completeLotWeighMent: "+ex);
         } finally {

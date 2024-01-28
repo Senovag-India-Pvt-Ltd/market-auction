@@ -124,6 +124,11 @@
 			<artifactId>commons-csv</artifactId>
 			<version>1.8</version>
 		</dependency>
+		<dependency>
+			<groupId>com.sericulture</groupId>
+			<artifactId>senovag-auth-module</artifactId>
+			<version>develop-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

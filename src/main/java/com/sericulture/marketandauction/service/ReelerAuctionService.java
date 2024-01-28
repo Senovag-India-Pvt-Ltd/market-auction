@@ -1,6 +1,7 @@
 package com.sericulture.marketandauction.service;
 
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
@@ -8,7 +9,10 @@ import com.sericulture.marketandauction.model.api.ResponseBody;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
+import com.sericulture.marketandauction.model.enums.LotStatus;
+import com.sericulture.marketandauction.model.enums.USERTYPE;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
+import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.LotRepository;
@@ -18,16 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +61,12 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> submitbidSP(ReelerBidRequest reelerBidRequest) {
         log.info("Bid Submission request:"+reelerBidRequest);
+        LocalDateTime tStart = LocalDateTime.now();
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
+            JwtPayloadData token = marketAuctionHelper.getReelerAuthToken(reelerBidRequest);
+
+
              EntityManager entityManager = entityManagerFactory.createEntityManager();
             /* entityManager.getTransaction().begin();
             Object singleResult = entityManager.createNativeQuery("{  CALL REELER_VID_CREDIT_TXN_SP(:UserId, :MarketId, :GodownId, :LotId, :ReelerId,:AuctionDate, :SurrogateBid, :Amount) }")
@@ -77,7 +83,7 @@ public class ReelerAuctionService {
 
 
             StoredProcedureQuery procedureQuery = entityManager
-                    .createStoredProcedureQuery("SUBMIT_BID");
+                    .createStoredProcedureQuery("SUBMIT_BID_EXCEPTIONAL");
             procedureQuery.registerStoredProcedureParameter("UserId", String.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("GodownId", Integer.class, ParameterMode.IN);
@@ -91,11 +97,11 @@ public class ReelerAuctionService {
             procedureQuery.registerStoredProcedureParameter("Success", Integer.class, ParameterMode.OUT);
 
             entityManager.getTransaction().begin();
-            procedureQuery.setParameter("UserId", "");
+            procedureQuery.setParameter("UserId", token.getUsername());
             procedureQuery.setParameter("MarketId", reelerBidRequest.getMarketId());
             procedureQuery.setParameter("GodownId",  reelerBidRequest.getGodownId());
             procedureQuery.setParameter("LotId", reelerBidRequest.getAllottedLotId());
-            procedureQuery.setParameter("ReelerId", reelerBidRequest.getReelerId());
+            procedureQuery.setParameter("ReelerId", token.getUserTypeId());
             procedureQuery.setParameter("AuctionDate", Util.getISTLocalDate());
             procedureQuery.setParameter("SurrogateBid",0);
             procedureQuery.setParameter("Amount", reelerBidRequest.getAmount());
@@ -104,6 +110,7 @@ public class ReelerAuctionService {
             Object success = procedureQuery.getOutputParameterValue("Success");
             System.out.println("Out status: " + success);
             entityManager.getTransaction().commit();
+            log.info("total time to complete reelerAuction is: "+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
             if(StringUtils.isNotEmpty(error)) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), error, "-1");
                 rw.setErrorCode(-1);
@@ -111,6 +118,9 @@ public class ReelerAuctionService {
                 return ResponseEntity.ok(rw);
             }
         } catch (Exception ex) {
+            if(ex instanceof ValidationException){
+                throw ex;
+            }
             log.error("Error While submitting the bid for the Request:"+reelerBidRequest+" error id: "+ex);
             return marketAuctionHelper.retrunIfError(rw,"error occurred while submitting bid.");
         }
@@ -120,10 +130,12 @@ public class ReelerAuctionService {
 
     @Transactional
     public ResponseEntity<?> submitbid(ReelerBidRequest reelerBidRequest) {
+        LocalDateTime tStart = LocalDateTime.now();
         log.info("Bid submission request:" + reelerBidRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            boolean canIssue = marketAuctionHelper.canPerformInAnyOneAuction(reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
+            JwtPayloadData token = marketAuctionHelper.getReelerAuthToken(reelerBidRequest);
+            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTION, reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
                 rw.setErrorCode(-1);
@@ -145,9 +157,11 @@ public class ReelerAuctionService {
             }
 
             ReelerAuction reelerAuction = mapper.reelerAuctionObjectToEntity(reelerBidRequest, ReelerAuction.class);
-            validator.validate(reelerAuction);
+            //validator.validate(reelerAuction);
             reelerAuction.setAuctionDate(Util.getISTLocalDate());
+            reelerAuction.setReelerId(Math.toIntExact(token.getUserTypeId()));
             reelerAuctionRepository.save(reelerAuction);
+            log.info("total time to complete reelerAuction is: "+ ChronoUnit.MILLIS.between(tStart,LocalDateTime.now()));
         } catch (Exception ex) {
             log.error("Error While submitting the bid for the Request:" + reelerBidRequest + " error id: " + ex);
             return marketAuctionHelper.retrunIfError(rw, "error occurred while submitting bid");
@@ -215,7 +229,9 @@ public class ReelerAuctionService {
         log.info("Accept bid received for request: " + lotStatusRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            boolean canIssue = marketAuctionHelper.canPerformAnyOneAuctionAccept(lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(lotStatusRequest);
+
+            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTIONACCEPT, lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
                 rw.setErrorCode(-1);
@@ -224,23 +240,26 @@ public class ReelerAuctionService {
             }
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate());
             if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
-                return marketAuctionHelper.retrunIfError(rw, "expected Lot status is blank but found: " + lot.getStatus() + " for the allottedLotId: " + lot.getAllottedLotId());
+                throw new ValidationException(String.format("expected Lot status is blank but found:%s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
             }
             ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
             if (reelerAuction != null) {
                 Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
-                l.setStatus("accepted");
+                l.setStatus(LotStatus.ACCEPTED.getLabel());
                 l.setReelerAuctionId(reelerAuction.getId());
-                l.setBidAcceptedBy(lotStatusRequest.getBidAcceptedBy());
-                reelerAuction.setStatus("accepted");
+                l.setBidAcceptedBy(token.getUsername());
+                reelerAuction.setStatus(LotStatus.ACCEPTED.getLabel());
                 lotRepository.save(l);
                 reelerAuctionRepository.save(reelerAuction);
             } else {
-                return marketAuctionHelper.retrunIfError(rw, "no Reeler auction found");
+                throw new ValidationException(String.format("No bids found for the given lot %s",lotStatusRequest.getAllottedLotId()));
             }
             log.info("Accept bid completed for request: " + lotStatusRequest);
             return ResponseEntity.ok(rw);
         } catch (Exception ex) {
+            if(ex instanceof ValidationException){
+                throw ex;
+            }
             log.error("Error while processing request: " + lotStatusRequest + "with error:" + ex);
             return marketAuctionHelper.retrunIfError(rw, "error while processing the request");
         }

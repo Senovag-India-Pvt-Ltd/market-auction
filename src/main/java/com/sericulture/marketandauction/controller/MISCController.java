@@ -1,7 +1,9 @@
 package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.helper.MAConstants;
+import com.sericulture.marketandauction.model.api.marketauction.ExceptionalTimeRequest;
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
+import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.service.MISCService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -52,5 +54,15 @@ public class MISCController {
     @PostMapping("/getFlexTime")
     public ResponseEntity<?> getFlexTime(@RequestBody FLexTimeRequest fLexTimeRequest){
         return miscService.getFlexTime(fLexTimeRequest);
+    }
+
+    @PostMapping("/updateExceptionalTime")
+    public ResponseEntity<?> saveOrUpdateExceptionalTime(@RequestBody ExceptionalTimeRequest exceptionalTime){
+        return miscService.saveOrUpdateExceptionalTime(exceptionalTime);
+    }
+
+    @PostMapping("/getExceptionalTime")
+    public ResponseEntity<?> getExceptionalTime(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
+        return miscService.getExceptionalTime(requestBody);
     }
 }
