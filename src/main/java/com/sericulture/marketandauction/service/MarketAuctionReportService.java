@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.service;
 
+import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
@@ -15,8 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -39,8 +42,7 @@ public class MarketAuctionReportService {
     private FarmerPaymentService farmerPaymentService;
 
 
-
-    private void prepareDTROnlineInfo(DTROnlineReportResponse dtrOnlineReportResponse,List<Object[]> queryResponse) {
+    private void prepareDTROnlineInfo(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
 
         for (Object[] unit : queryResponse) {
             DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
@@ -69,11 +71,12 @@ public class MarketAuctionReportService {
             dtrOnlineReportResponse.setTotalFarmerMarketFee(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee());
             dtrOnlineReportResponse.setTotalReelerMarketFee(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee());
             dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
-            dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() +  dtrOnlineReportUnitDetail.getReelerAmount());
+            dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
             dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
         }
         dtrOnlineReportResponse.setTotalLots(queryResponse.size());
     }
+
     public ResponseEntity<?> getDTROnlineReport(DTROnlineReportRequest dtrOnlineReportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         List<Integer> reelerIdList = null;
@@ -82,8 +85,8 @@ public class MarketAuctionReportService {
         }
         List<Object[]> reportResponse = lotRepository.
                 getDTROnlineReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
-       DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
-       prepareDTROnlineInfo(dtrOnlineReportResponse,reportResponse);
+        DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
+        prepareDTROnlineInfo(dtrOnlineReportResponse, reportResponse);
         rw.setContent(dtrOnlineReportResponse);
         return ResponseEntity.ok(rw);
     }
@@ -119,11 +122,11 @@ public class MarketAuctionReportService {
     public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
         List<UnitCounterReportResponse> unitCounterReportResponses = new ArrayList<>();
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<Object[]> resultSet = reelerAuctionRepository.getUnitCounterReport(reportRequest.getReportFromDate(),reportRequest.getMarketId());
-        if (Util.isNullOrEmptyList(resultSet)){
-            marketAuctionHelper.retrunIfError(rw,"No data found");
+        List<Object[]> resultSet = reelerAuctionRepository.getUnitCounterReport(reportRequest.getReportFromDate(), reportRequest.getMarketId());
+        if (Util.isNullOrEmptyList(resultSet)) {
+            marketAuctionHelper.retrunIfError(rw, "No data found");
         }
-        for(Object[] row: resultSet){
+        for (Object[] row : resultSet) {
             UnitCounterReportResponse unitCounterReportResponse = UnitCounterReportResponse.builder()
                     .allottedLotId(Util.objectToInteger(row[0]))
                     .lotTransactionDate(Util.objectToString(row[1]))
@@ -140,5 +143,36 @@ public class MarketAuctionReportService {
         return ResponseEntity.ok(rw);
     }
 
+    public ResponseEntity<?> getPendingLotReport(ReportRequest requestBody) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(requestBody);
+        List<MarketAuctionForPrintResponse> marketAuctionForPrintResponseList = new ArrayList<>();
+        List<Object[]> lotDetails = lotRepository.getAcceptedLotDetailsForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId());
+        List<Integer> acceptedLotList = new ArrayList<>();
+
+        for (Object[] response : lotDetails) {
+            BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
+            MarketAuctionForPrintResponse marketAuctionForPrintResponse = marketAuctionPrinterService.prepareResponseForLotBaseResponse(token, response, lotId);
+            marketAuctionForPrintResponse.setAuctionDateWithTime((Date) (response[23]));
+            marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[24]));
+            marketAuctionForPrintResponse.setReelerName(Util.objectToString(response[25]));
+            marketAuctionForPrintResponse.setReelerAddress(Util.objectToString(response[26]));
+            marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[27]));
+            marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[31]));
+            marketAuctionForPrintResponse.setReelerNameKannada(Util.objectToString(response[33]));
+            marketAuctionForPrintResponse.setReelerMobileNumber(Util.objectToString(response[34]));
+            marketAuctionForPrintResponseList.add(marketAuctionForPrintResponse);
+            acceptedLotList.add(marketAuctionForPrintResponse.getAllottedLotId());
+        }
+
+        List<Object[]> newlyCreatedLotDetails = lotRepository.getNewlyCreatedLotDetailsForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId(), acceptedLotList.size() == 0 ? null : acceptedLotList);
+
+        for (Object[] response : newlyCreatedLotDetails) {
+            BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
+            marketAuctionForPrintResponseList.add(marketAuctionPrinterService.prepareResponseForLotBaseResponse(token, response, lotId));
+        }
+        rw.setContent(marketAuctionForPrintResponseList);
+        return ResponseEntity.ok(rw);
+    }
 
 }

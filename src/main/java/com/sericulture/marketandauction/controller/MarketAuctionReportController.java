@@ -32,4 +32,9 @@ public class MarketAuctionReportController {
     public ResponseEntity<?> getUnitCounterReport(@RequestBody ReportRequest reportRequest){
         return marketAuctionReportService.getUnitCounterReport(reportRequest);
     }
+
+    @PostMapping("/getPendingLotReport")
+    public ResponseEntity<?> getPendingLotReport(@RequestBody ReportRequest reportRequest){
+        return marketAuctionReportService.getPendingLotReport(reportRequest);
+    }
 }
