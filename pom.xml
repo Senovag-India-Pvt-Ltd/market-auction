@@ -42,13 +42,7 @@
 			<url>https://maven.pkg.github.com/Senovag-India-Pvt-Ltd/maven-repo</url>
 		</repository>
 	</distributionManagement>
-	<repositories>
-		<repository>
-			<id>my-local-repo</id>
-			<name>localrepo</name>
-			<url>file://${project.basedir}/lib</url>
-		</repository>
-	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -136,7 +130,7 @@
 		<dependency>
 			<groupId>com.sericulture</groupId>
 			<artifactId>senovag-auth-module</artifactId>
-			<version>1.0.0</version>
+			<version>3.0.0</version>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
@@ -171,6 +165,28 @@
 					</excludes>
 				</configuration>
 			</plugin>
+		<!--	todo
+		refered from : https://stackoverflow.com/questions/4955635/how-to-add-local-jar-files-to-a-maven-project
+		<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.5.2</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>lib/senovag-auth-module-1.0.0.jar</file>
+							<groupId>com.sericulture</groupId>
+							<artifactId>senovag-auth-module</artifactId>
+							<version>1.0.0</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>-->
 		</plugins>
 	</build>
 </project>

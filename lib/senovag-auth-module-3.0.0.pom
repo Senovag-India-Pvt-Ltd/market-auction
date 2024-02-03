@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sericulture</groupId>
 	<artifactId>senovag-auth-module</artifactId>
-	<version>1.0.0</version>
+	<version>3.0.0</version>
 	<packaging>jar</packaging>
 	<name>senovag-auth-module</name>
 	<description>Auth module for Senovag Sericulture project</description>
