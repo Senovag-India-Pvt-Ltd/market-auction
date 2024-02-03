@@ -85,7 +85,6 @@ public class MarketAuctionService {
             rw.setErrorMessages(List.of(validationMessage));
             return ResponseEntity.ok(rw);
         }
-        boolean hasException = false;
         MarketAuction marketAuction = null;
         try {
             marketAuction = saveMarketAuction(marketAuctionRequest);
@@ -99,20 +98,16 @@ public class MarketAuctionService {
             saveBinAndLot(marketAuctionResponse, marketAuction);
 
             rw.setContent(marketAuctionResponse);
+            marketAuction.setStatus("generated");
             log.info(String.format("marketAuction: succesfull generation of market auction Requrest for marketId: %s gowdownId: %s and farmer: %s"
                     ,marketAuction.getMarketId(),marketAuction.getGodownId(),marketAuction.getFarmerId()));
         } catch (Exception e) {
-            hasException = true;
+            marketAuction.setStatus("error");
             e.printStackTrace();
             log.error("Error occurred while processing the request %s", marketAuctionRequest);
                 throw e;
         } finally {
             if(Objects.nonNull(marketAuction)) {
-                if(hasException) {
-                    marketAuction.setStatus("error");
-                } else {
-                    marketAuction.setStatus("generated");
-                }
                 marketAuctionRepository.save(marketAuction);
             }
         }

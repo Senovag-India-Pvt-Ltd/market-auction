@@ -28,12 +28,7 @@ public class WeigmentController {
 
     @PostMapping("/canContinuetoWeighment")
     public ResponseEntity<?> canContinuetoWeighment(@RequestBody CanContinueToWeighmentRequest canContinueToWeighmentRequest){
-        return weigmentService.canContinueToWeighmentProcess(canContinueToWeighmentRequest,false);
-    }
-
-    @PostMapping("/updateWeightToContinueToWeighment")
-    public ResponseEntity<?> updateWeightToContinueToWeighment(@RequestBody CanContinueToWeighmentRequest updateLotWeightRequest){
-        return weigmentService.canContinueToWeighmentProcess(updateLotWeightRequest,true);
+        return weigmentService.canContinueToWeighmentProcess(canContinueToWeighmentRequest);
     }
 
     @PostMapping("/completeWeighmentForLot")

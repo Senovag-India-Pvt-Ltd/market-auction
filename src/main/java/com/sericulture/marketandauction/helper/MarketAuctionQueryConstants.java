@@ -25,22 +25,36 @@ public class MarketAuctionQueryConstants {
 
     public static final String ALLTTOTED_LOT_LIST_PER_MARKET_ID_AND_GODOWNID = ALLTTOTED_LOT_LIST_PER_MARKET_ID + " and ma.godown_id =:godownId";
 
-    public static final String DTR_ONLINE_REPORT_QUERY = """
+    private static final String SELECT_FIELDS_DTR_ONLINE = """
             select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
             f.mobile_number,l.LOT_WEIGHT_AFTER_WEIGHMENT,ra.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
             r.reeling_license_number,r.name,r.mobile_number,
-            fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number 
-            from 
-            dbo.FARMER f
+            fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number""";
+
+    private static final String FROM =" from";
+
+
+    private static final String LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER = """
+            FARMER dbo.f
             INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID 
             INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
             INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date 
-            INNER JOIN dbo.reeler r ON r.reeler_id =ra.REELER_ID  
-            LEFT JOIN dbo.reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
-            LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
             LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 
             LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID = f.FARMER_ID 
             LEFT JOIN dbo.market_master mm on mm.market_master_id = ma.market_auction_id 
+            """;
+
+    private static final String LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER = """
+             INNER JOIN dbo.reeler r ON r.reeler_id =ra.REELER_ID  
+             LEFT JOIN dbo.reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
+             LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number""";
+
+    private static final String SELECT_FIELDS_FARMER_TXN = """
+            select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,l.auction_date,
+            f.first_name,f.middle_name,f.last_name,f.farmer_number,
+            l.LOT_WEIGHT_AFTER_WEIGHMENT,ra.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER""";
+
+    private static final String WHERE_CLAUSE_DTR_ONLINE = """
             where l.status in ('readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
              and l.auction_date BETWEEN :fromDate and :toDate 
              and l.market_id =:marketId 
@@ -49,6 +63,8 @@ public class MarketAuctionQueryConstants {
              and fba.farmer_bank_ifsc_code !='' 
              and rvcb.CURRENT_BALANCE > 0.0
             ORDER by l.lot_id""";
+
+    public static final String DTR_ONLINE_REPORT_QUERY = SELECT_FIELDS_DTR_ONLINE + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ WHERE_CLAUSE_DTR_ONLINE;
 
     public static final String UNIT_COUNTER_REPORT_QUERY = """
             select  l.allotted_lot_id ,l.auction_date,
@@ -65,25 +81,15 @@ public class MarketAuctionQueryConstants {
             and l.market_id =:marketId
             ORDER by l.lot_id""";
 
-    public static final String AUCTION_DATE_LIST_BY_LOT_STATUS = """
-            select  distinct l.auction_date
-                        from
-                        dbo.FARMER f
-                        INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
-                        INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
-                        INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date
-                        INNER JOIN dbo.reeler r ON r.reeler_id =ra.REELER_ID 
-                        LEFT JOIN dbo.reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
-                        LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
-                        LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1
-                        LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID  = f.FARMER_ID
-                        LEFT JOIN dbo.market_master mm on mm.market_master_id = ma.market_auction_id
-                        where l.status =:lotStatus
+    private static final String WHERE_CLAUSE_AUCTION_DATE_LIST = """
+             where l.status =:lotStatus
                          and l.market_id =:marketId
                          and fba.farmer_bank_account_number != ''
                          and fba.farmer_bank_ifsc_code !=''
                          and rvcb.CURRENT_BALANCE > 0.0
                         ORDER by l.auction_date""";
+
+    public static final String AUCTION_DATE_LIST_BY_LOT_STATUS = "select  distinct l.auction_date" + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ WHERE_CLAUSE_AUCTION_DATE_LIST;
 
     public static final String NEWLY_CREATED_LOTS = """
             select  f.farmer_number,f.first_name ,f.middle_name,
