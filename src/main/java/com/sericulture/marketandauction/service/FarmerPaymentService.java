@@ -191,7 +191,6 @@ public class FarmerPaymentService {
     public ResponseEntity<?> requestJobToProcessPayment(FarmerPaymentInfoRequest farmerPaymentInfoRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         marketAuctionHelper.getAuthToken(farmerPaymentInfoRequest);
-        EntityManager entityManager = null;
         try {
             boolean exists = transactionFileGenQueueRepository.existsTransactionFileGenQueueByMarketIdAndAuctionDateAndStatusIn(farmerPaymentInfoRequest.getMarketId(), farmerPaymentInfoRequest.getPaymentDate(), Set.of("requested", "processing"));
             if (exists) {
@@ -209,13 +208,9 @@ public class FarmerPaymentService {
                     .build();
             transactionFileGenQueueRepository.save(transactionFileGenQueue);
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+
             return marketAuctionHelper.retrunIfError(rw, "Exception while creating job for the readyForPayement with error: " + ex);
 
-        } finally {
-            if (entityManager != null && entityManager.isOpen()) {
-                entityManager.close();
-            }
         }
         return ResponseEntity.ok(rw);
     }
