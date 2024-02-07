@@ -118,7 +118,7 @@ public class MarketAuctionPrinterService {
 
                 .farmerMobileNumber(Util.objectToString(21))
                 .marketAuctionId((BigDecimal) response[22])
-                .auctionDateWithTime((Date)(response[10]))
+                .auctionDateWithTime((Date)(response[23]))
                 .build();
         marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
         marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));
