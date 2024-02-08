@@ -100,7 +100,7 @@ public class MarketAuctionQueryConstants {
             l.allotted_lot_id,l.auction_date,ma.estimated_weight,
              mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
              l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
-             f.name_kan,f.mobile_number,ma.market_auction_id
+             f.name_kan,f.mobile_number,ma.market_auction_id,l.created_date
             from  
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
@@ -129,7 +129,7 @@ public class MarketAuctionQueryConstants {
             r.reeling_license_number, r.name,
             r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
             l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
-            ra.AMOUNT,rvcb.CURRENT_BALANCE,r.reeler_name_kannada,r.mobile_number
+            ra.AMOUNT,rvcb.CURRENT_BALANCE,r.reeler_name_kannada,r.mobile_number,r.reeler_number
             from 
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 

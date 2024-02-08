@@ -74,6 +74,7 @@ public class MarketAuctionPrinterService {
                     marketAuctionForPrintResponse.setReelerCurrentBalance(reelerCurrentBalance);
                     marketAuctionForPrintResponse.setReelerNameKannada(Util.objectToString(response[33]));
                     marketAuctionForPrintResponse.setReelerMobileNumber(Util.objectToString(response[34]));
+                    marketAuctionForPrintResponse.setReelerNumber(Util.objectToString(response[35]));
                     marketAuctionForPrintResponse.setFarmerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() - marketAuctionForPrintResponse.getFarmerMarketFee());
                     marketAuctionForPrintResponse.setReelerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() + marketAuctionForPrintResponse.getReelerMarketFee());
 
@@ -108,15 +109,16 @@ public class MarketAuctionPrinterService {
                 .auctionDate(Util.objectToString(response[10]))
                 .farmerEstimatedWeight(Integer.parseInt(String.valueOf(response[11])))
                 .marketName(Util.objectToString(response[12]))
-                .source(Util.objectToString(response[13]))
-                .race(Util.objectToString(response[14]))
+                .race(Util.objectToString(response[13]))
+                .source(Util.objectToString(response[14]))
                 .tareWeight(Util.objectToFloat(response[15]))
                 .serialNumber(Util.objectToString(response[17])+ lotId)
                 .marketNameKannada(Util.objectToString(response[19]))
-                .farmerMobileNumber(Util.objectToString(response[20]))
+                .farmerNameKannada(Util.objectToString(response[20]))
 
-                .farmerMobileNumber(Util.objectToString(21))
+                .farmerMobileNumber(Util.objectToString(response[21]))
                 .marketAuctionId((BigDecimal) response[22])
+                .auctionDateWithTime((Date)(response[23]))
                 .build();
         marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
         marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));
