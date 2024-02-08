@@ -50,6 +50,7 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private Date auctionDateWithTime;
     private String farmerMobileNumber;
     private String reelerMobileNumber;
+    private String reelerNumber;
     private String reelerNameKannada;
     private double farmerAmount;
     private double reelerAmount;
