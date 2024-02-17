@@ -8,6 +8,7 @@ import com.sericulture.marketandauction.model.api.ErrorType;
 import com.sericulture.marketandauction.model.exceptions.GeneralExceptionMessage;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.util.Locale;
 
 
 @ControllerAdvice
+@Slf4j
 public class GlobalAPIExceptionHandler {
 
     @Autowired
@@ -30,6 +32,7 @@ public class GlobalAPIExceptionHandler {
     public ResponseEntity handleEmployeeNotFound(
             ValidationException exception
     ) {
+        log.error("Error while completing the request with {}",exception);
         List<ErrorResponse> errorResponses = Arrays.asList(new ErrorResponse(exception.getErrorMessages(), ErrorType.VALIDATION));
         ResponseWrapper wr = new ResponseWrapper();
         wr.setErrorMessages(errorResponses);
@@ -44,6 +47,7 @@ public class GlobalAPIExceptionHandler {
     public ResponseEntity handleInternalServerError(
             Throwable exception
     ) {
+        log.error("Error while completing the request with {}",exception);
         ResponseWrapper wr = new ResponseWrapper();
         GeneralExceptionMessage gem = new GeneralExceptionMessage(MessageLabelType.SYSTEM.name(),
                 util.getMessageByCode("MA00002.GEN"),

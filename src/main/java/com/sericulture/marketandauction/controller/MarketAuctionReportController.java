@@ -2,6 +2,7 @@ package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.model.api.marketauction.DTROnlineReportRequest;
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.FarmerTxnReportRequest;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.ReportRequest;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,5 +37,10 @@ public class MarketAuctionReportController {
     @PostMapping("/getPendingLotReport")
     public ResponseEntity<?> getPendingLotReport(@RequestBody ReportRequest reportRequest){
         return marketAuctionReportService.getPendingLotReport(reportRequest);
+    }
+
+    @PostMapping("/getFarmerTxnReport")
+    public ResponseEntity<?> getFarmerTxnReport(@RequestBody FarmerTxnReportRequest reportRequest){
+        return marketAuctionReportService.getFarmerTxnReport(reportRequest);
     }
 }

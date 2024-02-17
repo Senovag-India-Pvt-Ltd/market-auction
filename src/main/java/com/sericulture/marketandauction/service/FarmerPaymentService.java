@@ -3,6 +3,7 @@ package com.sericulture.marketandauction.service;
 
 import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
+import com.sericulture.marketandauction.helper.MarketAuctionQueryConstants;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
@@ -116,10 +117,11 @@ public class FarmerPaymentService {
             nativeQuery.setParameter(2, lotIds);
             nativeQuery.executeUpdate();
             entityManager.getTransaction().commit();
-        } catch (Exception ex) {
+        }catch (ValidationException validationException){
+            throw validationException;
+        }catch (Exception ex) {
             entityManager.getTransaction().rollback();
             return marketAuctionHelper.retrunIfError(rw, "Exception while updating the readyForPayement to list:" + farmerPaymentInfoRequestByLotList + " error: " + ex);
-
         } finally {
             if (entityManager != null && entityManager.isOpen()) {
                 entityManager.close();
@@ -131,6 +133,7 @@ public class FarmerPaymentService {
     public ResponseEntity<?> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(RequestBody requestBody, String status) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         marketAuctionHelper.getAuthToken(requestBody);
+       final String t = MarketAuctionQueryConstants.AUCTION_DATE_LIST_BY_LOT_STATUS;
         List<Object> auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody.getMarketId(), status);
         if (Util.isNullOrEmptyList(auctionDates)) {
            throw new ValidationException("No Auction dates found for bulk send");
