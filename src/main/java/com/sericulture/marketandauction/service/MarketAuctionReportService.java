@@ -6,8 +6,8 @@ import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.api.marketauction.*;
-import com.sericulture.marketandauction.model.api.marketauction.reporting.ReportRequest;
-import com.sericulture.marketandauction.model.api.marketauction.reporting.UnitCounterReportResponse;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.*;
+import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.repository.LotRepository;
 import com.sericulture.marketandauction.repository.ReelerAuctionRepository;
 import lombok.Builder;
@@ -173,6 +173,50 @@ public class MarketAuctionReportService {
         }
         rw.setContent(marketAuctionForPrintResponseList);
         return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getFarmerTxnReport(FarmerTxnReportRequest farmerTxnReportRequest) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> responses = lotRepository.getFarmerReport(farmerTxnReportRequest.getMarketId(),farmerTxnReportRequest.getReportFromDate(),farmerTxnReportRequest.getReportToDate(),farmerTxnReportRequest.getFarmerNumber());
+
+        if(Util.isNullOrEmptyList(responses))
+        {
+            throw new ValidationException("No data found");
+        }
+        FarmerTxnReportResponse farmerTxnReportResponse = new FarmerTxnReportResponse();
+        farmerTxnReportResponse.setFarmerFirstName(Util.objectToString(responses.get(0)[3]));
+        farmerTxnReportResponse.setFarmerMiddleName(Util.objectToString(responses.get(0)[4]));
+        farmerTxnReportResponse.setFarmerLastName(Util.objectToString(responses.get(0)[5]));
+        farmerTxnReportResponse.setFarmerNumber(Util.objectToString(responses.get(0)[6]));
+        float totalFarmerAmount = 0;
+        float totalMarketFee = 0;
+        float totalLotSoldAmount = 0;
+        List<FarmerTxnInfo> farmerTxnInfoList = new ArrayList<>();
+        farmerTxnReportResponse.setFarmerTxnInfoList(farmerTxnInfoList);
+        for(Object[] response:responses){
+            FarmerTxnInfo farmerTxnInfo = FarmerTxnInfo.builder()
+                    .serialNumber(Util.objectToInteger(response[0]))
+                    .allottedLotId(Util.objectToInteger(response[1]))
+                    .lotTransactionDate(Util.objectToString(response[2]))
+                    .weight(Util.objectToFloat(response[7]))
+                    .bidAmount(Util.objectToInteger(response[8]))
+                    .lotSoldOutAmount(Util.objectToFloat(response[9]))
+                    .farmerMarketFee(Util.objectToFloat(response[10])).build();
+            double farmerAmount = farmerTxnInfo.getLotSoldOutAmount() - farmerTxnInfo.getFarmerMarketFee();
+            totalFarmerAmount +=farmerAmount;
+            farmerTxnInfo.setFarmerAmount(farmerAmount);
+            totalMarketFee+=farmerTxnInfo.getFarmerMarketFee();
+            totalLotSoldAmount+=farmerTxnInfo.getLotSoldOutAmount();
+            farmerTxnInfoList.add(farmerTxnInfo);
+        }
+        farmerTxnReportResponse.setTotalMarketFee(totalMarketFee);
+        farmerTxnReportResponse.setTotalSaleAmount(totalLotSoldAmount);
+        farmerTxnReportResponse.setTotalFarmerAmount(totalFarmerAmount);
+        rw.setContent(farmerTxnReportResponse);
+        return ResponseEntity.ok(rw);
+
     }
 
 }
