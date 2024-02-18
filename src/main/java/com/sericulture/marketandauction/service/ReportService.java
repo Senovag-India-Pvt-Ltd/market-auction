@@ -87,7 +87,7 @@ public class ReportService {
     @PersistenceUnit
     private EntityManagerFactory entityManagerFactory;
 
-    public ReelerTransactionReportWrapper generateReelerReport(long marketId, long reelerId){
+    public ReelerTransactionReportWrapper generateReelerReport(long marketId, long reelerId, LocalDate fromDate, LocalDate toDate){
 
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
@@ -105,7 +105,7 @@ public class ReportService {
 
         //Balance Query
         Object object = entityManager.createNativeQuery(CURRENT_BALANCE_QUERY)
-                .setParameter(":virtualAccount", virtualAccountNumber)
+                .setParameter("virtualAccount", virtualAccountNumber)
                 .getSingleResult();
         Object[] array = (Object[])object;
         ReportCurrentBalance reportCurrentBalance = new ReportCurrentBalance();
@@ -114,8 +114,8 @@ public class ReportService {
         reportCurrentBalance.setCreatedDate((LocalDateTime) array[2]);
 
         List<Object[]> objectList = entityManager.createNativeQuery(TRANSACTION_PASS_BOOK)
-                .setParameter("fromDate", LocalDate.now())
-                .setParameter("toDate", LocalDate.now())
+                .setParameter("fromDate", fromDate)
+                .setParameter("toDate", toDate)
                 .setParameter("balanceTime", reportCurrentBalance.getCreatedDate())
                 .setParameter("vAccount", reportCurrentBalance.getVirtualAccountNumber())
                 .getResultList();
@@ -135,6 +135,7 @@ public class ReportService {
         double creditDebitDiff = 0.00;
         double openingBalance = 0.00;
         double currentBalance = 0.00;
+
         List<ReelerTransactionReport> reelerTransactionReports = new ArrayList<>();
         // prepare all the sums
         for(ReportAllTransaction rat: reportAllTransactions)  {
@@ -162,11 +163,7 @@ public class ReportService {
         //Need to loop again to fill the running balance
         for (ReelerTransactionReport rtp: reelerTransactionReports){
             if("D".equalsIgnoreCase(rtp.getTransactionType())){
-                if (rtp.getDepositAmount() > 0) {
-                    runningBalance = runningBalance - rtp.getDepositAmount();
-                } else {
-                    runningBalance = runningBalance + Math.abs(rtp.getDepositAmount());
-                }
+                runningBalance = runningBalance - rtp.getDepositAmount();
                 rtp.setBalance(runningBalance);
             } else {
                 runningBalance =runningBalance+rtp.getDepositAmount();
@@ -175,6 +172,9 @@ public class ReportService {
         }
         ReelerTransactionReportWrapper reelerTransactionReportWrapper = new ReelerTransactionReportWrapper();
         reelerTransactionReportWrapper.setReelerTransactionReports(reelerTransactionReports);
+        reelerTransactionReportWrapper.setOpeningBalance(openingBalance);
+        reelerTransactionReportWrapper.setTotalDeposits(creditSum);
+        reelerTransactionReportWrapper.setTotalPurchase(debitSum);
         return reelerTransactionReportWrapper;
     }
 }
