@@ -3,9 +3,7 @@ package com.sericulture.marketandauction.controller;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.DTROnlineReportRequest;
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
-import com.sericulture.marketandauction.model.api.marketauction.reporting.FarmerTxnReportRequest;
-import com.sericulture.marketandauction.model.api.marketauction.reporting.ReelerTxnReportRequest;
-import com.sericulture.marketandauction.model.api.marketauction.reporting.ReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.*;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import com.sericulture.marketandauction.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,5 +55,15 @@ public class MarketAuctionReportController {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         rw.setContent(reportService.generateReelerReport(reelerTxnReportRequest.getMarketId(),reelerTxnReportRequest.getReelerNumber(),reelerTxnReportRequest.getReportFromDate(),reelerTxnReportRequest.getReportToDate()));
         return ResponseEntity.ok(rw);
+    }
+
+    @PostMapping("/getBiddingReport")
+    public ResponseEntity<?> getBiddingReport(@RequestBody LotReportRequest reportRequest){
+        return marketAuctionReportService.getBiddingReport(reportRequest);
+    }
+
+    @PostMapping("/getReelerBiddingReport")
+    public ResponseEntity<?> getReelerBiddingReport(@RequestBody ReelerReportRequest reportRequest){
+        return marketAuctionReportService.getReelerBiddingReport(reportRequest);
     }
 }

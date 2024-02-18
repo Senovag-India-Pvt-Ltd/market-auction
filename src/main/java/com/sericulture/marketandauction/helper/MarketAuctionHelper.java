@@ -54,6 +54,25 @@ public class MarketAuctionHelper {
         return canPerformAnyoneActivityNormally(marketMaster,activity);
     }
 
+    public int getAuctionNumber(ExceptionalTime exceptionalTime,MarketMaster marketMaster, LocalTime bidTime) {
+        if (exceptionalTime != null) {
+            if (compareTime(bidTime, exceptionalTime.getAuction1StartTime(), exceptionalTime.getAuction1EndTime())) {
+                return 1;
+            }
+            if (compareTime(bidTime, exceptionalTime.getAuction2StartTime(), exceptionalTime.getAuction2EndTime())) {
+                return 2;
+            }
+            return 3;
+        }
+        if (compareTime(bidTime, marketMaster.getAuction1StartTime(), marketMaster.getAuction1EndTime())) {
+            return 1;
+        }
+        if (compareTime(bidTime, marketMaster.getAuction2StartTime(), marketMaster.getAuction2EndTime())) {
+            return 2;
+        }
+        return 3;
+    }
+
     public boolean canPerformAnyoneActivityExceptionally(ExceptionalTime exceptionalTime, activityType activity) {
         LocalTime time = Util.getISTLocalTime().truncatedTo(ChronoUnit.SECONDS);
         switch (activity) {
