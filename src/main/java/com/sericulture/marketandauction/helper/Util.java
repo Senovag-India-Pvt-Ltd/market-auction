@@ -106,4 +106,12 @@ public final class Util {
     public static String getUserId(JwtPayloadData jwtPayloadData) {
         return jwtPayloadData.getUsername();
     }
+
+    public static <T> T castObjectToTypeValue(Object value, Class<T> clazz) {
+        return value == null ? null : clazz.cast(value);
+    }
+
+    public static String returnPassedValueIfNullOrEmpty(String value,String defaultValue) {
+        return (Objects.isNull(value) || "".equals(value)) ? defaultValue : (String)value;
+    }
 }

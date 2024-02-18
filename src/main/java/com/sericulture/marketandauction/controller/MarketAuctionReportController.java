@@ -1,10 +1,13 @@
 package com.sericulture.marketandauction.controller;
 
+import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.DTROnlineReportRequest;
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.FarmerTxnReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.ReelerTxnReportRequest;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.ReportRequest;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
+import com.sericulture.marketandauction.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,12 +15,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/v1/auction/report")
 public class MarketAuctionReportController {
 
     @Autowired
     private MarketAuctionReportService marketAuctionReportService;
+
+    @Autowired
+    private ReportService reportService;
 
     @PostMapping("/getAllHighestBidsByMarketIdAndOptionalGodownId")
     public ResponseEntity<?> getAllHighestBidsByMarketIdAndOptionalGodownId(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
@@ -42,5 +50,12 @@ public class MarketAuctionReportController {
     @PostMapping("/getFarmerTxnReport")
     public ResponseEntity<?> getFarmerTxnReport(@RequestBody FarmerTxnReportRequest reportRequest){
         return marketAuctionReportService.getFarmerTxnReport(reportRequest);
+    }
+
+    @PostMapping("/getReelerTxnReport")
+    public ResponseEntity<?> getReelerTxnReport(@RequestBody ReelerTxnReportRequest reelerTxnReportRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        rw.setContent(reportService.generateReelerReport(reelerTxnReportRequest.getMarketId(),reelerTxnReportRequest.getReelerNumber(),reelerTxnReportRequest.getReportFromDate(),reelerTxnReportRequest.getReportToDate()));
+        return ResponseEntity.ok(rw);
     }
 }
