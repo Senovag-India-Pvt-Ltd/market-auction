@@ -7,16 +7,22 @@ import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.*;
+import com.sericulture.marketandauction.model.entity.ExceptionalTime;
+import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
+import com.sericulture.marketandauction.repository.ExceptionalTimeRepository;
 import com.sericulture.marketandauction.repository.LotRepository;
+import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import com.sericulture.marketandauction.repository.ReelerAuctionRepository;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,6 +46,12 @@ public class MarketAuctionReportService {
 
     @Autowired
     private FarmerPaymentService farmerPaymentService;
+
+    @Autowired
+    MarketMasterRepository marketMasterRepository;
+
+    @Autowired
+    ExceptionalTimeRepository exceptionalTimeRepository;
 
 
     private void prepareDTROnlineInfo(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
@@ -217,6 +229,46 @@ public class MarketAuctionReportService {
         rw.setContent(farmerTxnReportResponse);
         return ResponseEntity.ok(rw);
 
+    }
+
+    public ResponseEntity<?> getBiddingReport(LotReportRequest reportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<LotReportResponse> lotReportResponseList = new ArrayList<>();
+        List<Object[]> responses = reelerAuctionRepository.getBiddingReport(reportRequest.getMarketId(),reportRequest.getReportFromDate(),reportRequest.getLotId());
+        return getBiddingReportLotOrReeler(reportRequest.getMarketId(), rw, lotReportResponseList, responses);
+    }
+
+    private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
+        if(Util.isNullOrEmptyList(responses))
+        {
+            throw new ValidationException("No data found");
+        }
+        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
+        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+        for(Object[] response: responses){
+            LotReportResponse lotReportResponse = LotReportResponse.builder()
+                    .lotId(Util.objectToInteger(response[0]))
+                    .reelerLicenseNumber(Util.objectToString(response[1]))
+                    .bidAmount(Util.objectToInteger(response[2]))
+                    .bidTime(((Timestamp)response[3]).toLocalDateTime().toLocalTime())
+                    .accepted(Util.objectToString(response[4]))
+                    .build();
+            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
+            if(StringUtils.isNotBlank(lotReportResponse.getAccepted())){
+                lotReportResponse.setAcceptedTime(((Timestamp)response[5]).toLocalDateTime().toLocalTime());
+                lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
+            }
+            lotReportResponseList.add(lotReportResponse);
+        }
+        rw.setContent(lotReportResponseList);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getReelerBiddingReport(ReelerReportRequest reportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<LotReportResponse> lotReportResponseList = new ArrayList<>();
+        List<Object[]> responses = reelerAuctionRepository.getReelerBiddingReport(reportRequest.getMarketId(),reportRequest.getReportFromDate(),reportRequest.getReelerNumber());
+        return getBiddingReportLotOrReeler(reportRequest.getMarketId(), rw, lotReportResponseList, responses);
     }
 
 }

@@ -171,6 +171,19 @@ public class MarketAuctionQueryConstants {
 
     public static final String PENDING_REPORT_ACCEPTED_LOTS = ACCEPTED_LOTS + LOT_CLAUSE_FOR_PENDING_REPORT;
 
+    private static final String BIDDING_REPORT_QUERY = """
+            select l.allotted_lot_id ,r.reeling_license_number ,ra.AMOUNT ,ra.CREATED_DATE ,ra.STATUS ,ra.MODIFIED_DATE, l.BID_ACCEPTED_BY\s
+            FROM dbo.lot l
+            LEFT JOIN dbo.REELER_AUCTION ra ON ra.MARKET_ID  = l.market_id 
+            and ra.ALLOTTED_LOT_ID  = l.allotted_lot_id  and ra.AUCTION_DATE =l.auction_date
+            INNER JOIN dbo.reeler r ON r.reeler_id =ra.REELER_ID 
+            where l.auction_date =:auctionDate
+            and l.market_id =:marketId
+            
+            """;
 
+    public static final String BIDDING_REPORT_QUERY_LOT = BIDDING_REPORT_QUERY + "and l.allotted_lot_id =:lotId";
+
+    public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber";
 
 }
