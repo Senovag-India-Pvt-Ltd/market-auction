@@ -11,6 +11,8 @@ import jakarta.persistence.PersistenceUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ public class ReportService {
                         ON rvba.reeler_id = r.reeler_id
                     WHERE
                         rvba.market_master_id =:marketId
-                        AND r.reeler_id = :reelerId
+                        AND r.reeling_license_number = :reelerNumber
                    """;
 
     private String CURRENT_BALANCE_QUERY = """
@@ -46,11 +48,11 @@ public class ReportService {
                 reeler_virtual_account_number =:virtualAccount
             """;
     private String TRANSACTION_PASS_BOOK = """
-            SELECT I.TXN_TYPE,AMOUNT, CREATED_DATE, LOT_ID, CAST(I.CREATED_DATE AS DATE) DATE_ON
+            SELECT I.TXN_TYPE,AMOUNT, CREATED_DATE, LOT_ID, CAST(I.CREATED_DATE AS DATE) DATE_ON,FARMER_NAME
             FROM (
                 SELECT
                     'C' AS TXN_TYPE,
-                    AM[OUNT,
+                    AMOUNT,
                     CREATED_DATE,
                     -1 as LOT_ID,
                     VIRTUAL_ACCOUNT,
@@ -58,7 +60,6 @@ public class ReportService {
                 FROM REELER_VID_CREDIT_TXN
                 WHERE
                     CREATED_DATE BETWEEN :fromDate AND :toDate
-                    AND CREATED_DATE <= :balanceTime
                     AND VIRTUAL_ACCOUNT = :vAccount
             UNION ALL
                 SELECT
@@ -75,9 +76,8 @@ public class ReportService {
                                  INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
                                  WHERE l.allotted_lot_id =DT.LOT_ID  AND l.auction_date =DT.AUCTION_DATE  AND l.market_id =:marketId
                       ) AS FARMER_NAME
-                FROM REELER_VID_DEBIT_TXN
+                FROM REELER_VID_DEBIT_TXN DT
                 WHERE CREATED_DATE BETWEEN :fromDate AND :toDate
-                AND CREATED_DATE <= :balanceTime
                 AND VIRTUAL_ACCOUNT = :vAccount
             ) as I
             WHERE I.VIRTUAL_ACCOUNT = :vAccount
@@ -87,17 +87,17 @@ public class ReportService {
     @PersistenceUnit
     private EntityManagerFactory entityManagerFactory;
 
-    public ReelerTransactionReportWrapper generateReelerReport(long marketId, long reelerId, LocalDate fromDate, LocalDate toDate){
+    public ReelerTransactionReportWrapper generateReelerReport(int marketId, String reelerNumber, LocalDate fromDate, LocalDate toDate){
 
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
         Object[] reelerResult =  (Object[])entityManager.createNativeQuery(REELER_QUERY)
                 .setParameter("marketId", marketId)
-                .setParameter("reelerId", reelerId)
+                .setParameter("reelerNumber", reelerNumber)
                 .getSingleResult();
 
-        if(Objects.nonNull(reelerResult)){
+        if(Objects.isNull(reelerResult)){
             return new ReelerTransactionReportWrapper();
         }
         String reelerName =(String)reelerResult[0];
@@ -109,24 +109,26 @@ public class ReportService {
                 .getSingleResult();
         Object[] array = (Object[])object;
         ReportCurrentBalance reportCurrentBalance = new ReportCurrentBalance();
-        reportCurrentBalance.setCurrentBalance((double)array[0]);
+        reportCurrentBalance.setCurrentBalance(((BigDecimal)array[0]).doubleValue());
         reportCurrentBalance.setVirtualAccountNumber((String)array[1]);
-        reportCurrentBalance.setCreatedDate((LocalDateTime) array[2]);
+        reportCurrentBalance.setCreatedDate(((Timestamp) array[2]).toLocalDateTime());
 
         List<Object[]> objectList = entityManager.createNativeQuery(TRANSACTION_PASS_BOOK)
                 .setParameter("fromDate", fromDate)
                 .setParameter("toDate", toDate)
-                .setParameter("balanceTime", reportCurrentBalance.getCreatedDate())
+               // .setParameter("balanceTime", Timestamp.valueOf(reportCurrentBalance.getCreatedDate()))
                 .setParameter("vAccount", reportCurrentBalance.getVirtualAccountNumber())
+                .setParameter("marketId",marketId)
                 .getResultList();
 
         List<ReportAllTransaction> reportAllTransactions = new ArrayList<>();
         for(Object[] obj : objectList){
             ReportAllTransaction rat = new ReportAllTransaction();
-            rat.setTransactionType((String)obj[0]);
-            rat.setCreatedDate((LocalDateTime) obj[1]);
-            rat.setLot((Long) obj[2]);
-            rat.setDateOn((LocalDate) obj[3]);
+            rat.setTransactionType(obj[0]+"");
+            rat.setAmount(((BigDecimal) obj[1]).doubleValue());
+            rat.setCreatedDate(((Timestamp) obj[2]).toLocalDateTime());
+            rat.setLot((Long) obj[3]);
+            rat.setDateOn(((java.sql.Date) obj[4]).toLocalDate());
             rat.setFarmerName((String)obj[5]);
             reportAllTransactions.add(rat);
         }
@@ -140,13 +142,14 @@ public class ReportService {
         // prepare all the sums
         for(ReportAllTransaction rat: reportAllTransactions)  {
             ReelerTransactionReport rtp = new ReelerTransactionReport();
-            if(Objects.nonNull(rat.getAmount())){
+            if(Objects.isNull(rat.getAmount())){
                 continue;
             }
             rtp.setTransactionType(rat.getTransactionType());
+            rtp.setTransactionDate(rat.getCreatedDate().toLocalDate());
             if("D".equalsIgnoreCase(rat.getTransactionType())){
                 debitSum = debitSum + rat.getAmount();
-                rtp.setDepositAmount(rat.getAmount());
+                rtp.setPaymentAmount(rat.getAmount());
                 rtp.setOperationDescription("Paid to "+rat.getFarmerName()+", for lot "+ rat.getLot());
             } else {
                 creditSum = creditSum +rat.getAmount();
@@ -163,7 +166,7 @@ public class ReportService {
         //Need to loop again to fill the running balance
         for (ReelerTransactionReport rtp: reelerTransactionReports){
             if("D".equalsIgnoreCase(rtp.getTransactionType())){
-                runningBalance = runningBalance - rtp.getDepositAmount();
+                runningBalance = runningBalance - rtp.getPaymentAmount();
                 rtp.setBalance(runningBalance);
             } else {
                 runningBalance =runningBalance+rtp.getDepositAmount();

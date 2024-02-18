@@ -12,7 +12,7 @@ import java.time.LocalDate;
 public class ReelerTransactionReport {
     String operationDescription;
 
-    String transactionDate;
+    LocalDate transactionDate;
 
     Double depositAmount;
 
