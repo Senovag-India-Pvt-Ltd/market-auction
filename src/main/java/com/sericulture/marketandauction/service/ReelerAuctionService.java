@@ -63,11 +63,12 @@ public class ReelerAuctionService {
         log.info("Bid Submission request:"+reelerBidRequest);
         LocalDateTime tStart = LocalDateTime.now();
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        EntityManager entityManager = null;
         try {
             JwtPayloadData token = marketAuctionHelper.getReelerAuthToken(reelerBidRequest);
 
 
-             EntityManager entityManager = entityManagerFactory.createEntityManager();
+             entityManager = entityManagerFactory.createEntityManager();
             /* entityManager.getTransaction().begin();
             Object singleResult = entityManager.createNativeQuery("{  CALL REELER_VID_CREDIT_TXN_SP(:UserId, :MarketId, :GodownId, :LotId, :ReelerId,:AuctionDate, :SurrogateBid, :Amount) }")
                     .setParameter("UserId", "")
@@ -123,6 +124,10 @@ public class ReelerAuctionService {
             }
             log.error("Error While submitting the bid for the Request:"+reelerBidRequest+" error id: "+ex);
             return marketAuctionHelper.retrunIfError(rw,"error occurred while submitting bid.");
+        }finally {
+            if (entityManager != null && entityManager.isOpen()) {
+                entityManager.close();
+            }
         }
         return ResponseEntity.ok(rw);
     }
