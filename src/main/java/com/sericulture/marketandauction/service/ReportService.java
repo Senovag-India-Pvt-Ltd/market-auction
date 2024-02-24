@@ -178,6 +178,7 @@ public class ReportService {
         reelerTransactionReportWrapper.setOpeningBalance(openingBalance);
         reelerTransactionReportWrapper.setTotalDeposits(creditSum);
         reelerTransactionReportWrapper.setTotalPurchase(debitSum);
+        reelerTransactionReportWrapper.setName(reelerName);
         return reelerTransactionReportWrapper;
     }
 }

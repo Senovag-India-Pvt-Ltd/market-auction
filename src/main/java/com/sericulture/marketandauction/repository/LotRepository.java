@@ -51,7 +51,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
             LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 
             LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID  = f.FARMER_ID 
-            LEFT JOIN dbo.market_master mm on mm.market_master_id = ma.market_auction_id 
+            INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id 
             LEFT JOIN dbo.market_type_master mtm ON mtm.market_type_master_id = mm.market_master_id 
              where l.status ='weighmentcompleted' 
              and l.market_id =:marketId 
@@ -76,7 +76,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
             LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 
             LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID  = f.FARMER_ID 
-            LEFT JOIN dbo.market_master mm on mm.market_master_id = ma.market_auction_id 
+            INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id 
             where l.status =:lotStatus 
              and l.auction_date =:paymentDate
              and l.market_id =:marketId 
