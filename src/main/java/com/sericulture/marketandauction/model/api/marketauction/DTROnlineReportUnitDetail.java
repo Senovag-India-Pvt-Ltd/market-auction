@@ -16,6 +16,7 @@ public class DTROnlineReportUnitDetail {
     private String farmerLastName;
     private String farmerNumber;
     private String farmerMobileNumber;
+    private String farmerAddress;
     private float weight;
     private int bidAmount;
     private double farmerAmount;

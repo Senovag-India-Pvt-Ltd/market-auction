@@ -16,4 +16,5 @@ public class FarmerTxnInfo {
     private double farmerAmount;
     private float weight;
     private int bidAmount;
+    private String breed;
 }
