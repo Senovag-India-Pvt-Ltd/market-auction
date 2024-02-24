@@ -2,6 +2,8 @@ package com.sericulture.marketandauction.model.api.marketauction;
 
 import lombok.*;
 
+import java.time.LocalDate;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -31,4 +33,5 @@ public class DTROnlineReportUnitDetail {
     private String branchName;
     private String ifscCode;
     private String accountNumber;
+    private LocalDate auctionDate;
 }
