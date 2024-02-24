@@ -79,6 +79,7 @@ public class MarketAuctionReportService {
                     .ifscCode(Util.objectToString(unit[17]))
                     .accountNumber(Util.objectToString(unit[18]))
                     .farmerAddress(Util.objectToString(unit[20]))
+                    .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
                     .build();
             dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
             dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
