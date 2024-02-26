@@ -223,6 +223,7 @@ public class MarketAuctionReportService {
             lotPendingReportResponse.setSerailNumberForPagination(++serailNumberForPagination);
             lotPendingReportResponse.setBigBinList(bigBins.get(lotPendingReportResponse.getMarketAuctionId().toBigInteger()));
             lotPendingReportResponse.setSmallBinList(smallBins.get(lotPendingReportResponse.getMarketAuctionId().toBigInteger()));
+            lotPendingReportResponse.setShed(String.valueOf(response[24]));
             lotPendingReportResponses.add(lotPendingReportResponse);
         }
         rw.setContent(lotPendingReportResponses);

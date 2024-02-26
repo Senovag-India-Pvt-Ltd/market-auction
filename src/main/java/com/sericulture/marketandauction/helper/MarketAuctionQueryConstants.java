@@ -130,6 +130,24 @@ public class MarketAuctionQueryConstants {
              LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID 
              WHERE l.auction_date =:paymentDate and l.market_id =:marketId and l.status is NULL""";
 
+    public static final String NEWLY_CREATED_LOTS_FOR_PENDING_REPORT = SELECT_FIELDS_PENDING_REPORT_BASE + """
+             l.created_date,
+             gm.godown_name
+             from  
+             FARMER f
+             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
+             INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
+             and l.auction_date = ma.market_auction_date  
+             LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1  
+             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
+             LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID  
+             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+             LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id  
+             LEFT JOIN godown_master gm ON gm.godown_master_id = ma.godown_id  
+             LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
+             LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID 
+             WHERE l.auction_date =:paymentDate and l.market_id =:marketId and l.status is NULL""";
+
 
     public static final String AND_LOT_ID = " and  l.allotted_lot_id =:allottedLotId";
 
@@ -161,7 +179,7 @@ public class MarketAuctionQueryConstants {
 
     public static final String ACTIVE_FILTERS_ACCEPTED_CREATED = " and r.active =1";
 
-    public static final String PENDING_REPORT_NEWLY_CREATED_LOTS = NEWLY_CREATED_LOTS + " and (:lotList is null OR l.allotted_lot_id not in (:lotList))";
+    public static final String PENDING_REPORT_NEWLY_CREATED_LOTS = NEWLY_CREATED_LOTS_FOR_PENDING_REPORT + " and (:lotList is null OR l.allotted_lot_id not in (:lotList))";
 
     public static final String PRINT_REPORT_NEWLY_CREATED_LOT_ID = NEWLY_CREATED_LOTS + SPACE +AND_LOT_ID +SPACE+ ACTIVE_FILTERS_NEWLY_CREATED;
 

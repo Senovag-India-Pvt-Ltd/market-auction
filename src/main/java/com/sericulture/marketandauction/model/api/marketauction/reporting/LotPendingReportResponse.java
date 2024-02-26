@@ -58,4 +58,5 @@ public class LotPendingReportResponse {
     private String loginName;
     private long serailNumberForPagination;
     private String acceptedBy;
+    private String shed;
 }
