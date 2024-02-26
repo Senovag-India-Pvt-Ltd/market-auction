@@ -297,7 +297,7 @@ public class MarketAuctionReportService {
                     .bidAmount(Util.objectToInteger(response[2]))
                     .bidTime(((Timestamp)response[3]).toLocalDateTime().toLocalTime())
                     .accepted(Util.objectToString(response[4]))
-                    .marketName(Util.objectToString(response[5]))
+                    .marketName(Util.objectToString(response[7]))
                     .build();
             lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
             if(StringUtils.isNotBlank(lotReportResponse.getAccepted())){
