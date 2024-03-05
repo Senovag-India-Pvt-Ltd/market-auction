@@ -105,7 +105,9 @@ public class MarketAuctionReportService {
         List<Object[]> reportResponse = lotRepository.
                 getDTROnlineReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
         DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
-        dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+        if(reportResponse.size()>0) {
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+        }
         prepareDTROnlineInfo(dtrOnlineReportResponse, reportResponse);
         rw.setContent(dtrOnlineReportResponse);
         return ResponseEntity.ok(rw);
