@@ -64,7 +64,8 @@ public class WeigmentService {
         CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
         LotWeightResponse lotWeightResponse = getLotWeightResponse(canContinueToWeighmentRequest);
         if(!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())){
-            return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
+            return marketAuctionHelper.retrunIfError(rw,"Lot is accepted. But " + lotWeightResponse.getLotStatus() + " for lot " +canContinueToWeighmentRequest.getAllottedLotId());
+            //return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
         }
         if (util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber())) {
             if (entityManager.isOpen()) {
@@ -127,7 +128,7 @@ public class WeigmentService {
             entityManager.close();
         }catch (NoResultException ex){
             entityManager.close();
-            throw new ValidationException(String.format("No data found for the given lot %s",lotStatusRequest.getAllottedLotId()));
+            throw new ValidationException(String.format("No data found for the given lot %s, Please check whether it is accepted or not",lotStatusRequest.getAllottedLotId()));
         }
         float reelerCurrentBalance = Util.objectToFloat(lotWeightDetails[10]);
         float blockedAmount =Util.objectToFloat(lotWeightDetails[11]);
@@ -167,7 +168,8 @@ public class WeigmentService {
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(), Util.getISTLocalDate());
             if (lot.getStatus()==null || !lot.getStatus().equals(LotStatus.ACCEPTED.getLabel())) {
-                throw new ValidationException(String.format("expected Lot status is accepted but found: %s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
+              //  throw new ValidationException(String.format("expected Lot status is accepted but found: %s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
+                throw new ValidationException(String.format("Lot is accepted. But " + lot.getStatus() + " for lot " +lot.getAllottedLotId()));
             }
             LotWeightResponse lotWeightResponse = getLotWeightResponse(completeLotWeighmentRequest);
             if (Util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber())) {
