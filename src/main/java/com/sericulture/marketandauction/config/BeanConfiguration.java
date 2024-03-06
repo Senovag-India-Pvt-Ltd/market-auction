@@ -33,7 +33,7 @@ public class BeanConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    @Profile("!prod")
+//    @Profile("!prod")
     public WebMvcConfigurer corsMappingConfigurer() {
         return new WebMvcConfigurer() {
             @Override

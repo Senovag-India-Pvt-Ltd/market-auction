@@ -50,12 +50,19 @@ public class FarmerPaymentService {
     public Map<String, Object>  getWeighmentCompletedTxnByAuctionDateAndMarket(RequestBody requestBody, final Pageable pageable) {
         Map<String, Object> response = new HashMap<>();
         marketAuctionHelper.getAuthToken(requestBody);
-        Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnByMarket(pageable, requestBody.getMarketId());
-        if (paginatedResponse == null || paginatedResponse.isEmpty()) {
-            throw new ValidationException("No lot  found");
-        }
         List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = new ArrayList<>();
         FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = new FarmerReadyForPaymentResponse();
+        Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnByMarket(pageable, requestBody.getMarketId());
+        farmerReadyForPaymentResponse.setFarmerPaymentInfoResponseList(farmerPaymentInfoResponseList);
+        if (paginatedResponse == null || paginatedResponse.isEmpty()) {
+//            throw new ValidationException("No lot  found");
+            response.put("farmerReadyForPaymentResponse", farmerReadyForPaymentResponse);
+            response.put("currentPage", 0);
+            response.put("totalItems", 0);
+            response.put("totalPages", 0);
+            return response;
+        }
+
         farmerReadyForPaymentResponse.setTotalAmountToFarmer(prepareFarmerPaymentInfoResponseList(paginatedResponse.getContent(), farmerPaymentInfoResponseList));
         farmerReadyForPaymentResponse.setFarmerPaymentInfoResponseList(farmerPaymentInfoResponseList);
 
