@@ -207,4 +207,56 @@ public class MarketAuctionQueryConstants {
 
     public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber";
 
+    public static final String DASHBOARD_COUNT = """
+            SELECT\s
+                             rm.race_name,
+                             COUNT(ma.number_of_lot) AS total_lots,
+                             SUM(lot.lot_sold_out_amount) AS total_sold_out_amount,
+                             COUNT(lot.lot_id) AS total_lots_in_reeler_auction,
+                             SUM(ra.amount) AS total_bids_amount,
+                             COUNT(DISTINCT ra.reeler_id) AS unique_reeler_count,
+                             COUNT(CASE WHEN lot.status = 'accepted' THEN 1 END) AS accepted_lots_count,
+                             MAX(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS max_sold_out_amount_accepted,
+                             MIN(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS min_sold_out_amount_accepted,
+                             AVG(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS average_sold_out_amount_accepted,
+                             SUM(lot.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight_after_weighment
+                             FROM\s
+                                 market_auction ma
+                             LEFT JOIN\s
+                                 dbo.race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+                             LEFT JOIN\s
+                                 lot ON ma.market_auction_id = lot.market_auction_id
+                             LEFT JOIN\s
+                                 reeler_auction ra ON lot.reeler_auction_id = ra.reeler_auction_id
+                             WHERE\s
+                                 ma.market_id = :marketId
+                                 AND ma.market_auction_date = :marketAuctionDate
+                             GROUP BY\s
+                                 rm.race_name;""";
+
+    public static final String ACCEPTANCE_STARTED = """
+            SELECT\s
+                 CASE\s
+                     WHEN :marketAuctionDate BETWEEN AUCTION1_ACCEPT_START_TIME AND AUCTION1_ACCEPT_END_TIME OR :marketAuctionDate BETWEEN AUCTION2_ACCEPT_START_TIME AND AUCTION2_ACCEPT_END_TIME OR :marketAuctionDate BETWEEN AUCTION3_ACCEPT_START_TIME AND AUCTION3_ACCEPT_END_TIME THEN 'true'
+                     ELSE 'false'
+                 END AS is_currently_in_auction
+             FROM\s
+                 market_master\s
+             WHERE\s
+                 market_master_id = :marketId ;""";
+
+    public static final String AUCTION_STARTED = """
+            SELECT\s
+                  CASE\s
+                      WHEN :marketAuctionDate BETWEEN AUCTION_1_START_TIME AND AUCTION_1_END_TIME OR :marketAuctionDate BETWEEN AUCTION_2_START_TIME AND AUCTION_2_END_TIME OR :marketAuctionDate BETWEEN AUCTION_3_START_TIME AND AUCTION_3_END_TIME THEN 'true'
+                      ELSE 'false'
+                  END AS is_currently_in_auction
+              FROM\s
+                  market_master\s
+              WHERE\s
+                  market_master_id = :marketId ;""";
+
+    public static final String GET_MARKET_NAME = """
+            select market_name from market_master where market_master_id = :marketId ;""";
+
 }

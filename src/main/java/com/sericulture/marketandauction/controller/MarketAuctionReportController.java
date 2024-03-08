@@ -50,6 +50,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getFarmerTxnReport(reportRequest);
     }
 
+    @PostMapping("/getDashboardReport")
+    public ResponseEntity<?> getDashboardReport(@RequestBody DashboardReportRequest reportRequest){
+        return marketAuctionReportService.getDashboardReport(reportRequest);
+    }
+
     @PostMapping("/getReelerTxnReport")
     public ResponseEntity<?> getReelerTxnReport(@RequestBody ReelerTxnReportRequest reelerTxnReportRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);

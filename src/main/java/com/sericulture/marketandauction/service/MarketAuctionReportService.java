@@ -24,6 +24,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -275,6 +277,56 @@ public class MarketAuctionReportService {
         farmerTxnReportResponse.setTotalSaleAmount(totalLotSoldAmount);
         farmerTxnReportResponse.setTotalFarmerAmount(totalFarmerAmount);
         rw.setContent(farmerTxnReportResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public ResponseEntity<?> getDashboardReport(DashboardReportRequest dashboardReportRequest) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+        String formattedDateTime = now.format(formatter);
+
+        List<Object[]> responsesIsAuctionStarted = lotRepository.getIsAuctionStarted(dashboardReportRequest.getMarketId(), formattedDateTime);
+
+        List<Object[]> responsesIsAcceptanceStarted = lotRepository.getIsAcceptanceStarted(dashboardReportRequest.getMarketId(),formattedDateTime);
+
+        List<Object[]> marketNameResponse = lotRepository.getMarketName(dashboardReportRequest.getMarketId());
+
+        List<Object[]> responses = lotRepository.getDashboardCount(dashboardReportRequest.getMarketId(),dashboardReportRequest.getDashboardReportDate());
+
+        if(Util.isNullOrEmptyList(responses))
+        {
+            throw new ValidationException("No data found");
+        }
+        DashboardReport dashboardReport = new DashboardReport();
+        dashboardReport.setMarketName(Util.objectToString(marketNameResponse.get(0)[0]));
+        dashboardReport.setAuctionStarted(Util.objectToString(responsesIsAuctionStarted.get(0)[0]));
+        dashboardReport.setAcceptanceStarted(Util.objectToString(responsesIsAcceptanceStarted.get(0)[0]));
+
+        List<DashboardReportInfo> dashboardReportInfoList = new ArrayList<>();
+        for(Object[] response:responses){
+            DashboardReportInfo dashboardReportInfo = DashboardReportInfo.builder()
+                    .raceName(Util.objectToString(response[0]))
+                    .totalLots(Util.objectToString(response[1]))
+                    .totalSoldOutAmount(Util.objectToString(response[2]))
+                    .totalLotsBid(Util.objectToString(response[3]))
+                    .totalBids(Util.objectToString(response[4]))
+                    .totalReelers(Util.objectToString(response[5]))
+                    .accecptedLots(Util.objectToString(response[6]))
+                    .accecptedLotsMaxBid(Util.objectToString(response[7]))
+                    .accectedLotsMinBid(Util.objectToString(response[8]))
+                    .averagRate(Util.objectToString(response[9]))
+                    .weighedLots(Util.objectToString(response[10])).build();
+
+
+            dashboardReportInfo.setTotalLotsNotBid(String.valueOf(Integer.parseInt(dashboardReportInfo.getTotalLots()) - Integer.parseInt(dashboardReportInfo.getTotalLotsBid())));
+            dashboardReportInfoList.add(dashboardReportInfo);
+        }
+        dashboardReport.setDashboardReportInfoList(dashboardReportInfoList);
+        rw.setContent(dashboardReport);
         return ResponseEntity.ok(rw);
 
     }
