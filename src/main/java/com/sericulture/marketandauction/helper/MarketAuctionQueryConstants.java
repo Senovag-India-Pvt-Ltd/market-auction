@@ -179,7 +179,7 @@ public class MarketAuctionQueryConstants {
 
     public static final String ACTIVE_FILTERS_ACCEPTED_CREATED = " and r.active =1";
 
-    public static final String PENDING_REPORT_NEWLY_CREATED_LOTS = NEWLY_CREATED_LOTS_FOR_PENDING_REPORT + " and (:lotList is null OR l.allotted_lot_id not in (:lotList))";
+    public static final String PENDING_REPORT_NEWLY_CREATED_LOTS = NEWLY_CREATED_LOTS_FOR_PENDING_REPORT + " and (l.allotted_lot_id is null OR l.allotted_lot_id not in (:lotList))";
 
     public static final String PRINT_REPORT_NEWLY_CREATED_LOT_ID = NEWLY_CREATED_LOTS + SPACE +AND_LOT_ID +SPACE+ ACTIVE_FILTERS_NEWLY_CREATED;
 
