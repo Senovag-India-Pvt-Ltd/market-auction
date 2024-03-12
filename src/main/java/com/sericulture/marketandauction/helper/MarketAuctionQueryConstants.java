@@ -259,4 +259,10 @@ public class MarketAuctionQueryConstants {
     public static final String GET_MARKET_NAME = """
             select market_name from market_master where market_master_id = :marketId ;""";
 
+    public static final String PAYMENT_SUCCESS_LOTS = """
+            select  COUNT(l.lot_id) from lot l\s
+              INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date
+              where l.status = 'paymentsucess' and l.market_id = :marketId and (:reelerIdList is null OR ra.reeler_id in (:reelerIdList))
+              and l.auction_date BETWEEN :fromDate and :toDate ;""";
+
 }
