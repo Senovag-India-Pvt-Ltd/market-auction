@@ -265,4 +265,33 @@ public class MarketAuctionQueryConstants {
               where l.status = 'paymentsucess' and l.market_id = :marketId and (:reelerIdList is null OR ra.reeler_id in (:reelerIdList))
               and l.auction_date BETWEEN :fromDate and :toDate ;""";
 
+    public static final String REELER_PENDING_REPORT = """
+            SELECT\s
+                rcb.REELER_ID,\s
+                rcb.MARKET_ID,\s
+                rcb.CURRENT_BALANCE,\s
+                SUM(rdt.amount) AS total_amount,
+                rl.name,
+                    rl.reeler_number,
+                    mm.market_name
+                    
+            FROM\s
+                REELER_VID_CURRENT_BALANCE rcb
+            JOIN\s
+                reeler_vid_debit_txn rdt ON rcb.reeler_id = rdt.reeler_id
+                JOIN\s
+                market_master mm ON rcb.MARKET_ID = mm.market_master_id
+            JOIN
+                reeler rl ON rcb.REELER_ID = rl.REELER_ID
+            WHERE\s
+                rcb.MARKET_ID = :marketId
+                AND rdt.auction_date = :auctionDate
+            GROUP BY\s
+                rcb.REELER_ID,\s
+                rcb.MARKET_ID,\s
+                rcb.CURRENT_BALANCE,
+                rl.name,
+            rl.reeler_number,
+            mm.market_name ;""";
+
 }

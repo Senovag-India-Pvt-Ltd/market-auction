@@ -286,6 +286,38 @@ public class MarketAuctionReportService {
 
     }
 
+    public ResponseEntity<?> getReelerPendingReport(RequestBody requestBody) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> responses = lotRepository.getReelerPendingReport(requestBody.getMarketId(), LocalDate.now());
+
+        if(Util.isNullOrEmptyList(responses))
+        {
+            throw new ValidationException("No data found");
+        }
+        ReelerPendingReportResponse reelerPendingReportResponse = new ReelerPendingReportResponse();
+        List<ReelerPendingInfo> reelerPendingInfoList = new ArrayList<>();
+        float subTotalAmount = 0.0F;
+        for(Object[] response:responses){
+            subTotalAmount = subTotalAmount + Util.objectToFloat(response[3]);
+
+            ReelerPendingInfo reelerPendingInfo = ReelerPendingInfo.builder()
+                    .reelerName(Util.objectToString(response[4]))
+                    .reelerNumber(Util.objectToString(response[5]))
+                    .marketName(Util.objectToString(response[6]))
+                    .currentBalance(Util.objectToString(response[2]))
+                    .totalAmount(Util.objectToString(response[3]))
+                    .build();
+            reelerPendingInfoList.add(reelerPendingInfo);
+        }
+        reelerPendingReportResponse.setReelerPendingInfoList(reelerPendingInfoList);
+        reelerPendingReportResponse.setGrandTotalAmount(String.valueOf(subTotalAmount));
+        rw.setContent(reelerPendingReportResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
     public ResponseEntity<?> getDashboardReport(DashboardReportRequest dashboardReportRequest) {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);

@@ -50,6 +50,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getFarmerTxnReport(reportRequest);
     }
 
+    @PostMapping("/getReelerPendingReport")
+    public ResponseEntity<?> getReelerPendingReport(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
+        return marketAuctionReportService.getReelerPendingReport(requestBody);
+    }
+
     @PostMapping("/getDashboardReport")
     public ResponseEntity<?> getDashboardReport(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getDashboardReport(reportRequest);
