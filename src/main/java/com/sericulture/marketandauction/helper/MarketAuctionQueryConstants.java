@@ -294,4 +294,132 @@ public class MarketAuctionQueryConstants {
             rl.reeler_number,
             mm.market_name ;""";
 
+    public static final String break_down_of_lot_amount = """
+            SELECT auction_date,
+            market_id,
+            SUM(LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+            SUM(LOT_SOLD_OUT_AMOUNT) AS total_amount,
+            COUNT(lot_id) AS total_lot_count
+            FROM lot
+            WHERE rejected_by IS NULL
+            AND LOT_SOLD_OUT_AMOUNT BETWEEN :fromAmount AND :toAmount
+            AND market_id = :marketId
+            AND auction_date = :auctionDate
+            GROUP BY auction_date, market_id ;""";
+
+    public static final String avg_of_lot_amount = """
+            SELECT auction_date,
+                   market_id,
+                  \s
+                   AVG(LOT_SOLD_OUT_AMOUNT) AS avg_amount
+            FROM lot
+            WHERE rejected_by IS NULL
+            \s
+              AND market_id = :marketId
+              AND auction_date = :auctionDate
+            GROUP BY auction_date, market_id ;""";
+
+    public static final String greater_than_lot_amount = """
+            SELECT auction_date,
+                  market_id,
+                  SUM(LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+               SUM(LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                  COUNT(lot_id) AS total_lot_count
+           FROM lot
+           WHERE rejected_by IS NULL
+             AND LOT_SOLD_OUT_AMOUNT > :amount
+             AND market_id = :marketId
+             AND auction_date = :auctionDate
+           GROUP BY auction_date, market_id
+            ;""";
+
+    public static final String less_than_lot_amount = """
+            SELECT auction_date,
+                  market_id,
+                  SUM(LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+               SUM(LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                  COUNT(lot_id) AS total_lot_count
+           FROM lot
+           WHERE rejected_by IS NULL
+             AND LOT_SOLD_OUT_AMOUNT < :amount
+             AND market_id = :marketId
+             AND auction_date = :auctionDate
+           GROUP BY auction_date, market_id
+            ;""";
+
+    public static final String total_lot_status = """
+            SELECT auction_date,
+                   market_id,
+                  \s
+                   COUNT(LOT_ID) AS total_lots,
+                   SUM(LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+                   SUM(LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                   MIN(LOT_SOLD_OUT_AMOUNT) AS min_amount,
+                   MAX(LOT_SOLD_OUT_AMOUNT) AS max_amount,
+                   AVG(LOT_SOLD_OUT_AMOUNT) AS avg_amount,
+                   SUM(MARKET_FEE_REELER) as reeler_mf,
+                   SUM(MARKET_FEE_FARMER) as farmer_mf
+            FROM lot
+            WHERE rejected_by IS NULL
+            \s
+              AND market_id = :marketId
+              AND auction_date = :auctionDate
+            GROUP BY auction_date, market_id ;""";
+
+    public static final String state_wise_lot_status = """
+            SELECT\s
+                l.auction_date,
+                l.market_id,
+                COUNT(l.LOT_ID) AS total_lots,
+                SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+                SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                MIN(l.LOT_SOLD_OUT_AMOUNT) AS min_amount,
+                MAX(l.LOT_SOLD_OUT_AMOUNT) AS max_amount,
+                AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_amount,
+                SUM(l.MARKET_FEE_REELER) AS reeler_mf,
+                SUM(l.MARKET_FEE_FARMER) AS farmer_mf,
+                r.state_id,
+                s.STATE_NAME
+            FROM\s
+                lot l
+            JOIN\s
+                REELER_AUCTION ra ON l.REELER_AUCTION_ID = ra.REELER_AUCTION_ID and ra.AUCTION_DATE = l.auction_date
+            JOIN\s
+                reeler r ON r.reeler_id = ra.REELER_ID and r.active = 1
+            JOIN\s
+                state s ON s.STATE_ID = r.state_id and s.ACTIVE = 1
+            WHERE\s
+                l.rejected_by IS NULL
+                AND l.market_id = :marketId
+                AND l.auction_date = :auctionDate
+            GROUP BY\s
+                l.auction_date, l.market_id, r.state_id, s.STATE_NAME ;""";
+
+    public static final String race_wise_lot_status = """
+            SELECT\s
+                l.auction_date,
+                l.market_id,
+                COUNT(l.LOT_ID) AS total_lots,
+                SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+                SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                MIN(l.LOT_SOLD_OUT_AMOUNT) AS min_amount,
+                MAX(l.LOT_SOLD_OUT_AMOUNT) AS max_amount,
+                AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_amount,
+                SUM(l.MARKET_FEE_REELER) AS reeler_mf,
+                SUM(l.MARKET_FEE_FARMER) AS farmer_mf,
+                rm.race_id,
+                rm.race_name
+            FROM\s
+                lot l
+                JOIN market_auction ma on ma.market_auction_date = l.auction_date and ma.market_auction_id = l.market_auction_id
+                JOIN race_master rm on ma.RACE_MASTER_ID = rm.race_id and rm.active = 1
+            
+            WHERE\s
+                l.rejected_by IS NULL
+                AND l.active = 1
+                AND l.market_id = :marketId
+                AND l.auction_date = :auctionDate
+            GROUP BY\s
+                l.auction_date, l.market_id,rm.race_id,rm.race_name ;""";
+
 }

@@ -55,6 +55,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getReelerPendingReport(requestBody);
     }
 
+    @PostMapping("/getForm13Report")
+    public ResponseEntity<?> getForm13Report(@RequestBody Form13Request requestBody){
+        return marketAuctionReportService.getForm13Report(requestBody);
+    }
+
     @PostMapping("/getDashboardReport")
     public ResponseEntity<?> getDashboardReport(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getDashboardReport(reportRequest);

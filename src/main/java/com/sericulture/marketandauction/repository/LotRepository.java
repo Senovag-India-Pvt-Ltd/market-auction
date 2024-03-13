@@ -134,4 +134,24 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.REELER_PENDING_REPORT)
     public List<Object[]> getReelerPendingReport(int marketId, LocalDate auctionDate);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.break_down_of_lot_amount)
+    public List<Object[]> getLotBreakDownStatus(int fromAmount, int toAmount, int marketId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.avg_of_lot_amount)
+    public List<Object[]> getAvgLotStatus(int marketId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.less_than_lot_amount)
+    public List<Object[]> getLessLotStatus(int marketId, LocalDate auctionDate, float amount);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.greater_than_lot_amount)
+    public List<Object[]> getGreaterLotStatus(int marketId, LocalDate auctionDate, float amount);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.total_lot_status)
+    public List<Object[]> getTotalLotStatus(int marketId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.state_wise_lot_status)
+    public List<Object[]> getStateWiseLotStatus(int marketId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.race_wise_lot_status)
+    public List<Object[]> getRaceWiseStatus(int marketId, LocalDate auctionDate);
 }
