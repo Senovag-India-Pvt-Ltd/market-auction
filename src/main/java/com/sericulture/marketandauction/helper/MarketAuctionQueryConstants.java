@@ -422,4 +422,13 @@ public class MarketAuctionQueryConstants {
             GROUP BY\s
                 l.auction_date, l.market_id,rm.race_id,rm.race_name ;""";
 
+    public static final String reeler_report_for__app = """
+            select l.allotted_lot_id,ra.AMOUNT, l.LOT_WEIGHT_AFTER_WEIGHMENT,l.LOT_SOLD_OUT_AMOUNT, l.MARKET_FEE_REELER
+               from lot l
+               join REELER_AUCTION ra on l.auction_date = ra.AUCTION_DATE and ra.REELER_AUCTION_ID = l.REELER_AUCTION_ID
+               where l.auction_date = :auctionDate and l.market_id = :marketId and ra.REELER_ID = :reelerId ;""";
+
+    public static final String reeler_current_balance = """
+            select current_balance from REELER_VID_CURRENT_BALANCE where reeler_id = :reelerId ;""";
+
 }

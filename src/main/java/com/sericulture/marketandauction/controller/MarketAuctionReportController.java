@@ -3,6 +3,7 @@ package com.sericulture.marketandauction.controller;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.DTROnlineReportRequest;
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
+import com.sericulture.marketandauction.model.api.marketauction.ReelerReportForAppRequest;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.*;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import com.sericulture.marketandauction.service.ReportService;
@@ -53,6 +54,11 @@ public class MarketAuctionReportController {
     @PostMapping("/getReelerPendingReport")
     public ResponseEntity<?> getReelerPendingReport(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
         return marketAuctionReportService.getReelerPendingReport(requestBody);
+    }
+
+    @PostMapping("/getReelerReportForApp")
+    public ResponseEntity<?> getReelerReportForApp(@RequestBody ReelerReportForAppRequest requestBody){
+        return marketAuctionReportService.getReelerReportForMobileApp(requestBody);
     }
 
     @PostMapping("/getForm13Report")
