@@ -101,4 +101,7 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_REELER)
     public List<Object[]> getReelerBiddingReport(int marketId, LocalDate auctionDate,String reelerLicenseNumber);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_auction_status)
+    public List<Object[]> getReelerAuctionStatus(BigInteger reelerAuctionId);
+
 }

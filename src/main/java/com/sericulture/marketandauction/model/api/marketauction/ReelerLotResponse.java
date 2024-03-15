@@ -29,4 +29,6 @@ public class ReelerLotResponse extends ResponseBody {
 
     private boolean awarded;
 
+    private String status;
+
 }

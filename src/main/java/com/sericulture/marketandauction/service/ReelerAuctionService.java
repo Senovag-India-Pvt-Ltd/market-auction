@@ -284,21 +284,32 @@ public class ReelerAuctionService {
                 int allottedLot = Integer.parseInt(String.valueOf(bidDetail[2]));
                 int bidAmount = Integer.parseInt(String.valueOf(bidDetail[1]));
                 BigInteger reelerAuctionId = BigInteger.valueOf(Long.parseLong(String.valueOf(bidDetail[0])));
-
+                List<Object[]> responses = reelerAuctionRepository.getReelerAuctionStatus(reelerAuctionId);
+                String status = "N";
+                if(responses.get(0) == null){
+                    status = "N";
+                }else{
+                    if(responses.get(0)[0].equals("accepted")){
+                        status = "Y";
+                    }else{
+                        status = "N";
+                    }
+                }
                 ReelerLotResponse reelerLotResponse = reelerLotResponseMap.get(allottedLot);
                 if (reelerLotResponse == null) {
                     reelerLotResponse = new ReelerLotResponse();
                     reelerLotResponseMap.put(allottedLot, reelerLotResponse);
                 }
-                setReelerLotResponse(reelerLotResponse, allottedLot, String.valueOf(bidDetail[3]), bidAmount, reelerAuctionId);
+                setReelerLotResponse(reelerLotResponse, allottedLot, String.valueOf(bidDetail[3]), bidAmount, reelerAuctionId, status);
             }
         }
         rw.setContent(reelerLotResponseMap.values());
         return ResponseEntity.ok(rw);
     }
 
-    private void setReelerLotResponse(ReelerLotResponse reelerLotResponse, int allottedLot, String highest, int bidAmount, BigInteger reelerAuctionId) {
+    private void setReelerLotResponse(ReelerLotResponse reelerLotResponse, int allottedLot, String highest, int bidAmount, BigInteger reelerAuctionId, String status) {
         reelerLotResponse.setAllottedLotId(allottedLot);
+        reelerLotResponse.setStatus(status);
         if (reelerLotResponse.getReelerAuctionId() != null && reelerLotResponse.getReelerAuctionId().equals(reelerAuctionId)) {
             reelerLotResponse.setAwarded(true);
         }

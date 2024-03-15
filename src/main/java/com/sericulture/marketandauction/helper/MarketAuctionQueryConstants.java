@@ -431,4 +431,7 @@ public class MarketAuctionQueryConstants {
     public static final String reeler_current_balance = """
             select current_balance from REELER_VID_CURRENT_BALANCE where reeler_id = :reelerId ;""";
 
+    public static final String reeler_auction_status = """
+            SELECT status from REELER_AUCTION where REELER_AUCTION_ID = :reelerAuctionId ;""";
+
 }
