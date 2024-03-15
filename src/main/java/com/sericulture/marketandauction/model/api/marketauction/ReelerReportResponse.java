@@ -13,5 +13,7 @@ import java.util.List;
 @EqualsAndHashCode
 public class ReelerReportResponse extends ResponseBody {
     private float reelerCurrentBalance;
+    private float totalAmountDeposited;
+    private float approximatePurchase;
     List<ReelerReport> reelerReportList;
 }

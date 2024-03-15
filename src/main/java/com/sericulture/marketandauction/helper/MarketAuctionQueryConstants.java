@@ -431,6 +431,16 @@ public class MarketAuctionQueryConstants {
     public static final String reeler_current_balance = """
             select current_balance from REELER_VID_CURRENT_BALANCE where reeler_id = :reelerId ;""";
 
+    public static final String reeler_deposited_amount = """
+            SELECT SUM(amount) as total_amount_deposited FROM REELER_VID_CREDIT_TXN ct
+            JOIN REELER_VID_CURRENT_BALANCE cb ON cb.reeler_virtual_account_number = ct.VIRTUAL_ACCOUNT
+            WHERE cb.REELER_ID = :reelerId AND CAST(ct.TRANSACTION_DATE AS DATE) = :auctionDate ;""";
+
+    public static final String reeler_purchase_amount = """
+            SELECT SUM(amount) as total_purchase from REELER_AUCTION
+               where reeler_id = :reelerId and market_id = :marketId and AUCTION_DATE = :auctionDate
+               and STATUS in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing') ;""";
+
     public static final String reeler_auction_status = """
             SELECT status from REELER_AUCTION where REELER_AUCTION_ID = :reelerAuctionId ;""";
 

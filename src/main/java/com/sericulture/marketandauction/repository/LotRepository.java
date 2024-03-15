@@ -160,4 +160,11 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_current_balance)
     public List<Object[]> getReelerCurrentBalance(int reelerId);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_deposited_amount)
+    public List<Object[]> getReelerDepositedAmount(int reelerId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_purchase_amount)
+    public List<Object[]> getReelerPurchaseAmount(int reelerId, int marketId, LocalDate auctionDate);
+
 }

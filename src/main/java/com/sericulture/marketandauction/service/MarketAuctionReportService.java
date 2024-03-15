@@ -326,13 +326,30 @@ public class MarketAuctionReportService {
 
         List<Object[]> responsesBalance = lotRepository.getReelerCurrentBalance(requestBody.getReelerId());
 
+        List<Object[]> responsesAppxPurchase = lotRepository.getReelerPurchaseAmount(requestBody.getReelerId(), requestBody.getMarketId(), requestBody.getAuctionDate());
+
+        List<Object[]> responsesAmountDeposited = lotRepository.getReelerDepositedAmount(requestBody.getReelerId(), requestBody.getAuctionDate());
+
+
         if(Util.isNullOrEmptyList(responses))
         {
             throw new ValidationException("No data found");
         }
         ReelerReportResponse reelerReportResponse = new ReelerReportResponse();
         if(responsesBalance.size()>0){
-            reelerReportResponse.setReelerCurrentBalance(Util.objectToFloat(responsesBalance.get(0)[0]));
+            if(responsesBalance.get(0) != null) {
+                reelerReportResponse.setReelerCurrentBalance(Util.objectToFloat(responsesBalance.get(0)[0]));
+            }
+        }
+        if(responsesAppxPurchase.size()>0){
+            if(responsesAppxPurchase.get(0) != null) {
+                reelerReportResponse.setApproximatePurchase(Util.objectToFloat(responsesAppxPurchase.get(0)[0]));
+            }
+        }
+        if(responsesAmountDeposited.size()>0){
+            if(responsesAmountDeposited.get(0) != null) {
+                reelerReportResponse.setTotalAmountDeposited(Util.objectToFloat(responsesAmountDeposited.get(0)[0]));
+            }
         }
         List<ReelerReport> reelerReportList = new ArrayList<>();
         int i=1;
