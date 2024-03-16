@@ -298,6 +298,8 @@ public class MarketAuctionReportService {
 
         List<Object[]> responsesBalance = lotRepository.getTotalReelerBalance(requestBody.getMarketId());
 
+        List<Object[]> responsesMarket = lotRepository.getMarketName(requestBody.getMarketId());
+
         if(Util.isNullOrEmptyList(responses))
         {
             throw new ValidationException("No data found");
@@ -316,6 +318,11 @@ public class MarketAuctionReportService {
         if(responsesDebitTotal.size()>0){
             if(responsesDebitTotal.get(0) != null) {
                 reelerPendingReportResponse.setDebitTotal(Util.objectToString(responsesDebitTotal.get(0)[0]));
+            }
+        }
+        if(responsesMarket.size()>0){
+            if(responsesMarket.get(0) != null) {
+                reelerPendingReportResponse.setMarketName(Util.objectToString(responsesMarket.get(0)[0]));
             }
         }
         List<ReelerPendingInfo> reelerPendingInfoList = new ArrayList<>();
