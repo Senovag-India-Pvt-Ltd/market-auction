@@ -11,6 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class ReelerPendingReportResponse extends ResponseBody {
-    private String grandTotalAmount;
+    private String balance;
+    private String creditTotal;
+    private String debitTotal;
     List<ReelerPendingInfo> reelerPendingInfoList;
 }

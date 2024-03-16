@@ -11,7 +11,12 @@ import java.util.List;
 public class ReelerPendingInfo extends ResponseBody {
     private String reelerName;
     private String reelerNumber;
-    private String marketName;
+    private String reelingLicenseNumber;
+    private String mobileNumber;
+    private String lastTxnTime;
     private String currentBalance;
-    private String totalAmount;
+    private String serialNumber;
+    private String counter;
+    private String onlineTxn;
+    private String suspend;
 }

@@ -132,7 +132,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public List<Object[]> getPaymentSuccessLots(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.REELER_PENDING_REPORT)
-    public List<Object[]> getReelerPendingReport(int marketId, LocalDate auctionDate);
+    public List<Object[]> getReelerPendingReport(int marketId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.break_down_of_lot_amount)
     public List<Object[]> getLotBreakDownStatus(int fromAmount, int toAmount, int marketId, LocalDate auctionDate);
@@ -166,5 +166,14 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_purchase_amount)
     public List<Object[]> getReelerPurchaseAmount(int reelerId, int marketId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.total_reeler_balance)
+    public List<Object[]> getTotalReelerBalance(int marketId);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.total_credit_txn_balance_today)
+    public List<Object[]> getTotalCreditTxnToday(int marketId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.total_debit_txn_balance_today)
+    public List<Object[]> geTotalDebitTxnToday(int marketId, LocalDate auctionDate);
 
 }

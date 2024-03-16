@@ -290,29 +290,65 @@ public class MarketAuctionReportService {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
-        List<Object[]> responses = lotRepository.getReelerPendingReport(requestBody.getMarketId(), LocalDate.now());
+        List<Object[]> responses = lotRepository.getReelerPendingReport(requestBody.getMarketId());
+
+        List<Object[]> responsesDebitTotal = lotRepository.geTotalDebitTxnToday(requestBody.getMarketId(), LocalDate.now());
+
+        List<Object[]> responsesCreditTotal = lotRepository.getTotalCreditTxnToday(requestBody.getMarketId(), LocalDate.now());
+
+        List<Object[]> responsesBalance = lotRepository.getTotalReelerBalance(requestBody.getMarketId());
 
         if(Util.isNullOrEmptyList(responses))
         {
             throw new ValidationException("No data found");
         }
         ReelerPendingReportResponse reelerPendingReportResponse = new ReelerPendingReportResponse();
+        if(responsesBalance.size()>0){
+            if(responsesBalance.get(0) != null) {
+                reelerPendingReportResponse.setBalance(Util.objectToString(responsesBalance.get(0)[0]));
+            }
+        }
+        if(responsesCreditTotal.size()>0){
+            if(responsesCreditTotal.get(0) != null) {
+                reelerPendingReportResponse.setCreditTotal(Util.objectToString(responsesCreditTotal.get(0)[0]));
+            }
+        }
+        if(responsesDebitTotal.size()>0){
+            if(responsesDebitTotal.get(0) != null) {
+                reelerPendingReportResponse.setDebitTotal(Util.objectToString(responsesDebitTotal.get(0)[0]));
+            }
+        }
         List<ReelerPendingInfo> reelerPendingInfoList = new ArrayList<>();
-        float subTotalAmount = 0.0F;
+        int i= 1;
         for(Object[] response:responses){
-            subTotalAmount = subTotalAmount + Util.objectToFloat(response[3]);
+            String lastTxn = "";
+            if(Util.objectToString(response[6]) != null && !Util.objectToString(response[6]).equals("")){
+                lastTxn = Util.objectToString(response[6]);
+            }else{
+                lastTxn = Util.objectToString(response[5]);
+            }
+
+            String suspend = "";
+            if(Util.objectToFloat(response[4])< 0){
+                suspend = "Yes";
+            }
 
             ReelerPendingInfo reelerPendingInfo = ReelerPendingInfo.builder()
-                    .reelerName(Util.objectToString(response[4]))
-                    .reelerNumber(Util.objectToString(response[5]))
-                    .marketName(Util.objectToString(response[6]))
-                    .currentBalance(Util.objectToString(response[2]))
-                    .totalAmount(Util.objectToString(response[3]))
+                    .reelerName(Util.objectToString(response[1]))
+                    .reelerNumber(Util.objectToString(response[0]))
+                    .reelingLicenseNumber(Util.objectToString(response[2]))
+                    .mobileNumber(Util.objectToString(response[3]))
+                    .currentBalance(Util.objectToString(response[4]))
+                    .lastTxnTime(lastTxn)
+                    .serialNumber(String.valueOf(i))
+                    .counter("")
+                    .onlineTxn("Yes")
+                    .suspend(suspend)
                     .build();
             reelerPendingInfoList.add(reelerPendingInfo);
+            i=i+1;
         }
         reelerPendingReportResponse.setReelerPendingInfoList(reelerPendingInfoList);
-        reelerPendingReportResponse.setGrandTotalAmount(String.valueOf(subTotalAmount));
         rw.setContent(reelerPendingReportResponse);
         return ResponseEntity.ok(rw);
 
