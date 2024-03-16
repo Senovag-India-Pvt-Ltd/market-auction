@@ -74,6 +74,7 @@ public class MarketAuctionPrinterService {
                     marketAuctionForPrintResponse.setReelerCurrentBalance(reelerCurrentBalance);
                     marketAuctionForPrintResponse.setReelerNameKannada(Util.objectToString(response[33]));
                     marketAuctionForPrintResponse.setReelerMobileNumber(Util.objectToString(response[34]));
+                    marketAuctionForPrintResponse.setFruitsId(Util.objectToString(response[37]));
                     marketAuctionForPrintResponse.setReelerNumber(Util.objectToString(response[35]));
                     marketAuctionForPrintResponse.setFarmerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() - marketAuctionForPrintResponse.getFarmerMarketFee());
                     marketAuctionForPrintResponse.setReelerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() + marketAuctionForPrintResponse.getReelerMarketFee());
@@ -117,6 +118,7 @@ public class MarketAuctionPrinterService {
                 .farmerNameKannada(Util.objectToString(response[20]))
 
                 .farmerMobileNumber(Util.objectToString(response[21]))
+                .fruitsId(Util.objectToString(response[37]))
                 .marketAuctionId((BigDecimal) response[22])
                 .auctionDateWithTime((Date)(response[23]))
                 .build();

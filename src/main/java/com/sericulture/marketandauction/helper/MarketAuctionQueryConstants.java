@@ -115,7 +115,8 @@ public class MarketAuctionQueryConstants {
              l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
              f.name_kan,f.mobile_number,ma.market_auction_id,""";
     public static final String NEWLY_CREATED_LOTS = SELECT_FIELDS_PENDING_REPORT_BASE + """
-             l.created_date
+             l.created_date,
+             f.fruits_id
              from  
              FARMER f
              INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
@@ -157,7 +158,7 @@ public class MarketAuctionQueryConstants {
             r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
             l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
             ra.AMOUNT,rvcb.CURRENT_BALANCE,r.reeler_name_kannada,r.mobile_number,r.reeler_number,
-            l.BID_ACCEPTED_BY
+            l.BID_ACCEPTED_BY, f.fruits_id
             from 
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 
@@ -266,33 +267,10 @@ public class MarketAuctionQueryConstants {
               and l.auction_date BETWEEN :fromDate and :toDate ;""";
 
     public static final String REELER_PENDING_REPORT = """
-            SELECT\s
-                rcb.REELER_ID,\s
-                rcb.MARKET_ID,\s
-                rcb.CURRENT_BALANCE,\s
-                SUM(rdt.amount) AS total_amount,
-                rl.name,
-                    rl.reeler_number,
-                    mm.market_name
-                    
-            FROM\s
-                REELER_VID_CURRENT_BALANCE rcb
-            JOIN\s
-                reeler_vid_debit_txn rdt ON rcb.reeler_id = rdt.reeler_id
-                JOIN\s
-                market_master mm ON rcb.MARKET_ID = mm.market_master_id
-            JOIN
-                reeler rl ON rcb.REELER_ID = rl.REELER_ID
-            WHERE\s
-                rcb.MARKET_ID = :marketId
-                AND rdt.auction_date = :auctionDate
-            GROUP BY\s
-                rcb.REELER_ID,\s
-                rcb.MARKET_ID,\s
-                rcb.CURRENT_BALANCE,
-                rl.name,
-            rl.reeler_number,
-            mm.market_name ;""";
+            SELECT r.reeler_number, r.name, r.reeling_license_number, r.mobile_number, cm.CURRENT_BALANCE, cm.CREATED_DATE, cm.modified_date from reeler r
+                          join user_master um on um.user_type_id = r.reeler_id
+                          join REELER_VID_CURRENT_BALANCE cm on cm.REELER_ID = r.reeler_id
+                          where um.market_id = :marketId ;""";
 
     public static final String break_down_of_lot_amount = """
             SELECT auction_date,
@@ -443,5 +421,24 @@ public class MarketAuctionQueryConstants {
 
     public static final String reeler_auction_status = """
             SELECT status from REELER_AUCTION where REELER_AUCTION_ID = :reelerAuctionId ;""";
+
+    public static final String total_reeler_balance = """
+            SELECT SUM(cm.current_balance) as all_reeler_balance from reeler r
+            join user_master um on um.user_type_id = r.reeler_id
+            join REELER_VID_CURRENT_BALANCE cm on cm.REELER_ID = r.reeler_id
+            where um.market_id = :marketId ;""";
+
+    public static final String total_credit_txn_balance_today = """
+            SELECT SUM(ct.amount) as total_amount_deposited FROM REELER_VID_CREDIT_TXN ct
+              JOIN REELER_VID_CURRENT_BALANCE cb ON cb.reeler_virtual_account_number = ct.VIRTUAL_ACCOUNT
+              join user_master um on um.user_type_id = cb.reeler_id
+              WHERE um.market_id = :marketId AND CAST(ct.TRANSACTION_DATE AS DATE) = :auctionDate ;""";
+
+    public static final String total_debit_txn_balance_today = """
+            SELECT SUM(ct.amount) as total_amount_deposited FROM REELER_VID_DEBIT_TXN ct
+             JOIN REELER_VID_CURRENT_BALANCE cb ON cb.reeler_virtual_account_number = ct.VIRTUAL_ACCOUNT
+             join user_master um on um.user_type_id = cb.reeler_id
+             WHERE um.market_id = :marketId AND CAST(ct.AUCTION_DATE AS DATE) = :auctionDate ;""";
+
 
 }
