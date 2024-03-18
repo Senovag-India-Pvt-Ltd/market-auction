@@ -24,6 +24,10 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     public ReelerAuction getHighestBidForLotAndActive(int lotId,int marketId, LocalDate auctionDate);
 
     @Query(nativeQuery = true , value = """
+    select * from REELER_AUCTION where ALLOTTED_LOT_ID = :lotId and MARKET_ID = :marketId and AUCTION_DATE = :auctionDate and ACTIVE = 1""")
+    public List<ReelerAuction> getBidsForLotAndActiveByMarketIdAndAuctionDate(int lotId,int marketId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true , value = """
             select f.first_name,f.middle_name,f.last_name ,f.farmer_number ,v.Village_Name,l.LOT_APPROX_WEIGHT_BEFORE_WEIGHMENT,l.status,l.BID_ACCEPTED_BY  from 
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 

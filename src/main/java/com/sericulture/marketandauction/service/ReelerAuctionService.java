@@ -270,6 +270,45 @@ public class ReelerAuctionService {
         }
     }
 
+    @Transactional
+    public ResponseEntity<?> rejectReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
+        log.info("Reject bid received for request: " + lotStatusRequest);
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        try {
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(lotStatusRequest);
+
+            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTIONACCEPT, lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
+            if (!canIssue) {
+                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot reject bid as time either over or not started", "-1");
+                rw.setErrorCode(-1);
+                rw.setErrorMessages(List.of(validationMessage));
+                return ResponseEntity.ok(rw);
+            }
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate());
+            if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
+                throw new ValidationException(String.format("expected Lot status is blank but found:%s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
+            }
+            List<ReelerAuction> reelerAuctionList = reelerAuctionRepository.getBidsForLotAndActiveByMarketIdAndAuctionDate(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
+            if (reelerAuctionList.size()>0) {
+                for(ReelerAuction reelerAuction: reelerAuctionList) {
+                    reelerAuction.setStatus(LotStatus.REJECTED.getLabel());
+                    reelerAuction.setActive(false);
+                    reelerAuctionRepository.save(reelerAuction);
+                }
+            } else {
+                throw new ValidationException(String.format("No bids found for the given lot %s",lotStatusRequest.getAllottedLotId()));
+            }
+            log.info("Reject bid completed for request: " + lotStatusRequest);
+            return ResponseEntity.ok(rw);
+        } catch (Exception ex) {
+            if(ex instanceof ValidationException){
+                throw ex;
+            }
+            log.error("Error while processing request: " + lotStatusRequest + "with error:" + ex);
+            return marketAuctionHelper.retrunIfError(rw, "error while processing the request");
+        }
+    }
+
 
     public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);

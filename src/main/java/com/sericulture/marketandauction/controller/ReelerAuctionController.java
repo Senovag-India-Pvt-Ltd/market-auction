@@ -91,6 +91,12 @@ public class ReelerAuctionController {
 
     }
 
+    @PostMapping("/rejectReelerBidForGivenLot")
+    public ResponseEntity<?> rejectReelerBidForGivenLot(@RequestBody ReelerBidAcceptRequest reelerBidAcceptRequest){
+        return reelerAuctionService.rejectReelerBidForGivenLot(reelerBidAcceptRequest);
+
+    }
+
     @PostMapping("/getHighestAndCurrentBidByEachLotForReeler")
     public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest){
         return reelerAuctionService.getReelerLotWithHighestBidDetails(reelerLotRequest);
