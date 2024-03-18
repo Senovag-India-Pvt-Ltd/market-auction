@@ -20,6 +20,10 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     public ReelerAuction getHighestBidForLot(int lotId,int marketId, LocalDate auctionDate);
 
     @Query(nativeQuery = true , value = """
+    select top (1) * from reeler_auction r1_0 where r1_0.allotted_lot_id=:lotId and r1_0.market_id=:marketId and r1_0.auction_date=:auctionDate and active = 1 order by r1_0.amount desc,r1_0.created_date""")
+    public ReelerAuction getHighestBidForLotAndActive(int lotId,int marketId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true , value = """
             select f.first_name,f.middle_name,f.last_name ,f.farmer_number ,v.Village_Name,l.LOT_APPROX_WEIGHT_BEFORE_WEIGHMENT,l.status,l.BID_ACCEPTED_BY  from 
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 
@@ -31,7 +35,7 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
 
     public ReelerAuction findById(BigInteger id);
 
-    @Query(nativeQuery = true, value = "SELECT r.name ,r.fruits_id  from REELER_AUCTION ra, reeler r  where ra.REELER_ID = r.reeler_id  and REELER_AUCTION_ID =:reelerAuctionId")
+    @Query(nativeQuery = true, value = "SELECT r.name ,r.fruits_id  from REELER_AUCTION ra, reeler r  where ra.REELER_ID = r.reeler_id and ra.active = 1 and REELER_AUCTION_ID =:reelerAuctionId")
     public Object[][] getReelerDetailsForHighestBid(BigInteger reelerAuctionId);
 
     @Query("SELECT DISTINCT allottedLotId  from ReelerAuction ra  where ra.auctionDate =:today and ra.marketId =:marketId and ra.reelerId  =:reelerId")
