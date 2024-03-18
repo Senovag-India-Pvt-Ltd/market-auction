@@ -194,7 +194,7 @@ public class ReelerAuctionService {
         LotBidDetailResponse lbdr = new LotBidDetailResponse();
         lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
         if (ra != null) {
-            Object[][] reelerDetails = reelerAuctionRepository.getReelerDetailsForHighestBid(ra.getId());
+            Object[][] reelerDetails = reelerAuctionRepository.getReelerDetailsForHighestBidWithReelingNumber(ra.getId());
             if (reelerDetails == null || reelerDetails.length == 0) {
                 rw.setErrorCode(-1);
                 rw.setErrorMessages(List.of("No reeler found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
@@ -216,6 +216,7 @@ public class ReelerAuctionService {
             lbdr.setFarmerLastName(ldrDetails[0][2] == null ? "" : String.valueOf(ldrDetails[0][2]));
             lbdr.setFarmerNumber(ldrDetails[0][3] == null ? "" : String.valueOf(ldrDetails[0][3]));
             lbdr.setReelerName(reelerDetails[0][0] == null ? "" : String.valueOf(reelerDetails[0][0]));
+            lbdr.setReelingLicenseNumber(reelerDetails[0][2] == null ? "" : String.valueOf(reelerDetails[0][2]));
             lbdr.setReelerFruitsId(reelerDetails[0][1] == null ? "" : String.valueOf(reelerDetails[0][1]));
             lbdr.setFarmervillageName(ldrDetails[0][4] == null ? "" : String.valueOf(ldrDetails[0][4]));
             lbdr.setLotApproxWeightBeforeWeighment(ldrDetails[0][5] == null ? 0 : Integer.valueOf(String.valueOf(ldrDetails[0][5])));
