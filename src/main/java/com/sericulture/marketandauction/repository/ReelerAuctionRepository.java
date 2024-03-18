@@ -45,6 +45,10 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     @Query("SELECT DISTINCT allottedLotId  from ReelerAuction ra  where ra.auctionDate =:today and ra.marketId =:marketId and ra.reelerId  =:reelerId")
     public List<Integer> findByAuctionDateAndMarketIdAndReelerId(LocalDate today,int marketId,int reelerId);
 
+    @Query(nativeQuery = true, value = """
+    SELECT DISTINCT ALLOTTED_LOT_ID  from REELER_AUCTION ra  where ra.AUCTION_DATE = '2024-03-18' and ra.MARKET_ID = 31 and ra.REELER_ID  = 59 and ra.ACTIVE = 1 """)
+    public List<Integer> findByAuctionDateAndMarketIdAndReelerIdByActive(LocalDate today,int marketId,int reelerId);
+
 
     @Query(nativeQuery = true, value = """
             SELECT REELER_AUCTION_ID,AMOUNT ,ALLOTTED_LOT_ID, 'HIGHEST',R.Name  
