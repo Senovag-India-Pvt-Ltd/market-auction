@@ -427,6 +427,8 @@ public class MarketAuctionReportService {
 
         List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
+        List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
+
         float totalWeight = 0.0F;
 
         if(Util.isNullOrEmptyList(totalLotStatusResponse))
@@ -435,6 +437,7 @@ public class MarketAuctionReportService {
         }
         Form13Response form13Response = new Form13Response();
         form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[2]));
+        form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
 
         List<GroupLotStatus> totalLotStatus = prepareGroup13Report(totalLotStatusResponse, "Reeler");
         form13Response.setTotalLotStatus(totalLotStatus);

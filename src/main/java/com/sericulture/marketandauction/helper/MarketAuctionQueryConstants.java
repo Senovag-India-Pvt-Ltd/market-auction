@@ -258,7 +258,7 @@ public class MarketAuctionQueryConstants {
                   market_master_id = :marketId ;""";
 
     public static final String GET_MARKET_NAME = """
-            select market_name from market_master where market_master_id = :marketId ;""";
+            select market_name, market_name_in_kannada from market_master where market_master_id = :marketId ;""";
 
     public static final String PAYMENT_SUCCESS_LOTS = """
             select  COUNT(l.lot_id) from lot l\s
