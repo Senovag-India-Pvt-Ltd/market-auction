@@ -176,4 +176,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.total_debit_txn_balance_today)
     public List<Object[]> geTotalDebitTxnToday(int marketId, LocalDate auctionDate);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.AVERAGE_REPORT_FOR_YEAR)
+    public List<Object[]> getAverageReportForYearsReport(LocalDate startDate, LocalDate endDate, int raceId, int marketId);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.ACTIVE_RACE_FOR_AVERAGE_REPORT)
+    public List<Object[]> getActiveRaceForAverageReport(LocalDate startDate, LocalDate endDate, int marketId);
 }

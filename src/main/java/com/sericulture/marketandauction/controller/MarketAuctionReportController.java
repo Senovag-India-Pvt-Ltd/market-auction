@@ -66,6 +66,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getForm13Report(requestBody);
     }
 
+    @PostMapping("/averageReportForYearsReport")
+    public ResponseEntity<?> getAverageReportForYearsReport(@RequestBody AverageReportRequest requestBody){
+        return marketAuctionReportService.getAverageReportForYearsReport(requestBody);
+    }
+
     @PostMapping("/getDashboardReport")
     public ResponseEntity<?> getDashboardReport(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getDashboardReport(reportRequest);

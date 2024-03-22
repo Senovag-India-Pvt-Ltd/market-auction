@@ -627,6 +627,53 @@ public class MarketAuctionReportService {
 
     }
 
+    public ResponseEntity<?> getAverageReportForYearsReport(AverageReportRequest averageReportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        AverageReportResponse averageReportResponse = new AverageReportResponse();
+        List<AverageRateYearWise> averageRateYearWiseList = new ArrayList<>();
+        for (int year = averageReportRequest.getStartYear(); year < averageReportRequest.getEndYear(); year++) {
+            LocalDate startDate = LocalDate.of(year, 4, 1);
+            LocalDate endDate = LocalDate.of(year + 1, 3, 31);
+            AverageRateYearWise averageRateYearWise = new AverageRateYearWise();
+            averageRateYearWise.setYear(year + "-" + (year + 1));
+
+            //Response is active race
+            List<Object[]> responseRaces = lotRepository.getActiveRaceForAverageReport(startDate, endDate, averageReportRequest.getMarketId());
+
+            List<AverageRateRaceWise> averageRateRaceWiseList = new ArrayList<>();
+            for(int i=0; i<responseRaces.size(); i++){
+                AverageRateRaceWise averageRateRaceWise = new AverageRateRaceWise();
+                averageRateRaceWise.setRaceName(Util.objectToString(responseRaces.get(i)[1]));
+
+                List<AverageRateValues> averageRateValuesList = new ArrayList<>();
+                List<Object[]> responsesAvgDate = lotRepository.getAverageReportForYearsReport(startDate, endDate, Util.objectToInteger(responseRaces.get(i)[0]), averageReportRequest.getMarketId());
+                if(responsesAvgDate.size()>0){
+
+                    for(int j=0; j<responsesAvgDate.size(); j++) {
+
+                        AverageRateValues averageRateValues = new AverageRateValues();
+                        averageRateValues.setWeight(Util.objectToString(responsesAvgDate.get(j)[2]));
+                        averageRateValues.setLotSoldAmount(Util.objectToString(responsesAvgDate.get(j)[1]));
+                        averageRateValues.setMonth(Util.objectToString(responsesAvgDate.get(j)[0]));
+
+                        averageRateValuesList.add(averageRateValues);
+                    }
+                }
+                averageRateRaceWise.setAverageRateValues(averageRateValuesList);
+
+                averageRateRaceWiseList.add(averageRateRaceWise);
+            }
+            averageRateYearWise.setAverageRateRaceWiseList(averageRateRaceWiseList);
+
+            averageRateYearWiseList.add(averageRateYearWise);
+
+        }
+        averageReportResponse.setAverageRateYearWiseList(averageRateYearWiseList);
+        rw.setContent(averageReportResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
     public ResponseEntity<?> getBiddingReport(LotReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         List<LotReportResponse> lotReportResponseList = new ArrayList<>();

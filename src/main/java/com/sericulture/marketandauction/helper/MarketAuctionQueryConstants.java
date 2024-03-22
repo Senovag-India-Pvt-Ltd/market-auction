@@ -440,5 +440,36 @@ public class MarketAuctionQueryConstants {
              join user_master um on um.user_type_id = cb.reeler_id
              WHERE um.market_id = :marketId AND CAST(ct.AUCTION_DATE AS DATE) = :auctionDate ;""";
 
+    public static final String AVERAGE_REPORT_FOR_YEAR = """
+            SELECT\s
+                DATENAME(month, l.auction_date) AS month_name,
+                AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_sold_amount,
+                AVG(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS avg_weight,
+                rm.race_name
+            FROM\s
+                lot l
+            JOIN\s
+                market_auction ma ON ma.market_auction_id = l.market_auction_id
+            JOIN\s
+                race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+            WHERE
+                l.auction_date >= :startDate AND l.auction_date < :endDate and rm.race_id = :raceId and ma.market_id = :marketId
+            GROUP BY\s
+                DATENAME(month, l.auction_date), rm.race_name
+            ORDER BY\s
+                DATENAME(month, l.auction_date) ;""";
+
+
+    public static final String ACTIVE_RACE_FOR_AVERAGE_REPORT = """
+            SELECT rm.race_id, rm.race_name
+              FROM race_master rm
+              JOIN market_auction ma ON rm.race_id = ma.race_master_id
+              JOIN lot l ON l.market_auction_id = ma.market_auction_id
+              
+              WHERE\s
+                  l.auction_date >= :startDate AND l.auction_date < :endDate and ma.market_id = :marketId
+                GROUP BY rm.race_id, rm.race_name
+                order by race_name asc ;""";
+
 
 }
