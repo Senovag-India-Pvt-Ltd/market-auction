@@ -467,7 +467,7 @@ public class MarketAuctionQueryConstants {
               JOIN lot l ON l.market_auction_id = ma.market_auction_id
               
               WHERE\s
-                  l.auction_date >= :startDate AND l.auction_date < :endDate and rm.active = 1 and ma.market_id = :marketId
+                  l.auction_date >= :startDate AND l.auction_date < :endDate and ma.market_id = :marketId
                 GROUP BY rm.race_id, rm.race_name
                 order by race_name asc ;""";
 
