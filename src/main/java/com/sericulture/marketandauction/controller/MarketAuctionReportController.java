@@ -71,6 +71,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getAverageReportForYearsReport(requestBody);
     }
 
+    @PostMapping("/averageCocoonReport")
+    public ResponseEntity<?> getAverageCocoonReport(@RequestBody AverageReportRequest requestBody){
+        return marketAuctionReportService.getAverageCocoonReport(requestBody);
+    }
+
     @PostMapping("/getDashboardReport")
     public ResponseEntity<?> getDashboardReport(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getDashboardReport(reportRequest);

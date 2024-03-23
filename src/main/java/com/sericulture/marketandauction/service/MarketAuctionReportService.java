@@ -674,6 +674,34 @@ public class MarketAuctionReportService {
 
     }
 
+    public ResponseEntity<?> getAverageCocoonReport(AverageReportRequest averageReportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        AverageCocoonResponse averageCocoonResponse = new AverageCocoonResponse();
+        List<AverageCocoonYearWise> averageCocoonYearWises = new ArrayList<>();
+        for (int year = averageReportRequest.getStartYear(); year < averageReportRequest.getEndYear(); year++) {
+            LocalDate startDate = LocalDate.of(year, 4, 1);
+            LocalDate endDate = LocalDate.of(year + 1, 3, 31);
+            AverageCocoonYearWise averageCocoonYearWise = new AverageCocoonYearWise();
+            averageCocoonYearWise.setYear(year + "-" + (year + 1));
+            List<AverageCocoonReport> averageCocoonReports = new ArrayList<>();
+            List<Object[]> responsesAvgDate = lotRepository.getAverageCocoonReport(startDate, endDate, averageReportRequest.getMarketId());
+            if(responsesAvgDate.size()>0) {
+                for (int j = 0; j < responsesAvgDate.size(); j++) {
+                    AverageCocoonReport averageCocoonReport = new AverageCocoonReport();
+                    averageCocoonReport.setWeight(Util.objectToString(responsesAvgDate.get(j)[2]));
+                    averageCocoonReport.setLotSoldAmount(Util.objectToString(responsesAvgDate.get(j)[3]));
+                    averageCocoonReport.setMonth(Util.objectToString(responsesAvgDate.get(j)[1]));
+                    averageCocoonReports.add(averageCocoonReport);
+                }
+            }
+            averageCocoonYearWise.setAverageCocoonReports(averageCocoonReports);
+            averageCocoonYearWises.add(averageCocoonYearWise);
+        }
+        averageCocoonResponse.setAverageCocoonYearWises(averageCocoonYearWises);
+        rw.setContent(averageCocoonResponse);
+        return ResponseEntity.ok(rw);
+    }
+
     public ResponseEntity<?> getBiddingReport(LotReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         List<LotReportResponse> lotReportResponseList = new ArrayList<>();

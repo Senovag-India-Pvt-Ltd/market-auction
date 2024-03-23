@@ -471,5 +471,14 @@ public class MarketAuctionQueryConstants {
                 GROUP BY rm.race_id, rm.race_name
                 order by race_name asc ;""";
 
+    public static final String AVERAGE_COCOON_REPORT = """
+            SELECT YEAR(auction_date) AS auction_year,
+            MONTH(auction_date) AS auction_month,
+            AVG(LOT_WEIGHT_AFTER_WEIGHMENT) / 1000 AS avg_lot_weight_in_tons,
+            AVG(LOT_SOLD_OUT_AMOUNT) AS avg_sold_out_amount
+             FROM lot
+             where auction_date >= :startDate AND auction_date < :endDate and market_id = :marketId
+             GROUP BY YEAR(auction_date), MONTH(auction_date)
+             ORDER BY YEAR(auction_date), MONTH(auction_date) ;""";
 
 }
