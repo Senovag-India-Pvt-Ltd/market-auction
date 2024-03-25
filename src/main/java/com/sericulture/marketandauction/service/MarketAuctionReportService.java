@@ -631,9 +631,9 @@ public class MarketAuctionReportService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         AverageReportResponse averageReportResponse = new AverageReportResponse();
         List<AverageRateYearWise> averageRateYearWiseList = new ArrayList<>();
-        for (int year = averageReportRequest.getStartYear(); year < averageReportRequest.getEndYear(); year++) {
-            LocalDate startDate = LocalDate.of(year, 4, 1);
-            LocalDate endDate = LocalDate.of(year + 1, 3, 31);
+        for (int year = averageReportRequest.getStartYear().getYear(); year < averageReportRequest.getEndYear().getYear(); year++) {
+            LocalDate startDate = LocalDate.of(year, averageReportRequest.getStartYear().getMonth(), averageReportRequest.getStartYear().getDayOfMonth());
+            LocalDate endDate = LocalDate.of(year + 1, averageReportRequest.getEndYear().getMonth(), averageReportRequest.getEndYear().getDayOfMonth());
             AverageRateYearWise averageRateYearWise = new AverageRateYearWise();
             averageRateYearWise.setYear(year + "-" + (year + 1));
 
@@ -678,9 +678,10 @@ public class MarketAuctionReportService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         AverageCocoonResponse averageCocoonResponse = new AverageCocoonResponse();
         List<AverageCocoonYearWise> averageCocoonYearWises = new ArrayList<>();
-        for (int year = averageReportRequest.getStartYear(); year < averageReportRequest.getEndYear(); year++) {
-            LocalDate startDate = LocalDate.of(year, 4, 1);
-            LocalDate endDate = LocalDate.of(year + 1, 3, 31);
+        for (int year = averageReportRequest.getStartYear().getYear(); year < averageReportRequest.getEndYear().getYear(); year++) {
+            LocalDate startDate = LocalDate.of(year, averageReportRequest.getStartYear().getMonth(), averageReportRequest.getStartYear().getDayOfMonth());
+            LocalDate endDate = LocalDate.of(year + 1, averageReportRequest.getEndYear().getMonth(), averageReportRequest.getEndYear().getDayOfMonth());
+
             AverageCocoonYearWise averageCocoonYearWise = new AverageCocoonYearWise();
             averageCocoonYearWise.setYear(year + "-" + (year + 1));
             List<AverageCocoonReport> averageCocoonReports = new ArrayList<>();

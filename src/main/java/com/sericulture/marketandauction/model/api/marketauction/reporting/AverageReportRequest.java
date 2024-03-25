@@ -11,6 +11,6 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public class AverageReportRequest extends RequestBody {
 
-    private int startYear;
-    private int endYear;
+    private LocalDate startYear;
+    private LocalDate endYear;
 }
