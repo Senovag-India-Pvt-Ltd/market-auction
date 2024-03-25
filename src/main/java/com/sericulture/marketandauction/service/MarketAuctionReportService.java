@@ -7,6 +7,7 @@ import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.DTR.*;
 import com.sericulture.marketandauction.model.entity.Bin;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
@@ -701,6 +702,54 @@ public class MarketAuctionReportService {
         averageCocoonResponse.setAverageCocoonYearWises(averageCocoonYearWises);
         rw.setContent(averageCocoonResponse);
         return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getDTRReport(Form13Request request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        DTRInfoResponse dtrInfoResponse = new DTRInfoResponse();
+        DTRDataResponse dtrDataResponse = new DTRDataResponse();
+
+        List<DTRMarketResponse> dtrMarketResponses = new ArrayList<>();
+        List<Object[]> responseMarkets = lotRepository.getMarketsForDTRReport();
+        if(responseMarkets.size()>0){
+            for(int i=0; i<responseMarkets.size(); i++){
+                DTRMarketResponse dtrMarketResponse = new DTRMarketResponse();
+                dtrMarketResponse.setMarketNameInKannada(Util.objectToString(responseMarkets.get(i)[2]));
+
+                List<Object[]> responseRaces = lotRepository.getRacesByMarket(Util.objectToInteger(responseMarkets.get(i)[0]));
+                List<DTRRaceResponse> dtrRaceResponses = new ArrayList<>();
+                if(responseRaces.size()>0){
+
+                    for(int j=0; j<responseRaces.size(); j++){
+                        DTRRaceResponse dtrRaceResponse = new DTRRaceResponse();
+                        dtrRaceResponse.setRaceNameInKannada(Util.objectToString(responseRaces.get(j)[3]));
+                        List<Object[]> responseData = lotRepository.getDTRReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]), request.getAuctionDate());
+                        if(responseData.size()>0){
+                            List<DTRResponse> dtrResponses = new ArrayList<>();
+                            for(int k=0; k<responseData.size(); k++){
+                                DTRResponse dtrResponse = new DTRResponse();
+                                dtrResponse.setAvgAmount(Util.objectToString(responseData.get(k)[2]));
+                                dtrResponse.setMinAmount(Util.objectToString(responseData.get(k)[1]));
+                                dtrResponse.setMaxAmount(Util.objectToString(responseData.get(k)[0]));
+                                dtrResponse.setWeight(Util.objectToString(responseData.get(k)[3]));
+                                dtrResponses.add(dtrResponse);
+                            }
+                            dtrRaceResponse.setDtrResponses(dtrResponses);
+                        }
+                        dtrRaceResponses.add(dtrRaceResponse);
+                    }
+
+                }
+
+                dtrMarketResponse.setDtrRaceResponses(dtrRaceResponses);
+                dtrMarketResponses.add(dtrMarketResponse);
+            }
+        }
+        dtrDataResponse.setDtrMarketResponses(dtrMarketResponses);
+        dtrInfoResponse.setDtrDataResponse(dtrDataResponse);
+        rw.setContent(dtrInfoResponse);
+        return ResponseEntity.ok(rw);
+
     }
 
     public ResponseEntity<?> getBiddingReport(LotReportRequest reportRequest) {

@@ -184,4 +184,13 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.AVERAGE_COCOON_REPORT)
     public List<Object[]> getAverageCocoonReport(LocalDate startDate, LocalDate endDate, int marketId);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKETS_FOR_DTR_REPORT)
+    public List<Object[]> getMarketsForDTRReport();
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.RACES_BY_MARKET)
+    public List<Object[]> getRacesByMarket(int marketId);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_REPORT)
+    public List<Object[]> getDTRReport(int marketId, int raceId, LocalDate auctionDate);
 }

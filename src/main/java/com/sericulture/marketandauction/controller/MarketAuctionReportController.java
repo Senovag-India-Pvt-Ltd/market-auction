@@ -76,6 +76,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getAverageCocoonReport(requestBody);
     }
 
+    @PostMapping("/dtrReport")
+    public ResponseEntity<?> getDTRReport(@RequestBody Form13Request requestBody){
+        return marketAuctionReportService.getDTRReport(requestBody);
+    }
+
     @PostMapping("/getDashboardReport")
     public ResponseEntity<?> getDashboardReport(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getDashboardReport(reportRequest);

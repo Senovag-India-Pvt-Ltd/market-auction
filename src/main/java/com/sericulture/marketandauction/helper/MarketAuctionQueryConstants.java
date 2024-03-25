@@ -481,4 +481,60 @@ public class MarketAuctionQueryConstants {
              GROUP BY YEAR(auction_date), MONTH(auction_date)
              ORDER BY YEAR(auction_date), MONTH(auction_date) ;""";
 
+    public static final String MARKETS_FOR_DTR_REPORT = """
+            SELECT\s
+                 l.market_id,\s
+                 mm.market_name,
+                 mm.market_name_in_kannada
+             FROM\s
+                 lot l
+             JOIN\s
+                 market_auction ma ON ma.market_auction_id = l.market_auction_id
+             JOIN\s
+                 market_master mm ON mm.market_master_id = l.market_id
+             GROUP BY\s
+                 l.market_id, mm.market_name, mm.market_name_in_kannada
+             ORDER BY\s
+                 mm.market_name ;""";
+
+    public static final String RACES_BY_MARKET = """
+            SELECT\s
+               l.market_id,\s
+            rm.race_id,
+               rm.race_name,
+               rm.race_name_in_kannada
+           FROM\s
+               lot l
+           JOIN\s
+               market_auction ma ON ma.market_auction_id = l.market_auction_id
+           JOIN\s
+               market_master mm ON mm.market_master_id = l.market_id
+           JOIN\s
+               race_master rm ON rm.race_id = ma.RACE_MASTER_ID
+           where l.market_id = :marketId
+           GROUP BY\s
+               l.market_id, rm.race_name, rm.race_id,
+               rm.race_name_in_kannada
+           ORDER BY\s
+               rm.race_name ;""";
+
+    public static final String DTR_REPORT = """
+            SELECT\s
+              \s
+                 MAX(l.LOT_SOLD_OUT_AMOUNT) AS max_sold_out_amount,\s
+                 MIN(l.LOT_SOLD_OUT_AMOUNT) AS min_sold_out_amount,\s
+                 AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_sold_out_amount,\s
+                 SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) / 1000 AS sum_weight_after_weighment_in_ton
+             FROM\s
+                 lot l
+             JOIN\s
+                 market_auction ma ON ma.market_auction_id = l.market_auction_id
+             JOIN\s
+                 market_master mm ON mm.market_master_id = l.market_id
+             JOIN\s
+                 race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+             where l.market_id = :marketId and rm.race_id = :raceId and l.auction_date = :auctionDate
+             GROUP BY\s
+                 l.market_id, ma.RACE_MASTER_ID ;""";
+
 }
