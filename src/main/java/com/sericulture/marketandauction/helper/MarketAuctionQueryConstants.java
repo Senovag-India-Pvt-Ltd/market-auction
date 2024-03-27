@@ -537,4 +537,41 @@ public class MarketAuctionQueryConstants {
              GROUP BY\s
                  l.market_id, ma.RACE_MASTER_ID ;""";
 
+    public static final String SUM_DTR_REPORT = """
+            SELECT
+               MAX(l.LOT_SOLD_OUT_AMOUNT) AS max_sold_out_amount,
+               MIN(l.LOT_SOLD_OUT_AMOUNT) AS min_sold_out_amount,
+               AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_sold_out_amount,
+               SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) / 1000 AS sum_weight_after_weighment_in_ton
+               FROM
+               lot l
+               JOIN
+               market_auction ma ON ma.market_auction_id = l.market_auction_id
+                       JOIN
+               market_master mm ON mm.market_master_id = l.market_id
+                       JOIN
+               race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+               where l.auction_date = :auctionDate ;""";
+
+    public static final String SUM_DTR_REPORT_BY_RACE = """
+            SELECT MAX(l.LOT_SOLD_OUT_AMOUNT) AS max_sold_out_amount,
+              MIN(l.LOT_SOLD_OUT_AMOUNT) AS min_sold_out_amount,
+              AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_sold_out_amount,
+              SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) / 1000 AS sum_weight_after_weighment_in_ton,
+              rm.race_name_in_kannada
+              FROM
+              lot l
+              JOIN
+              market_auction ma ON ma.market_auction_id = l.market_auction_id
+                      JOIN
+              market_master mm ON mm.market_master_id = l.market_id
+                      JOIN
+              race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+              where rm.race_id = :raceId and l.auction_date = :auctionDate
+              GROUP BY
+              l.market_id, ma.RACE_MASTER_ID, rm.race_name_in_kannada ;""";
+
+    public static final String GET_ALL_RACES = """
+                select race_id, race_name, race_name_in_kannada from race_master ;""";
+
 }

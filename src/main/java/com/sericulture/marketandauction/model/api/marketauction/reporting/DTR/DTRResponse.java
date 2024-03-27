@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class DTRResponse {
+    private String raceName;
     private String weight;
     private String minAmount;
     private String maxAmount;

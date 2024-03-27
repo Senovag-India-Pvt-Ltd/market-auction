@@ -193,4 +193,16 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_REPORT)
     public List<Object[]> getDTRReport(int marketId, int raceId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.SUM_DTR_REPORT)
+    public List<Object[]> getSumDTRReport(LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.SUM_DTR_REPORT_BY_RACE)
+    public List<Object[]> getSumDTRReportByRace(int raceId, LocalDate auctionDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_ALL_RACES)
+    public List<Object[]> getAllRaces();
+
+
+
 }

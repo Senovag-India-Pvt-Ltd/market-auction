@@ -770,11 +770,70 @@ public class MarketAuctionReportService {
                     }
 
                 }
-
                 dtrMarketResponse.setDtrRaceResponses(dtrRaceResponses);
                 dtrMarketResponses.add(dtrMarketResponse);
             }
         }
+
+        DTRResponse dtrResponseToday = new DTRResponse();
+        List<Object[]> responseSumOfDTRToday = lotRepository.getSumDTRReport(request.getAuctionDate());
+        if(responseSumOfDTRToday.size()>0){
+            dtrResponseToday.setWeight(Util.objectToString(responseSumOfDTRToday.get(0)[3]));
+            dtrResponseToday.setMinAmount(Util.objectToString(responseSumOfDTRToday.get(0)[1]));
+            dtrResponseToday.setMaxAmount(Util.objectToString(responseSumOfDTRToday.get(0)[0]));
+            dtrResponseToday.setAvgAmount(Util.objectToString(responseSumOfDTRToday.get(0)[2]));
+            dtrDataResponse.setSumOfToday(dtrResponseToday);
+        }
+
+        DTRResponse dtrResponseLastYear = new DTRResponse();
+        List<Object[]> responseSumOfDTRPreviousYear = lotRepository.getSumDTRReport(request.getAuctionDate().minusYears(1));
+        if(responseSumOfDTRPreviousYear.size()>0){
+            dtrResponseLastYear.setWeight(Util.objectToString(responseSumOfDTRPreviousYear.get(0)[3]));
+            dtrResponseLastYear.setMinAmount(Util.objectToString(responseSumOfDTRPreviousYear.get(0)[1]));
+            dtrResponseLastYear.setMaxAmount(Util.objectToString(responseSumOfDTRPreviousYear.get(0)[0]));
+            dtrResponseLastYear.setAvgAmount(Util.objectToString(responseSumOfDTRPreviousYear.get(0)[2]));
+            dtrDataResponse.setSumOfPreviousYear(dtrResponseLastYear);
+        }
+
+        if(dtrResponseToday.getWeight().equals("")){
+            dtrResponseToday.setWeight("0.000");
+        }
+        if(dtrResponseLastYear.getWeight().equals("")){
+            dtrResponseLastYear.setWeight("0.000");
+        }
+        dtrDataResponse.setTotalWeightDiff(String.format("%.3f",Float.parseFloat(dtrResponseToday.getWeight()) - Float.parseFloat(dtrResponseLastYear.getWeight())));
+
+        List<Object[]> racesList = lotRepository.getAllRaces();
+        List<DTRResponse> raceByToday = new ArrayList<>();
+        List<DTRResponse> raceByPrevYear = new ArrayList<>();
+        if(racesList.size()>0){
+            for(int i=0; i<racesList.size(); i++) {
+                DTRResponse dtrResponseRaceToday = new DTRResponse();
+                List<Object[]> dataByRace = lotRepository.getSumDTRReportByRace(Util.objectToInteger(racesList.get(i)[0]), request.getAuctionDate());
+                if(dataByRace.size()>0){
+                    dtrResponseRaceToday.setRaceName(Util.objectToString(dataByRace.get(0)[4]));
+                    dtrResponseRaceToday.setWeight(Util.objectToString(dataByRace.get(0)[3]));
+                    dtrResponseRaceToday.setAvgAmount(Util.objectToString(dataByRace.get(0)[2]));
+                    dtrResponseRaceToday.setMaxAmount(Util.objectToString(dataByRace.get(0)[0]));
+                    dtrResponseRaceToday.setMinAmount(Util.objectToString(dataByRace.get(0)[1]));
+                    raceByToday.add(dtrResponseRaceToday);
+                }
+
+                DTRResponse dtrResponseRaceLastYear = new DTRResponse();
+                List<Object[]> dataByRaceLastYear = lotRepository.getSumDTRReportByRace(Util.objectToInteger(racesList.get(i)[0]), request.getAuctionDate().minusYears(1));
+                if(dataByRaceLastYear.size()>0){
+                    dtrResponseRaceLastYear.setRaceName(Util.objectToString(dataByRaceLastYear.get(0)[4]));
+                    dtrResponseRaceLastYear.setWeight(Util.objectToString(dataByRaceLastYear.get(0)[3]));
+                    dtrResponseRaceLastYear.setAvgAmount(Util.objectToString(dataByRaceLastYear.get(0)[2]));
+                    dtrResponseRaceLastYear.setMaxAmount(Util.objectToString(dataByRaceLastYear.get(0)[0]));
+                    dtrResponseRaceLastYear.setMinAmount(Util.objectToString(dataByRaceLastYear.get(0)[1]));
+                    raceByPrevYear.add(dtrResponseRaceLastYear);
+                }
+            }
+        }
+        dtrDataResponse.setRaceByToday(raceByToday);
+        dtrDataResponse.setRaceByPrevYear(raceByPrevYear);
+
         dtrDataResponse.setDtrMarketResponses(dtrMarketResponses);
         dtrInfoResponse.setDtrDataResponse(dtrDataResponse);
         rw.setContent(dtrInfoResponse);
