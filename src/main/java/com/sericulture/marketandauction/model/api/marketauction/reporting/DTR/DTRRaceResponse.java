@@ -13,4 +13,6 @@ import java.util.List;
 public class DTRRaceResponse {
     private String raceNameInKannada;
     private List<DTRResponse> dtrResponses;
+    private List<DTRResponse> prevResponses;
+    private List<DTRResponse> lastYearResponses;
 }

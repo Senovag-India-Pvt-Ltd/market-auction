@@ -736,6 +736,36 @@ public class MarketAuctionReportService {
                             }
                             dtrRaceResponse.setDtrResponses(dtrResponses);
                         }
+                        LocalDate prevDate = request.getAuctionDate().minusDays(1);
+                        List<Object[]> responsePrevData = lotRepository.getDTRReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]), prevDate);
+                        if(responsePrevData.size()>0){
+                            List<DTRResponse> dtrResponses = new ArrayList<>();
+                            for(int k=0; k<responsePrevData.size(); k++){
+                                DTRResponse dtrResponse = new DTRResponse();
+                                dtrResponse.setAvgAmount(Util.objectToString(responsePrevData.get(k)[2]));
+                                dtrResponse.setMinAmount(Util.objectToString(responsePrevData.get(k)[1]));
+                                dtrResponse.setMaxAmount(Util.objectToString(responsePrevData.get(k)[0]));
+                                dtrResponse.setWeight(Util.objectToString(responsePrevData.get(k)[3]));
+                                dtrResponses.add(dtrResponse);
+                            }
+                            dtrRaceResponse.setPrevResponses(dtrResponses);
+                        }
+
+                        LocalDate lastYearDate = request.getAuctionDate().minusYears(1);
+                        List<Object[]> responseLastYearData = lotRepository.getDTRReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]),lastYearDate);
+                        if(responseLastYearData.size()>0){
+                            List<DTRResponse> dtrResponses = new ArrayList<>();
+                            for(int k=0; k<responseLastYearData.size(); k++){
+                                DTRResponse dtrResponse = new DTRResponse();
+                                dtrResponse.setAvgAmount(Util.objectToString(responseLastYearData.get(k)[2]));
+                                dtrResponse.setMinAmount(Util.objectToString(responseLastYearData.get(k)[1]));
+                                dtrResponse.setMaxAmount(Util.objectToString(responseLastYearData.get(k)[0]));
+                                dtrResponse.setWeight(Util.objectToString(responseLastYearData.get(k)[3]));
+                                dtrResponses.add(dtrResponse);
+                            }
+                            dtrRaceResponse.setLastYearResponses(dtrResponses);
+                        }
+
                         dtrRaceResponses.add(dtrRaceResponse);
                     }
 
