@@ -18,4 +18,9 @@ public class DTRDataResponse {
     private List<DTRResponse> raceByToday;
     private List<DTRResponse> raceByPrevYear;
 
+    private String thisYearWeight;
+    private String prevYearWeight;
+    private String prevYearAmount;
+    private String thisYearAmount;
+
 }

@@ -834,6 +834,20 @@ public class MarketAuctionReportService {
         dtrDataResponse.setRaceByToday(raceByToday);
         dtrDataResponse.setRaceByPrevYear(raceByPrevYear);
 
+        LocalDate startDate = request.getAuctionDate().withDayOfMonth(1);
+        List<Object[]> thisYearTotal = lotRepository.getTotalByMonth(startDate, request.getAuctionDate());
+        List<Object[]> prevYearTotal = lotRepository.getTotalByMonth(startDate.minusYears(1), request.getAuctionDate().minusYears(1));
+
+        if(thisYearTotal.size()>0){
+            dtrDataResponse.setThisYearAmount(Util.objectToString(thisYearTotal.get(0)[1]));
+            dtrDataResponse.setThisYearWeight(Util.objectToString(thisYearTotal.get(0)[0]));
+        }
+
+        if(prevYearTotal.size()>0){
+            dtrDataResponse.setPrevYearAmount(Util.objectToString(prevYearTotal.get(0)[1]));
+            dtrDataResponse.setPrevYearWeight(Util.objectToString(prevYearTotal.get(0)[0]));
+        }
+
         dtrDataResponse.setDtrMarketResponses(dtrMarketResponses);
         dtrInfoResponse.setDtrDataResponse(dtrDataResponse);
         rw.setContent(dtrInfoResponse);

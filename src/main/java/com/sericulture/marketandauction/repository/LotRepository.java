@@ -203,6 +203,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_ALL_RACES)
     public List<Object[]> getAllRaces();
 
-
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.TOTAL_BY_MONTH)
+    public List<Object[]> getTotalByMonth(LocalDate startDate, LocalDate endDate);
 
 }

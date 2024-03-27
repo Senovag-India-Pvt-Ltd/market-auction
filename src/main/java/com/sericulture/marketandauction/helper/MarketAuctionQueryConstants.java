@@ -574,4 +574,8 @@ public class MarketAuctionQueryConstants {
     public static final String GET_ALL_RACES = """
                 select race_id, race_name, race_name_in_kannada from race_master ;""";
 
+    public static final String TOTAL_BY_MONTH = """
+            select SUM(LOT_WEIGHT_AFTER_WEIGHMENT)/1000 as total_weight_in_ton, SUM(LOT_SOLD_OUT_AMOUNT) /100000 as total_amount_in_lakh from lot
+                where auction_date between :startDate and :endDate ;""";
+
 }
