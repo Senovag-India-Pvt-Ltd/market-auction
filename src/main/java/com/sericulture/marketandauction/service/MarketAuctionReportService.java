@@ -7,7 +7,12 @@ import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioVisual.AudioReport;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioVisual.AudioReportResponse;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioVisual.AudioVisualReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioVisual.MonthWiseReport;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.DTR.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.MonthlyReport.*;
 import com.sericulture.marketandauction.model.entity.Bin;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
@@ -26,7 +31,9 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.*;
 
 @Service
@@ -851,6 +858,164 @@ public class MarketAuctionReportService {
         dtrDataResponse.setDtrMarketResponses(dtrMarketResponses);
         dtrInfoResponse.setDtrDataResponse(dtrDataResponse);
         rw.setContent(dtrInfoResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public ResponseEntity<?> getAudioVisualReport(AudioVisualReportRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        AudioReport audioReport = new AudioReport();
+        AudioReportResponse audioReportResponse = new AudioReportResponse();
+        List<MonthWiseReport> monthWiseReports = new ArrayList<>();
+
+        LocalDate startDate = request.getStartDate();
+        LocalDate endDate = request.getEndDate();
+
+        LocalDate currentDate = startDate;
+        Period oneMonth = Period.ofMonths(1);
+
+        while (!currentDate.isAfter(endDate)) {
+            MonthWiseReport monthWiseReport = new MonthWiseReport();
+            List<DTRMarketResponse> dtrMarketResponses = new ArrayList<>();
+            // Your logic or processing code here
+            LocalDate endDateForThisMonth = currentDate.withDayOfMonth(currentDate.lengthOfMonth());
+
+            for(int i=0; i<request.getMarketList().size(); i++){
+                List<Object[]> responseMarkets = lotRepository.getMarketName(request.getMarketList().get(i));
+
+                DTRMarketResponse dtrMarketResponse = new DTRMarketResponse();
+                dtrMarketResponse.setMarketNameInKannada(Util.objectToString(responseMarkets.get(0)[1]));
+
+                List<Object[]> responseRaces = lotRepository.getRacesByMarket(Util.objectToInteger(request.getMarketList().get(i)));
+                List<DTRRaceResponse> dtrRaceResponses = new ArrayList<>();
+                if(responseRaces.size()>0){
+                    for(int j=0; j<responseRaces.size(); j++){
+                        DTRRaceResponse dtrRaceResponse = new DTRRaceResponse();
+                        dtrRaceResponse.setRaceNameInKannada(Util.objectToString(responseRaces.get(j)[3]));
+                        List<Object[]> responseData = lotRepository.getAudioVisualReport(Util.objectToInteger(request.getMarketList().get(i)), Util.objectToInteger(responseRaces.get(j)[1]), currentDate, endDateForThisMonth);
+                        if(responseData.size()>0){
+                            List<DTRResponse> dtrResponses = new ArrayList<>();
+                            for(int k=0; k<responseData.size(); k++){
+                                DTRResponse dtrResponse = new DTRResponse();
+                                dtrResponse.setAvgAmount(Util.objectToString(responseData.get(k)[2]));
+                                dtrResponse.setMinAmount(Util.objectToString(responseData.get(k)[1]));
+                                dtrResponse.setMaxAmount(Util.objectToString(responseData.get(k)[0]));
+                                dtrResponse.setWeight(Util.objectToString(responseData.get(k)[3]));
+                                dtrResponses.add(dtrResponse);
+                            }
+                            dtrRaceResponse.setDtrResponses(dtrResponses);
+                        }
+                        dtrRaceResponses.add(dtrRaceResponse);
+                    }
+
+                }
+                dtrMarketResponse.setDtrRaceResponses(dtrRaceResponses);
+                dtrMarketResponses.add(dtrMarketResponse);
+            }
+
+            DTRMarketResponse dtrMarketResponse = new DTRMarketResponse();
+            dtrMarketResponse.setMarketNameInKannada("ಇಥಾರೆ ಮರುಕಟ್ಟೆಗಳ್ಳಿ");
+
+            List<Object[]> responseRaces = lotRepository.getRacesByMarketNotIn(request.getMarketList());
+            List<DTRRaceResponse> dtrRaceResponses = new ArrayList<>();
+            if(responseRaces.size()>0){
+                for(int j=0; j<responseRaces.size(); j++){
+                    DTRRaceResponse dtrRaceResponse = new DTRRaceResponse();
+                    dtrRaceResponse.setRaceNameInKannada(Util.objectToString(responseRaces.get(j)[3]));
+                    List<Object[]> responseData = lotRepository.getAudioVisualReport(Util.objectToInteger(responseRaces.get(j)[0]), Util.objectToInteger(responseRaces.get(j)[1]), currentDate, endDateForThisMonth);
+                    if(responseData.size()>0){
+                        List<DTRResponse> dtrResponses = new ArrayList<>();
+                        for(int k=0; k<responseData.size(); k++){
+                            DTRResponse dtrResponse = new DTRResponse();
+                            dtrResponse.setAvgAmount(Util.objectToString(responseData.get(k)[2]));
+                            dtrResponse.setMinAmount(Util.objectToString(responseData.get(k)[1]));
+                            dtrResponse.setMaxAmount(Util.objectToString(responseData.get(k)[0]));
+                            dtrResponse.setWeight(Util.objectToString(responseData.get(k)[3]));
+                            dtrResponses.add(dtrResponse);
+                        }
+                        dtrRaceResponse.setDtrResponses(dtrResponses);
+                    }
+                    dtrRaceResponses.add(dtrRaceResponse);
+                }
+
+            }
+            dtrMarketResponse.setDtrRaceResponses(dtrRaceResponses);
+            dtrMarketResponses.add(dtrMarketResponse);
+
+
+            monthWiseReport.setDtrMarketResponses(dtrMarketResponses);
+            monthWiseReport.setMonth(currentDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) +'-'+currentDate.getYear());
+            monthWiseReports.add(monthWiseReport);
+
+            currentDate = currentDate.plus(oneMonth);
+
+        }
+        audioReportResponse.setMonthWiseReports(monthWiseReports);
+        audioReport.setAudioReportResponse(audioReportResponse);
+        rw.setContent(audioReport);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public ResponseEntity<?> getMonthlyReport(MonthlyReportRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        MonthlyReport monthlyReport = new MonthlyReport();
+        MonthlyReportResponse monthlyReportResponse = new MonthlyReportResponse();
+        List<MonthlyReportRaceWise> monthlyReportRaceWiseList = new ArrayList<>();
+
+        LocalDate startDate = request.getStartDate();
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        LocalDate financialYearStartDate = LocalDate.of(startDate.getYear() - 1, 4, 1);
+
+        List<Object[]> responseThisMonth = lotRepository.getMonthlyReport(startDate, endDate);
+
+        if(responseThisMonth.size()>0){
+            for(int i=0; i<responseThisMonth.size(); i++){
+                MonthlyReportRaceWise monthlyReportRaceWise = new MonthlyReportRaceWise();
+                monthlyReportRaceWise.setRaceName(Util.objectToString(responseThisMonth.get(i)[4]));
+                MonthlyReportInfo monthlyReportInfo = new MonthlyReportInfo();
+                monthlyReportInfo.setStartWeight(Util.objectToString(responseThisMonth.get(i)[2]));
+                monthlyReportInfo.setStartAmount(Util.objectToString(responseThisMonth.get(i)[1]));
+                monthlyReportInfo.setStartAvg(Util.objectToString(responseThisMonth.get(i)[3]));
+
+                List<Object[]> responseMonthEnd = lotRepository.getMonthlyReportByRace(financialYearStartDate, endDate,Util.objectToInteger(responseThisMonth.get(i)[0]) );
+                if(responseMonthEnd.size()>0){
+                    monthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    monthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    monthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    monthlyReportInfo.setEndWeight("0.000");
+                }
+
+                MonthlyReportInfo prevMonthlyReportInfo = new MonthlyReportInfo();
+                List<Object[]> responsePrevYearStart = lotRepository.getMonthlyReportByRace(startDate.minusYears(1), endDate.minusYears(1), Util.objectToInteger(responseThisMonth.get(i)[0]));
+                if(responsePrevYearStart.size()>0){
+                    prevMonthlyReportInfo.setStartWeight(Util.objectToString(responsePrevYearStart.get(0)[2]));
+                    prevMonthlyReportInfo.setStartAmount(Util.objectToString(responsePrevYearStart.get(0)[1]));
+                    prevMonthlyReportInfo.setStartAvg(Util.objectToString(responsePrevYearStart.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setStartWeight("0.000");
+                }
+
+                List<Object[]> responsePrevMonthEnd = lotRepository.getMonthlyReportByRace(financialYearStartDate.minusYears(1), endDate.minusYears(1), Util.objectToInteger(responseThisMonth.get(i)[0]));
+                if(responsePrevMonthEnd.size()>0){
+                    prevMonthlyReportInfo.setEndWeight(Util.objectToString(responsePrevMonthEnd.get(0)[2]));
+                    prevMonthlyReportInfo.setEndAmount(Util.objectToString(responsePrevMonthEnd.get(0)[1]));
+                    prevMonthlyReportInfo.setEndAvg(Util.objectToString(responsePrevMonthEnd.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setEndWeight("0.000");
+                }
+
+                monthlyReportRaceWise.setThisYearReport(monthlyReportInfo);
+                monthlyReportRaceWise.setPrevYearReport(prevMonthlyReportInfo);
+                monthlyReportRaceWiseList.add(monthlyReportRaceWise);
+            }
+
+        }
+
+        monthlyReportResponse.setMonthlyReportRaceWiseList(monthlyReportRaceWiseList);
+        monthlyReport.setMonthlyReportResponse(monthlyReportResponse);
+        rw.setContent(monthlyReport);
         return ResponseEntity.ok(rw);
 
     }

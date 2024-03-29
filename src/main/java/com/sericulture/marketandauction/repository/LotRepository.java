@@ -191,6 +191,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.RACES_BY_MARKET)
     public List<Object[]> getRacesByMarket(int marketId);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.RACES_BY_NOT_MARKET)
+    public List<Object[]> getRacesByMarketNotIn(List<Integer> marketList);
+
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_REPORT)
     public List<Object[]> getDTRReport(int marketId, int raceId, LocalDate auctionDate);
 
@@ -206,4 +209,12 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.TOTAL_BY_MONTH)
     public List<Object[]> getTotalByMonth(LocalDate startDate, LocalDate endDate);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.AUDIO_VISUAL_REPORT)
+    public List<Object[]> getAudioVisualReport(int marketId, int raceId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MONTHLY_REPORT)
+    public List<Object[]> getMonthlyReport(LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MONTHLY_REPORT_BY_RACE)
+    public List<Object[]> getMonthlyReportByRace(LocalDate startDate, LocalDate endDate, int raceId);
 }

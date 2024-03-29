@@ -518,6 +518,27 @@ public class MarketAuctionQueryConstants {
            ORDER BY\s
                rm.race_name ;""";
 
+    public static final String RACES_BY_NOT_MARKET = """
+            SELECT\s
+               l.market_id,\s
+            rm.race_id,
+               rm.race_name,
+               rm.race_name_in_kannada
+           FROM\s
+               lot l
+           JOIN\s
+               market_auction ma ON ma.market_auction_id = l.market_auction_id
+           JOIN\s
+               market_master mm ON mm.market_master_id = l.market_id
+           JOIN\s
+               race_master rm ON rm.race_id = ma.RACE_MASTER_ID
+           where l.market_id not in (:marketList)
+           GROUP BY\s
+               l.market_id, rm.race_name, rm.race_id,
+               rm.race_name_in_kannada
+           ORDER BY\s
+               rm.race_name ;""";
+
     public static final String DTR_REPORT = """
             SELECT\s
               \s
@@ -578,4 +599,36 @@ public class MarketAuctionQueryConstants {
             select SUM(LOT_WEIGHT_AFTER_WEIGHMENT)/1000 as total_weight_in_ton, SUM(LOT_SOLD_OUT_AMOUNT) /100000 as total_amount_in_lakh from lot
                 where auction_date between :startDate and :endDate ;""";
 
+    public static final String AUDIO_VISUAL_REPORT = """
+            SELECT\s
+              \s
+                 MAX(l.LOT_SOLD_OUT_AMOUNT) AS max_sold_out_amount,\s
+                 MIN(l.LOT_SOLD_OUT_AMOUNT) AS min_sold_out_amount,\s
+                 AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_sold_out_amount,\s
+                 SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) / 1000 AS sum_weight_after_weighment_in_ton
+             FROM\s
+                 lot l
+             JOIN\s
+                 market_auction ma ON ma.market_auction_id = l.market_auction_id
+             JOIN\s
+                 market_master mm ON mm.market_master_id = l.market_id
+             JOIN\s
+                 race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+             where l.market_id = :marketId and rm.race_id = :raceId and l.auction_date between :startDate and :endDate
+             GROUP BY\s
+                 l.market_id, ma.RACE_MASTER_ID ;""";
+
+    public static final String MONTHLY_REPORT = """
+            select rm.race_id, SUM(l.LOT_SOLD_OUT_AMOUNT)/ 100000 as amount, SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT)/100 as weight, AVG(l.LOT_SOLD_OUT_AMOUNT)/ 100000 as avg_amount,  rm.race_name_in_kannada from lot l
+                join market_auction ma on ma.market_auction_date = l.auction_date and l.market_auction_id = ma.market_auction_id
+                join race_master rm on rm.race_id = ma.RACE_MASTER_ID
+                where l.auction_date between :startDate and :endDate
+                group by rm.race_id, rm.race_name_in_kannada ;""";
+
+    public static final String MONTHLY_REPORT_BY_RACE = """
+            select rm.race_id, SUM(l.LOT_SOLD_OUT_AMOUNT)/ 100000 as amount, SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT)/100 as weight, AVG(l.LOT_SOLD_OUT_AMOUNT)/ 100000 as avg_amount,  rm.race_name_in_kannada from lot l
+                join market_auction ma on ma.market_auction_date = l.auction_date and l.market_auction_id = ma.market_auction_id
+                join race_master rm on rm.race_id = ma.RACE_MASTER_ID
+                where l.auction_date between :startDate and :endDate and rm.race_id = :raceId
+                group by rm.race_id, rm.race_name_in_kannada ;""";
 }

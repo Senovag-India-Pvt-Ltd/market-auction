@@ -5,6 +5,8 @@ import com.sericulture.marketandauction.model.api.marketauction.DTROnlineReportR
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
 import com.sericulture.marketandauction.model.api.marketauction.ReelerReportForAppRequest;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioVisual.AudioVisualReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.MonthlyReport.MonthlyReportRequest;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import com.sericulture.marketandauction.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +81,15 @@ public class MarketAuctionReportController {
     @PostMapping("/dtrReport")
     public ResponseEntity<?> getDTRReport(@RequestBody Form13Request requestBody){
         return marketAuctionReportService.getDTRReport(requestBody);
+    }
+    @PostMapping("/audioVisualReport")
+    public ResponseEntity<?> getAudioVisualReport(@RequestBody AudioVisualReportRequest requestBody){
+        return marketAuctionReportService.getAudioVisualReport(requestBody);
+    }
+
+    @PostMapping("/monthlyReport")
+    public ResponseEntity<?> getMonthlyReport(@RequestBody MonthlyReportRequest requestBody){
+        return marketAuctionReportService.getMonthlyReport(requestBody);
     }
 
     @PostMapping("/getDashboardReport")
