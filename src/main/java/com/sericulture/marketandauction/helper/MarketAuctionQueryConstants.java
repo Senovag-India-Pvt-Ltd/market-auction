@@ -631,4 +631,33 @@ public class MarketAuctionQueryConstants {
                 join race_master rm on rm.race_id = ma.RACE_MASTER_ID
                 where l.auction_date between :startDate and :endDate and rm.race_id = :raceId
                 group by rm.race_id, rm.race_name_in_kannada ;""";
+
+    public static final String MARKET_REPORT = """
+            SELECT SUM(l.LOT_SOLD_OUT_AMOUNT)/ 100000 AS amount, AVG(l.LOT_SOLD_OUT_AMOUNT)/ 100000 AS avg_amount,SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) / 1000 AS sum_weight_after_weighment_in_ton FROM
+                    lot l
+                JOIN
+                    market_auction ma ON ma.market_auction_id = l.market_auction_id
+                JOIN
+                    market_master mm ON mm.market_master_id = l.market_id
+                JOIN
+                    race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+                where l.market_id = :marketId and  rm.race_id = :raceId and l.auction_date between :startDate and :endDate
+                GROUP BY
+                    l.market_id, ma.RACE_MASTER_ID ;""";
+
+    public static final String MARKET_REPORT_SUM = """
+            SELECT SUM(l.LOT_SOLD_OUT_AMOUNT)/ 100000 AS amount, AVG(l.LOT_SOLD_OUT_AMOUNT)/ 100000 AS avg_amount,
+             SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) / 1000 AS sum_weight_after_weighment_in_ton, COUNT(l.lot_id) total_lots,
+             SUM(l.market_fee_farmer + l.market_fee_reeler) / 100000 AS total_market_fee\s
+             FROM
+                              lot l
+                          JOIN
+                              market_auction ma ON ma.market_auction_id = l.market_auction_id
+                          JOIN
+                              market_master mm ON mm.market_master_id = l.market_id
+                          JOIN
+                              race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+                          where l.market_id = :marketId and l.auction_date between :startDate and :endDate
+                          GROUP BY
+                              l.market_id ;""";
 }

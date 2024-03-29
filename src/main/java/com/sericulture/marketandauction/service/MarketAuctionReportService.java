@@ -12,6 +12,7 @@ import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioV
 import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioVisual.AudioVisualReportRequest;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioVisual.MonthWiseReport;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.DTR.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketReport.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MonthlyReport.*;
 import com.sericulture.marketandauction.model.entity.Bin;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
@@ -858,6 +859,85 @@ public class MarketAuctionReportService {
         dtrDataResponse.setDtrMarketResponses(dtrMarketResponses);
         dtrInfoResponse.setDtrDataResponse(dtrDataResponse);
         rw.setContent(dtrInfoResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public ResponseEntity<?> getMarketWiseReport(MonthlyReportRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        MarketReportResponse marketReportResponse = new MarketReportResponse();
+        MarketReports marketReports = new MarketReports();
+
+        List<MarketWiseInfo> marketWiseInfos = new ArrayList<>();
+        List<Object[]> responseMarkets = lotRepository.getMarketsForDTRReport();
+        if(responseMarkets.size()>0){
+            for(int i=0; i<responseMarkets.size(); i++){
+                MarketWiseInfo marketWiseInfo = new MarketWiseInfo();
+                marketWiseInfo.setMarketName(Util.objectToString(responseMarkets.get(i)[2]));
+
+                List<Object[]> responseRaces = lotRepository.getRacesByMarket(Util.objectToInteger(responseMarkets.get(i)[0]));
+                List<MarketReportRaceWise> marketReportRaceWises = new ArrayList<>();
+
+                LocalDate startDate = request.getStartDate();
+                LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+                LocalDate financialYearStartDate = LocalDate.of(startDate.getYear() - 1, 4, 1);
+
+                if(responseRaces.size()>0){
+                    for(int j=0; j<responseRaces.size(); j++){
+                        MarketReportRaceWise marketReportRaceWise = new MarketReportRaceWise();
+                        marketReportRaceWise.setRaceName(Util.objectToString(responseRaces.get(j)[3]));
+                        List<Object[]> responseData = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]), financialYearStartDate, endDate);
+
+                        MarketReportInfo marketReportInfo = new MarketReportInfo();
+                        if(responseData.size()>0){
+                            marketReportInfo.setStartingAvg(Util.objectToString(responseData.get(0)[1]));
+                            marketReportInfo.setStartingAmount(Util.objectToString(responseData.get(0)[0]));
+                            marketReportInfo.setStartingWeight(Util.objectToString(responseData.get(0)[2]));
+                        }else{
+                            marketReportInfo.setStartingWeight("0.00");
+                        }
+
+                        if(responseDataMonthEnd.size()>0){
+                            marketReportInfo.setEndingAvg(Util.objectToString(responseDataMonthEnd.get(0)[1]));
+                            marketReportInfo.setEndingAmount(Util.objectToString(responseDataMonthEnd.get(0)[0]));
+                            marketReportInfo.setEndingWeight(Util.objectToString(responseDataMonthEnd.get(0)[2]));
+                        }else{
+                            marketReportInfo.setEndingWeight("0.00");
+                        }
+                        marketReportRaceWise.setMarketReportInfo(marketReportInfo);
+                        marketReportRaceWises.add(marketReportRaceWise);
+                    }
+
+                }
+                marketWiseInfo.setMarketReportRaceWises(marketReportRaceWises);
+
+                List<Object[]> responseSumData = lotRepository.getMarketReportSum(Util.objectToInteger(responseMarkets.get(i)[0]), startDate, endDate);
+                List<Object[]> responseSumDataMonthEnd = lotRepository.getMarketReportSum(Util.objectToInteger(responseMarkets.get(i)[0]), financialYearStartDate, endDate);
+
+                if(responseSumData.size()>0){
+                    marketWiseInfo.setTotalWeightStarting(Util.objectToString(responseSumData.get(0)[2]));
+                    marketWiseInfo.setAvgAmountStarting(Util.objectToString(responseSumData.get(0)[1]));
+                    marketWiseInfo.setTotalAmountStarting(Util.objectToString(responseSumData.get(0)[0]));
+                    marketWiseInfo.setLotsStarting(Util.objectToString(responseSumData.get(0)[3]));
+                    marketWiseInfo.setMarketFeeStarting(Util.objectToString(responseSumData.get(0)[4]));
+                }
+
+                if(responseSumDataMonthEnd.size()>0){
+                    marketWiseInfo.setTotalWeightEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[2]));
+                    marketWiseInfo.setAvgAmountEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[1]));
+                    marketWiseInfo.setTotalAmountEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[0]));
+                    marketWiseInfo.setLotsEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[3]));
+                    marketWiseInfo.setMarketFeeEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[4]));
+                }
+                marketWiseInfos.add(marketWiseInfo);
+
+            }
+        }
+        marketReports.setMarketWiseInfos(marketWiseInfos);
+        marketReportResponse.setMarketReports(marketReports);
+
+        rw.setContent(marketReportResponse);
         return ResponseEntity.ok(rw);
 
     }
