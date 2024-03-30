@@ -223,4 +223,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT_SUM)
     public List<Object[]> getMarketReportSum(int marketId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DISTRICT_BY_FARMER_ADDRESS)
+    public List<Object[]> getDistrictByFarmerAddress();
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.VAHIVAATU_REPORT)
+    public List<Object[]> get27bReport(int districtId, int raceId, LocalDate startDate, LocalDate endDate);
 }

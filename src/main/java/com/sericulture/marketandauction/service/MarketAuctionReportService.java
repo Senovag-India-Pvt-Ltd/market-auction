@@ -14,6 +14,7 @@ import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioV
 import com.sericulture.marketandauction.model.api.marketauction.reporting.DTR.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketReport.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MonthlyReport.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.VahivaatuReport.*;
 import com.sericulture.marketandauction.model.entity.Bin;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
@@ -938,6 +939,63 @@ public class MarketAuctionReportService {
         marketReportResponse.setMarketReports(marketReports);
 
         rw.setContent(marketReportResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public ResponseEntity<?> get27bReport(MonthlyReportRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        VahivaatuReportReponse vahivaatuReportReponse = new VahivaatuReportReponse();
+        VahivaatuReport vahivaatuReport = new VahivaatuReport();
+
+        List<DistrictWise> districtWises = new ArrayList<>();
+        List<Object[]> responsesDistrict = lotRepository.getDistrictByFarmerAddress();
+        if(responsesDistrict.size()>0){
+            for(int i=0; i<responsesDistrict.size(); i++){
+                DistrictWise districtWise = new DistrictWise();
+                districtWise.setDistrictName(Util.objectToString(responsesDistrict.get(i)[1]));
+
+                List<Object[]> responseRaces = lotRepository.getAllRaces();
+                List<RaceWiseReport> raceWiseReports = new ArrayList<>();
+
+                LocalDate startDate = request.getStartDate();
+                LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+                LocalDate financialYearStartDate = LocalDate.of(startDate.getYear() - 1, 4, 1);
+
+                if(responseRaces.size()>0){
+                    for(int j=0; j<responseRaces.size(); j++){
+                        RaceWiseReport raceWiseReport = new RaceWiseReport();
+                        raceWiseReport.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        List<Object[]> responseData = lotRepository.get27bReport(Util.objectToInteger(responsesDistrict.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd = lotRepository.getMarketReport(Util.objectToInteger(responsesDistrict.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                        VahivaatuInfo vahivaatuInfo = new VahivaatuInfo();
+                        if(responseData.size()>0){
+                            vahivaatuInfo.setTotalCocoonStarting("");
+                            vahivaatuInfo.setSoldOutCocoonStarting(Util.objectToString(responseData.get(0)[0]));
+                        }else{
+                            vahivaatuInfo.setSoldOutCocoonStarting("0.00");
+                        }
+
+                        if(responseDataMonthEnd.size()>0){
+                            vahivaatuInfo.setSoldOutCocoonEnding(Util.objectToString(responseDataMonthEnd.get(0)[0]));
+                            vahivaatuInfo.setTotalCocoonEnding("");
+                        }else{
+                            vahivaatuInfo.setSoldOutCocoonEnding("0.00");
+                        }
+                        raceWiseReport.setVahivaatuInfo(vahivaatuInfo);
+                        raceWiseReports.add(raceWiseReport);
+                    }
+
+                }
+                districtWise.setRaceWiseReports(raceWiseReports);
+                districtWises.add(districtWise);
+            }
+        }
+        vahivaatuReport.setDistrictWises(districtWises);
+        vahivaatuReportReponse.setVahivaatuReport(vahivaatuReport);
+
+        rw.setContent(vahivaatuReportReponse);
         return ResponseEntity.ok(rw);
 
     }

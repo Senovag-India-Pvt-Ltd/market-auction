@@ -660,4 +660,17 @@ public class MarketAuctionQueryConstants {
                           where l.market_id = :marketId and l.auction_date between :startDate and :endDate
                           GROUP BY
                               l.market_id ;""";
+
+    public static final String DISTRICT_BY_FARMER_ADDRESS = """
+            select distinct(d.district_id), d.district_name_in_kannada from district d
+             join farmer_address fa on d.DISTRICT_ID = fa.DISTRICT_ID ;""";
+
+    public static final String VAHIVAATU_REPORT = """
+            select SUM(LOT_WEIGHT_AFTER_WEIGHMENT) /1000 as sum_of_weight,fa.DISTRICT_ID, rm.race_name_in_kannada, d.district_name_in_kannada from lot l
+             join market_auction ma on ma.market_auction_id = l.market_auction_id
+             join farmer_address fa on fa.FARMER_ID = ma.farmer_id
+             join race_master rm on rm.race_id = ma.RACE_MASTER_ID
+             join DISTRICT d on d.DISTRICT_ID = fa.DISTRICT_ID
+             where fa.DISTRICT_ID = :districtId and rm.race_id = :raceId and l.auction_date between :startDate and :endDate
+             group by fa.DISTRICT_ID, rm.race_name_in_kannada, d.district_name_in_kannada ;""";
 }
