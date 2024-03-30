@@ -673,4 +673,10 @@ public class MarketAuctionQueryConstants {
              join DISTRICT d on d.DISTRICT_ID = fa.DISTRICT_ID
              where fa.DISTRICT_ID = :districtId and rm.race_id = :raceId and l.auction_date between :startDate and :endDate
              group by fa.DISTRICT_ID, rm.race_name_in_kannada, d.district_name_in_kannada ;""";
+
+    public static final String GET_ALL_DIVISIONS = """
+            select division_master_id,name, name_in_kannada from  division_master where active = 1  ;""";
+
+    public static final String GET_MARKET_BY_DIVISION = """
+            select market_master_id, market_name, market_name_in_kannada from market_master where division_master_id = :divisionId  ;""";
 }

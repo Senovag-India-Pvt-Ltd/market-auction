@@ -97,6 +97,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getMarketWiseReport(requestBody);
     }
 
+    @PostMapping("/districtWiseReport")
+    public ResponseEntity<?> getDistrictWiseReport(@RequestBody MonthlyReportRequest requestBody){
+        return marketAuctionReportService.getDistrictWiseReport(requestBody);
+    }
+
     @PostMapping("/27bReport")
     public ResponseEntity<?> get27bReport(@RequestBody MonthlyReportRequest requestBody){
         return marketAuctionReportService.get27bReport(requestBody);
