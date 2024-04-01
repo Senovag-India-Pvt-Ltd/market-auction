@@ -118,7 +118,7 @@ public class MarketAuctionPrinterService {
                 .farmerNameKannada(Util.objectToString(response[20]))
 
                 .farmerMobileNumber(Util.objectToString(response[21]))
-                .fruitsId(Util.objectToString(response[37]))
+                .fruitsId(Util.objectToString(response[24]))
                 .marketAuctionId((BigDecimal) response[22])
                 .auctionDateWithTime((Date)(response[23]))
                 .build();
