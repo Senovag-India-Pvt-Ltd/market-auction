@@ -879,7 +879,7 @@ public class MarketAuctionReportService {
                 MarketWiseInfo marketWiseInfo = new MarketWiseInfo();
                 marketWiseInfo.setMarketName(Util.objectToString(responseMarkets.get(i)[2]));
 
-                List<Object[]> responseRaces = lotRepository.getRacesByMarket(Util.objectToInteger(responseMarkets.get(i)[0]));
+                List<Object[]> responseRaces = lotRepository.getAllRaces();
                 List<MarketReportRaceWise> marketReportRaceWises = new ArrayList<>();
 
                 LocalDate startDate = request.getStartDate();
@@ -889,9 +889,9 @@ public class MarketAuctionReportService {
                 if(responseRaces.size()>0){
                     for(int j=0; j<responseRaces.size(); j++){
                         MarketReportRaceWise marketReportRaceWise = new MarketReportRaceWise();
-                        marketReportRaceWise.setRaceName(Util.objectToString(responseRaces.get(j)[3]));
-                        List<Object[]> responseData = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]), startDate, endDate);
-                        List<Object[]> responseDataMonthEnd = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]), financialYearStartDate, endDate);
+                        marketReportRaceWise.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        List<Object[]> responseData = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
 
                         MarketReportInfo marketReportInfo = new MarketReportInfo();
                         if(responseData.size()>0){
