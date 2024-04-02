@@ -218,6 +218,14 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MONTHLY_REPORT_BY_RACE)
     public List<Object[]> getMonthlyReportByRace(LocalDate startDate, LocalDate endDate, int raceId);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MONTHLY_REPORT_BY_STATE)
+    public List<Object[]> getMonthlyReportByState(LocalDate startDate, LocalDate endDate, int stateId);
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_STATE_BY_STATE_NAME)
+    public List<Object[]> getStateByStateName(String stateName);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_OTHER_STATES_DATA)
+    public List<Object[]> getOtherStatesData(LocalDate startDate, LocalDate endDate,List<Integer> states);
+
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT)
     public List<Object[]> getMarketReport(int marketId, int raceId, LocalDate startDate, LocalDate endDate);
 

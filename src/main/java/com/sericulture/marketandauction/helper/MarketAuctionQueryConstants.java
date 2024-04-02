@@ -593,7 +593,7 @@ public class MarketAuctionQueryConstants {
               l.market_id, ma.RACE_MASTER_ID, rm.race_name_in_kannada ;""";
 
     public static final String GET_ALL_RACES = """
-                select race_id, race_name, race_name_in_kannada from race_master ;""";
+                select race_id, race_name, race_name_in_kannada from race_master where active = 1 ;""";
 
     public static final String TOTAL_BY_MONTH = """
             select SUM(LOT_WEIGHT_AFTER_WEIGHMENT)/1000 as total_weight_in_ton, SUM(LOT_SOLD_OUT_AMOUNT) /100000 as total_amount_in_lakh from lot
@@ -631,6 +631,27 @@ public class MarketAuctionQueryConstants {
                 join race_master rm on rm.race_id = ma.RACE_MASTER_ID
                 where l.auction_date between :startDate and :endDate and rm.race_id = :raceId
                 group by rm.race_id, rm.race_name_in_kannada ;""";
+
+    public static final String MONTHLY_REPORT_BY_STATE = """
+            select  s.state_name_in_kannada, SUM(l.LOT_SOLD_OUT_AMOUNT)/ 100000 as amount, SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT)/100 as weight, AVG(l.LOT_SOLD_OUT_AMOUNT)/ 100000 as avg_amount from lot l
+            join market_auction ma on ma.market_auction_date = l.auction_date and l.market_auction_id = ma.market_auction_id
+            join race_master rm on rm.race_id = ma.RACE_MASTER_ID
+            join farmer_address fa on fa.FARMER_ID = ma.farmer_id
+            join state s on fa.STATE_ID = s.STATE_ID
+            where l.auction_date between :startDate and :endDate and fa.STATE_ID = :stateId
+            group by s.state_name_in_kannada ;""";
+
+    public static final String GET_OTHER_STATES_DATA = """
+            select  s.state_name_in_kannada, SUM(l.LOT_SOLD_OUT_AMOUNT)/ 100000 as amount, SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT)/100 as weight, AVG(l.LOT_SOLD_OUT_AMOUNT)/ 100000 as avg_amount from lot l
+            join market_auction ma on ma.market_auction_date = l.auction_date and l.market_auction_id = ma.market_auction_id
+            join race_master rm on rm.race_id = ma.RACE_MASTER_ID
+            join farmer_address fa on fa.FARMER_ID = ma.farmer_id
+            join state s on fa.STATE_ID = s.STATE_ID
+            where l.auction_date between :startDate and :endDate and fa.STATE_ID not in (:states)
+            group by s.state_name_in_kannada ;""";
+
+    public static final String GET_STATE_BY_STATE_NAME = """
+            select * from STATE where STATE_NAME = :stateName ;""";
 
     public static final String MARKET_REPORT = """
             SELECT SUM(l.LOT_SOLD_OUT_AMOUNT)/ 100000 AS amount, AVG(l.LOT_SOLD_OUT_AMOUNT)/ 100000 AS avg_amount,SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) / 1000 AS sum_weight_after_weighment_in_ton FROM
