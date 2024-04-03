@@ -1098,7 +1098,7 @@ public class MarketAuctionReportService {
                         }
 
                         if(responseDataMonthEndSum.size()>0){
-                            vahivaatuInfoOverAll.setSoldOutCocoonEnding(Util.objectToString(responseDataMonthEnd.get(0)[0]));
+                            vahivaatuInfoOverAll.setSoldOutCocoonEnding(Util.objectToString(responseDataMonthEndSum.get(0)[0]));
                             vahivaatuInfoOverAll.setTotalCocoonEnding("");
                         }else{
                             vahivaatuInfoOverAll.setSoldOutCocoonEnding("0.00");
