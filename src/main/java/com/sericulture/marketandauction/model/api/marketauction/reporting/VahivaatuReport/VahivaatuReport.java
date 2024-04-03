@@ -12,4 +12,5 @@ import java.util.List;
 @EqualsAndHashCode
 public class VahivaatuReport {
     private List<DistrictWise> districtWises;
+    private DistrictWise overAllSum;
 }

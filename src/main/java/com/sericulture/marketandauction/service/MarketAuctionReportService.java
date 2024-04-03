@@ -1047,6 +1047,7 @@ public class MarketAuctionReportService {
 
         List<DistrictWise> districtWises = new ArrayList<>();
         List<Object[]> responsesDistrict = lotRepository.getDistrictByFarmerAddress();
+        DistrictWise overAllSum = new DistrictWise();
         if(responsesDistrict.size()>0){
             for(int i=0; i<responsesDistrict.size(); i++){
                 DistrictWise districtWise = new DistrictWise();
@@ -1054,6 +1055,7 @@ public class MarketAuctionReportService {
 
                 List<Object[]> responseRaces = lotRepository.getAllRaces();
                 List<RaceWiseReport> raceWiseReports = new ArrayList<>();
+                List<RaceWiseReport> overAllRaceWiseReports = new ArrayList<>();
 
                 LocalDate startDate = request.getStartDate();
                 LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
@@ -1064,7 +1066,7 @@ public class MarketAuctionReportService {
                         RaceWiseReport raceWiseReport = new RaceWiseReport();
                         raceWiseReport.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
                         List<Object[]> responseData = lotRepository.get27bReport(Util.objectToInteger(responsesDistrict.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
-                        List<Object[]> responseDataMonthEnd = lotRepository.getMarketReport(Util.objectToInteger(responsesDistrict.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+                        List<Object[]> responseDataMonthEnd = lotRepository.get27bReport(Util.objectToInteger(responsesDistrict.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
 
                         VahivaatuInfo vahivaatuInfo = new VahivaatuInfo();
                         if(responseData.size()>0){
@@ -1082,13 +1084,36 @@ public class MarketAuctionReportService {
                         }
                         raceWiseReport.setVahivaatuInfo(vahivaatuInfo);
                         raceWiseReports.add(raceWiseReport);
+
+                        RaceWiseReport overAll = new RaceWiseReport();
+                        overAll.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        List<Object[]> responseDataSum = lotRepository.getVahivaatuTotal(Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEndSum = lotRepository.getVahivaatuTotal(Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+                        VahivaatuInfo vahivaatuInfoOverAll = new VahivaatuInfo();
+                        if(responseDataSum.size()>0){
+                            vahivaatuInfoOverAll.setTotalCocoonStarting("");
+                            vahivaatuInfoOverAll.setSoldOutCocoonStarting(Util.objectToString(responseDataSum.get(0)[0]));
+                        }else{
+                            vahivaatuInfoOverAll.setSoldOutCocoonStarting("0.00");
+                        }
+
+                        if(responseDataMonthEndSum.size()>0){
+                            vahivaatuInfoOverAll.setSoldOutCocoonEnding(Util.objectToString(responseDataMonthEnd.get(0)[0]));
+                            vahivaatuInfoOverAll.setTotalCocoonEnding("");
+                        }else{
+                            vahivaatuInfoOverAll.setSoldOutCocoonEnding("0.00");
+                        }
+                        overAll.setVahivaatuInfo(vahivaatuInfoOverAll);
+                        overAllRaceWiseReports.add(overAll);
                     }
 
                 }
+                overAllSum.setRaceWiseReports(overAllRaceWiseReports);
                 districtWise.setRaceWiseReports(raceWiseReports);
                 districtWises.add(districtWise);
             }
         }
+        vahivaatuReport.setOverAllSum(overAllSum);
         vahivaatuReport.setDistrictWises(districtWises);
         vahivaatuReportReponse.setVahivaatuReport(vahivaatuReport);
 

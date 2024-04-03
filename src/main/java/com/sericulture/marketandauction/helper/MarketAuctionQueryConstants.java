@@ -695,6 +695,15 @@ public class MarketAuctionQueryConstants {
              where fa.DISTRICT_ID = :districtId and rm.race_id = :raceId and l.auction_date between :startDate and :endDate
              group by fa.DISTRICT_ID, rm.race_name_in_kannada, d.district_name_in_kannada ;""";
 
+    public static final String VAHIVAATU_REPORT_TOTAL = """
+            select SUM(LOT_WEIGHT_AFTER_WEIGHMENT) /1000 as sum_of_weight, rm.race_name_in_kannada from lot l
+              join market_auction ma on ma.market_auction_id = l.market_auction_id
+              join farmer_address fa on fa.FARMER_ID = ma.farmer_id
+              join race_master rm on rm.race_id = ma.RACE_MASTER_ID
+              join DISTRICT d on d.DISTRICT_ID = fa.DISTRICT_ID
+              where  rm.race_id = :raceId and l.auction_date between :startDate and :endDate
+              group by rm.race_name_in_kannada ;""";
+
     public static final String GET_ALL_DIVISIONS = """
             select division_master_id,name, name_in_kannada from  division_master where active = 1  ;""";
 
