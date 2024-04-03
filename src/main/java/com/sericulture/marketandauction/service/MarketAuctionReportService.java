@@ -1201,7 +1201,8 @@ public class MarketAuctionReportService {
         LocalDate startDate = request.getStartDate();
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
         LocalDate financialYearStartDate = LocalDate.of(startDate.getYear() - 1, 4, 1);
-
+        monthlyReportResponse.setThisYearDate(financialYearStartDate.getYear()+"-"+startDate.getYear());
+        monthlyReportResponse.setPrevYearDate(startDate.minusYears(2).getYear()+"-"+startDate.minusYears(1).getYear());
         List<Object[]> responseThisMonth = lotRepository.getMonthlyReport(startDate, endDate);
 
         if(responseThisMonth.size()>0){

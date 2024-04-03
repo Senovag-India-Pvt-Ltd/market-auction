@@ -16,4 +16,6 @@ public class MonthlyReportResponse {
     private MonthlyReportRaceWise tamilNaduResponse;
     private MonthlyReportRaceWise andraPradeshResponse;
     private MonthlyReportRaceWise otherStateResponse;
+    private String thisYearDate;
+    private String prevYearDate;
 }
