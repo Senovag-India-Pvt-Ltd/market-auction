@@ -226,8 +226,16 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_OTHER_STATES_DATA)
     public List<Object[]> getOtherStatesData(LocalDate startDate, LocalDate endDate,List<Integer> states);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_OVER_ALL_STATE_SUM)
+    public List<Object[]> getOverAllStateSum(int raceId, LocalDate startDate, LocalDate endDate);
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT)
     public List<Object[]> getMarketReport(int marketId, int raceId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT_BY_STATE_AND_RACE)
+    public List<Object[]> getMarketReportByStateAndRace(int stateId, int raceId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT_BY_STATE_AND_RACE_NOT_IN)
+    public List<Object[]> getMarketReportByStateAndRaceNotIn(List<Integer> states, int raceId, LocalDate startDate, LocalDate endDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DIVISION_WISE_SUM)
     public List<Object[]> getDivisionSum(int divisionMasterId, int raceId, LocalDate startDate, LocalDate endDate);
