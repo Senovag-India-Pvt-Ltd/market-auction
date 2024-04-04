@@ -15,4 +15,5 @@ import java.util.List;
 public class DivisionReport {
     private String divisionName;
     private List<MarketWiseInfo> marketWiseInfoList;
+    private List<MarketWiseInfo> divisionWiseSum;
 }

@@ -960,6 +960,7 @@ public class MarketAuctionReportService {
                 divisionReport.setDivisionName(Util.objectToString(responseDivision.get(a)[2]));
 
                 List<MarketWiseInfo> marketWiseInfos = new ArrayList<>();
+                List<MarketWiseInfo> divisionWiseSumList = new ArrayList<>();
                 List<Object[]> responseMarkets = lotRepository.getMarketByDivision(Util.objectToInteger(responseDivision.get(a)[0]));
                 if (responseMarkets.size() > 0) {
                     for (int i = 0; i < responseMarkets.size(); i++) {
@@ -998,6 +999,7 @@ public class MarketAuctionReportService {
                                 }
                                 marketReportRaceWise.setMarketReportInfo(marketReportInfo);
                                 marketReportRaceWises.add(marketReportRaceWise);
+
                             }
 
                         }
@@ -1023,10 +1025,45 @@ public class MarketAuctionReportService {
                         }
                         marketWiseInfos.add(marketWiseInfo);
 
+
+                        //DivisionWise Sum
+                        if (responseRaces.size() > 0) {
+                            for (int j = 0; j < responseRaces.size(); j++) {
+                                MarketReportRaceWise marketReportRaceWise = new MarketReportRaceWise();
+                                marketReportRaceWise.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                                List<Object[]> responseData = lotRepository.getDivisionSum(Util.objectToInteger(responseDivision.get(a)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                                List<Object[]> responseDataMonthEnd = lotRepository.getDivisionSum(Util.objectToInteger(responseDivision.get(a)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                                MarketReportInfo marketReportInfo = new MarketReportInfo();
+                                if (responseData.size() > 0) {
+                                    marketReportInfo.setStartingAvg(Util.objectToString(responseData.get(0)[1]));
+                                    marketReportInfo.setStartingAmount(Util.objectToString(responseData.get(0)[0]));
+                                    marketReportInfo.setStartingWeight(Util.objectToString(responseData.get(0)[2]));
+                                } else {
+                                    marketReportInfo.setStartingWeight("0.00");
+                                }
+
+                                if (responseDataMonthEnd.size() > 0) {
+                                    marketReportInfo.setEndingAvg(Util.objectToString(responseDataMonthEnd.get(0)[1]));
+                                    marketReportInfo.setEndingAmount(Util.objectToString(responseDataMonthEnd.get(0)[0]));
+                                    marketReportInfo.setEndingWeight(Util.objectToString(responseDataMonthEnd.get(0)[2]));
+                                } else {
+                                    marketReportInfo.setEndingWeight("0.00");
+                                }
+                                marketReportRaceWise.setMarketReportInfo(marketReportInfo);
+                                marketReportRaceWises.add(marketReportRaceWise);
+
+                            }
+
+                        }
+                        marketWiseInfo.setMarketReportRaceWises(marketReportRaceWises);
+                        divisionWiseSumList.add(marketWiseInfo);
+
                     }
                 }
 
                 divisionReport.setMarketWiseInfoList(marketWiseInfos);
+                divisionReport.setDivisionWiseSum(divisionWiseSumList);
                 divisionReportList.add(divisionReport);
 
             }
