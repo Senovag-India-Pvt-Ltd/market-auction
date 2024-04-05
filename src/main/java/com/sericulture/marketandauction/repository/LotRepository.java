@@ -218,9 +218,42 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MONTHLY_REPORT_BY_RACE)
     public List<Object[]> getMonthlyReportByRace(LocalDate startDate, LocalDate endDate, int raceId);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MONTHLY_REPORT_BY_STATE)
+    public List<Object[]> getMonthlyReportByState(LocalDate startDate, LocalDate endDate, int stateId);
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_STATE_BY_STATE_NAME)
+    public List<Object[]> getStateByStateName(String stateName);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_OTHER_STATES_DATA)
+    public List<Object[]> getOtherStatesData(LocalDate startDate, LocalDate endDate,List<Integer> states);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_OVER_ALL_STATE_SUM)
+    public List<Object[]> getOverAllStateSum(int raceId, LocalDate startDate, LocalDate endDate);
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT)
     public List<Object[]> getMarketReport(int marketId, int raceId, LocalDate startDate, LocalDate endDate);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT_BY_STATE_AND_RACE)
+    public List<Object[]> getMarketReportByStateAndRace(int stateId, int raceId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT_BY_STATE_AND_RACE_NOT_IN)
+    public List<Object[]> getMarketReportByStateAndRaceNotIn(List<Integer> states, int raceId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DIVISION_WISE_SUM)
+    public List<Object[]> getDivisionSum(int divisionMasterId, int raceId, LocalDate startDate, LocalDate endDate);
+
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MARKET_REPORT_SUM)
     public List<Object[]> getMarketReportSum(int marketId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DISTRICT_BY_FARMER_ADDRESS)
+    public List<Object[]> getDistrictByFarmerAddress();
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.VAHIVAATU_REPORT)
+    public List<Object[]> get27bReport(int districtId, int raceId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.VAHIVAATU_REPORT_TOTAL)
+    public List<Object[]> getVahivaatuTotal(int raceId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_ALL_DIVISIONS)
+    public List<Object[]> getDivisions();
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_MARKET_BY_DIVISION)
+    public List<Object[]> getMarketByDivision(int divisionId);
 }

@@ -12,5 +12,6 @@ import java.util.List;
 @EqualsAndHashCode
 public class MarketReportRaceWise {
     private String raceName;
+    private String stateName;
     private MarketReportInfo marketReportInfo;
 }

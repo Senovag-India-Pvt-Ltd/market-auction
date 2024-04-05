@@ -13,7 +13,11 @@ import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioV
 import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioVisual.MonthWiseReport;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.DTR.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketReport.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketWiseReport.DivisionReport;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketWiseReport.DivisionWiseMarketResponse;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketWiseReport.DivisionWiseReport;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MonthlyReport.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.VahivaatuReport.*;
 import com.sericulture.marketandauction.model.entity.Bin;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
@@ -875,7 +879,7 @@ public class MarketAuctionReportService {
                 MarketWiseInfo marketWiseInfo = new MarketWiseInfo();
                 marketWiseInfo.setMarketName(Util.objectToString(responseMarkets.get(i)[2]));
 
-                List<Object[]> responseRaces = lotRepository.getRacesByMarket(Util.objectToInteger(responseMarkets.get(i)[0]));
+                List<Object[]> responseRaces = lotRepository.getAllRaces();
                 List<MarketReportRaceWise> marketReportRaceWises = new ArrayList<>();
 
                 LocalDate startDate = request.getStartDate();
@@ -885,9 +889,9 @@ public class MarketAuctionReportService {
                 if(responseRaces.size()>0){
                     for(int j=0; j<responseRaces.size(); j++){
                         MarketReportRaceWise marketReportRaceWise = new MarketReportRaceWise();
-                        marketReportRaceWise.setRaceName(Util.objectToString(responseRaces.get(j)[3]));
-                        List<Object[]> responseData = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]), startDate, endDate);
-                        List<Object[]> responseDataMonthEnd = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[1]), financialYearStartDate, endDate);
+                        marketReportRaceWise.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        List<Object[]> responseData = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
 
                         MarketReportInfo marketReportInfo = new MarketReportInfo();
                         if(responseData.size()>0){
@@ -938,6 +942,457 @@ public class MarketAuctionReportService {
         marketReportResponse.setMarketReports(marketReports);
 
         rw.setContent(marketReportResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public ResponseEntity<?> getDistrictWiseReport(MonthlyReportRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        DivisionWiseMarketResponse divisionWiseMarketResponse = new DivisionWiseMarketResponse();
+        DivisionWiseReport divisionWiseReport = new DivisionWiseReport();
+
+        List<DivisionReport> divisionReportList = new ArrayList<>();
+        List<Object[]> responseDivision = lotRepository.getDivisions();
+
+        LocalDate startDate = request.getStartDate();
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        LocalDate financialYearStartDate = LocalDate.of(startDate.getYear() - 1, 4, 1);
+        List<MarketReportRaceWise> karnatakaData = new ArrayList<>();
+        List<MarketReportRaceWise> andraData = new ArrayList<>();
+        List<MarketReportRaceWise> tamilNaduData = new ArrayList<>();
+        List<MarketReportRaceWise> maharashtraData = new ArrayList<>();
+        List<MarketReportRaceWise> otherStateData = new ArrayList<>();
+        List<MarketReportRaceWise> otherStateExcKarData = new ArrayList<>();
+        List<MarketReportRaceWise> overAllStateData = new ArrayList<>();
+
+
+        if (responseDivision.size() > 0) {
+            for (int a = 0; a < responseDivision.size(); a++) {
+                DivisionReport divisionReport = new DivisionReport();
+                divisionReport.setDivisionName(Util.objectToString(responseDivision.get(a)[2]));
+
+                List<MarketWiseInfo> marketWiseInfos = new ArrayList<>();
+                List<MarketWiseInfo> divisionWiseSumList = new ArrayList<>();
+                List<Object[]> responseMarkets = lotRepository.getMarketByDivision(Util.objectToInteger(responseDivision.get(a)[0]));
+                if (responseMarkets.size() > 0) {
+                    for (int i = 0; i < responseMarkets.size(); i++) {
+                        MarketWiseInfo marketWiseInfo = new MarketWiseInfo();
+                        MarketWiseInfo marketWiseInfoDiv = new MarketWiseInfo();
+                        marketWiseInfo.setMarketName(Util.objectToString(responseMarkets.get(i)[2]));
+
+                        List<Object[]> responseRaces = lotRepository.getAllRaces();
+                        List<MarketReportRaceWise> marketReportRaceWises = new ArrayList<>();
+                        List<MarketReportRaceWise> marketReportRaceWises1 = new ArrayList<>();
+
+                        if (responseRaces.size() > 0) {
+                            for (int j = 0; j < responseRaces.size(); j++) {
+                                MarketReportRaceWise marketReportRaceWise = new MarketReportRaceWise();
+                                marketReportRaceWise.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                                List<Object[]> responseData = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                                List<Object[]> responseDataMonthEnd = lotRepository.getMarketReport(Util.objectToInteger(responseMarkets.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                                MarketReportInfo marketReportInfo = new MarketReportInfo();
+                                if (responseData.size() > 0) {
+                                    marketReportInfo.setStartingAvg(Util.objectToString(responseData.get(0)[1]));
+                                    marketReportInfo.setStartingAmount(Util.objectToString(responseData.get(0)[0]));
+                                    marketReportInfo.setStartingWeight(Util.objectToString(responseData.get(0)[2]));
+                                } else {
+                                    marketReportInfo.setStartingWeight("0.00");
+                                }
+
+                                if (responseDataMonthEnd.size() > 0) {
+                                    marketReportInfo.setEndingAvg(Util.objectToString(responseDataMonthEnd.get(0)[1]));
+                                    marketReportInfo.setEndingAmount(Util.objectToString(responseDataMonthEnd.get(0)[0]));
+                                    marketReportInfo.setEndingWeight(Util.objectToString(responseDataMonthEnd.get(0)[2]));
+                                } else {
+                                    marketReportInfo.setEndingWeight("0.00");
+                                }
+                                marketReportRaceWise.setMarketReportInfo(marketReportInfo);
+                                marketReportRaceWises.add(marketReportRaceWise);
+
+                            }
+
+                        }
+                        marketWiseInfo.setMarketReportRaceWises(marketReportRaceWises);
+
+                        List<Object[]> responseSumData = lotRepository.getMarketReportSum(Util.objectToInteger(responseMarkets.get(i)[0]), startDate, endDate);
+                        List<Object[]> responseSumDataMonthEnd = lotRepository.getMarketReportSum(Util.objectToInteger(responseMarkets.get(i)[0]), financialYearStartDate, endDate);
+
+                        if (responseSumData.size() > 0) {
+                            marketWiseInfo.setTotalWeightStarting(Util.objectToString(responseSumData.get(0)[2]));
+                            marketWiseInfo.setAvgAmountStarting(Util.objectToString(responseSumData.get(0)[1]));
+                            marketWiseInfo.setTotalAmountStarting(Util.objectToString(responseSumData.get(0)[0]));
+                            marketWiseInfo.setLotsStarting(Util.objectToString(responseSumData.get(0)[3]));
+                            marketWiseInfo.setMarketFeeStarting(Util.objectToString(responseSumData.get(0)[4]));
+                        }
+
+                        if (responseSumDataMonthEnd.size() > 0) {
+                            marketWiseInfo.setTotalWeightEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[2]));
+                            marketWiseInfo.setAvgAmountEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[1]));
+                            marketWiseInfo.setTotalAmountEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[0]));
+                            marketWiseInfo.setLotsEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[3]));
+                            marketWiseInfo.setMarketFeeEnding(Util.objectToString(responseSumDataMonthEnd.get(0)[4]));
+                        }
+                        marketWiseInfos.add(marketWiseInfo);
+
+
+                        //DivisionWise Sum
+                        if (responseRaces.size() > 0) {
+                            for (int j = 0; j < responseRaces.size(); j++) {
+                                MarketReportRaceWise marketReportRaceWise1 = new MarketReportRaceWise();
+                                marketReportRaceWise1.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                                List<Object[]> responseData = lotRepository.getDivisionSum(Util.objectToInteger(responseDivision.get(a)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                                List<Object[]> responseDataMonthEnd = lotRepository.getDivisionSum(Util.objectToInteger(responseDivision.get(a)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                                MarketReportInfo marketReportInfo = new MarketReportInfo();
+                                if (responseData.size() > 0) {
+                                    marketReportInfo.setStartingAvg(Util.objectToString(responseData.get(0)[1]));
+                                    marketReportInfo.setStartingAmount(Util.objectToString(responseData.get(0)[0]));
+                                    marketReportInfo.setStartingWeight(Util.objectToString(responseData.get(0)[2]));
+                                } else {
+                                    marketReportInfo.setStartingWeight("0.00");
+                                }
+
+                                if (responseDataMonthEnd.size() > 0) {
+                                    marketReportInfo.setEndingAvg(Util.objectToString(responseDataMonthEnd.get(0)[1]));
+                                    marketReportInfo.setEndingAmount(Util.objectToString(responseDataMonthEnd.get(0)[0]));
+                                    marketReportInfo.setEndingWeight(Util.objectToString(responseDataMonthEnd.get(0)[2]));
+                                } else {
+                                    marketReportInfo.setEndingWeight("0.00");
+                                }
+                                marketReportRaceWise1.setMarketReportInfo(marketReportInfo);
+                                marketReportRaceWises1.add(marketReportRaceWise1);
+
+                            }
+
+                        }
+                        marketWiseInfoDiv.setMarketReportRaceWises(marketReportRaceWises1);
+                        divisionWiseSumList.add(marketWiseInfoDiv);
+
+                    }
+                }
+
+                divisionReport.setMarketWiseInfoList(marketWiseInfos);
+                divisionReport.setDivisionWiseSum(divisionWiseSumList);
+                divisionReportList.add(divisionReport);
+
+            }
+
+        }
+        divisionWiseReport.setDivisionReportList(divisionReportList);
+        divisionWiseMarketResponse.setDivisionWiseReport(divisionWiseReport);
+
+        List<Integer> otherStates = new ArrayList<>();
+        List<Integer> exceptKarTotal = new ArrayList<>();
+
+        List<Object[]> getKarnatakaDetails = lotRepository.getStateByStateName("Karnataka");
+        List<Object[]> getTamilNaduDetails = lotRepository.getStateByStateName("Tamil Nadu");
+        List<Object[]> getAndraPradeshDetails = lotRepository.getStateByStateName("Andrapradesh");
+        List<Object[]> getMaharashtraDetails = lotRepository.getStateByStateName("Maharashtra");
+        List<Object[]> responseRaces = lotRepository.getAllRaces();
+        if (responseRaces.size() > 0) {
+            for (int j = 0; j < responseRaces.size(); j++) {
+                MarketReportRaceWise karnatakaResponse = new MarketReportRaceWise();
+
+                if(getKarnatakaDetails.size()>0) {
+                    exceptKarTotal.add(Util.objectToInteger(getKarnatakaDetails.get(0)[0]));
+                    otherStates.add(Util.objectToInteger(getKarnatakaDetails.get(0)[0]));
+                    karnatakaResponse.setStateName(Util.objectToString(getKarnatakaDetails.get(0)[7]));
+                    karnatakaResponse.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                    List<Object[]> responseData = lotRepository.getMarketReportByStateAndRace(Util.objectToInteger(getKarnatakaDetails.get(0)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                    List<Object[]> responseDataMonthEnd = lotRepository.getMarketReportByStateAndRace(Util.objectToInteger(getKarnatakaDetails.get(0)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                    MarketReportInfo marketReportInfo = new MarketReportInfo();
+                    if (responseData.size() > 0) {
+                        marketReportInfo.setStartingAvg(Util.objectToString(responseData.get(0)[2]));
+                        marketReportInfo.setStartingAmount(Util.objectToString(responseData.get(0)[1]));
+                        marketReportInfo.setStartingWeight(Util.objectToString(responseData.get(0)[3]));
+                    } else {
+                        marketReportInfo.setStartingWeight("0.00");
+                    }
+
+                    if (responseDataMonthEnd.size() > 0) {
+                        marketReportInfo.setEndingAvg(Util.objectToString(responseDataMonthEnd.get(0)[2]));
+                        marketReportInfo.setEndingAmount(Util.objectToString(responseDataMonthEnd.get(0)[1]));
+                        marketReportInfo.setEndingWeight(Util.objectToString(responseDataMonthEnd.get(0)[3]));
+                    } else {
+                        marketReportInfo.setEndingWeight("0.00");
+                    }
+                    karnatakaResponse.setMarketReportInfo(marketReportInfo);
+                    karnatakaData.add(karnatakaResponse);
+                }
+
+                    MarketReportRaceWise andraResponse = new MarketReportRaceWise();
+
+                    if(getAndraPradeshDetails.size()>0) {
+                        otherStates.add(Util.objectToInteger(getAndraPradeshDetails.get(0)[0]));
+                        andraResponse.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        andraResponse.setStateName(Util.objectToString(getAndraPradeshDetails.get(0)[8]));
+                        List<Object[]> responseData1 = lotRepository.getMarketReportByStateAndRace(Util.objectToInteger(getAndraPradeshDetails.get(0)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd1 = lotRepository.getMarketReportByStateAndRace(Util.objectToInteger(getAndraPradeshDetails.get(0)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                        MarketReportInfo marketReportInfo1 = new MarketReportInfo();
+                        if (responseData1.size() > 0) {
+                            marketReportInfo1.setStartingAvg(Util.objectToString(responseData1.get(0)[2]));
+                            marketReportInfo1.setStartingAmount(Util.objectToString(responseData1.get(0)[1]));
+                            marketReportInfo1.setStartingWeight(Util.objectToString(responseData1.get(0)[3]));
+                        } else {
+                            marketReportInfo1.setStartingWeight("0.00");
+                        }
+
+                        if (responseDataMonthEnd1.size() > 0) {
+                            marketReportInfo1.setEndingAvg(Util.objectToString(responseDataMonthEnd1.get(0)[2]));
+                            marketReportInfo1.setEndingAmount(Util.objectToString(responseDataMonthEnd1.get(0)[1]));
+                            marketReportInfo1.setEndingWeight(Util.objectToString(responseDataMonthEnd1.get(0)[3]));
+                        } else {
+                            marketReportInfo1.setEndingWeight("0.00");
+                        }
+                        andraResponse.setMarketReportInfo(marketReportInfo1);
+                        andraData.add(andraResponse);
+                    }
+
+                    MarketReportRaceWise tamilNaduResponse = new MarketReportRaceWise();
+
+                    if(getTamilNaduDetails.size()>0) {
+                        otherStates.add(Util.objectToInteger(getTamilNaduDetails.get(0)[0]));
+                        tamilNaduResponse.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        tamilNaduResponse.setStateName(Util.objectToString(getTamilNaduDetails.get(0)[7]));
+                        List<Object[]> responseData1 = lotRepository.getMarketReportByStateAndRace(Util.objectToInteger(getTamilNaduDetails.get(0)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd1 = lotRepository.getMarketReportByStateAndRace(Util.objectToInteger(getTamilNaduDetails.get(0)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                        MarketReportInfo marketReportInfo1 = new MarketReportInfo();
+                        if (responseData1.size() > 0) {
+                            marketReportInfo1.setStartingAvg(Util.objectToString(responseData1.get(0)[2]));
+                            marketReportInfo1.setStartingAmount(Util.objectToString(responseData1.get(0)[1]));
+                            marketReportInfo1.setStartingWeight(Util.objectToString(responseData1.get(0)[3]));
+                        } else {
+                            marketReportInfo1.setStartingWeight("0.00");
+                        }
+
+                        if (responseDataMonthEnd1.size() > 0) {
+                            marketReportInfo1.setEndingAvg(Util.objectToString(responseDataMonthEnd1.get(0)[2]));
+                            marketReportInfo1.setEndingAmount(Util.objectToString(responseDataMonthEnd1.get(0)[1]));
+                            marketReportInfo1.setEndingWeight(Util.objectToString(responseDataMonthEnd1.get(0)[3]));
+                        } else {
+                            marketReportInfo1.setEndingWeight("0.00");
+                        }
+                        tamilNaduResponse.setMarketReportInfo(marketReportInfo1);
+                        tamilNaduData.add(tamilNaduResponse);
+                    }
+
+                    MarketReportRaceWise maharashtraResponse = new MarketReportRaceWise();
+
+                    if(getMaharashtraDetails.size()>0) {
+                        otherStates.add(Util.objectToInteger(getMaharashtraDetails.get(0)[0]));
+                        maharashtraResponse.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        maharashtraResponse.setStateName(Util.objectToString(getMaharashtraDetails.get(0)[7]));
+                        List<Object[]> responseData1 = lotRepository.getMarketReportByStateAndRace(Util.objectToInteger(getMaharashtraDetails.get(0)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd1 = lotRepository.getMarketReportByStateAndRace(Util.objectToInteger(getMaharashtraDetails.get(0)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                        MarketReportInfo marketReportInfo1 = new MarketReportInfo();
+                        if (responseData1.size() > 0) {
+                            marketReportInfo1.setStartingAvg(Util.objectToString(responseData1.get(0)[2]));
+                            marketReportInfo1.setStartingAmount(Util.objectToString(responseData1.get(0)[1]));
+                            marketReportInfo1.setStartingWeight(Util.objectToString(responseData1.get(0)[3]));
+                        } else {
+                            marketReportInfo1.setStartingWeight("0.00");
+                        }
+
+                        if (responseDataMonthEnd1.size() > 0) {
+                            marketReportInfo1.setEndingAvg(Util.objectToString(responseDataMonthEnd1.get(0)[2]));
+                            marketReportInfo1.setEndingAmount(Util.objectToString(responseDataMonthEnd1.get(0)[1]));
+                            marketReportInfo1.setEndingWeight(Util.objectToString(responseDataMonthEnd1.get(0)[3]));
+                        } else {
+                            marketReportInfo1.setEndingWeight("0.00");
+                        }
+                        maharashtraResponse.setMarketReportInfo(marketReportInfo1);
+                        maharashtraData.add(maharashtraResponse);
+                    }
+
+                    MarketReportRaceWise otherStateResponse = new MarketReportRaceWise();
+
+                List<Object[]> getOtherStateDetails = lotRepository.getOtherStatesData(startDate, endDate, otherStates);
+
+                if(getOtherStateDetails.size()>0) {
+                        otherStateResponse.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        otherStateResponse.setStateName("Others");
+                        List<Object[]> responseData1 = lotRepository.getMarketReportByStateAndRaceNotIn(otherStates, Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd1 = lotRepository.getMarketReportByStateAndRaceNotIn(otherStates, Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                        MarketReportInfo marketReportInfo1 = new MarketReportInfo();
+                        if (responseData1.size() > 0) {
+                            marketReportInfo1.setStartingAvg(Util.objectToString(responseData1.get(0)[2]));
+                            marketReportInfo1.setStartingAmount(Util.objectToString(responseData1.get(0)[1]));
+                            marketReportInfo1.setStartingWeight(Util.objectToString(responseData1.get(0)[3]));
+                        } else {
+                            marketReportInfo1.setStartingWeight("0.00");
+                        }
+
+                        if (responseDataMonthEnd1.size() > 0) {
+                            marketReportInfo1.setEndingAvg(Util.objectToString(responseDataMonthEnd1.get(0)[2]));
+                            marketReportInfo1.setEndingAmount(Util.objectToString(responseDataMonthEnd1.get(0)[1]));
+                            marketReportInfo1.setEndingWeight(Util.objectToString(responseDataMonthEnd1.get(0)[3]));
+                        } else {
+                            marketReportInfo1.setEndingWeight("0.00");
+                        }
+                        otherStateResponse.setMarketReportInfo(marketReportInfo1);
+                        otherStateData.add(otherStateResponse);
+                    }
+
+                MarketReportRaceWise otherStateExcKarResponse = new MarketReportRaceWise();
+                List<Object[]> getOtherStateSumDetails = lotRepository.getOtherStatesData(startDate, endDate, exceptKarTotal);
+
+                if(getOtherStateSumDetails.size()>0) {
+                    otherStateExcKarResponse.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                    otherStateExcKarResponse.setStateName("Others");
+                    List<Object[]> responseData1 = lotRepository.getMarketReportByStateAndRaceNotIn(exceptKarTotal, Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                    List<Object[]> responseDataMonthEnd1 = lotRepository.getMarketReportByStateAndRaceNotIn(exceptKarTotal, Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                    MarketReportInfo marketReportInfo1 = new MarketReportInfo();
+                    if (responseData1.size() > 0) {
+                        marketReportInfo1.setStartingAvg(Util.objectToString(responseData1.get(0)[2]));
+                        marketReportInfo1.setStartingAmount(Util.objectToString(responseData1.get(0)[1]));
+                        marketReportInfo1.setStartingWeight(Util.objectToString(responseData1.get(0)[3]));
+                    } else {
+                        marketReportInfo1.setStartingWeight("0.00");
+                    }
+
+                    if (responseDataMonthEnd1.size() > 0) {
+                        marketReportInfo1.setEndingAvg(Util.objectToString(responseDataMonthEnd1.get(0)[2]));
+                        marketReportInfo1.setEndingAmount(Util.objectToString(responseDataMonthEnd1.get(0)[1]));
+                        marketReportInfo1.setEndingWeight(Util.objectToString(responseDataMonthEnd1.get(0)[3]));
+                    } else {
+                        marketReportInfo1.setEndingWeight("0.00");
+                    }
+                    otherStateExcKarResponse.setMarketReportInfo(marketReportInfo1);
+                    otherStateExcKarData.add(otherStateExcKarResponse);
+                }
+
+
+                MarketReportRaceWise overAllTot = new MarketReportRaceWise();
+//                List<Object[]> getOverAllStateDetails = lotRepository.getOtherStatesData(startDate, endDate, exceptKarTotal);
+//
+//                if(getOverAllStateDetails.size()>0) {
+                    overAllTot.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                    overAllTot.setStateName("Over all total");
+                    List<Object[]> responseData1 = lotRepository.getOverAllStateSum(Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                    List<Object[]> responseDataMonthEnd1 = lotRepository.getOverAllStateSum(Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                    MarketReportInfo marketReportInfo1 = new MarketReportInfo();
+                    if (responseData1.size() > 0) {
+                        marketReportInfo1.setStartingAvg(Util.objectToString(responseData1.get(0)[2]));
+                        marketReportInfo1.setStartingAmount(Util.objectToString(responseData1.get(0)[1]));
+                        marketReportInfo1.setStartingWeight(Util.objectToString(responseData1.get(0)[3]));
+                    } else {
+                        marketReportInfo1.setStartingWeight("0.00");
+                    }
+
+                    if (responseDataMonthEnd1.size() > 0) {
+                        marketReportInfo1.setEndingAvg(Util.objectToString(responseDataMonthEnd1.get(0)[2]));
+                        marketReportInfo1.setEndingAmount(Util.objectToString(responseDataMonthEnd1.get(0)[1]));
+                        marketReportInfo1.setEndingWeight(Util.objectToString(responseDataMonthEnd1.get(0)[3]));
+                    } else {
+                        marketReportInfo1.setEndingWeight("0.00");
+                    }
+                    overAllTot.setMarketReportInfo(marketReportInfo1);
+                    overAllStateData.add(overAllTot);
+               // }
+
+            }
+
+        }
+       // marketWiseInfo.setMarketReportRaceWises(marketReportRaceWises);
+
+        divisionWiseMarketResponse.setKarnatakaData(karnatakaData);
+        divisionWiseMarketResponse.setAndraData(andraData);
+        divisionWiseMarketResponse.setTamilNaduData(tamilNaduData);
+        divisionWiseMarketResponse.setMaharashtraData(maharashtraData);
+        divisionWiseMarketResponse.setOtherStateData(otherStateData);
+        divisionWiseMarketResponse.setOtherStateExcKarData(otherStateExcKarData);
+        divisionWiseMarketResponse.setOverAllStateTotal(overAllStateData);
+        rw.setContent(divisionWiseMarketResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public ResponseEntity<?> get27bReport(MonthlyReportRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        VahivaatuReportReponse vahivaatuReportReponse = new VahivaatuReportReponse();
+        VahivaatuReport vahivaatuReport = new VahivaatuReport();
+
+        List<DistrictWise> districtWises = new ArrayList<>();
+        List<Object[]> responsesDistrict = lotRepository.getDistrictByFarmerAddress();
+        DistrictWise overAllSum = new DistrictWise();
+        if(responsesDistrict.size()>0){
+            for(int i=0; i<responsesDistrict.size(); i++){
+                DistrictWise districtWise = new DistrictWise();
+                districtWise.setDistrictName(Util.objectToString(responsesDistrict.get(i)[1]));
+
+                List<Object[]> responseRaces = lotRepository.getAllRaces();
+                List<RaceWiseReport> raceWiseReports = new ArrayList<>();
+                List<RaceWiseReport> overAllRaceWiseReports = new ArrayList<>();
+
+                LocalDate startDate = request.getStartDate();
+                LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+                LocalDate financialYearStartDate = LocalDate.of(startDate.getYear() - 1, 4, 1);
+
+                if(responseRaces.size()>0){
+                    for(int j=0; j<responseRaces.size(); j++){
+                        RaceWiseReport raceWiseReport = new RaceWiseReport();
+                        raceWiseReport.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        List<Object[]> responseData = lotRepository.get27bReport(Util.objectToInteger(responsesDistrict.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEnd = lotRepository.get27bReport(Util.objectToInteger(responsesDistrict.get(i)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+
+                        VahivaatuInfo vahivaatuInfo = new VahivaatuInfo();
+                        if(responseData.size()>0){
+                            vahivaatuInfo.setTotalCocoonStarting("");
+                            vahivaatuInfo.setSoldOutCocoonStarting(Util.objectToString(responseData.get(0)[0]));
+                        }else{
+                            vahivaatuInfo.setSoldOutCocoonStarting("0.00");
+                        }
+
+                        if(responseDataMonthEnd.size()>0){
+                            vahivaatuInfo.setSoldOutCocoonEnding(Util.objectToString(responseDataMonthEnd.get(0)[0]));
+                            vahivaatuInfo.setTotalCocoonEnding("");
+                        }else{
+                            vahivaatuInfo.setSoldOutCocoonEnding("0.00");
+                        }
+                        raceWiseReport.setVahivaatuInfo(vahivaatuInfo);
+                        raceWiseReports.add(raceWiseReport);
+
+                        RaceWiseReport overAll = new RaceWiseReport();
+                        overAll.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                        List<Object[]> responseDataSum = lotRepository.getVahivaatuTotal(Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
+                        List<Object[]> responseDataMonthEndSum = lotRepository.getVahivaatuTotal(Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
+                        VahivaatuInfo vahivaatuInfoOverAll = new VahivaatuInfo();
+                        if(responseDataSum.size()>0){
+                            vahivaatuInfoOverAll.setTotalCocoonStarting("");
+                            vahivaatuInfoOverAll.setSoldOutCocoonStarting(Util.objectToString(responseDataSum.get(0)[0]));
+                        }else{
+                            vahivaatuInfoOverAll.setSoldOutCocoonStarting("0.00");
+                        }
+
+                        if(responseDataMonthEndSum.size()>0){
+                            vahivaatuInfoOverAll.setSoldOutCocoonEnding(Util.objectToString(responseDataMonthEndSum.get(0)[0]));
+                            vahivaatuInfoOverAll.setTotalCocoonEnding("");
+                        }else{
+                            vahivaatuInfoOverAll.setSoldOutCocoonEnding("0.00");
+                        }
+                        overAll.setVahivaatuInfo(vahivaatuInfoOverAll);
+                        overAllRaceWiseReports.add(overAll);
+                    }
+
+                }
+                overAllSum.setRaceWiseReports(overAllRaceWiseReports);
+                districtWise.setRaceWiseReports(raceWiseReports);
+                districtWises.add(districtWise);
+            }
+        }
+        vahivaatuReport.setOverAllSum(overAllSum);
+        vahivaatuReport.setDistrictWises(districtWises);
+        vahivaatuReportReponse.setVahivaatuReport(vahivaatuReport);
+
+        rw.setContent(vahivaatuReportReponse);
         return ResponseEntity.ok(rw);
 
     }
@@ -1046,7 +1501,8 @@ public class MarketAuctionReportService {
         LocalDate startDate = request.getStartDate();
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
         LocalDate financialYearStartDate = LocalDate.of(startDate.getYear() - 1, 4, 1);
-
+        monthlyReportResponse.setThisYearDate(financialYearStartDate.getYear()+"-"+startDate.getYear());
+        monthlyReportResponse.setPrevYearDate(startDate.minusYears(2).getYear()+"-"+startDate.minusYears(1).getYear());
         List<Object[]> responseThisMonth = lotRepository.getMonthlyReport(startDate, endDate);
 
         if(responseThisMonth.size()>0){
@@ -1091,6 +1547,200 @@ public class MarketAuctionReportService {
                 monthlyReportRaceWiseList.add(monthlyReportRaceWise);
             }
 
+        }
+
+        List<Integer> otherStates = new ArrayList<>();
+
+        List<Object[]> getKarnatakaDetails = lotRepository.getStateByStateName("Karnataka");
+        List<Object[]> getTamilNaduDetails = lotRepository.getStateByStateName("Tamil Nadu");
+        List<Object[]> getAndraPradeshDetails = lotRepository.getStateByStateName("Andrapradesh");
+
+        MonthlyReportRaceWise karnatakaResponse = new MonthlyReportRaceWise();
+        MonthlyReportRaceWise tamilNaduResponse = new MonthlyReportRaceWise();
+        MonthlyReportRaceWise andraResponse = new MonthlyReportRaceWise();
+        MonthlyReportRaceWise otherResponse = new MonthlyReportRaceWise();
+        if(getKarnatakaDetails.size()>0) {
+            otherStates.add(Util.objectToInteger(getKarnatakaDetails.get(0)[0]));
+            List<Object[]> responseKarnataka = lotRepository.getMonthlyReportByState(startDate, endDate,Util.objectToInteger(getKarnatakaDetails.get(0)[0]));
+            MonthlyReportInfo monthlyReportInfo = new MonthlyReportInfo();
+            MonthlyReportInfo prevMonthlyReportInfo = new MonthlyReportInfo();
+            if(responseKarnataka.size()>0){
+                karnatakaResponse.setRaceName(Util.objectToString(responseKarnataka.get(0)[0]));
+
+                monthlyReportInfo.setStartWeight(Util.objectToString(responseKarnataka.get(0)[2]));
+                monthlyReportInfo.setStartAmount(Util.objectToString(responseKarnataka.get(0)[1]));
+                monthlyReportInfo.setStartAvg(Util.objectToString(responseKarnataka.get(0)[3]));
+
+                List<Object[]> responseMonthEnd = lotRepository.getMonthlyReportByState(financialYearStartDate, endDate,Util.objectToInteger(getKarnatakaDetails.get(0)[0]) );
+                if(responseMonthEnd.size()>0){
+                    monthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    monthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    monthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    monthlyReportInfo.setEndWeight("0.0");
+                }
+
+                List<Object[]> responsePrevYearStart = lotRepository.getMonthlyReportByState(startDate.minusYears(1), endDate.minusYears(1),Util.objectToInteger(getKarnatakaDetails.get(0)[0]));
+                if(responsePrevYearStart.size()>0){
+                    prevMonthlyReportInfo.setStartWeight(Util.objectToString(responsePrevYearStart.get(0)[2]));
+                    prevMonthlyReportInfo.setStartAmount(Util.objectToString(responsePrevYearStart.get(0)[1]));
+                    prevMonthlyReportInfo.setStartAvg(Util.objectToString(responsePrevYearStart.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setStartWeight("0.0");
+                }
+
+                List<Object[]> responsePrevMonthEnd = lotRepository.getMonthlyReportByState(financialYearStartDate.minusYears(1), endDate.minusYears(1),Util.objectToInteger(getKarnatakaDetails.get(0)[0]));
+                if(responsePrevMonthEnd.size()>0){
+                    prevMonthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    prevMonthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    prevMonthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setEndWeight("0.0");
+                }
+
+                monthlyReportResponse.setKarnatakaResponse(karnatakaResponse);
+            }else{
+                monthlyReportInfo.setStartWeight("0.0");
+            }
+            karnatakaResponse.setThisYearReport(monthlyReportInfo);
+            karnatakaResponse.setPrevYearReport(prevMonthlyReportInfo);
+        }
+
+        if(getTamilNaduDetails.size()>0) {
+            otherStates.add(Util.objectToInteger(getTamilNaduDetails.get(0)[0]));
+            List<Object[]> responseKarnataka = lotRepository.getMonthlyReportByState(startDate, endDate,Util.objectToInteger(getTamilNaduDetails.get(0)[0]));
+            MonthlyReportInfo monthlyReportInfo = new MonthlyReportInfo();
+            MonthlyReportInfo prevMonthlyReportInfo = new MonthlyReportInfo();
+            if(responseKarnataka.size()>0){
+                tamilNaduResponse.setRaceName(Util.objectToString(responseKarnataka.get(0)[0]));
+
+                monthlyReportInfo.setStartWeight(Util.objectToString(responseKarnataka.get(0)[2]));
+                monthlyReportInfo.setStartAmount(Util.objectToString(responseKarnataka.get(0)[1]));
+                monthlyReportInfo.setStartAvg(Util.objectToString(responseKarnataka.get(0)[3]));
+
+                List<Object[]> responseMonthEnd = lotRepository.getMonthlyReportByState(financialYearStartDate, endDate,Util.objectToInteger(getTamilNaduDetails.get(0)[0]) );
+                if(responseMonthEnd.size()>0){
+                    monthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    monthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    monthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    monthlyReportInfo.setEndWeight("0.0");
+                }
+
+                List<Object[]> responsePrevYearStart = lotRepository.getMonthlyReportByState(startDate.minusYears(1), endDate.minusYears(1),Util.objectToInteger(getTamilNaduDetails.get(0)[0]));
+                if(responsePrevYearStart.size()>0){
+                    prevMonthlyReportInfo.setStartWeight(Util.objectToString(responsePrevYearStart.get(0)[2]));
+                    prevMonthlyReportInfo.setStartAmount(Util.objectToString(responsePrevYearStart.get(0)[1]));
+                    prevMonthlyReportInfo.setStartAvg(Util.objectToString(responsePrevYearStart.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setStartWeight("0.0");
+                }
+
+                List<Object[]> responsePrevMonthEnd = lotRepository.getMonthlyReportByState(financialYearStartDate.minusYears(1), endDate.minusYears(1),Util.objectToInteger(getTamilNaduDetails.get(0)[0]));
+                if(responsePrevMonthEnd.size()>0){
+                    prevMonthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    prevMonthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    prevMonthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setEndWeight("0.0");
+                }
+
+                monthlyReportResponse.setKarnatakaResponse(karnatakaResponse);
+            }else{
+                monthlyReportInfo.setStartWeight("0.0");
+            }
+            tamilNaduResponse.setThisYearReport(monthlyReportInfo);
+            tamilNaduResponse.setPrevYearReport(prevMonthlyReportInfo);
+        }
+
+        if(getAndraPradeshDetails.size()>0) {
+            otherStates.add(Util.objectToInteger(getAndraPradeshDetails.get(0)[0]));
+            List<Object[]> responseKarnataka = lotRepository.getMonthlyReportByState(startDate, endDate,Util.objectToInteger(getAndraPradeshDetails.get(0)[0]));
+            MonthlyReportInfo monthlyReportInfo = new MonthlyReportInfo();
+            MonthlyReportInfo prevMonthlyReportInfo = new MonthlyReportInfo();
+            if(responseKarnataka.size()>0){
+                andraResponse.setRaceName(Util.objectToString(responseKarnataka.get(0)[0]));
+
+                monthlyReportInfo.setStartWeight(Util.objectToString(responseKarnataka.get(0)[2]));
+                monthlyReportInfo.setStartAmount(Util.objectToString(responseKarnataka.get(0)[1]));
+                monthlyReportInfo.setStartAvg(Util.objectToString(responseKarnataka.get(0)[3]));
+
+                List<Object[]> responseMonthEnd = lotRepository.getMonthlyReportByState(financialYearStartDate, endDate,Util.objectToInteger(getAndraPradeshDetails.get(0)[0]) );
+                if(responseMonthEnd.size()>0){
+                    monthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    monthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    monthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    monthlyReportInfo.setEndWeight("0.0");
+                }
+
+                List<Object[]> responsePrevYearStart = lotRepository.getMonthlyReportByState(startDate.minusYears(1), endDate.minusYears(1),Util.objectToInteger(getAndraPradeshDetails.get(0)[0]));
+                if(responsePrevYearStart.size()>0){
+                    prevMonthlyReportInfo.setStartWeight(Util.objectToString(responsePrevYearStart.get(0)[2]));
+                    prevMonthlyReportInfo.setStartAmount(Util.objectToString(responsePrevYearStart.get(0)[1]));
+                    prevMonthlyReportInfo.setStartAvg(Util.objectToString(responsePrevYearStart.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setStartWeight("0.0");
+                }
+
+                List<Object[]> responsePrevMonthEnd = lotRepository.getMonthlyReportByState(financialYearStartDate.minusYears(1), endDate.minusYears(1),Util.objectToInteger(getAndraPradeshDetails.get(0)[0]));
+                if(responsePrevMonthEnd.size()>0){
+                    prevMonthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    prevMonthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    prevMonthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setEndWeight("0.0");
+                }
+
+                monthlyReportResponse.setAndraPradeshResponse(karnatakaResponse);
+            }else{
+                monthlyReportInfo.setStartWeight("0.0");
+            }
+            andraResponse.setThisYearReport(monthlyReportInfo);
+            andraResponse.setPrevYearReport(prevMonthlyReportInfo);
+        }
+
+        List<Object[]> getOtherStateDetails = lotRepository.getOtherStatesData(startDate, endDate,otherStates);
+        if(getOtherStateDetails.size()>0) {
+            MonthlyReportInfo monthlyReportInfo = new MonthlyReportInfo();
+            MonthlyReportInfo prevMonthlyReportInfo = new MonthlyReportInfo();
+                otherResponse.setRaceName("Others");
+
+                monthlyReportInfo.setStartWeight(Util.objectToString(getOtherStateDetails.get(0)[2]));
+                monthlyReportInfo.setStartAmount(Util.objectToString(getOtherStateDetails.get(0)[1]));
+                monthlyReportInfo.setStartAvg(Util.objectToString(getOtherStateDetails.get(0)[3]));
+
+                List<Object[]> responseMonthEnd = lotRepository.getOtherStatesData(financialYearStartDate, endDate,otherStates);
+                if(responseMonthEnd.size()>0){
+                    monthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    monthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    monthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    monthlyReportInfo.setEndWeight("0.0");
+                }
+
+                List<Object[]> responsePrevYearStart = lotRepository.getOtherStatesData(startDate.minusYears(1), endDate.minusYears(1),otherStates);
+                if(responsePrevYearStart.size()>0){
+                    prevMonthlyReportInfo.setStartWeight(Util.objectToString(responsePrevYearStart.get(0)[2]));
+                    prevMonthlyReportInfo.setStartAmount(Util.objectToString(responsePrevYearStart.get(0)[1]));
+                    prevMonthlyReportInfo.setStartAvg(Util.objectToString(responsePrevYearStart.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setStartWeight("0.0");
+                }
+
+                List<Object[]> responsePrevMonthEnd = lotRepository.getOtherStatesData(financialYearStartDate.minusYears(1), endDate.minusYears(1),otherStates);
+                if(responsePrevMonthEnd.size()>0){
+                    prevMonthlyReportInfo.setEndWeight(Util.objectToString(responseMonthEnd.get(0)[2]));
+                    prevMonthlyReportInfo.setEndAmount(Util.objectToString(responseMonthEnd.get(0)[1]));
+                    prevMonthlyReportInfo.setEndAvg(Util.objectToString(responseMonthEnd.get(0)[3]));
+                }else{
+                    prevMonthlyReportInfo.setEndWeight("0.0");
+                }
+
+                monthlyReportResponse.setOtherStateResponse(otherResponse);
+
+            otherResponse.setThisYearReport(monthlyReportInfo);
+            otherResponse.setPrevYearReport(prevMonthlyReportInfo);
         }
 
         monthlyReportResponse.setMonthlyReportRaceWiseList(monthlyReportRaceWiseList);
