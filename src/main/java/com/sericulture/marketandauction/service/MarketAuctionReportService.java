@@ -977,10 +977,12 @@ public class MarketAuctionReportService {
                 if (responseMarkets.size() > 0) {
                     for (int i = 0; i < responseMarkets.size(); i++) {
                         MarketWiseInfo marketWiseInfo = new MarketWiseInfo();
+                        MarketWiseInfo marketWiseInfoDiv = new MarketWiseInfo();
                         marketWiseInfo.setMarketName(Util.objectToString(responseMarkets.get(i)[2]));
 
                         List<Object[]> responseRaces = lotRepository.getAllRaces();
                         List<MarketReportRaceWise> marketReportRaceWises = new ArrayList<>();
+                        List<MarketReportRaceWise> marketReportRaceWises1 = new ArrayList<>();
 
                         if (responseRaces.size() > 0) {
                             for (int j = 0; j < responseRaces.size(); j++) {
@@ -1037,8 +1039,8 @@ public class MarketAuctionReportService {
                         //DivisionWise Sum
                         if (responseRaces.size() > 0) {
                             for (int j = 0; j < responseRaces.size(); j++) {
-                                MarketReportRaceWise marketReportRaceWise = new MarketReportRaceWise();
-                                marketReportRaceWise.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
+                                MarketReportRaceWise marketReportRaceWise1 = new MarketReportRaceWise();
+                                marketReportRaceWise1.setRaceName(Util.objectToString(responseRaces.get(j)[2]));
                                 List<Object[]> responseData = lotRepository.getDivisionSum(Util.objectToInteger(responseDivision.get(a)[0]), Util.objectToInteger(responseRaces.get(j)[0]), startDate, endDate);
                                 List<Object[]> responseDataMonthEnd = lotRepository.getDivisionSum(Util.objectToInteger(responseDivision.get(a)[0]), Util.objectToInteger(responseRaces.get(j)[0]), financialYearStartDate, endDate);
 
@@ -1058,14 +1060,14 @@ public class MarketAuctionReportService {
                                 } else {
                                     marketReportInfo.setEndingWeight("0.00");
                                 }
-                                marketReportRaceWise.setMarketReportInfo(marketReportInfo);
-                                marketReportRaceWises.add(marketReportRaceWise);
+                                marketReportRaceWise1.setMarketReportInfo(marketReportInfo);
+                                marketReportRaceWises1.add(marketReportRaceWise1);
 
                             }
 
                         }
-                        marketWiseInfo.setMarketReportRaceWises(marketReportRaceWises);
-                        divisionWiseSumList.add(marketWiseInfo);
+                        marketWiseInfoDiv.setMarketReportRaceWises(marketReportRaceWises1);
+                        divisionWiseSumList.add(marketWiseInfoDiv);
 
                     }
                 }
