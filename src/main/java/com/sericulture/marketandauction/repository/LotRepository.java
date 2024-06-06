@@ -83,10 +83,11 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
              and (:lotList is null OR l.allotted_lot_id in (:lotList))
              and fba.farmer_bank_account_number != '' 
              and fba.farmer_bank_ifsc_code !='' 
-             and rvcb.CURRENT_BALANCE > 0.0
+
             ORDER by l.lot_id""")
     public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatus(LocalDate paymentDate, int marketId, List<Integer> lotList,String lotStatus);
 
+    //removed condition              and rvcb.CURRENT_BALANCE > 0.0
 
 
     @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PRINT_REPORT_ACCEPTED_LOT_ID)
