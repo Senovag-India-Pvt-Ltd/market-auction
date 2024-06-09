@@ -5,11 +5,9 @@ import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
-import com.sericulture.marketandauction.model.entity.CrateMaster;
-import com.sericulture.marketandauction.model.entity.Lot;
-import com.sericulture.marketandauction.model.entity.LotWeightDetail;
-import com.sericulture.marketandauction.model.entity.ReelerVidDebitTxn;
+import com.sericulture.marketandauction.model.entity.*;
 import com.sericulture.marketandauction.model.enums.LotStatus;
+import com.sericulture.marketandauction.model.enums.PAYMENTMODE;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.repository.CrateMasterRepository;
 import com.sericulture.marketandauction.repository.LotRepository;
@@ -158,6 +156,8 @@ public class WeigmentService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
         try {
             JwtPayloadData token = marketAuctionHelper.getMOAuthToken(completeLotWeighmentRequest);
+            MarketMaster marketMaster = marketMasterRepository.findById(completeLotWeighmentRequest.getMarketId());
+            String paymentMode = marketMaster.getPaymentMode();
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
@@ -184,8 +184,10 @@ public class WeigmentService {
             double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
             double farmerMarketFee = (lotSoldOutAmount * farmerBrokarage) / 100;
             double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee,2);
-            ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
-            entityManager.persist(reelerVidDebitTxn);
+            if(paymentMode==null || paymentMode.equals(PAYMENTMODE.ONLINE.getLabel())){
+                ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
+                entityManager.persist(reelerVidDebitTxn);
+            }
             lot.setWeighmentCompletedBy(token.getUsername());
             lot.setStatus(LotStatus.WEIGHMENTCOMPLETED.getLabel());
             lot.setLotWeightAfterWeighment(totalWeightOfAllottedLot);
