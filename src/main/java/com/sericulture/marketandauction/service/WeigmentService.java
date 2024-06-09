@@ -10,9 +10,7 @@ import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.LotWeightDetail;
 import com.sericulture.marketandauction.model.entity.ReelerVidDebitTxn;
 import com.sericulture.marketandauction.model.enums.LotStatus;
-import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
-import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.CrateMasterRepository;
 import com.sericulture.marketandauction.repository.LotRepository;
 import com.sericulture.marketandauction.repository.MarketMasterRepository;
@@ -22,9 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -162,7 +157,7 @@ public class WeigmentService {
         EntityManager entityManager = null;
         ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
         try {
-            JwtPayloadData token = marketAuctionHelper.getAuthToken(completeLotWeighmentRequest);
+            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(completeLotWeighmentRequest);
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();

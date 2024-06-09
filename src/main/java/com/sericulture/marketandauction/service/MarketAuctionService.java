@@ -13,7 +13,6 @@ import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.*;
 import jakarta.persistence.*;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -69,7 +67,7 @@ public class MarketAuctionService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionResponse.class);
         MarketAuctionResponse marketAuctionResponse = new MarketAuctionResponse();
 
-        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketAuctionRequest);
+        JwtPayloadData token = marketAuctionHelper.getMOAuthToken(marketAuctionRequest);
 
         int marketId = Util.getMarketId(token);
         int goDownId = Util.getGodownId(token);
@@ -335,7 +333,7 @@ public class MarketAuctionService {
     public boolean cancelBidByFarmerId(CancelAuctionByFarmerIdRequest cancellationRequest){
         try{
             MarketAuction marketAuction = marketAuctionRepository.findById(cancellationRequest.getAuctionId());
-            JwtPayloadData token = marketAuctionHelper.getAuthToken(cancellationRequest);
+            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(cancellationRequest);
 
             marketAuction.setStatus(LotStatus.CANCELLED.getLabel());
             marketAuction.setReasonForCancellation(cancellationRequest.getCancellationReason());

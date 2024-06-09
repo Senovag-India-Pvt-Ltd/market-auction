@@ -18,13 +18,10 @@ import com.sericulture.marketandauction.model.api.marketauction.reporting.Market
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketWiseReport.DivisionWiseReport;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MonthlyReport.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.VahivaatuReport.*;
-import com.sericulture.marketandauction.model.entity.Bin;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.repository.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -187,7 +184,7 @@ public class MarketAuctionReportService {
 
     public ResponseEntity<?> getPendingLotReport(ReportRequest requestBody) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        JwtPayloadData token = marketAuctionHelper.getAuthToken(requestBody);
+        JwtPayloadData token = marketAuctionHelper.getMOAuthToken(requestBody);
         List<LotPendingReportResponse> lotPendingReportResponses = new ArrayList<>();
         List<Object[]> lotDetails = lotRepository.getAcceptedLotDetailsForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId());
         List<Object[]> binForPendingReportList = binRepository.findAllByAuctionDateAndMarketId(requestBody.getReportFromDate(),requestBody.getMarketId());

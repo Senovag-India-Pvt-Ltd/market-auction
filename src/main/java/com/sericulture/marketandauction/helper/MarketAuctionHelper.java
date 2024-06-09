@@ -5,20 +5,16 @@ import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
-import com.sericulture.marketandauction.model.entity.FlexTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.enums.USERTYPE;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.ExceptionalTimeRepository;
-import com.sericulture.marketandauction.repository.FlexTimeRepository;
 import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.csrf.InvalidCsrfTokenException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
@@ -134,18 +130,18 @@ public class MarketAuctionHelper {
         return ResponseEntity.ok(rw);
     }
 
-    public JwtPayloadData getAuthToken(RequestBody requestBody) {
-        JwtPayloadData jwtPayloadData = Util.getTokenValues();
-        if (jwtPayloadData.getMarketId() != requestBody.getMarketId() || jwtPayloadData.getUserType()!= USERTYPE.MO.getType()) {
-            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(),USERTYPE.MO.getType(),jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
-        }
-        return jwtPayloadData;
+    public JwtPayloadData getMOAuthToken(RequestBody requestBody) {
+        return getAuthToken(requestBody.getMarketId(),USERTYPE.MO.getType());
     }
 
     public JwtPayloadData getReelerAuthToken(RequestBody requestBody) {
+        return getAuthToken(requestBody.getMarketId(),USERTYPE.REELER.getType());
+    }
+
+    public JwtPayloadData getAuthToken(int marketId,int userType){
         JwtPayloadData jwtPayloadData = Util.getTokenValues();
-        if (jwtPayloadData.getMarketId() != requestBody.getMarketId() || jwtPayloadData.getUserType()!= USERTYPE.REELER.getType()) {
-            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(),USERTYPE.REELER.getType(),jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
+        if (jwtPayloadData.getMarketId() != marketId|| jwtPayloadData.getUserType()!= userType) {
+            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),marketId,userType,jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
         }
         return jwtPayloadData;
     }

@@ -39,7 +39,7 @@ public class MarketAuctionPrinterService {
 
     public ResponseEntity<?> getPrintableDataForLot(MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
 
-        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketAuctionForPrintRequest);
+        JwtPayloadData token = marketAuctionHelper.getMOAuthToken(marketAuctionForPrintRequest);
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionForPrintResponse.class);
         MarketAuctionForPrintResponse marketAuctionForPrintResponse = null;

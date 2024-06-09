@@ -61,7 +61,7 @@ public class MISCService {
     }
     public ResponseEntity<?> saveOrUpdateExceptionalTime(ExceptionalTimeRequest exceptionalTimeRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        marketAuctionHelper.getAuthToken(exceptionalTimeRequest);
+        marketAuctionHelper.getMOAuthToken(exceptionalTimeRequest);
         ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(exceptionalTimeRequest.getMarketId(), Util.getISTLocalDate());
         if(exceptionalTime==null){
             exceptionalTime = new ExceptionalTime();

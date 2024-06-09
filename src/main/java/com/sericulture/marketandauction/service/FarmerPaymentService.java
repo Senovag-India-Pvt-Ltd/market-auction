@@ -11,10 +11,14 @@ import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInf
 import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequestByLotList;
 import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoResponse;
 import com.sericulture.marketandauction.model.api.marketauction.FarmerReadyForPaymentResponse;
+import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.entity.TransactionFileGenQueue;
 import com.sericulture.marketandauction.model.enums.LotStatus;
+import com.sericulture.marketandauction.model.enums.PAYMENTMODE;
+import com.sericulture.marketandauction.model.enums.USERTYPE;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.repository.LotRepository;
+import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import com.sericulture.marketandauction.repository.TransactionFileGenQueueRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -47,9 +51,12 @@ public class FarmerPaymentService {
     @Autowired
     TransactionFileGenQueueRepository transactionFileGenQueueRepository;
 
+    @Autowired
+    MarketMasterRepository marketMasterRepository;
+
     public Map<String, Object>  getWeighmentCompletedTxnByAuctionDateAndMarket(RequestBody requestBody, final Pageable pageable) {
         Map<String, Object> response = new HashMap<>();
-        marketAuctionHelper.getAuthToken(requestBody);
+        marketAuctionHelper.getMOAuthToken(requestBody);
         List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = new ArrayList<>();
         FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = new FarmerReadyForPaymentResponse();
         Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnByMarket(pageable, requestBody.getMarketId());
@@ -94,7 +101,7 @@ public class FarmerPaymentService {
 
     public ResponseEntity<?> updateLotlistByChangingTheStatus(FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList, boolean selectedLot, String fromlotStatus, String toLotStatus) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        JwtPayloadData token = marketAuctionHelper.getAuthToken(farmerPaymentInfoRequestByLotList);
+        JwtPayloadData token = marketAuctionHelper.getMOAuthToken(farmerPaymentInfoRequestByLotList);
         EntityManager entityManager = null;
         try {
             boolean exists = transactionFileGenQueueRepository.existsTransactionFileGenQueueByMarketIdAndAuctionDateAndStatusIn(farmerPaymentInfoRequestByLotList.getMarketId(), farmerPaymentInfoRequestByLotList.getPaymentDate(), Set.of(LotStatus.REQUESTED.getLabel(), LotStatus.PROCESSING.getLabel()));
@@ -108,7 +115,14 @@ public class FarmerPaymentService {
             if (selectedLot && Util.isNullOrEmptyList(lotList)) {
                 throw new ValidationException("Lot list is empty");
             }
-            List<Object[]> paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatus(farmerPaymentInfoRequestByLotList.getPaymentDate(), farmerPaymentInfoRequestByLotList.getMarketId(), lotList, fromlotStatus);
+            List<Object[]> paginatedResponse = null;
+            MarketMaster marketMaster = marketMasterRepository.findById(farmerPaymentInfoRequestByLotList.getMarketId());
+            if(marketMaster.getPaymentMode()!=null && marketMaster.getPaymentMode().equals(PAYMENTMODE.CASH.getLabel())){
+                paginatedResponse =  lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentMode(farmerPaymentInfoRequestByLotList.getPaymentDate(), farmerPaymentInfoRequestByLotList.getMarketId(), lotList, fromlotStatus);
+            }else {
+                paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForOnlinePaymentMode(farmerPaymentInfoRequestByLotList.getPaymentDate(), farmerPaymentInfoRequestByLotList.getMarketId(), lotList, fromlotStatus);
+            }
+
 
             if (paginatedResponse == null || paginatedResponse.size() == 0) {
                 throw new ValidationException("no lots to update");
@@ -139,7 +153,7 @@ public class FarmerPaymentService {
 
     public ResponseEntity<?> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(RequestBody requestBody, String status) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        marketAuctionHelper.getAuthToken(requestBody);
+        marketAuctionHelper.getMOAuthToken(requestBody);
        final String t = MarketAuctionQueryConstants.AUCTION_DATE_LIST_BY_LOT_STATUS;
         List<Object> auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody.getMarketId(), status);
         if (Util.isNullOrEmptyList(auctionDates)) {
@@ -150,7 +164,7 @@ public class FarmerPaymentService {
     }
 
     public ResponseEntity<?> generateBankStatementForAuctionDate(FarmerPaymentInfoRequest farmerPaymentInfoRequest) {
-        marketAuctionHelper.getAuthToken(farmerPaymentInfoRequest);
+        marketAuctionHelper.getMOAuthToken(farmerPaymentInfoRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = getReadyForPaymentTxns(farmerPaymentInfoRequest.getPaymentDate(), farmerPaymentInfoRequest.getMarketId());
         rw.setContent(farmerReadyForPaymentResponse);
@@ -158,9 +172,15 @@ public class FarmerPaymentService {
     }
 
     private FarmerReadyForPaymentResponse getReadyForPaymentTxns(LocalDate auctionDate, int marketId) {
-
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketId, USERTYPE.MO.getType());
         FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = new FarmerReadyForPaymentResponse();
-        List<Object[]> paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatus(auctionDate, marketId, null, LotStatus.READYFORPAYMENT.getLabel());
+        List<Object[]> paginatedResponse = null;
+        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+        if(marketMaster.getPaymentMode()!=null && marketMaster.getPaymentMode().equals(PAYMENTMODE.CASH.getLabel())){
+            paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentMode(auctionDate, marketId, null, LotStatus.READYFORPAYMENT.getLabel());
+        }else {
+            paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForOnlinePaymentMode(auctionDate, marketId, null, LotStatus.READYFORPAYMENT.getLabel());
+        }
         List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = new ArrayList<>();
         farmerReadyForPaymentResponse.setTotalAmountToFarmer(prepareFarmerPaymentInfoResponseList(paginatedResponse, farmerPaymentInfoResponseList));
         farmerReadyForPaymentResponse.setFarmerPaymentInfoResponseList(farmerPaymentInfoResponseList);
@@ -200,7 +220,7 @@ public class FarmerPaymentService {
     @Transactional
     public ResponseEntity<?> requestJobToProcessPayment(FarmerPaymentInfoRequest farmerPaymentInfoRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        marketAuctionHelper.getAuthToken(farmerPaymentInfoRequest);
+        marketAuctionHelper.getMOAuthToken(farmerPaymentInfoRequest);
         try {
             boolean exists = transactionFileGenQueueRepository.existsTransactionFileGenQueueByMarketIdAndAuctionDateAndStatusIn(farmerPaymentInfoRequest.getMarketId(), farmerPaymentInfoRequest.getPaymentDate(), Set.of("requested", "processing"));
             if (exists) {
