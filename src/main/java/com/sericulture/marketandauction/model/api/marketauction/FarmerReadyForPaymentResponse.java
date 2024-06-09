@@ -15,4 +15,6 @@ public class FarmerReadyForPaymentResponse extends ResponseBody {
     private List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList;
 
     private double totalAmountToFarmer;
+
+    private String paymentMode;
 }

@@ -57,8 +57,13 @@ public class FarmerPaymentService {
     public Map<String, Object>  getWeighmentCompletedTxnByAuctionDateAndMarket(RequestBody requestBody, final Pageable pageable) {
         Map<String, Object> response = new HashMap<>();
         marketAuctionHelper.getMOAuthToken(requestBody);
+        MarketMaster marketMaster = marketMasterRepository.findById(requestBody.getMarketId());
+
         List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = new ArrayList<>();
         FarmerReadyForPaymentResponse farmerReadyForPaymentResponse = new FarmerReadyForPaymentResponse();
+        if(marketMaster.getPaymentMode()!=null){
+            farmerReadyForPaymentResponse.setPaymentMode(marketMaster.getPaymentMode());
+        }
         Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnByMarket(pageable, requestBody.getMarketId());
         farmerReadyForPaymentResponse.setFarmerPaymentInfoResponseList(farmerPaymentInfoResponseList);
         if (paginatedResponse == null || paginatedResponse.isEmpty()) {
@@ -154,8 +159,14 @@ public class FarmerPaymentService {
     public ResponseEntity<?> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(RequestBody requestBody, String status) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         marketAuctionHelper.getMOAuthToken(requestBody);
-       final String t = MarketAuctionQueryConstants.AUCTION_DATE_LIST_BY_LOT_STATUS;
-        List<Object> auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody.getMarketId(), status);
+
+        MarketMaster marketMaster = marketMasterRepository.findById(requestBody.getMarketId());
+        List<Object> auctionDates = null;
+        if(marketMaster.getPaymentMode()!=null && marketMaster.getPaymentMode().equals(PAYMENTMODE.CASH.getLabel())){
+            auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarketCashPayment(requestBody.getMarketId(), status);
+        }else {
+            auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody.getMarketId(), status);
+        }
         if (Util.isNullOrEmptyList(auctionDates)) {
            throw new ValidationException("No Auction dates found for bulk send");
         }

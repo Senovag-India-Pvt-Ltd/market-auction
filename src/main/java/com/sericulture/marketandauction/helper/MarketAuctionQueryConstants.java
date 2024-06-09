@@ -1,8 +1,6 @@
 package com.sericulture.marketandauction.helper;
 
 
-import com.sericulture.marketandauction.model.enums.LotStatus;
-
 public class MarketAuctionQueryConstants {
 
     public static final String getAllHighestBids = """
@@ -99,12 +97,20 @@ public class MarketAuctionQueryConstants {
     private static final String WHERE_CLAUSE_AUCTION_DATE_LIST = """
                  where l.status =:lotStatus
                          and l.market_id =:marketId
-                         and fba.farmer_bank_account_number != ''
-                         and fba.farmer_bank_ifsc_code !=''
-                         and rvcb.CURRENT_BALANCE > 0.0
-                        ORDER by l.auction_date""";
+                         
+                        """;
 
-    public static final String AUCTION_DATE_LIST_BY_LOT_STATUS = "select  distinct l.auction_date " + FROM + SPACE + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER + SPACE  +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ SPACE + WHERE_CLAUSE_AUCTION_DATE_LIST;
+    private static final String FOR_ONLINE_PAYMENT = """
+             and fba.farmer_bank_account_number != ''
+                         and fba.farmer_bank_ifsc_code !=''
+                         and rvcb.CURRENT_BALANCE > 0.0 
+            """;
+
+    public static final String ORDER_BY_L_AUCTION_DATE = " ORDER by l.auction_date";
+
+    public static final String AUCTION_DATE_LIST_BY_LOT_STATUS_ONLINE_PAYMENT = "select  distinct l.auction_date " + FROM + SPACE + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER + SPACE  +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ SPACE + WHERE_CLAUSE_AUCTION_DATE_LIST + FOR_ONLINE_PAYMENT + ORDER_BY_L_AUCTION_DATE;
+
+    public static final String AUCTION_DATE_LIST_BY_LOT_STATUS_CASH_PAYMENT = "select  distinct l.auction_date " + FROM + SPACE + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER + SPACE  +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ SPACE + WHERE_CLAUSE_AUCTION_DATE_LIST  + ORDER_BY_L_AUCTION_DATE;
 
     private static final String SELECT_FIELDS_PENDING_REPORT_BASE = """
             select  f.farmer_number,f.first_name ,f.middle_name,
