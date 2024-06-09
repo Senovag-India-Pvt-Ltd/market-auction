@@ -11,5 +11,5 @@ import java.util.List;
 @EqualsAndHashCode
 public class FarmerPaymentInfoRequestByLotList extends FarmerPaymentInfoRequest{
 
-    private List<Integer> allottedLotList;
+    private List<Long> allottedLotList;
 }

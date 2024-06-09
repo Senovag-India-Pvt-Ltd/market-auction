@@ -59,10 +59,10 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
 
     @Query(nativeQuery = true, value = LotTransactionQueryConstants.QUERY_ELIGIBLE_FOR_PAYMENT_LOTS_ONLINE)
-    public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForOnlinePaymentMode(LocalDate paymentDate, int marketId, List<Integer> lotList, String lotStatus);
+    public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForOnlinePaymentMode(LocalDate paymentDate, int marketId, List<Long> lotList, String lotStatus);
 
     @Query(nativeQuery = true, value = LotTransactionQueryConstants.QUERY_ELIGIBLE_FOR_PAYMENT_LOTS_CASH)
-    public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentMode(LocalDate paymentDate, int marketId, List<Integer> lotList, String lotStatus);
+    public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentMode(LocalDate paymentDate, int marketId, List<Long> lotList, String lotStatus);
 
 
     @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PRINT_REPORT_ACCEPTED_LOT_ID)

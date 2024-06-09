@@ -79,4 +79,9 @@ public class FarmerPaymentController {
         return farmerPaymentService.generateBankStatementForAuctionDate(farmerPaymentInfoRequest);
     }
 
+    @PostMapping("/markCashPaymentLotListToSuccess")
+    public ResponseEntity<?> markCashPaymentLotListToSuccess(@RequestBody FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList){
+        return farmerPaymentService.markCashPaymentLotListToSuccess(farmerPaymentInfoRequestByLotList);
+    }
+
 }

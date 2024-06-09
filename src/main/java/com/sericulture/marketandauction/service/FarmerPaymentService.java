@@ -113,7 +113,7 @@ public class FarmerPaymentService {
             if (exists) {
                 throw new ValidationException("Payment Request is under process please try after sometime.");
             }
-            List<Integer> lotList = null;
+            List<Long> lotList = null;
             if (selectedLot) {
                 lotList = farmerPaymentInfoRequestByLotList.getAllottedLotList();
             }
@@ -137,12 +137,7 @@ public class FarmerPaymentService {
                 lotIds.add(Util.objectToLong(response[1]));
             }
             entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            Query nativeQuery = entityManager.createNativeQuery("UPDATE Lot set status = ? where lot_id in ( ? )");
-            nativeQuery.setParameter(1, toLotStatus);
-            nativeQuery.setParameter(2, lotIds);
-            nativeQuery.executeUpdate();
-            entityManager.getTransaction().commit();
+            changeTheLotStatus(toLotStatus, entityManager, lotIds);
         }catch (ValidationException validationException){
             throw validationException;
         }catch (Exception ex) {
@@ -154,6 +149,15 @@ public class FarmerPaymentService {
             }
         }
         return ResponseEntity.ok(rw);
+    }
+
+    private static void changeTheLotStatus(String toLotStatus, EntityManager entityManager, List<Long> lotIds) {
+        entityManager.getTransaction().begin();
+        Query nativeQuery = entityManager.createNativeQuery("UPDATE Lot set status = ? where lot_id in ( ? )");
+        nativeQuery.setParameter(1, toLotStatus);
+        nativeQuery.setParameter(2, lotIds);
+        nativeQuery.executeUpdate();
+        entityManager.getTransaction().commit();
     }
 
     public ResponseEntity<?> getAllWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(RequestBody requestBody, String status) {
@@ -253,6 +257,14 @@ public class FarmerPaymentService {
             return marketAuctionHelper.retrunIfError(rw, "Exception while creating job for the readyForPayement with error: " + ex);
 
         }
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> markCashPaymentLotListToSuccess(FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        changeTheLotStatus(LotStatus.PAYMENTSUCCESS.getLabel(), entityManager,farmerPaymentInfoRequestByLotList.getAllottedLotList());
+        rw.setContent("Success");
         return ResponseEntity.ok(rw);
     }
 }
