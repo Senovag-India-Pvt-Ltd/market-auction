@@ -204,6 +204,7 @@ public class FarmerPaymentService {
         }else {
             paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForOnlinePaymentMode(auctionDate, marketId, null, LotStatus.READYFORPAYMENT.getLabel());
         }
+        farmerReadyForPaymentResponse.setPaymentMode(marketMaster.getPaymentMode());
         List<FarmerPaymentInfoResponse> farmerPaymentInfoResponseList = new ArrayList<>();
         farmerReadyForPaymentResponse.setTotalAmountToFarmer(prepareFarmerPaymentInfoResponseList(paginatedResponse, farmerPaymentInfoResponseList));
         farmerReadyForPaymentResponse.setFarmerPaymentInfoResponseList(farmerPaymentInfoResponseList);
