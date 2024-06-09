@@ -137,7 +137,7 @@ public class FarmerPaymentService {
                 lotIds.add(Util.objectToLong(response[1]));
             }
             entityManager = entityManagerFactory.createEntityManager();
-            changeTheLotStatus(toLotStatus, entityManager, lotIds);
+            changeTheLotStatus(toLotStatus, entityManager, lotIds,null, token.getMarketId());
         }catch (ValidationException validationException){
             throw validationException;
         }catch (Exception ex) {
@@ -151,11 +151,19 @@ public class FarmerPaymentService {
         return ResponseEntity.ok(rw);
     }
 
-    private static void changeTheLotStatus(String toLotStatus, EntityManager entityManager, List<Long> lotIds) {
+    private static void changeTheLotStatus(String toLotStatus, EntityManager entityManager, List<Long> lotIds,LocalDate autctionDate,int marketId) {
         entityManager.getTransaction().begin();
-        Query nativeQuery = entityManager.createNativeQuery("UPDATE Lot set status = ? where lot_id in ( ? )");
+        String query = "UPDATE Lot set status = ? where lot_id in ( ? )";
+        if(autctionDate!=null){
+            query = "UPDATE Lot set status = ? where allotted_lot_id in ( ? ) and market_id = ? and auction_date = ?";
+        }
+        Query nativeQuery = entityManager.createNativeQuery(query);
         nativeQuery.setParameter(1, toLotStatus);
         nativeQuery.setParameter(2, lotIds);
+        if(autctionDate!=null){
+            nativeQuery.setParameter(3,marketId);
+            nativeQuery.setParameter(4,autctionDate);
+        }
         nativeQuery.executeUpdate();
         entityManager.getTransaction().commit();
     }
@@ -263,7 +271,7 @@ public class FarmerPaymentService {
     public ResponseEntity<?> markCashPaymentLotListToSuccess(FarmerPaymentInfoRequestByLotList farmerPaymentInfoRequestByLotList) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-        changeTheLotStatus(LotStatus.PAYMENTSUCCESS.getLabel(), entityManager,farmerPaymentInfoRequestByLotList.getAllottedLotList());
+        changeTheLotStatus(LotStatus.PAYMENTSUCCESS.getLabel(), entityManager,farmerPaymentInfoRequestByLotList.getAllottedLotList(),farmerPaymentInfoRequestByLotList.getPaymentDate(), farmerPaymentInfoRequestByLotList.getMarketId());
         rw.setContent("Success");
         return ResponseEntity.ok(rw);
     }
