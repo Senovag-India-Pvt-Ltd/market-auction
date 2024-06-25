@@ -1,9 +1,11 @@
 package com.sericulture.marketandauction.model.mapper;
 
 import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
+import com.sericulture.marketandauction.model.api.marketauction.LotGroupageRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.api.marketauction.ReelerBidRequest;
 import com.sericulture.marketandauction.model.entity.FlexTime;
+import com.sericulture.marketandauction.model.entity.LotGroupage;
 import com.sericulture.marketandauction.model.entity.MarketAuction;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
 import lombok.extern.slf4j.Slf4j;
@@ -87,6 +89,29 @@ public class Mapper {
         log.info("Value of mapper is:",mapper, fLexTimeRequest);
         return (T) mapper.map(fLexTimeRequest, claaz);
     }
+    /**
+     * Maps lotGroupage Entity to lotGroupage Response Object
+     * @param lotGroupageEntity
+     * @param <T>
+     */
+    public <T> T lotGroupageEntityToObject(LotGroupage lotGroupageEntity, Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper,lotGroupageEntity);
+        return (T) mapper.map(lotGroupageEntity, claaz);
+    }
+
+
+    /**
+     * Maps lotGroupage Object to lotGroupage  Response Object
+     * @param lotGroupageRequest
+     * @param <T>
+     */
+    public <T> T lotGroupageObjectToEntity(LotGroupageRequest lotGroupageRequest , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, lotGroupageRequest);
+        return (T) mapper.map(lotGroupageRequest, claaz);
+    }
+
 
 
 }
