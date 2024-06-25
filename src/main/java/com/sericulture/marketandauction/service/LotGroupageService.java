@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -69,7 +70,11 @@ public class LotGroupageService {
         for (int i = 0; i < lotGroupageDetailsRequest.getLotGroupageRequests().size(); i++) {
             LotGroupageRequest lotGroupageRequest = lotGroupageDetailsRequest.getLotGroupageRequests().get(i);
             LotGroupage lotGroupage = mapper.lotGroupageObjectToEntity(lotGroupageRequest, LotGroupage.class);
-            BigInteger marketAuctionId = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(lotGroupageRequest.getLotId().intValue(), lotGroupageRequest.getAuctionDate());
+            List<Object[]> list = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(lotGroupageRequest.getLotId().intValue(), lotGroupageRequest.getAuctionDate());
+            for(Object[] arr :list){
+                lotGroupage.setMarketAuctionId(((BigDecimal) arr[0]).toBigIntegerExact());
+                lotGroupage.setId(((BigDecimal) arr[1]).toBigIntegerExact());
+            }
 
             // Calculate and set market fee based on buyer type
             if (lotGroupageRequest.getBuyerType() != null) {
@@ -89,7 +94,7 @@ public class LotGroupageService {
                 }
 
                 lotGroupage.setMarketFee(marketFee.longValue());
-                lotGroupage.setMarketAuctionId(marketAuctionId);
+//                lotGroupage.setMarketAuctionId(marketAuctionId);
             }
 
             lotGroupage = lotGroupageRepository.save(lotGroupage);
