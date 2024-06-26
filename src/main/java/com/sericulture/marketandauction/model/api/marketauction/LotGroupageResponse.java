@@ -44,8 +44,8 @@ public class LotGroupageResponse extends ResponseBody {
     @Schema(name="marketAuctionId", example = "1")
     Long marketAuctionId;
 
-    @Schema(name="lotId", example = "1")
-    BigInteger lotId;
+    @Schema(name="id", example = "1")
+    BigInteger id;
 
     @Schema(name="auctionDate", example = "1")
     LocalDate auctionDate;
