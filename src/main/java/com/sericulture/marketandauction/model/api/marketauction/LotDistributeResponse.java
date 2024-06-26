@@ -24,19 +24,19 @@ public class LotDistributeResponse extends ResponseBody {
     private String farmerFirstName;
     private String farmerMiddleName;
     private String farmerLastName;
-    private float bidAmount;
+//    private float bidAmount;
     @JsonIgnore
     private int raceMasterId;
     private String farmerVillage;
 
-    @JsonIgnore
-    private int reelerId;
+//    @JsonIgnore
+//    private int reelerId;
     private String marketName;
     private String race;
     private String source;
     private float tareWeight;
     private String lotStatus;
-    @JsonIgnore
+//    @JsonIgnore
     @Column(name = "LOT_GROUPAGE_ID")
     private Long lotGroupageId;
 

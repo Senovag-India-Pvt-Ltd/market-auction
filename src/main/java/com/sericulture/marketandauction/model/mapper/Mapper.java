@@ -1,9 +1,6 @@
 package com.sericulture.marketandauction.model.mapper;
 
-import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
-import com.sericulture.marketandauction.model.api.marketauction.LotGroupageRequest;
-import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerBidRequest;
+import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.FlexTime;
 import com.sericulture.marketandauction.model.entity.LotGroupage;
 import com.sericulture.marketandauction.model.entity.MarketAuction;
@@ -110,6 +107,26 @@ public class Mapper {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         log.info("Value of mapper is:",mapper, lotGroupageRequest);
         return (T) mapper.map(lotGroupageRequest, claaz);
+    }
+
+    /**
+     * Maps lotGroupage Object to lotGroupage  Response Object
+     * @param lotGroupageRequestEdit
+     * @param <T>
+     */
+    public <T> T editLotGroupageObjectToEntity(LotGroupageRequestEdit lotGroupageRequestEdit , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, lotGroupageRequestEdit);
+        return (T) mapper.map(lotGroupageRequestEdit, claaz);
+
+
+    }
+
+    public void editLotGroupageObjectToEntity(LotGroupageRequestEdit lotGroupageRequestEdit, LotGroupage lotGroupage) {
+        // Assuming you have a mapping logic here to map fields from LotGroupageRequestEdit to LotGroupage
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Mapping lotGroupageRequestEdit to lotGroupage: {}", lotGroupageRequestEdit);
+        mapper.map(lotGroupageRequestEdit, lotGroupage);
     }
 
 

@@ -29,8 +29,8 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name="amount", example = "1")
     Long amount;
 
-    @Schema(name="marketFee", example = "1")
-    Long marketFee;
+//    @Schema(name="marketFee", example = "1")
+//    Long marketFee;
 
     @Schema(name="soldAmount", example = "1")
     Long soldAmount;
@@ -38,12 +38,12 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name="allottedLotId", example = "1")
     Long allottedLotId;
 
-    @Schema(name="marketAuctionId", example = "1")
-    Long marketAuctionId;
-
-
-    @Schema(name="id", example = "1")
-    BigInteger id;
+//    @Schema(name="marketAuctionId", example = "1")
+//    Long marketAuctionId;
+//
+//
+//    @Schema(name="id", example = "1")
+//    BigInteger id;
 
     @Schema(name="auctionDate", example = "1")
     LocalDate auctionDate;

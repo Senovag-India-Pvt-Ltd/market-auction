@@ -32,4 +32,13 @@ public class lotGroupageController {
         return lotGroupageService.getLotDistributeDetailsByLotAndMarketAndAuctionDateForSeedMarket(lotStatusSeedMarketRequest);
 
     }
+
+    @PostMapping("/updateLotGroupage")
+    public ResponseEntity<?> editLotGroupage(@RequestBody LotGroupageDetailsRequestEdit lotGroupageDetailsRequestEdit){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(LotGroupageResponse.class);
+
+        rw.setContent(lotGroupageService.editLotGroupage(lotGroupageDetailsRequestEdit));
+        return ResponseEntity.ok(rw);
+
+    }
 }
