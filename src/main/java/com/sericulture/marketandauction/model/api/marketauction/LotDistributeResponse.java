@@ -47,7 +47,7 @@ public class LotDistributeResponse extends ResponseBody {
     private Long buyerId;
 
     @Column(name = "LOT_WEIGHT")
-    private String lotWeight;
+    private Long lotWeight;
 
     @Column(name = "AMOUNT")
     private Long amount;

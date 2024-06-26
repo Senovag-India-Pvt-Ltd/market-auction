@@ -42,8 +42,8 @@ public class LotGroupageRequestEdit extends RequestBody {
     Long marketAuctionId;
 
 
-    @Schema(name="lotId", example = "1")
-    BigInteger lotId;
+    @Schema(name="id", example = "1")
+    BigInteger id;
 
     @Schema(name="auctionDate", example = "1")
     LocalDate auctionDate;
