@@ -58,6 +58,15 @@ public class LotDistributeResponse extends ResponseBody {
     @Column(name = "SOLD_AMOUNT")
     private Long soldAmount;
 
+//    @Column(name = "reelerName")
+//    private String reelerName;
+//
+//    @Column(name = "name")
+//    private String name;
+
+    @Column(name = "buyerName")
+    private String buyerName;
+
     @Column(name = "ALLOTTED_LOT_ID")
     private int allottedLotId;
 

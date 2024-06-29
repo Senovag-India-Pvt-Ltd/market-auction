@@ -129,7 +129,12 @@ public ResponseEntity<?> getLotDistributeDetailsByLotAndMarketAndAuctionDateForS
             Query nativeQuery = entityManager.createNativeQuery("""
             select  f.farmer_number, f.fruits_id, f.first_name, f.middle_name, f.last_name,
             ma.RACE_MASTER_ID, v.VILLAGE_NAME, mm.market_name, rm.race_name, sm.source_name, mm.box_weight, l.status,
-            lg.lot_groupage_id, lg.buyer_id, lg.buyer_type, lg.lot_weight, lg.amount, lg.market_fee, lg.sold_amount
+            lg.lot_groupage_id, lg.buyer_id, lg.buyer_type, lg.lot_weight, lg.amount, lg.market_fee, lg.sold_amount,
+            case
+                 when lg.buyer_type = 'Reeler' then r.name
+                 when lg.buyer_type = 'ExternalStakeHolders' then es.name
+                 else null
+            end as buyer_name
             from FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID
             INNER JOIN lot l ON l.market_auction_id = ma.market_auction_id
@@ -139,6 +144,8 @@ public ResponseEntity<?> getLotDistributeDetailsByLotAndMarketAndAuctionDateForS
             LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID
             LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
             LEFT JOIN lot_groupage lg ON l.lot_id = lg.lot_id
+            LEFT JOIN reeler r ON lg.buyer_id = r.reeler_id and lg.buyer_type = 'Reeler'
+            LEFT JOIN external_unit_registration es ON lg.buyer_id = es.external_unit_registration_id and lg.buyer_type = 'ExternalStakeHolders'
             where l.allotted_lot_id = ? and l.auction_date = ? and l.market_id = ?
             and f.ACTIVE = 1 and ma.active = 1""");
 
@@ -175,6 +182,7 @@ public ResponseEntity<?> getLotDistributeDetailsByLotAndMarketAndAuctionDateForS
                         .amount(Util.objectToLong(lotWeightDetails[16]))
                         .marketFee(Util.objectToLong(lotWeightDetails[17]))
                         .soldAmount(Util.objectToLong(lotWeightDetails[18]))
+                        .buyerName(Util.objectToString(lotWeightDetails[19]))
                         .build();
                 responses.add(lotDistributeResponse);
             }

@@ -328,6 +328,9 @@ public class WeigmentService {
 
     private LotWeightResponse getLotWeightResponseForSeedMarket(LotStatusSeedMarketRequest lotStatusRequest) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
+        if(lotStatusRequest.getAuctionDate() == null){
+            lotStatusRequest.setAuctionDate(Util.getISTLocalDate());
+        }
         Query nativeQuery = entityManager.createNativeQuery("""
                 select  f.farmer_number,f.fruits_id,f.first_name ,f.middle_name,f.last_name,
                 ma.RACE_MASTER_ID,v.VILLAGE_NAME,mm.market_name,rm.race_name,sm.source_name,mm.box_weight,l.status
