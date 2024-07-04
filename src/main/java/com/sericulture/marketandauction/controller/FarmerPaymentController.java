@@ -84,4 +84,14 @@ public class FarmerPaymentController {
         return farmerPaymentService.markCashPaymentLotListToSuccess(farmerPaymentInfoRequestByLotList);
     }
 
+    @PostMapping("/readyForPaymentForSeedMarketList")
+    public ResponseEntity<?> readyForPaymentForSeedMarketList(@RequestBody com.sericulture.marketandauction.model.api.RequestBody farmerPaymentInfoRequest,
+                                                       @RequestParam(defaultValue = "0") final Integer pageNumber,
+                                                       @RequestParam(defaultValue = "5") final Integer size
+    ) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
+        rw.setContent(farmerPaymentService.getWeighmentCompletedListForSeedMarketByAuctionDateAndMarket(farmerPaymentInfoRequest,PageRequest.of(pageNumber, size)));
+        return ResponseEntity.ok(rw);
+    }
+
 }
