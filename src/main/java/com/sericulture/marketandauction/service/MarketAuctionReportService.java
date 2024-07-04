@@ -119,8 +119,17 @@ public class MarketAuctionReportService {
         }
         List<Object[]> reportPaymentSuccessResponse = lotRepository.
                 getPaymentSuccessLots(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
-        List<Object[]> reportResponse = lotRepository.
-                getDTROnlineReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+
+        MarketMaster marketMaster = marketMasterRepository.findById(dtrOnlineReportRequest.getMarketId());
+        List<Object[]> reportResponse;
+        if(marketMaster.getPaymentMode().equals("cash")){
+            reportResponse = lotRepository.
+                    getDTROnlineReportForCash(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+        }else{
+            reportResponse = lotRepository.
+                    getDTROnlineReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+        }
+
         DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
         if(reportResponse.size()>0) {
             dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));

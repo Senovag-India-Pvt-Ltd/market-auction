@@ -57,7 +57,7 @@ public class MarketAuctionQueryConstants {
             l.LOT_WEIGHT_AFTER_WEIGHMENT,ra.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,rm.race_name,v.VILLAGE_NAME """;
 
     private static final String WHERE_CLAUSE_DTR_ONLINE = """
-              where l.status in ('readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
+              where l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
              and l.auction_date BETWEEN :fromDate and :toDate 
              and l.market_id =:marketId 
              and (:reelerIdList is null OR r.reeler_id in (:reelerIdList))
@@ -81,6 +81,25 @@ public class MarketAuctionQueryConstants {
 
     public static final String DTR_ONLINE_REPORT_QUERY = SELECT_FIELDS_DTR_ONLINE + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ WHERE_CLAUSE_DTR_ONLINE;
 
+    public static final String DTR_ONLINE_REPORT_QUERY_FOR_CASH = """
+            select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
+             f.mobile_number,l.LOT_WEIGHT_AFTER_WEIGHMENT,ra.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
+             r.reeling_license_number,r.name,r.mobile_number,
+             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date from  FARMER f
+             INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
+             INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
+             INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date
+             LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1
+             LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID = f.FARMER_ID
+             INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id
+              INNER JOIN dbo.reeler r ON r.reeler_id =ra.REELER_ID
+             where l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
+              and l.auction_date BETWEEN :fromDate and :toDate
+              and l.market_id = :marketId
+              and (:reelerIdList is null OR r.reeler_id in (:reelerIdList))
+              and fba.farmer_bank_account_number != ''
+              and fba.farmer_bank_ifsc_code !=''
+             ORDER by l.lot_id""";
     public static final String UNIT_COUNTER_REPORT_QUERY = """
             select  l.allotted_lot_id ,l.auction_date,
             l.LOT_WEIGHT_AFTER_WEIGHMENT,ra.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
