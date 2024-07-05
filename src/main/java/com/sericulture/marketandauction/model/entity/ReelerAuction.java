@@ -46,6 +46,6 @@ public class ReelerAuction extends BaseEntity implements Serializable {
     @Column(name = "SURROGATE_BID")
     private boolean surrogateBid;
 
-
-
+    @Column(name = "auction_session")
+    private Integer auctionSession;
 }
