@@ -16,8 +16,8 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     public ReelerAuction save(ReelerAuction reelerAuction);
 
     @Query("select r from ReelerAuction r where r.allottedLotId =:lotId and" +
-            " r.marketId =:marketId and r.auctionDate =:auctionDate order by amount desc,createdDate asc limit 1")
-    public ReelerAuction getHighestBidForLot(int lotId,int marketId, LocalDate auctionDate);
+            " r.marketId =:marketId and r.auctionSession = :auctionSession and r.auctionDate =:auctionDate order by amount desc,createdDate asc limit 1")
+    public ReelerAuction getHighestBidForLot(int lotId,int marketId, LocalDate auctionDate, int auctionSession);
 
     @Query(nativeQuery = true , value = """
     select top (1) * from reeler_auction r1_0 where r1_0.allotted_lot_id=:lotId and r1_0.market_id=:marketId and r1_0.auction_date=:auctionDate and r1_0.auction_session = :auctionSession and active = 1 order by r1_0.amount desc,r1_0.created_date""")

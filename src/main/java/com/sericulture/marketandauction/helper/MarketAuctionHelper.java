@@ -21,6 +21,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.csrf.InvalidCsrfTokenException;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -148,5 +149,47 @@ public class MarketAuctionHelper {
             throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(),USERTYPE.REELER.getType(),jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
         }
         return jwtPayloadData;
+    }
+
+    public int checkCurrentAuction(int marketMasterId) {
+        MarketMaster marketMaster = marketMasterRepository.findById(marketMasterId);
+
+        if (marketMaster != null) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalTime currentTime = now.toLocalTime();
+
+            if (!currentTime.isBefore(marketMaster.getAuction1StartTime()) && currentTime.isBefore(marketMaster.getAuction1EndTime())) {
+                return 1;
+            } else if (!currentTime.isBefore(marketMaster.getAuction2StartTime()) && currentTime.isBefore(marketMaster.getAuction2EndTime())) {
+                return 2;
+            } else if (!currentTime.isBefore(marketMaster.getAuction3StartTime()) && currentTime.isBefore(marketMaster.getAuction3EndTime())) {
+                return 3;
+            } else {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
+    }
+
+    public int checkCurrentAuctionAccept(int marketMasterId) {
+        MarketMaster marketMaster = marketMasterRepository.findById(marketMasterId);
+
+        if (marketMaster != null) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalTime currentTime = now.toLocalTime();
+
+            if (!currentTime.isBefore(marketMaster.getAuction1AcceptStartTime()) && currentTime.isBefore(marketMaster.getAuction1AcceptEndTime())) {
+                return 1;
+            } else if (!currentTime.isBefore(marketMaster.getAuction2AcceptStartTime()) && currentTime.isBefore(marketMaster.getAuction2AcceptEndTime())) {
+                return 2;
+            } else if (!currentTime.isBefore(marketMaster.getAuction3AcceptStartTime()) && currentTime.isBefore(marketMaster.getAuction3AcceptEndTime())) {
+                return 3;
+            } else {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
     }
 }
