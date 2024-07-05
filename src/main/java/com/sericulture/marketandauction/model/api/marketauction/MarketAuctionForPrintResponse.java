@@ -58,5 +58,6 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private List<Integer> bigBinList;
     private String loginName;
     private String fruitsId;
+    private String fatherNameKan;
 
 }
