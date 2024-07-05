@@ -182,8 +182,8 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getHighestBidPerLot(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(GetHighestBidPerLotResponse.class);
-
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
+        int currentSession = checkCurrentAuction(lotStatusRequest.getMarketId());
+        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), currentSession);
         GetHighestBidPerLotResponse getHighestBidPerLotResponse = new GetHighestBidPerLotResponse();
         getHighestBidPerLotResponse.setAllottedLotId(ra.getAllottedLotId());
         if (ra != null) {
@@ -196,7 +196,8 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getHighestBidPerLotDetails(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(ResponseBody.class);
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
+        int currentSession = checkCurrentAuction(lotStatusRequest.getMarketId());
+        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), currentSession);
         LotBidDetailResponse lbdr = new LotBidDetailResponse();
         lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
         if (ra != null) {
