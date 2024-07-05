@@ -8,14 +8,15 @@ import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.ResponseBody;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
+import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
 import com.sericulture.marketandauction.model.enums.LotStatus;
-import com.sericulture.marketandauction.model.enums.USERTYPE;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.LotRepository;
+import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import com.sericulture.marketandauction.repository.ReelerAuctionRepository;
 import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +42,9 @@ public class ReelerAuctionService {
 
     @Autowired
     ReelerAuctionRepository reelerAuctionRepository;
+
+    @Autowired
+    MarketMasterRepository marketMasterRepository;
 
     @Autowired
     Mapper mapper;
@@ -81,7 +86,7 @@ public class ReelerAuctionService {
                     .setParameter("Amount", reelerBidRequest.getAmount())
                     .getSingleResult();*/
 
-
+            int currentAuction = checkCurrentAuction(reelerBidRequest.getMarketId());
 
             StoredProcedureQuery procedureQuery = entityManager
                     .createStoredProcedureQuery("SUBMIT_BID_EXCEPTIONAL");
@@ -93,7 +98,7 @@ public class ReelerAuctionService {
             procedureQuery.registerStoredProcedureParameter("AuctionDate", LocalDate.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("SurrogateBid", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("Amount", Integer.class, ParameterMode.IN);
-
+            procedureQuery.registerStoredProcedureParameter("AuctionSession", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("Error", String.class, ParameterMode.OUT);
             procedureQuery.registerStoredProcedureParameter("Success", Integer.class, ParameterMode.OUT);
 
@@ -106,6 +111,7 @@ public class ReelerAuctionService {
             procedureQuery.setParameter("AuctionDate", Util.getISTLocalDate());
             procedureQuery.setParameter("SurrogateBid",0);
             procedureQuery.setParameter("Amount", reelerBidRequest.getAmount());
+            procedureQuery.setParameter("AuctionSession", currentAuction);
             procedureQuery.execute();
             String error = (String)procedureQuery.getOutputParameterValue("Error");
             Object success = procedureQuery.getOutputParameterValue("Success");
@@ -313,9 +319,9 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-
+        int currentAuction = checkCurrentAuction(reelerLotRequest.getMarketId());
         List<Integer> reelerLotList = reelerAuctionRepository.findByAuctionDateAndMarketIdAndReelerIdByActive(Util.getISTLocalDate(), reelerLotRequest.getMarketId(), reelerLotRequest.getReelerId());
-        Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(Util.getISTLocalDate(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId());
+        Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(Util.getISTLocalDate(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId(), currentAuction);
         Map<Integer, ReelerLotResponse> reelerLotResponseMap = new HashMap<>();
 
         if (reelerLotHighestAndHisBidList != null && reelerLotHighestAndHisBidList.length > 0) {
@@ -397,6 +403,27 @@ public class ReelerAuctionService {
                 .build();
         rw.setContent(reelerBalanceResponse);
         return ResponseEntity.ok(rw);
+    }
+
+    public int checkCurrentAuction(int marketMasterId) {
+        MarketMaster marketMaster = marketMasterRepository.findById(marketMasterId);
+
+        if (marketMaster != null) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalTime currentTime = now.toLocalTime();
+
+            if (!currentTime.isBefore(marketMaster.getAuction1StartTime()) && currentTime.isBefore(marketMaster.getAuction1EndTime())) {
+                return 1;
+            } else if (!currentTime.isBefore(marketMaster.getAuction2StartTime()) && currentTime.isBefore(marketMaster.getAuction2EndTime())) {
+                return 2;
+            } else if (!currentTime.isBefore(marketMaster.getAuction3StartTime()) && currentTime.isBefore(marketMaster.getAuction3EndTime())) {
+                return 3;
+            } else {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
     }
 }
 
