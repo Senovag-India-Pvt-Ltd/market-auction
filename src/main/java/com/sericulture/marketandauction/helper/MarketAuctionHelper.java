@@ -15,6 +15,7 @@ import com.sericulture.marketandauction.repository.ExceptionalTimeRepository;
 import com.sericulture.marketandauction.repository.FlexTimeRepository;
 import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.graph.EntityGraphs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -173,6 +174,23 @@ public class MarketAuctionHelper {
     }
 
     public int checkCurrentAuctionAccept(int marketMasterId) {
+        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketMasterId,Util.getISTLocalDate());
+
+        if(exceptionalTime!=null){
+            LocalDateTime now = LocalDateTime.now();
+            LocalTime currentTime = now.toLocalTime();
+
+            if (!currentTime.isBefore(exceptionalTime.getAuction1AcceptStartTime()) && currentTime.isBefore(exceptionalTime.getAuction1AcceptEndTime())) {
+                return 1;
+            } else if (!currentTime.isBefore(exceptionalTime.getAuction2AcceptStartTime()) && currentTime.isBefore(exceptionalTime.getAuction2AcceptEndTime())) {
+                return 2;
+            } else if (!currentTime.isBefore(exceptionalTime.getAuction3AcceptStartTime()) && currentTime.isBefore(exceptionalTime.getAuction3AcceptEndTime())) {
+                return 3;
+            } else {
+                return 0;
+            }
+        }
+
         MarketMaster marketMaster = marketMasterRepository.findById(marketMasterId);
 
         if (marketMaster != null) {

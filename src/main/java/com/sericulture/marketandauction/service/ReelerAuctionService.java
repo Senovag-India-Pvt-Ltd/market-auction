@@ -71,25 +71,9 @@ public class ReelerAuctionService {
         EntityManager entityManager = null;
         try {
             JwtPayloadData token = marketAuctionHelper.getReelerAuthToken(reelerBidRequest);
-
-
-             entityManager = entityManagerFactory.createEntityManager();
-            /* entityManager.getTransaction().begin();
-            Object singleResult = entityManager.createNativeQuery("{  CALL REELER_VID_CREDIT_TXN_SP(:UserId, :MarketId, :GodownId, :LotId, :ReelerId,:AuctionDate, :SurrogateBid, :Amount) }")
-                    .setParameter("UserId", "")
-                    .setParameter("MarketId", reelerBidRequest.getMarketId())
-                    .setParameter("GodownId", reelerBidRequest.getGodownId())
-                    .setParameter("LotId", reelerBidRequest.getAllottedLotId())
-                    .setParameter("ReelerId", reelerBidRequest.getReelerId())
-                    .setParameter("AuctionDate", Util.getISTLocalDate())
-                    .setParameter("SurrogateBid", 0)
-                    .setParameter("Amount", reelerBidRequest.getAmount())
-                    .getSingleResult();*/
-
-            int currentAuction = marketAuctionHelper.checkCurrentAuction(reelerBidRequest.getMarketId());
-
+            entityManager = entityManagerFactory.createEntityManager();
             StoredProcedureQuery procedureQuery = entityManager
-                    .createStoredProcedureQuery("SUBMIT_BID_EXCEPTIONAL");
+                    .createStoredProcedureQuery("SUBMIT_BID_EXCEPTIONAL_SLOT");
             procedureQuery.registerStoredProcedureParameter("UserId", String.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("GodownId", Integer.class, ParameterMode.IN);
@@ -98,7 +82,6 @@ public class ReelerAuctionService {
             procedureQuery.registerStoredProcedureParameter("AuctionDate", LocalDate.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("SurrogateBid", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("Amount", Integer.class, ParameterMode.IN);
-            procedureQuery.registerStoredProcedureParameter("AuctionSession", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("Error", String.class, ParameterMode.OUT);
             procedureQuery.registerStoredProcedureParameter("Success", Integer.class, ParameterMode.OUT);
 
@@ -111,7 +94,6 @@ public class ReelerAuctionService {
             procedureQuery.setParameter("AuctionDate", Util.getISTLocalDate());
             procedureQuery.setParameter("SurrogateBid",0);
             procedureQuery.setParameter("Amount", reelerBidRequest.getAmount());
-            procedureQuery.setParameter("AuctionSession", currentAuction);
             procedureQuery.execute();
             String error = (String)procedureQuery.getOutputParameterValue("Error");
             Object success = procedureQuery.getOutputParameterValue("Success");
