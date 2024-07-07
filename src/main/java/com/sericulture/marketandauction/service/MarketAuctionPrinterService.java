@@ -78,6 +78,8 @@ public class MarketAuctionPrinterService {
                     marketAuctionForPrintResponse.setReelerNumber(Util.objectToString(response[35]));
                     marketAuctionForPrintResponse.setFarmerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() - marketAuctionForPrintResponse.getFarmerMarketFee());
                     marketAuctionForPrintResponse.setReelerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() + marketAuctionForPrintResponse.getReelerMarketFee());
+                    marketAuctionForPrintResponse.setFatherNameKan(Util.objectToString(response[36]));
+
 
 
                     List<Float> lotWeightList = lotWeightDetailRepository.findAllByLotId(lotId);

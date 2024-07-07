@@ -8,6 +8,7 @@ import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.ResponseBody;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
+import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
@@ -15,6 +16,7 @@ import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import com.sericulture.marketandauction.repository.LotRepository;
+import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import com.sericulture.marketandauction.repository.ReelerAuctionRepository;
 import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +42,9 @@ public class ReelerAuctionService {
 
     @Autowired
     ReelerAuctionRepository reelerAuctionRepository;
+
+    @Autowired
+    MarketMasterRepository marketMasterRepository;
 
     @Autowired
     Mapper mapper;
@@ -65,25 +71,9 @@ public class ReelerAuctionService {
         EntityManager entityManager = null;
         try {
             JwtPayloadData token = marketAuctionHelper.getReelerAuthToken(reelerBidRequest);
-
-
-             entityManager = entityManagerFactory.createEntityManager();
-            /* entityManager.getTransaction().begin();
-            Object singleResult = entityManager.createNativeQuery("{  CALL REELER_VID_CREDIT_TXN_SP(:UserId, :MarketId, :GodownId, :LotId, :ReelerId,:AuctionDate, :SurrogateBid, :Amount) }")
-                    .setParameter("UserId", "")
-                    .setParameter("MarketId", reelerBidRequest.getMarketId())
-                    .setParameter("GodownId", reelerBidRequest.getGodownId())
-                    .setParameter("LotId", reelerBidRequest.getAllottedLotId())
-                    .setParameter("ReelerId", reelerBidRequest.getReelerId())
-                    .setParameter("AuctionDate", Util.getISTLocalDate())
-                    .setParameter("SurrogateBid", 0)
-                    .setParameter("Amount", reelerBidRequest.getAmount())
-                    .getSingleResult();*/
-
-
-
+            entityManager = entityManagerFactory.createEntityManager();
             StoredProcedureQuery procedureQuery = entityManager
-                    .createStoredProcedureQuery("SUBMIT_BID_EXCEPTIONAL");
+                    .createStoredProcedureQuery("SUBMIT_BID_EXCEPTIONAL_SLOT");
             procedureQuery.registerStoredProcedureParameter("UserId", String.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("GodownId", Integer.class, ParameterMode.IN);
@@ -92,7 +82,6 @@ public class ReelerAuctionService {
             procedureQuery.registerStoredProcedureParameter("AuctionDate", LocalDate.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("SurrogateBid", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("Amount", Integer.class, ParameterMode.IN);
-
             procedureQuery.registerStoredProcedureParameter("Error", String.class, ParameterMode.OUT);
             procedureQuery.registerStoredProcedureParameter("Success", Integer.class, ParameterMode.OUT);
 
@@ -175,8 +164,8 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getHighestBidPerLot(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(GetHighestBidPerLotResponse.class);
-
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
+        int currentSession = marketAuctionHelper.checkCurrentAuction(lotStatusRequest.getMarketId());
+        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), currentSession);
         GetHighestBidPerLotResponse getHighestBidPerLotResponse = new GetHighestBidPerLotResponse();
         getHighestBidPerLotResponse.setAllottedLotId(ra.getAllottedLotId());
         if (ra != null) {
@@ -189,7 +178,8 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getHighestBidPerLotDetails(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(ResponseBody.class);
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
+        int currentSession = marketAuctionHelper.checkCurrentAuction(lotStatusRequest.getMarketId());
+        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), currentSession);
         LotBidDetailResponse lbdr = new LotBidDetailResponse();
         lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
         if (ra != null) {
@@ -247,7 +237,8 @@ public class ReelerAuctionService {
             if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
                 throw new ValidationException(String.format("expected Lot status is blank but found:%s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
             }
-            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate());
+            int acceptStartChecker = marketAuctionHelper.checkCurrentAuctionAccept(lotStatusRequest.getMarketId());
+            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), acceptStartChecker);
             if (reelerAuction != null) {
                 Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
                 l.setStatus(LotStatus.ACCEPTED.getLabel());
@@ -312,9 +303,9 @@ public class ReelerAuctionService {
 
     public ResponseEntity<?> getReelerLotWithHighestBidDetails(@RequestBody ReelerLotRequest reelerLotRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-
+        int currentAuction = marketAuctionHelper.checkCurrentAuction(reelerLotRequest.getMarketId());
         List<Integer> reelerLotList = reelerAuctionRepository.findByAuctionDateAndMarketIdAndReelerIdByActive(Util.getISTLocalDate(), reelerLotRequest.getMarketId(), reelerLotRequest.getReelerId());
-        Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(Util.getISTLocalDate(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId());
+        Object[][] reelerLotHighestAndHisBidList = reelerAuctionRepository.getHighestAndReelerBidAmountForLotList(Util.getISTLocalDate(), reelerLotRequest.getMarketId(), reelerLotList, reelerLotRequest.getReelerId(), currentAuction);
         Map<Integer, ReelerLotResponse> reelerLotResponseMap = new HashMap<>();
 
         if (reelerLotHighestAndHisBidList != null && reelerLotHighestAndHisBidList.length > 0) {
@@ -397,6 +388,48 @@ public class ReelerAuctionService {
         rw.setContent(reelerBalanceResponse);
         return ResponseEntity.ok(rw);
     }
+
+   /* public int checkCurrentAuction(int marketMasterId) {
+        MarketMaster marketMaster = marketMasterRepository.findById(marketMasterId);
+
+        if (marketMaster != null) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalTime currentTime = now.toLocalTime();
+
+            if (!currentTime.isBefore(marketMaster.getAuction1StartTime()) && currentTime.isBefore(marketMaster.getAuction1EndTime())) {
+                return 1;
+            } else if (!currentTime.isBefore(marketMaster.getAuction2StartTime()) && currentTime.isBefore(marketMaster.getAuction2EndTime())) {
+                return 2;
+            } else if (!currentTime.isBefore(marketMaster.getAuction3StartTime()) && currentTime.isBefore(marketMaster.getAuction3EndTime())) {
+                return 3;
+            } else {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
+    }
+
+    public int checkCurrentAuctionAccept(int marketMasterId) {
+        MarketMaster marketMaster = marketMasterRepository.findById(marketMasterId);
+
+        if (marketMaster != null) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalTime currentTime = now.toLocalTime();
+
+            if (!currentTime.isBefore(marketMaster.getAuction1AcceptStartTime()) && currentTime.isBefore(marketMaster.getAuction1AcceptEndTime())) {
+                return 1;
+            } else if (!currentTime.isBefore(marketMaster.getAuction2AcceptStartTime()) && currentTime.isBefore(marketMaster.getAuction2AcceptEndTime())) {
+                return 2;
+            } else if (!currentTime.isBefore(marketMaster.getAuction3AcceptStartTime()) && currentTime.isBefore(marketMaster.getAuction3AcceptEndTime())) {
+                return 3;
+            } else {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
+    }*/
 }
 
 

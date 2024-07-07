@@ -16,12 +16,12 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     public ReelerAuction save(ReelerAuction reelerAuction);
 
     @Query("select r from ReelerAuction r where r.allottedLotId =:lotId and" +
-            " r.marketId =:marketId and r.auctionDate =:auctionDate order by amount desc,createdDate asc limit 1")
-    public ReelerAuction getHighestBidForLot(int lotId,int marketId, LocalDate auctionDate);
+            " r.marketId =:marketId and r.auctionSession = :auctionSession and r.auctionDate =:auctionDate order by amount desc,createdDate asc limit 1")
+    public ReelerAuction getHighestBidForLot(int lotId,int marketId, LocalDate auctionDate, int auctionSession);
 
     @Query(nativeQuery = true , value = """
-    select top (1) * from reeler_auction r1_0 where r1_0.allotted_lot_id=:lotId and r1_0.market_id=:marketId and r1_0.auction_date=:auctionDate and active = 1 order by r1_0.amount desc,r1_0.created_date""")
-    public ReelerAuction getHighestBidForLotAndActive(int lotId,int marketId, LocalDate auctionDate);
+    select top (1) * from reeler_auction r1_0 where r1_0.allotted_lot_id=:lotId and r1_0.market_id=:marketId and r1_0.auction_date=:auctionDate and r1_0.auction_session = :auctionSession and active = 1 order by r1_0.amount desc,r1_0.created_date""")
+    public ReelerAuction getHighestBidForLotAndActive(int lotId,int marketId, LocalDate auctionDate, int auctionSession);
 
     @Query(nativeQuery = true , value = """
     select * from REELER_AUCTION where ALLOTTED_LOT_ID = :lotId and MARKET_ID = :marketId and AUCTION_DATE = :auctionDate and ACTIVE = 1""")
@@ -60,8 +60,8 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
             select MIN(REELER_AUCTION_ID) ID, RA.ALLOTTED_LOT_ID as AL from REELER_AUCTION RA,
             ( 
             SELECT MAX(AMOUNT) AMT, ALLOTTED_LOT_ID  from REELER_AUCTION ra
-            where AUCTION_DATE = :today and ALLOTTED_LOT_ID in ( :lotList) AND MARKET_ID =:marketId GROUP by ALLOTTED_LOT_ID ) as RAB 
-            WHERE RAB.AMT=RA.AMOUNT AND  RA.MARKET_ID =:marketId AND RA.ALLOTTED_LOT_ID = RAB.ALLOTTED_LOT_ID AND AUCTION_DATE = :today
+            where AUCTION_DATE = :today and ALLOTTED_LOT_ID in ( :lotList) AND MARKET_ID =:marketId and RA.auction_session = :auctionSession GROUP by ALLOTTED_LOT_ID ) as RAB 
+            WHERE RAB.AMT=RA.AMOUNT AND  RA.MARKET_ID =:marketId AND RA.ALLOTTED_LOT_ID = RAB.ALLOTTED_LOT_ID and RA.auction_session = :auctionSession AND AUCTION_DATE = :today
             GROUP by  RA.ALLOTTED_LOT_ID ) RA ON RA.ID= RAA.REELER_AUCTION_ID
             UNION
             SELECT REELER_AUCTION_ID,AMOUNT ,ALLOTTED_LOT_ID, 'MYBID',R.Name  
@@ -70,10 +70,10 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
             select MIN(REELER_AUCTION_ID) ID, RA.ALLOTTED_LOT_ID as AL from REELER_AUCTION RA,
             ( 
             SELECT MAX(AMOUNT) AMT, ALLOTTED_LOT_ID  from REELER_AUCTION ra
-            where AUCTION_DATE = :today and ALLOTTED_LOT_ID in ( :lotList) AND MARKET_ID =:marketId AND ra.REELER_ID =:reelerId  GROUP by ALLOTTED_LOT_ID ) as RAB 
-            WHERE RAB.AMT=RA.AMOUNT AND  RA.MARKET_ID =:marketId AND RA.ALLOTTED_LOT_ID = RAB.ALLOTTED_LOT_ID AND AUCTION_DATE = :today AND ra.REELER_ID =:reelerId
-            GROUP by  RA.ALLOTTED_LOT_ID ) RA ON RA.ID= RAA.REELER_AUCTION_ID""")
-    public Object[][] getHighestAndReelerBidAmountForLotList(LocalDate today,int marketId,List<Integer> lotList,int reelerId);
+            where AUCTION_DATE = :today and RA.auction_session = :auctionSession and ALLOTTED_LOT_ID in ( :lotList) AND MARKET_ID =:marketId AND ra.REELER_ID =:reelerId  GROUP by ALLOTTED_LOT_ID ) as RAB 
+            WHERE RAB.AMT=RA.AMOUNT AND   RA.MARKET_ID =:marketId and RA.auction_session = :auctionSession AND RA.ALLOTTED_LOT_ID = RAB.ALLOTTED_LOT_ID AND AUCTION_DATE = :today AND ra.REELER_ID =:reelerId
+            GROUP by  RA.ALLOTTED_LOT_ID ) RA ON RA.ID= RAA.REELER_AUCTION_ID ORDER BY ALLOTTED_LOT_ID """)
+    public Object[][] getHighestAndReelerBidAmountForLotList(LocalDate today,int marketId,List<Integer> lotList,int reelerId, int auctionSession);
 
 
     public long deleteByIdAndMarketIdAndAllottedLotIdAndReelerId(BigInteger id,int marketId,int allottedLotId,BigInteger reelerId);
