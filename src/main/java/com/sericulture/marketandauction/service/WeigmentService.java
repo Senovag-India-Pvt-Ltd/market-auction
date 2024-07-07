@@ -5,10 +5,7 @@ import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
-import com.sericulture.marketandauction.model.entity.CrateMaster;
-import com.sericulture.marketandauction.model.entity.Lot;
-import com.sericulture.marketandauction.model.entity.LotWeightDetail;
-import com.sericulture.marketandauction.model.entity.ReelerVidDebitTxn;
+import com.sericulture.marketandauction.model.entity.*;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
@@ -163,12 +160,14 @@ public class WeigmentService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
         try {
             JwtPayloadData token = marketAuctionHelper.getAuthToken(completeLotWeighmentRequest);
+            MarketMaster marketMaster = marketMasterRepository.findById(completeLotWeighmentRequest.getMarketId());
+            String paymentMode = marketMaster.getPaymentMode();
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(), Util.getISTLocalDate());
             if (lot.getStatus()==null || !lot.getStatus().equals(LotStatus.ACCEPTED.getLabel())) {
-              //  throw new ValidationException(String.format("expected Lot status is accepted but found: %s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
+                //  throw new ValidationException(String.format("expected Lot status is accepted but found: %s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
                 throw new ValidationException(String.format("Lot is accepted. But " + lot.getStatus() + " for lot " +lot.getAllottedLotId()));
             }
             LotWeightResponse lotWeightResponse = getLotWeightResponse(completeLotWeighmentRequest);
@@ -186,11 +185,13 @@ public class WeigmentService {
             Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(lot.getMarketId());
             double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
             double farmerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][2]));
-            double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
-            double farmerMarketFee = (lotSoldOutAmount * farmerBrokarage) / 100;
-            double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee,2);
-            ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
-            entityManager.persist(reelerVidDebitTxn);
+            double reelerMarketFee = Math.round((lotSoldOutAmount * reelerBrokarage) / 100);
+            double farmerMarketFee = Math.round((lotSoldOutAmount * farmerBrokarage) / 100);
+            double amountDebitedFromReeler = Math.round(lotSoldOutAmount + reelerMarketFee);
+            if(paymentMode==null || paymentMode.equals(PAYMENTMODE.ONLINE.getLabel())){
+                ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
+                entityManager.persist(reelerVidDebitTxn);
+            }
             lot.setWeighmentCompletedBy(token.getUsername());
             lot.setStatus(LotStatus.WEIGHMENTCOMPLETED.getLabel());
             lot.setLotWeightAfterWeighment(totalWeightOfAllottedLot);
