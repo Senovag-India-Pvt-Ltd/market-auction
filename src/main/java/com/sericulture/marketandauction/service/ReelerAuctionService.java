@@ -215,41 +215,62 @@ public class ReelerAuctionService {
     public ResponseEntity<?> getHighestBidPerLotDetails(LotStatusRequest lotStatusRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(ResponseBody.class);
         int currentSession = marketAuctionHelper.checkCurrentAuction(lotStatusRequest.getMarketId());
-        ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), currentSession);
-        LotBidDetailResponse lbdr = new LotBidDetailResponse();
-        lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
-        if (ra != null) {
-            Object[][] reelerDetails = reelerAuctionRepository.getReelerDetailsForHighestBidWithReelingNumber(ra.getId());
-            if (reelerDetails == null || reelerDetails.length == 0) {
-                rw.setErrorCode(-1);
-                rw.setErrorMessages(List.of("No reeler found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
+        //ReelerAuction ra = reelerAuctionRepository.getHighestBidForLotAndActive(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), currentSession);
 
-                return ResponseEntity.ok(rw);
+        EntityManager entityManager = null;
+        entityManager = entityManagerFactory.createEntityManager();
+        StoredProcedureQuery procedureQuery = entityManager
+                .createStoredProcedureQuery("GET_ACCEPT_REELER_AUCTION");
+        procedureQuery.registerStoredProcedureParameter("LotId", Integer.class, ParameterMode.IN);
+        procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
+        procedureQuery.registerStoredProcedureParameter("AuctionDate", LocalDate.class, ParameterMode.IN);
+        entityManager.getTransaction().begin();
+        procedureQuery.setParameter("LotId",  lotStatusRequest.getAllottedLotId());
+        procedureQuery.setParameter("MarketId", lotStatusRequest.getMarketId());
+        procedureQuery.setParameter("AuctionDate", Util.getISTLocalDate());
+        procedureQuery.execute();
+        entityManager.getTransaction().commit();
+
+        List<Object[]> reelerLotHighestAndHisBidList = procedureQuery.getResultList();
+        if(reelerLotHighestAndHisBidList.size()>0) {
+            Object[] obj = reelerLotHighestAndHisBidList.get(0);
+            ReelerAuction ra = reelerAuctionRepository.findById(BigInteger.valueOf(Long.parseLong(Util.objectToString(obj[0]))));
+
+            LotBidDetailResponse lbdr = new LotBidDetailResponse();
+            lbdr.setAllottedlotid(lotStatusRequest.getAllottedLotId());
+            if (ra != null) {
+                Object[][] reelerDetails = reelerAuctionRepository.getReelerDetailsForHighestBidWithReelingNumber(ra.getId());
+                if (reelerDetails == null || reelerDetails.length == 0) {
+                    rw.setErrorCode(-1);
+                    rw.setErrorMessages(List.of("No reeler found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
+
+                    return ResponseEntity.ok(rw);
+                }
+
+                lbdr.setAmount(ra.getAmount());
+                lbdr.setReelerAuctionId(ra.getId());
+                Object[][] ldrDetails = reelerAuctionRepository.getLotBidDetailResponse(lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate(), lotStatusRequest.getMarketId());
+                if (ldrDetails == null || ldrDetails.length == 0) {
+                    rw.setErrorCode(-1);
+                    rw.setErrorMessages(List.of("No farmer details found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
+
+                    return ResponseEntity.ok(rw);
+                }
+                lbdr.setFarmerFirstName(ldrDetails[0][0] == null ? "" : String.valueOf(ldrDetails[0][0]));
+                lbdr.setFarmerMiddleName(ldrDetails[0][1] == null ? "" : String.valueOf(ldrDetails[0][1]));
+                lbdr.setFarmerLastName(ldrDetails[0][2] == null ? "" : String.valueOf(ldrDetails[0][2]));
+                lbdr.setFarmerNumber(ldrDetails[0][3] == null ? "" : String.valueOf(ldrDetails[0][3]));
+                lbdr.setReelerName(reelerDetails[0][0] == null ? "" : String.valueOf(reelerDetails[0][0]));
+                lbdr.setReelingLicenseNumber(reelerDetails[0][2] == null ? "" : String.valueOf(reelerDetails[0][2]));
+                lbdr.setReelerFruitsId(reelerDetails[0][1] == null ? "" : String.valueOf(reelerDetails[0][1]));
+                lbdr.setFarmervillageName(ldrDetails[0][4] == null ? "" : String.valueOf(ldrDetails[0][4]));
+                lbdr.setLotApproxWeightBeforeWeighment(ldrDetails[0][5] == null ? 0 : Integer.valueOf(String.valueOf(ldrDetails[0][5])));
+                lbdr.setStatus(ldrDetails[0][6] == null ? "" : String.valueOf(ldrDetails[0][6]));
+                lbdr.setBidAcceptedBy(ldrDetails[0][7] == null ? "" : String.valueOf(ldrDetails[0][7]));
+                rw.setContent(lbdr);
+            } else {
+                marketAuctionHelper.retrunIfError(rw, "No bid found for the given lot please check the input");
             }
-
-            lbdr.setAmount(ra.getAmount());
-            lbdr.setReelerAuctionId(ra.getId());
-            Object[][] ldrDetails = reelerAuctionRepository.getLotBidDetailResponse(lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate(), lotStatusRequest.getMarketId());
-            if (ldrDetails == null || ldrDetails.length == 0) {
-                rw.setErrorCode(-1);
-                rw.setErrorMessages(List.of("No farmer details found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
-
-                return ResponseEntity.ok(rw);
-            }
-            lbdr.setFarmerFirstName(ldrDetails[0][0] == null ? "" : String.valueOf(ldrDetails[0][0]));
-            lbdr.setFarmerMiddleName(ldrDetails[0][1] == null ? "" : String.valueOf(ldrDetails[0][1]));
-            lbdr.setFarmerLastName(ldrDetails[0][2] == null ? "" : String.valueOf(ldrDetails[0][2]));
-            lbdr.setFarmerNumber(ldrDetails[0][3] == null ? "" : String.valueOf(ldrDetails[0][3]));
-            lbdr.setReelerName(reelerDetails[0][0] == null ? "" : String.valueOf(reelerDetails[0][0]));
-            lbdr.setReelingLicenseNumber(reelerDetails[0][2] == null ? "" : String.valueOf(reelerDetails[0][2]));
-            lbdr.setReelerFruitsId(reelerDetails[0][1] == null ? "" : String.valueOf(reelerDetails[0][1]));
-            lbdr.setFarmervillageName(ldrDetails[0][4] == null ? "" : String.valueOf(ldrDetails[0][4]));
-            lbdr.setLotApproxWeightBeforeWeighment(ldrDetails[0][5] == null ? 0 : Integer.valueOf(String.valueOf(ldrDetails[0][5])));
-            lbdr.setStatus(ldrDetails[0][6] == null ? "" : String.valueOf(ldrDetails[0][6]));
-            lbdr.setBidAcceptedBy(ldrDetails[0][7] == null ? "" : String.valueOf(ldrDetails[0][7]));
-            rw.setContent(lbdr);
-        }else {
-            marketAuctionHelper.retrunIfError(rw,"No bid found for the given lot please check the input");
         }
         return ResponseEntity.ok(rw);
 
