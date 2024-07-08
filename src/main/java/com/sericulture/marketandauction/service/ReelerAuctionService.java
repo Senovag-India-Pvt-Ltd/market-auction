@@ -273,10 +273,28 @@ public class ReelerAuctionService {
             if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
                 throw new ValidationException(String.format("expected Lot status is blank but found:%s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
             }
-            int acceptStartChecker = marketAuctionHelper.checkCurrentAuctionAccept(lotStatusRequest.getMarketId());
-            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), acceptStartChecker);
-            if (reelerAuction != null) {
-                Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
+
+            EntityManager entityManager = null;
+            entityManager = entityManagerFactory.createEntityManager();
+            StoredProcedureQuery procedureQuery = entityManager
+                    .createStoredProcedureQuery("GET_ACCEPT_REELER_AUCTION");
+            procedureQuery.registerStoredProcedureParameter("LotId", Integer.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("AuctionDate", LocalDate.class, ParameterMode.IN);
+            entityManager.getTransaction().begin();
+            procedureQuery.setParameter("LotId",  lotStatusRequest.getAllottedLotId());
+            procedureQuery.setParameter("MarketId", lotStatusRequest.getMarketId());
+            procedureQuery.setParameter("AuctionDate", Util.getISTLocalDate());
+            procedureQuery.execute();
+            entityManager.getTransaction().commit();
+
+            GetHighestBidPerLotResponse getHighestBidPerLotResponse = new GetHighestBidPerLotResponse();
+            List<Object[]> reelerLotHighestAndHisBidList = procedureQuery.getResultList();
+            List<ReelerAuction> reelerLotHighestAndHisBidList1 = procedureQuery.getResultList();
+            if(reelerLotHighestAndHisBidList.size()>0){
+                Object[] obj = reelerLotHighestAndHisBidList.get(0);
+                ReelerAuction reelerAuction = reelerAuctionRepository.findById(BigInteger.valueOf(Long.parseLong(Util.objectToString(obj[0]))));
+                Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(Util.objectToInteger(reelerLotHighestAndHisBidList.get(0)[12]), Util.objectToInteger(reelerLotHighestAndHisBidList.get(0)[2]), Util.getISTLocalDate());
                 l.setStatus(LotStatus.ACCEPTED.getLabel());
                 l.setReelerAuctionId(reelerAuction.getId());
                 l.setBidAcceptedBy(token.getUsername());
