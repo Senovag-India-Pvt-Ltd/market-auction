@@ -7,10 +7,7 @@ import com.sericulture.marketandauction.helper.MarketAuctionQueryConstants;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequest;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequestByLotList;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoResponse;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerReadyForPaymentResponse;
+import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.entity.TransactionFileGenQueue;
 import com.sericulture.marketandauction.model.enums.LotStatus;
@@ -36,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -276,4 +274,80 @@ public class FarmerPaymentService {
         rw.setContent("Success");
         return ResponseEntity.ok(rw);
     }
+
+    public Map<String, Object>  getWeighmentCompletedListForSeedMarketByAuctionDateAndMarket(RequestBody requestBody, final Pageable pageable) {
+        Map<String, Object> response = new HashMap<>();
+        marketAuctionHelper.getMOAuthToken(requestBody);
+        MarketMaster marketMaster = marketMasterRepository.findById(requestBody.getMarketId());
+
+        List<FarmerReadyPaymentInfoForSeedMarketResponse> farmerReadyPaymentInfoForSeedMarketResponseList = new ArrayList<>();
+        FarmerReadyForPaymentForSeedMarketResponse farmerReadyForPaymentForSeedMarketResponse = new FarmerReadyForPaymentForSeedMarketResponse();
+        if(marketMaster.getPaymentMode()!=null){
+            farmerReadyForPaymentForSeedMarketResponse.setPaymentMode(marketMaster.getPaymentMode());
+        }
+        Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnForSeedMarketByMarket(pageable, requestBody.getMarketId());
+        farmerReadyForPaymentForSeedMarketResponse.setFarmerReadyPaymentInfoForSeedMarketResponseList(farmerReadyPaymentInfoForSeedMarketResponseList);
+        if (paginatedResponse == null || paginatedResponse.isEmpty()) {
+//            throw new ValidationException("No lot  found");
+            response.put("farmerReadyForPaymentForSeedMarketResponse", farmerReadyForPaymentForSeedMarketResponse);
+            response.put("currentPage", 0);
+            response.put("totalItems", 0);
+            response.put("totalPages", 0);
+            return response;
+        }
+
+        farmerReadyForPaymentForSeedMarketResponse.setSoldAmount(prepareFarmerReadyPaymentInfoForSeedMarketResponseList(paginatedResponse.getContent(), farmerReadyPaymentInfoForSeedMarketResponseList));
+        farmerReadyForPaymentForSeedMarketResponse.setFarmerReadyPaymentInfoForSeedMarketResponseList(farmerReadyPaymentInfoForSeedMarketResponseList);
+
+        response.put("farmerReadyForPaymentForSeedMarketResponse", farmerReadyForPaymentForSeedMarketResponse);
+        response.put("currentPage", paginatedResponse.getNumber());
+        response.put("totalItems", paginatedResponse.getTotalElements());
+        response.put("totalPages", paginatedResponse.getTotalPages());
+        return response;
+    }
+
+    public static Long prepareFarmerReadyPaymentInfoForSeedMarketResponseList(
+            List<Object[]> paginatedResponse,
+            List<FarmerReadyPaymentInfoForSeedMarketResponse> farmerReadyPaymentInfoForSeedMarketResponseList) {
+
+        long totalFarmerAmount = 0L;
+
+        for (Object[] response : paginatedResponse) {
+            long soldAmount = Util.objectToLong(response[14]);
+            long marketFee = Util.objectToLong(response[13]);
+            long farmerAmount = soldAmount - marketFee;
+            totalFarmerAmount = farmerAmount + totalFarmerAmount;
+
+            // Corrected instantiation of FarmerReadyPaymentInfoForSeedMarketResponse
+            FarmerReadyPaymentInfoForSeedMarketResponse farmerReadyPaymentInfoForSeedMarketResponse =
+                    new FarmerReadyPaymentInfoForSeedMarketResponse(
+                            Integer.parseInt(Util.objectToString(response[0])),
+                            Util.objectToLong(response[2]),
+                            Util.objectToString(response[3]),
+                            Util.objectToString(response[4]),
+                            Util.objectToString(response[5]),
+                            Util.objectToString(response[6]),
+                            Util.objectToString(response[7]),
+                            Util.objectToString(response[8]),
+                            Util.objectToLong(response[9]),   // lot_groupage_id
+                            Util.objectToString(response[10]),   // buyer_type
+                            Util.objectToLong(response[11]),  // buyer_id
+                            Util.objectToLong(response[12]),
+                            // lot_weight
+                            marketFee,
+                            soldAmount,
+                            Util.objectToString(response[15]),  // buyer_name
+                            Util.objectToLong(response[16]),   // lot_id
+                            Util.objectToLong(response[17]),farmerAmount
+                    );
+
+            farmerReadyPaymentInfoForSeedMarketResponseList.add(farmerReadyPaymentInfoForSeedMarketResponse);
+
+        }
+
+        return totalFarmerAmount;
+    }
+
+
+
 }
