@@ -8,6 +8,8 @@ import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.*;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.enums.PAYMENTMODE;
+import com.sericulture.marketandauction.model.enums.PAYMENTMODE;
+import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.repository.CrateMasterRepository;
 import com.sericulture.marketandauction.repository.LotRepository;
@@ -20,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -157,7 +160,7 @@ public class WeigmentService {
         EntityManager entityManager = null;
         ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
         try {
-            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(completeLotWeighmentRequest);
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(completeLotWeighmentRequest);
             MarketMaster marketMaster = marketMasterRepository.findById(completeLotWeighmentRequest.getMarketId());
             String paymentMode = marketMaster.getPaymentMode();
             entityManager = entityManagerFactory.createEntityManager();
@@ -165,7 +168,7 @@ public class WeigmentService {
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
             Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(completeLotWeighmentRequest.getMarketId(), completeLotWeighmentRequest.getAllottedLotId(), Util.getISTLocalDate());
             if (lot.getStatus()==null || !lot.getStatus().equals(LotStatus.ACCEPTED.getLabel())) {
-              //  throw new ValidationException(String.format("expected Lot status is accepted but found: %s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
+                //  throw new ValidationException(String.format("expected Lot status is accepted but found: %s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
                 throw new ValidationException(String.format("Lot is accepted. But " + lot.getStatus() + " for lot " +lot.getAllottedLotId()));
             }
             LotWeightResponse lotWeightResponse = getLotWeightResponse(completeLotWeighmentRequest);
