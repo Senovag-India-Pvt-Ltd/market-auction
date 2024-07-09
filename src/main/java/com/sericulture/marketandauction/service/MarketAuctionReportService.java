@@ -181,9 +181,10 @@ public class MarketAuctionReportService {
 //    SP Code For Display Lot Nos
         public ResponseEntity<?> getDisplayLotNos(RequestBody requestBody) {
     log.info("Get Display Lot Nos request for MarketId: " + requestBody.getMarketId() + ", AuctionDate: " + requestBody.getAuctionDate());
-    LocalDateTime tStart = LocalDateTime.now();
+//    LocalDateTime tStart = LocalDateTime.now();
     ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
     EntityManager entityManager = null;
+    List<LotHighestBidResponse> lotHighestBidResponseList = new ArrayList<>();
     try {
         entityManager = entityManagerFactory.createEntityManager();
         StoredProcedureQuery procedureQuery = entityManager
@@ -193,7 +194,6 @@ public class MarketAuctionReportService {
         procedureQuery.registerStoredProcedureParameter("Error", String.class, ParameterMode.OUT);
         procedureQuery.registerStoredProcedureParameter("Success", Integer.class, ParameterMode.OUT);
 
-        entityManager.getTransaction().begin();
         procedureQuery.setParameter("MarketId", requestBody.getMarketId());
         procedureQuery.setParameter("AuctionDate", requestBody.getAuctionDate());
         procedureQuery.execute();
@@ -201,9 +201,20 @@ public class MarketAuctionReportService {
         String error = (String) procedureQuery.getOutputParameterValue("Error");
         Object success = procedureQuery.getOutputParameterValue("Success");
         System.out.println("Out status: " + success);
-        entityManager.getTransaction().commit();
 
-        log.info("total time to complete getDisplayLotNos is: " + ChronoUnit.MILLIS.between(tStart, LocalDateTime.now()));
+        List<Object[]> reelerLotHighestAndHisBidList = procedureQuery.getResultList();
+        for (Object[] bidDetail : reelerLotHighestAndHisBidList) {
+            boolean notFound = true;
+            int allottedLot = Integer.parseInt(String.valueOf(bidDetail[0]));
+            int bidAmount = Integer.parseInt(String.valueOf(bidDetail[1]));
+            LotHighestBidResponse lotHighestBidResponse = new LotHighestBidResponse();
+            lotHighestBidResponse.setAllottedLotId(allottedLot);
+            lotHighestBidResponse.setHighestBid(bidAmount);
+            lotHighestBidResponseList.add(lotHighestBidResponse);
+        }
+        rw.setContent(lotHighestBidResponseList);
+
+//        log.info("total time to complete getDisplayLotNos is: " + ChronoUnit.MILLIS.between(tStart, LocalDateTime.now()));
 
         if (StringUtils.isNotEmpty(error)) {
             ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), error, "-1");
