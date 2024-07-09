@@ -21,8 +21,11 @@ import com.sericulture.marketandauction.model.api.marketauction.reporting.Vahiva
 import com.sericulture.marketandauction.model.entity.Bin;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
+import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
+import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.*;
+import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +42,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -65,6 +69,9 @@ public class MarketAuctionReportService {
 
     @Autowired
     ExceptionalTimeRepository exceptionalTimeRepository;
+
+    @PersistenceUnit
+    private EntityManagerFactory entityManagerFactory;
 
     @Autowired
     private BinRepository binRepository;
@@ -169,6 +176,55 @@ public class MarketAuctionReportService {
         rw.setContent(lotHighestBidResponseList);
         return ResponseEntity.ok(rw);
     }
+
+
+//    SP Code For Display Lot Nos
+        public ResponseEntity<?> getDisplayLotNos(RequestBody requestBody) {
+    log.info("Get Display Lot Nos request for MarketId: " + requestBody.getMarketId() + ", AuctionDate: " + requestBody.getAuctionDate());
+    LocalDateTime tStart = LocalDateTime.now();
+    ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+    EntityManager entityManager = null;
+    try {
+        entityManager = entityManagerFactory.createEntityManager();
+        StoredProcedureQuery procedureQuery = entityManager
+                .createStoredProcedureQuery("GET_DISPAY_LOT_NOS");
+        procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
+        procedureQuery.registerStoredProcedureParameter("AuctionDate", LocalDate.class, ParameterMode.IN);
+        procedureQuery.registerStoredProcedureParameter("Error", String.class, ParameterMode.OUT);
+        procedureQuery.registerStoredProcedureParameter("Success", Integer.class, ParameterMode.OUT);
+
+        entityManager.getTransaction().begin();
+        procedureQuery.setParameter("MarketId", requestBody.getMarketId());
+        procedureQuery.setParameter("AuctionDate", requestBody.getAuctionDate());
+        procedureQuery.execute();
+
+        String error = (String) procedureQuery.getOutputParameterValue("Error");
+        Object success = procedureQuery.getOutputParameterValue("Success");
+        System.out.println("Out status: " + success);
+        entityManager.getTransaction().commit();
+
+        log.info("total time to complete getDisplayLotNos is: " + ChronoUnit.MILLIS.between(tStart, LocalDateTime.now()));
+
+        if (StringUtils.isNotEmpty(error)) {
+            ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), error, "-1");
+            rw.setErrorCode(-1);
+            rw.setErrorMessages(List.of(validationMessage));
+            return ResponseEntity.ok(rw);
+        }
+    } catch (Exception ex) {
+        if (ex instanceof ValidationException) {
+            throw ex;
+        }
+        log.error("Error While fetching display lot nos for MarketId: " + requestBody.getMarketId() + ", AuctionDate: " + requestBody.getAuctionDate() + " error id: " + ex);
+        return marketAuctionHelper.retrunIfError(rw, "error occurred while fetching display lot nos.");
+    } finally {
+        if (entityManager != null && entityManager.isOpen()) {
+            entityManager.close();
+        }
+    }
+    return ResponseEntity.ok(rw);
+}
+
 
     public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
         List<UnitCounterReportResponse> unitCounterReportResponses = new ArrayList<>();

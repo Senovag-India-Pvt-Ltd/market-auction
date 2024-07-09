@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -31,6 +32,11 @@ public class MarketAuctionReportController {
     @PostMapping("/getAllHighestBidsByMarketIdAndOptionalGodownId")
     public ResponseEntity<?> getAllHighestBidsByMarketIdAndOptionalGodownId(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
         return marketAuctionReportService.getAllHighestBidsByMarketIdAndOptionalGodownId(requestBody);
+    }
+
+    @PostMapping("/getLotAndAmount")
+    public ResponseEntity<?> getDisplayLotNos(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody ){
+        return marketAuctionReportService.getDisplayLotNos(requestBody);
     }
 
     @PostMapping("/getDTROnlineReport")
