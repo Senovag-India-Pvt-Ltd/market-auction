@@ -229,6 +229,9 @@ public class WeigmentService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(CanContinueToWeighmentResponse.class);
         CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
         LotWeightResponse lotWeightResponse = getLotWeightResponseForSeedMarket(canContinueToWeighmentRequest);
+        if (lotWeightResponse.getLotStatus() != null && !lotWeightResponse.getLotStatus().isEmpty()) {
+        return marketAuctionHelper.retrunIfError(rw, "Weighment is " + lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
+    }
 //        if (!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())) {
 //            return marketAuctionHelper.retrunIfError(rw, "Lot is accepted. But " + lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
 //            //return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
@@ -240,14 +243,14 @@ public class WeigmentService {
 //            return marketAuctionHelper.retrunIfError(rw, "No Reeler Virtual Account found for Reeler " + lotWeightResponse.getReelerId());
 //        }
         CrateMaster crateMaster = crateMasterRepository.findByMarketIdAndGodownIdAndRaceMasterId(canContinueToWeighmentRequest.getMarketId(), canContinueToWeighmentRequest.getGodownId(), lotWeightResponse.getRaceMasterId());
-//        int totalCrateCapacityWeight = canContinueToWeighmentRequest.getNoOfCrates() * crateMaster.getApproxWeightPerCrate();
+       int totalCrateCapacityWeight = canContinueToWeighmentRequest.getNoOfCrates() * crateMaster.getApproxWeightPerCrate();
 //        double lotSoldOutAmount = totalCrateCapacityWeight * lotWeightResponse.getBidAmount();
 //        Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(canContinueToWeighmentRequest.getMarketId());
 //        double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
 //        double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
 //        double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee, 2);
 //        double hasEnoughMoney = lotWeightResponse.getReelerCurrentAvailableBalance() - amountDebitedFromReeler;
-//        canContinueToWeighmentResponse.setWeight(totalCrateCapacityWeight);
+      canContinueToWeighmentResponse.setWeight(totalCrateCapacityWeight);
         rw.setContent(canContinueToWeighmentResponse);
 
 //        if (hasEnoughMoney < 0) {
