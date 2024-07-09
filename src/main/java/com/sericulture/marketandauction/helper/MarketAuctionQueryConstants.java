@@ -76,8 +76,14 @@ public class MarketAuctionQueryConstants {
              and l.auction_date BETWEEN :fromDate and :toDate 
              and l.market_id =:marketId and  f.farmer_number =:farmerNumber""";
 
+    private static final String WHERE_CLAUSE_FARMER_TXN_CASH = """
+            where l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
+             and l.auction_date BETWEEN :fromDate and :toDate 
+             and l.market_id =:marketId and  f.farmer_number =:farmerNumber""";
+
     public static final String FARMER_TXN_REPORT = SELECT_FIELDS_FARMER_TXN +SPACE+FROM+SPACE+ LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER + SPACE+ FARMER_TXN_SPECIFIC_TABLES + SPACE + WHERE_CLAUSE_FARMER_TXN;
 
+    public static final String FARMER_TXN_REPORT_CASH = SELECT_FIELDS_FARMER_TXN +SPACE+FROM+SPACE+ LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER + SPACE+ FARMER_TXN_SPECIFIC_TABLES + SPACE + WHERE_CLAUSE_FARMER_TXN_CASH;
 
     public static final String DTR_ONLINE_REPORT_QUERY = SELECT_FIELDS_DTR_ONLINE + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ WHERE_CLAUSE_DTR_ONLINE;
 
