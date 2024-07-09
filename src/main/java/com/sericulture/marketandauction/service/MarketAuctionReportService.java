@@ -265,8 +265,13 @@ public class MarketAuctionReportService {
     public ResponseEntity<?> getFarmerTxnReport(FarmerTxnReportRequest farmerTxnReportRequest) {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-
-        List<Object[]> responses = lotRepository.getFarmerReport(farmerTxnReportRequest.getMarketId(),farmerTxnReportRequest.getReportFromDate(),farmerTxnReportRequest.getReportToDate(),farmerTxnReportRequest.getFarmerNumber());
+        List<Object[]> responses;
+        MarketMaster marketMaster = marketMasterRepository.findById(farmerTxnReportRequest.getMarketId());
+        if(marketMaster.getPaymentMode().equals("cash")){
+            responses = lotRepository.getFarmerReportCash(farmerTxnReportRequest.getMarketId(),farmerTxnReportRequest.getReportFromDate(),farmerTxnReportRequest.getReportToDate(),farmerTxnReportRequest.getFarmerNumber());
+        }else{
+            responses = lotRepository.getFarmerReport(farmerTxnReportRequest.getMarketId(),farmerTxnReportRequest.getReportFromDate(),farmerTxnReportRequest.getReportToDate(),farmerTxnReportRequest.getFarmerNumber());
+        }
 
         if(Util.isNullOrEmptyList(responses))
         {

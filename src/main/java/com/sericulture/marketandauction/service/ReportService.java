@@ -3,12 +3,15 @@ package com.sericulture.marketandauction.service;
 
 import com.sericulture.marketandauction.model.api.ReelerTransactionReport;
 import com.sericulture.marketandauction.model.api.ReelerTransactionReportWrapper;
+import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.entity.ReportAllTransaction;
 import com.sericulture.marketandauction.model.entity.ReportCurrentBalance;
+import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,6 +25,9 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class ReportService {
+
+    @Autowired
+    MarketMasterRepository marketMasterRepository;
 
     private String REELER_QUERY = """
                     SELECT
