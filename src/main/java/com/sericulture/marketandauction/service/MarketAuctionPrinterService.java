@@ -48,7 +48,7 @@ public class MarketAuctionPrinterService {
         boolean foundAcceptedLot = false;
         if (lotDetails != null && lotDetails.length > 0) {
             foundAcceptedLot = true;
-            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][32]);
+            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][33]);
 
         } else {
             lotDetails = lotRepository.getNewlyCreatedLotDetails(marketAuctionForPrintRequest.getAuctionDate(), marketAuctionForPrintRequest.getMarketId(), marketAuctionForPrintRequest.getAllottedLotId());
@@ -62,23 +62,22 @@ public class MarketAuctionPrinterService {
                 marketAuctionForPrintResponse = prepareResponseForLotBaseResponse(token, response, lotId);
 
                 if (foundAcceptedLot) {
-                    marketAuctionForPrintResponse.setAuctionDateWithTime((Date)(response[23]));
-                    marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[24]));
-                    marketAuctionForPrintResponse.setReelerName(Util.objectToString(response[25]));
-                    marketAuctionForPrintResponse.setReelerAddress(Util.objectToString(response[26]));
-                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[27]));
-                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[28]));
-                    marketAuctionForPrintResponse.setFarmerMarketFee(Util.objectToFloat(response[29]));
-                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[30]));
-                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[31]));
+                    marketAuctionForPrintResponse.setAuctionDateWithTime((Date)(response[24]));
+                    marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[25]));
+                    marketAuctionForPrintResponse.setReelerName(Util.objectToString(response[26]));
+                    marketAuctionForPrintResponse.setReelerAddress(Util.objectToString(response[27]));
+                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[28]));
+                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[29]));
+                    marketAuctionForPrintResponse.setFarmerMarketFee(Util.objectToFloat(response[30]));
+                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[31]));
+                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[32]));
                     marketAuctionForPrintResponse.setReelerCurrentBalance(reelerCurrentBalance);
-                    marketAuctionForPrintResponse.setReelerNameKannada(Util.objectToString(response[33]));
-                    marketAuctionForPrintResponse.setReelerMobileNumber(Util.objectToString(response[34]));
-                    marketAuctionForPrintResponse.setFruitsId(Util.objectToString(response[37]));
-                    marketAuctionForPrintResponse.setReelerNumber(Util.objectToString(response[35]));
+                    marketAuctionForPrintResponse.setReelerNameKannada(Util.objectToString(response[34]));
+                    marketAuctionForPrintResponse.setReelerMobileNumber(Util.objectToString(response[35]));
+                    marketAuctionForPrintResponse.setFruitsId(Util.objectToString(response[38]));
+                    marketAuctionForPrintResponse.setReelerNumber(Util.objectToString(response[36]));
                     marketAuctionForPrintResponse.setFarmerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() - marketAuctionForPrintResponse.getFarmerMarketFee());
                     marketAuctionForPrintResponse.setReelerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() + marketAuctionForPrintResponse.getReelerMarketFee());
-                    marketAuctionForPrintResponse.setFatherNameKan(Util.objectToString(response[36]));
 
 
 
@@ -120,9 +119,10 @@ public class MarketAuctionPrinterService {
                 .farmerNameKannada(Util.objectToString(response[20]))
 
                 .farmerMobileNumber(Util.objectToString(response[21]))
-                .fruitsId(Util.objectToString(response[24]))
+                .fruitsId(Util.objectToString(response[25]))
                 .marketAuctionId((BigDecimal) response[22])
-                .auctionDateWithTime((Date)(response[23]))
+                .fatherNameKan(Util.objectToString(response[23]))
+                .auctionDateWithTime((Date)(response[24]))
                 .build();
         marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
         marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));

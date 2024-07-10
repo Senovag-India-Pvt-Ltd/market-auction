@@ -138,7 +138,7 @@ public class MarketAuctionQueryConstants {
              l.allotted_lot_id,l.auction_date,ma.estimated_weight,
              mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
              l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
-             f.name_kan,f.mobile_number,ma.market_auction_id,""";
+             f.name_kan,f.mobile_number,ma.market_auction_id,f.father_name_kan,""";
     public static final String NEWLY_CREATED_LOTS = SELECT_FIELDS_PENDING_REPORT_BASE + """
              l.created_date,
              f.fruits_id
