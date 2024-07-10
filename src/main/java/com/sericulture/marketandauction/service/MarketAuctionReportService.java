@@ -710,10 +710,17 @@ public class MarketAuctionReportService {
                     .accecptedLotsMaxBid(Util.objectToString(response[7]))
                     .accectedLotsMinBid(Util.objectToString(response[8]))
                     .averagRate(Util.objectToString(response[9]))
-                    .weighedLots(Util.objectToString(response[10])).build();
+                    .weighedLots(Util.objectToString(response[10]))
+                    .accectedLotsMinBid(Util.objectToString(response[8]))
+                    .averagRate(Util.objectToString(response[9]))
+                    .weighedLots(Util.objectToString(response[10]))
+                    .totalLotsBid(Util.objectToString(response[11]))
+                    .currentAuctionMaxAmount(Util.objectToString(response[12]))
+                    .totalLotsNotBid(Util.objectToString(response[13]))
+                    .build();
 
 
-            dashboardReportInfo.setTotalLotsNotBid(String.valueOf(Integer.parseInt(dashboardReportInfo.getTotalLots()) - Integer.parseInt(dashboardReportInfo.getTotalLotsBid())));
+           // dashboardReportInfo.setTotalLotsNotBid(String.valueOf(Integer.parseInt(dashboardReportInfo.getTotalLots()) - Integer.parseInt(dashboardReportInfo.getTotalLotsBid())));
             dashboardReportInfoList.add(dashboardReportInfo);
         }
         dashboardReport.setDashboardReportInfoList(dashboardReportInfoList);

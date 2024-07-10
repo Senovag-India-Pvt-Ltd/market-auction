@@ -234,32 +234,65 @@ public class MarketAuctionQueryConstants {
 
     public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber";
 
+//    public static final String DASHBOARD_COUNT = """
+//            SELECT\s
+//                             rm.race_name,
+//                             COUNT(ma.number_of_lot) AS total_lots,
+//                             SUM(lot.lot_sold_out_amount) AS total_sold_out_amount,
+//                             COUNT(lot.lot_id) AS total_lots_in_reeler_auction,
+//                             SUM(ra.amount) AS total_bids_amount,
+//                             COUNT(DISTINCT ra.reeler_id) AS unique_reeler_count,
+//                             COUNT(CASE WHEN lot.status = 'accepted' THEN 1 END) AS accepted_lots_count,
+//                             MAX(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS max_sold_out_amount_accepted,
+//                             MIN(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS min_sold_out_amount_accepted,
+//                             AVG(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS average_sold_out_amount_accepted,
+//                             SUM(lot.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight_after_weighment
+//                             FROM\s
+//                                 market_auction ma
+//                             LEFT JOIN\s
+//                                 dbo.race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+//                             LEFT JOIN\s
+//                                 lot ON ma.market_auction_id = lot.market_auction_id
+//                             LEFT JOIN\s
+//                                 reeler_auction ra ON lot.reeler_auction_id = ra.reeler_auction_id
+//                             WHERE\s
+//                                 ma.market_id = :marketId
+//                                 AND ma.market_auction_date = :marketAuctionDate
+//                             GROUP BY\s
+//                                 rm.race_name;""";
+
     public static final String DASHBOARD_COUNT = """
             SELECT\s
-                             rm.race_name,
-                             COUNT(ma.number_of_lot) AS total_lots,
-                             SUM(lot.lot_sold_out_amount) AS total_sold_out_amount,
-                             COUNT(lot.lot_id) AS total_lots_in_reeler_auction,
-                             SUM(ra.amount) AS total_bids_amount,
-                             COUNT(DISTINCT ra.reeler_id) AS unique_reeler_count,
-                             COUNT(CASE WHEN lot.status = 'accepted' THEN 1 END) AS accepted_lots_count,
-                             MAX(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS max_sold_out_amount_accepted,
-                             MIN(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS min_sold_out_amount_accepted,
-                             AVG(CASE WHEN lot.status = 'accepted' THEN ra.AMOUNT END) AS average_sold_out_amount_accepted,
-                             SUM(lot.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight_after_weighment
-                             FROM\s
-                                 market_auction ma
-                             LEFT JOIN\s
-                                 dbo.race_master rm ON ma.RACE_MASTER_ID = rm.race_id
-                             LEFT JOIN\s
-                                 lot ON ma.market_auction_id = lot.market_auction_id
-                             LEFT JOIN\s
-                                 reeler_auction ra ON lot.reeler_auction_id = ra.reeler_auction_id
-                             WHERE\s
-                                 ma.market_id = :marketId
-                                 AND ma.market_auction_date = :marketAuctionDate
-                             GROUP BY\s
-                                 rm.race_name;""";
+                  rm.race_name,
+                  COUNT(ma.number_of_lot) AS total_lots,
+                  SUM(lot.lot_sold_out_amount) AS total_sold_out_amount,
+                  COUNT(lot.lot_id) AS total_lots_in_reeler_auction,
+                  SUM(ra.amount) AS total_bids_amount,
+                  COUNT(DISTINCT ra.reeler_id) AS unique_reeler_count,
+                  COUNT(CASE WHEN lot.status = 'accepted' THEN 1 END) AS accepted_lots_count,
+                  MAX(CASE WHEN lot.status = 'accepted' THEN ra.amount END) AS max_sold_out_amount_accepted,
+                  MIN(CASE WHEN lot.status = 'accepted' THEN ra.amount END) AS min_sold_out_amount_accepted,
+                  AVG(CASE WHEN lot.status = 'accepted' THEN ra.amount END) AS average_sold_out_amount_accepted,
+                COUNT(CASE WHEN lot.LOT_WEIGHT_AFTER_WEIGHMENT > 0 THEN lot.LOT_WEIGHT_AFTER_WEIGHMENT END) AS total_lots_after_weighment,
+                  COUNT(ra.reeler_auction_id) AS total_bid_count,
+                  MAX(ra.amount) AS current_auction_max_amount,
+                  COUNT(CASE WHEN ra.reeler_auction_id IS NULL THEN 1 END) AS total_not_bid
+              FROM\s
+                  market_auction ma
+              LEFT JOIN\s
+                  dbo.race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+              LEFT JOIN\s
+                  lot ON ma.market_auction_id = lot.market_auction_id
+              LEFT JOIN\s
+                  reeler_auction ra ON lot.reeler_auction_id = ra.reeler_auction_id
+                  AND ra.MARKET_ID = :marketId\s
+                  AND ra.AUCTION_DATE = :marketAuctionDate
+              WHERE\s
+                  ma.market_id = :marketId
+                  AND ma.market_auction_date = :marketAuctionDate
+              GROUP BY\s
+                  rm.race_name;
+              """;
 
     public static final String ACCEPTANCE_STARTED = """
             SELECT\s
