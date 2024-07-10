@@ -99,6 +99,20 @@ public class ReportService {
                left join reeler r on r.reeler_id = ra.REELER_ID
                left join FARMER f on f.FARMER_ID = ma.farmer_id
                where l.auction_date between :fromDate and :toDate
+               and l.market_id   = :marketId
+               and  l.status in ('weighmentcompleted')
+               order by l.allotted_lot_id
+            """;
+
+    private String CASH_REELER_BALANCE_WITH_REELER ="""
+              select l.lot_sold_out_amount, l.allotted_lot_id, l.auction_date, f.first_name, f.middle_name, f.last_name, r.name,
+               sum(l.lot_sold_out_amount) over (partition by l.market_id, r.reeler_number) as total_sold_out_amount
+               from lot l\s
+               left join market_auction ma on ma.market_auction_id = l.market_auction_id
+               left join reeler_auction ra on ra.REELER_AUCTION_ID = l.REELER_AUCTION_ID
+               left join reeler r on r.reeler_id = ra.REELER_ID
+               left join FARMER f on f.FARMER_ID = ma.farmer_id
+               where l.auction_date between :fromDate and :toDate
                and l.market_id   = :marketId and r.reeler_number = :reelerNumber
                and  l.status in ('weighmentcompleted')
                order by l.allotted_lot_id
@@ -203,12 +217,21 @@ public class ReportService {
             reelerTransactionReportWrapper.setTotalPurchase(debitSum);
             reelerTransactionReportWrapper.setName(reelerName);
         }else{
-            List<Object[]> objectList = entityManager.createNativeQuery(CASH_REELER_BALANCE)
-                    .setParameter("fromDate", fromDate)
-                    .setParameter("toDate", toDate)
-                    .setParameter("reelerNumber", reelerNumber)
-                    .setParameter("marketId", marketId)
-                    .getResultList();
+            List<Object[]> objectList;
+            if(reelerNumber != null && !reelerNumber.equals("")) {
+                objectList = entityManager.createNativeQuery(CASH_REELER_BALANCE_WITH_REELER)
+                        .setParameter("fromDate", fromDate)
+                        .setParameter("toDate", toDate)
+                        .setParameter("reelerNumber", reelerNumber)
+                        .setParameter("marketId", marketId)
+                        .getResultList();
+            }else{
+                objectList = entityManager.createNativeQuery(CASH_REELER_BALANCE)
+                        .setParameter("fromDate", fromDate)
+                        .setParameter("toDate", toDate)
+                        .setParameter("marketId", marketId)
+                        .getResultList();
+            }
 
             List<ReelerTransactionReport> reportAllTransactions = new ArrayList<>();
             Double reelerTotalPurchase = 0.0;
