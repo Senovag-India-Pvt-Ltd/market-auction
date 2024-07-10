@@ -1876,7 +1876,12 @@ public class MarketAuctionReportService {
     public ResponseEntity<?> getReelerBiddingReport(ReelerReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         List<LotReportResponse> lotReportResponseList = new ArrayList<>();
-        List<Object[]> responses = reelerAuctionRepository.getReelerBiddingReport(reportRequest.getMarketId(),reportRequest.getReportFromDate(),reportRequest.getReelerNumber());
+        List<Object[]> responses;
+        if(reportRequest.getReelerNumber() != null && !reportRequest.getReelerNumber().equals("")) {
+            responses = reelerAuctionRepository.getReelerBiddingReport(reportRequest.getMarketId(), reportRequest.getReportFromDate(), reportRequest.getReelerNumber());
+        }else{
+            responses = reelerAuctionRepository.getReelerBiddingReportWithoutReeler(reportRequest.getMarketId(), reportRequest.getReportFromDate());
+        }
         return getBiddingReportLotOrReeler(reportRequest.getMarketId(), rw, lotReportResponseList, responses);
     }
 

@@ -234,6 +234,8 @@ public class MarketAuctionQueryConstants {
 
     public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber";
 
+    public static final String BIDDING_REPORT_QUERY_WITHOUT_REELER = BIDDING_REPORT_QUERY;
+
 //    public static final String DASHBOARD_COUNT = """
 //            SELECT\s
 //                             rm.race_name,
