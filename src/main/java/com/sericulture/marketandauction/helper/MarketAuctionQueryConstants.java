@@ -183,7 +183,7 @@ public class MarketAuctionQueryConstants {
             r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
             l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
             ra.AMOUNT,rvcb.CURRENT_BALANCE,r.reeler_name_kannada,r.mobile_number,r.reeler_number,
-            l.BID_ACCEPTED_BY, f.fruits_id
+            l.BID_ACCEPTED_BY, f.fruits_id, gm.godown_name
             from 
             FARMER f
             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 
@@ -197,6 +197,7 @@ public class MarketAuctionQueryConstants {
             LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID 
             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
             LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id  
+            LEFT JOIN godown_master gm ON gm.godown_master_id = ma.godown_id  
             LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
             LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID  
             WHERE l.auction_date =:paymentDate and l.market_id =:marketId

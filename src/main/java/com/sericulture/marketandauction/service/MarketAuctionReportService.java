@@ -306,6 +306,7 @@ public class MarketAuctionReportService {
             lotPendingReportResponse.setReelerMobileNumber(Util.objectToString(response[34]));
             lotPendingReportResponse.setReelerNumber(Util.objectToString(response[35]));
             lotPendingReportResponse.setAcceptedBy(Util.objectToString(response[36]));
+            lotPendingReportResponse.setShed(String.valueOf(response[38]));
             lotPendingReportResponse.setSerailNumberForPagination(++serailNumberForPagination);
             lotPendingReportResponse.setBigBinList(bigBins.get(lotPendingReportResponse.getMarketAuctionId().toBigInteger()));
             lotPendingReportResponse.setSmallBinList(smallBins.get(lotPendingReportResponse.getMarketAuctionId().toBigInteger()));
