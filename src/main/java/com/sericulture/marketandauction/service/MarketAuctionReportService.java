@@ -1852,7 +1852,7 @@ public class MarketAuctionReportService {
                     .reelerLicenseNumber(Util.objectToString(response[1]))
                     .bidAmount(Util.objectToInteger(response[2]))
                     .bidTime(((Timestamp)response[3]).toLocalDateTime().toLocalTime())
-                    .accepted(Util.objectToString(response[4]))
+                    .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
                     .marketName(Util.objectToString(response[7]))
                     .build();
             lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
