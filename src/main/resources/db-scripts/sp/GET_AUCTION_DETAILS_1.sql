@@ -145,3 +145,15 @@ INNER JOIN (
 
     SET @Success = 1;
 END;
+
+
+--DECLARE @Error varchar(500);
+--DECLARE @Success varchar(500);
+--SET @Success = -1;
+--EXEC GET_AUCTION_DETAILS_1
+--   @today = '2024-07-11',
+--   @marketId =34,
+--   @reelerId = 108,
+--   @Error= @Error  output,
+--   @Success =@Success output;
+--   SELECT  @Error, @Success
