@@ -295,18 +295,18 @@ public class MarketAuctionReportService {
         for (Object[] response : lotDetails) {
             BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
             LotPendingReportResponse lotPendingReportResponse = prepareResponseForLotBaseResponse(token, response, lotId);
-            lotPendingReportResponse.setAuctionDateWithTime((Date) (response[23]));
-            lotPendingReportResponse.setReelerLicense(Util.objectToString(response[24]));
-            lotPendingReportResponse.setReelerName(Util.objectToString(response[25]));
-            lotPendingReportResponse.setReelerAddress(Util.objectToString(response[26]));
-            lotPendingReportResponse.setLotWeight(Util.objectToFloat(response[27]));
+            lotPendingReportResponse.setAuctionDateWithTime((Date) (response[24]));
+            lotPendingReportResponse.setReelerLicense(Util.objectToString(response[25]));
+            lotPendingReportResponse.setReelerName(Util.objectToString(response[26]));
+            lotPendingReportResponse.setReelerAddress(Util.objectToString(response[27]));
+            lotPendingReportResponse.setLotWeight(Util.objectToFloat(response[28]));
             lotPendingReportResponse.setBidAmount(Util.objectToFloat(response[31]));
-            lotPendingReportResponse.setReelerCurrentBalance(Util.objectToFloat(response[32]));
-            lotPendingReportResponse.setReelerNameKannada(Util.objectToString(response[33]));
-            lotPendingReportResponse.setReelerMobileNumber(Util.objectToString(response[34]));
-            lotPendingReportResponse.setReelerNumber(Util.objectToString(response[35]));
-            lotPendingReportResponse.setAcceptedBy(Util.objectToString(response[36]));
-            lotPendingReportResponse.setShed(String.valueOf(response[38]));
+            lotPendingReportResponse.setReelerCurrentBalance(Util.objectToFloat(response[33]));
+            lotPendingReportResponse.setReelerNameKannada(Util.objectToString(response[34]));
+            lotPendingReportResponse.setReelerMobileNumber(Util.objectToString(response[35]));
+            lotPendingReportResponse.setReelerNumber(Util.objectToString(response[36]));
+            lotPendingReportResponse.setAcceptedBy(Util.objectToString(response[37]));
+            lotPendingReportResponse.setShed(String.valueOf(response[39]));
             lotPendingReportResponse.setSerailNumberForPagination(++serailNumberForPagination);
             lotPendingReportResponse.setBigBinList(bigBins.get(lotPendingReportResponse.getMarketAuctionId().toBigInteger()));
             lotPendingReportResponse.setSmallBinList(smallBins.get(lotPendingReportResponse.getMarketAuctionId().toBigInteger()));
@@ -1911,7 +1911,7 @@ public class MarketAuctionReportService {
 
                 .farmerMobileNumber(Util.objectToString(response[21]))
                 .marketAuctionId((BigDecimal) response[22])
-                .auctionDateWithTime((Date)(response[23]))
+                .auctionDateWithTime((Date)(response[24]))
                 .build();
         lotPendingReportResponse.setLoginName(token.getUsername());
         return lotPendingReportResponse;
