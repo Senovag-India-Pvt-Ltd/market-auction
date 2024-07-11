@@ -62,6 +62,9 @@ public class WeigmentService {
         CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
         LotWeightResponse lotWeightResponse = getLotWeightResponse(canContinueToWeighmentRequest);
         if(!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())){
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
             return marketAuctionHelper.retrunIfError(rw,"Lot is accepted. But " + lotWeightResponse.getLotStatus() + " for lot " +canContinueToWeighmentRequest.getAllottedLotId());
             //return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
         }
