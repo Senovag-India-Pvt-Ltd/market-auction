@@ -21,4 +21,5 @@ public class LotReportResponse extends ResponseBody {
     private LocalTime acceptedTime;
     private String acceptedBy;
     private String marketName;
+    private String auctionSession;
 }
