@@ -168,7 +168,7 @@ public class MarketAuctionReportService {
             for (Object[] bids : highestBids) {
                 highestBidsFoundList.add(Util.objectToInteger(bids[0]));
                 LotHighestBidResponse lotHighestBidResponse = new LotHighestBidResponse(
-                        Util.objectToInteger(bids[0]), Util.objectToInteger(bids[1]), Util.objectToString(bids[2]));
+                        Util.objectToInteger(bids[0]), Util.objectToInteger(bids[1]), Util.objectToString(bids[2]),Util.objectToString(bids[2]));
                 lotHighestBidResponseList.add(lotHighestBidResponse);
             }
         }
@@ -207,9 +207,11 @@ public class MarketAuctionReportService {
             boolean notFound = true;
             int allottedLot = Integer.parseInt(String.valueOf(bidDetail[0]));
             int bidAmount = Integer.parseInt(String.valueOf(bidDetail[1]));
+            String currentTime = String.valueOf(bidDetail[2]);
             LotHighestBidResponse lotHighestBidResponse = new LotHighestBidResponse();
             lotHighestBidResponse.setAllottedLotId(allottedLot);
             lotHighestBidResponse.setHighestBid(bidAmount);
+            lotHighestBidResponse.setCurrentTime(currentTime);
             lotHighestBidResponseList.add(lotHighestBidResponse);
         }
         rw.setContent(lotHighestBidResponseList);

@@ -14,4 +14,5 @@ public class LotHighestBidResponse extends ResponseBody {
     private int allottedLotId;
     private int highestBid = 0;
     private String reelerName;
+    private String currentTime;
 }
