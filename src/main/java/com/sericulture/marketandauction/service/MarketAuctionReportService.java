@@ -1861,6 +1861,7 @@ public class MarketAuctionReportService {
                     .bidTime(((Timestamp)response[3]).toLocalDateTime().toLocalTime())
                     .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
                     .marketName(Util.objectToString(response[7]))
+                    .auctionSession(Util.objectToString(response[8]))
                     .build();
             lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
             if(StringUtils.isNotBlank(lotReportResponse.getAccepted())){
