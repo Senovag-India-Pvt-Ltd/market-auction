@@ -133,7 +133,7 @@ public class MarketAuctionQueryConstants {
 
     private static final String SELECT_FIELDS_PENDING_REPORT_BASE = """
             select  f.farmer_number,f.first_name ,f.middle_name,
-             f.last_name,fa.address_text,t.TALUK_NAME,v.VILLAGE_NAME,
+             f.last_name,fa.address_text,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
              fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
              l.allotted_lot_id,l.auction_date,ma.estimated_weight,
              mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
