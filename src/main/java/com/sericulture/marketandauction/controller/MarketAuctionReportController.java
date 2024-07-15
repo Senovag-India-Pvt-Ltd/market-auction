@@ -44,6 +44,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getDTROnlineReport(dtrOnlineReportRequest);
     }
 
+    @PostMapping("/getBlankDTROnlineReport")
+    public ResponseEntity<?> getBlankDTROnlineReport(@RequestBody DTROnlineReportRequest dtrOnlineReportRequest){
+        return marketAuctionReportService.getBlankDTROnlineReport(dtrOnlineReportRequest);
+    }
+
     @PostMapping("/getUnitCounterReport")
     public ResponseEntity<?> getUnitCounterReport(@RequestBody ReportRequest reportRequest){
         return marketAuctionReportService.getUnitCounterReport(reportRequest);

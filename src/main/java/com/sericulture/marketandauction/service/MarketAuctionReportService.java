@@ -149,6 +149,37 @@ public class MarketAuctionReportService {
         return ResponseEntity.ok(rw);
     }
 
+    public ResponseEntity<?> getBlankDTROnlineReport(DTROnlineReportRequest dtrOnlineReportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<Integer> reelerIdList = null;
+        if (dtrOnlineReportRequest.getReelerId() > 0) {
+            reelerIdList = List.of(dtrOnlineReportRequest.getReelerId());
+        }
+        List<Object[]> reportPaymentSuccessResponse = lotRepository.
+                getPaymentSuccessLotsForBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+
+        MarketMaster marketMaster = marketMasterRepository.findById(dtrOnlineReportRequest.getMarketId());
+        List<Object[]> reportResponse;
+        if(marketMaster.getPaymentMode().equals("cash")){
+            reportResponse = lotRepository.
+                    getDTROnlineReportForCashForBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+        }else{
+            reportResponse = lotRepository.
+                    getBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+        }
+
+        DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
+        if(reportResponse.size()>0) {
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+        }
+        prepareDTROnlineInfo(dtrOnlineReportResponse, reportResponse);
+        if(reportPaymentSuccessResponse.size()>0) {
+            dtrOnlineReportResponse.setPaymentSuccessLots(Util.objectToInteger(reportPaymentSuccessResponse.get(0)[0]));
+        }
+        rw.setContent(dtrOnlineReportResponse);
+        return ResponseEntity.ok(rw);
+    }
+
     public ResponseEntity<?> getAllHighestBidsByMarketIdAndOptionalGodownId(RequestBody requestBody) {
         List<LotHighestBidResponse> lotHighestBidResponseList = new ArrayList<>();
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);

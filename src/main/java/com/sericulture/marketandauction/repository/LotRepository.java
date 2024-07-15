@@ -107,9 +107,17 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY)
     public List<Object[]> getDTROnlineReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY)
+    public List<Object[]> getDTROnlineReportForBlankReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BLANK_REPORT)
+    public List<Object[]> getBlankReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
+
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY_FOR_CASH)
     public List<Object[]> getDTROnlineReportForCash(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY_FOR_CASH_BLANK_REPORT)
+    public List<Object[]> getDTROnlineReportForCashForBlankReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PENDING_REPORT_ACCEPTED_LOTS)
     public List<Object[]> getAcceptedLotDetailsForPendingReport(LocalDate paymentDate,int marketId);
@@ -137,6 +145,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PAYMENT_SUCCESS_LOTS)
     public List<Object[]> getPaymentSuccessLots(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PAYMENT_SUCCESS_LOTS_FOR_BLANK_REPORT)
+    public List<Object[]> getPaymentSuccessLotsForBlankReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.REELER_PENDING_REPORT)
     public List<Object[]> getReelerPendingReport(int marketId);
