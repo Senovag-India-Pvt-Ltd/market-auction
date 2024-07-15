@@ -628,7 +628,7 @@ public class MarketAuctionReportService {
         lotsFrom210to300.add(breakdownLotStatusList231to240);
 
         List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatus(241, 250,requestBody.getMarketId(), requestBody.getAuctionDate());
-        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween201to210Response, 241, 250, totalWeight, "");
+        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList241to250);
 
         List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatus(251, 275,requestBody.getMarketId(), requestBody.getAuctionDate());
@@ -636,7 +636,7 @@ public class MarketAuctionReportService {
         lotsFrom210to300.add(breakdownLotStatusList251to275);
 
         List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatus(276, 300,requestBody.getMarketId(), requestBody.getAuctionDate());
-        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween201to210Response, 276, 300, totalWeight, "");
+        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList276to300);
 
         form13Response.setLotsFrom201to300(lotsFrom210to300);
