@@ -51,6 +51,9 @@ public class Lot extends BaseEntity implements Serializable {
     @Column(name = "REELER_AUCTION_ID")
     private BigInteger reelerAuctionId;
 
+    @Column(name = "REELER_AUCTION_ACCEPTED_ID")
+    private BigInteger reelerAuctionAcceptedId;
+
     @Column(name = "NO_OF_CRATES")
     private int noOfCrates;
 

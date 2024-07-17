@@ -37,6 +37,7 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -442,7 +443,9 @@ public class MarketAuctionReportService {
 
         List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
-        List<Object[]> stateWiseLotStatusResponse = lotRepository.getStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
         List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
@@ -462,8 +465,11 @@ public class MarketAuctionReportService {
         form13Response.setTotalLotStatus(totalLotStatus);
         totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[3]);
 
-        List<GroupLotStatus> stateWiseLotStatus = prepareGroup13Report(stateWiseLotStatusResponse, "");
+        List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
         form13Response.setStateWiseLotStatus(stateWiseLotStatus);
+
+        List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
+        form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
 
         List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
         form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
@@ -519,7 +525,7 @@ public class MarketAuctionReportService {
         lotsFrom210to300.add(breakdownLotStatusList231to240);
 
         List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatus(241, 250,requestBody.getMarketId(), requestBody.getAuctionDate());
-        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween201to210Response, 241, 250, totalWeight, "");
+        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList241to250);
 
         List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatus(251, 275,requestBody.getMarketId(), requestBody.getAuctionDate());
@@ -527,7 +533,7 @@ public class MarketAuctionReportService {
         lotsFrom210to300.add(breakdownLotStatusList251to275);
 
         List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatus(276, 300,requestBody.getMarketId(), requestBody.getAuctionDate());
-        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween201to210Response, 276, 300, totalWeight, "");
+        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList276to300);
 
         form13Response.setLotsFrom201to300(lotsFrom210to300);
@@ -548,6 +554,8 @@ public class MarketAuctionReportService {
         return ResponseEntity.ok(rw);
 
     }
+
+
 
     BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
         BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();
@@ -590,12 +598,87 @@ public class MarketAuctionReportService {
                     .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
                     .min(Util.objectToString(response[5]))
                     .max(Util.objectToString(response[6]))
-                    .avg(Util.objectToString(response[7]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
                     .build();
             groupLotList.add(groupLotStatus);
+            descriptionText = "";
         }
         return groupLotList;
     }
+
+    List<GroupLotStatus> prepareGroupStateReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[2]))
+                    .weight(Util.objectToString(response[3]))
+                    .amount(Util.objectToString(response[4]))
+                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+                    .min(Util.objectToString(response[5]))
+                    .max(Util.objectToString(response[6]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+                    .build();
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
+    List<GroupLotStatus> prepareGroupGenderReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[1]))
+                    .weight(Util.objectToString(response[2]))
+                    .amount(Util.objectToString(response[3]))
+                    .mf(String.valueOf(Util.objectToFloat(response[7]) + Util.objectToFloat(response[8])))
+                    .min(Util.objectToString(response[4]))
+                    .max(Util.objectToString(response[5]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[3]) / Util.objectToFloat(response[2])))
+                    .build();
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+//List<GroupLotStatus> prepareGroup13Report(List<Object[]> groupLotStatusResponse, String descriptionText) {
+//    List<GroupLotStatus> groupLotList = new ArrayList<>();
+//    for (Object[] response : groupLotStatusResponse) {
+//        String currentDescription = ""; // Initialize currentDescription
+//        if (response.length > 11) {
+//            currentDescription = Util.objectToString(response[11]);
+//        } else if (!descriptionText.equals("")) {
+//            currentDescription = descriptionText; // Fallback to provided descriptionText if not empty
+//        }
+//
+//        GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+//                .description(currentDescription)
+//                .lot(Util.objectToString(response[2]))
+//                .weight(Util.objectToString(response[3]))
+//                .amount(Util.objectToString(response[4]))
+//                .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+//                .min(Util.objectToString(response[5]))
+//                .max(Util.objectToString(response[6]))
+//                .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+//                .build();
+//        groupLotList.add(groupLotStatus);
+//    }
+//    return groupLotList;
+//}
+
+
+
     public ResponseEntity<?> getDashboardReport(DashboardReportRequest dashboardReportRequest) {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);

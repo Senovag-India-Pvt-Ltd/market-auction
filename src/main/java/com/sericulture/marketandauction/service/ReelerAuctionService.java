@@ -10,6 +10,7 @@ import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
+import com.sericulture.marketandauction.model.entity.ReelerAuctionAccepted;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
@@ -219,47 +220,102 @@ public class ReelerAuctionService {
 
     }
 
-    @Transactional
-    public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
-        log.info("Accept bid received for request: " + lotStatusRequest);
-        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        try {
-            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(lotStatusRequest);
+//    @Transactional
+//    public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
+//        log.info("Accept bid received for request: " + lotStatusRequest);
+//        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+//        try {
+//            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(lotStatusRequest);
+//
+//            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTIONACCEPT, lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
+//            if (!canIssue) {
+//                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
+//                rw.setErrorCode(-1);
+//                rw.setErrorMessages(List.of(validationMessage));
+//                return ResponseEntity.ok(rw);
+//            }
+//            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate());
+//            if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
+//                throw new ValidationException(String.format("expected Lot status is blank but found:%s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
+//            }
+//            int acceptStartChecker = marketAuctionHelper.checkCurrentAuctionAccept(lotStatusRequest.getMarketId());
+//            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), acceptStartChecker);
+//            if (reelerAuction != null) {
+//                Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
+//                l.setStatus(LotStatus.ACCEPTED.getLabel());
+//                l.setReelerAuctionId(reelerAuction.getId());
+//                l.setBidAcceptedBy(token.getUsername());
+//                reelerAuction.setStatus(LotStatus.ACCEPTED.getLabel());
+//                lotRepository.save(l);
+//                reelerAuctionRepository.save(reelerAuction);
+//            } else {
+//                throw new ValidationException(String.format("No bids found for the given lot %s",lotStatusRequest.getAllottedLotId()));
+//            }
+//            log.info("Accept bid completed for request: " + lotStatusRequest);
+//            return ResponseEntity.ok(rw);
+//        } catch (Exception ex) {
+//            if(ex instanceof ValidationException){
+//                throw ex;
+//            }
+//            log.error("Error while processing request: " + lotStatusRequest + "with error:" + ex);
+//            return marketAuctionHelper.retrunIfError(rw, "error while processing the request");
+//        }
+//    }
+@Transactional
+public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
+    log.info("Accept bid received for request: " + lotStatusRequest);
+    ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+    try {
+        JwtPayloadData token = marketAuctionHelper.getMOAuthToken(lotStatusRequest);
 
-            boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTIONACCEPT, lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
-            if (!canIssue) {
-                ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
-                rw.setErrorCode(-1);
-                rw.setErrorMessages(List.of(validationMessage));
-                return ResponseEntity.ok(rw);
-            }
-            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate());
-            if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
-                throw new ValidationException(String.format("expected Lot status is blank but found:%s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
-            }
-            int acceptStartChecker = marketAuctionHelper.checkCurrentAuctionAccept(lotStatusRequest.getMarketId());
-            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), acceptStartChecker);
-            if (reelerAuction != null) {
-                Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
-                l.setStatus(LotStatus.ACCEPTED.getLabel());
-                l.setReelerAuctionId(reelerAuction.getId());
-                l.setBidAcceptedBy(token.getUsername());
-                reelerAuction.setStatus(LotStatus.ACCEPTED.getLabel());
-                lotRepository.save(l);
-                reelerAuctionRepository.save(reelerAuction);
-            } else {
-                throw new ValidationException(String.format("No bids found for the given lot %s",lotStatusRequest.getAllottedLotId()));
-            }
-            log.info("Accept bid completed for request: " + lotStatusRequest);
+        boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTIONACCEPT, lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
+        if (!canIssue) {
+            ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
+            rw.setErrorCode(-1);
+            rw.setErrorMessages(List.of(validationMessage));
             return ResponseEntity.ok(rw);
-        } catch (Exception ex) {
-            if(ex instanceof ValidationException){
-                throw ex;
-            }
-            log.error("Error while processing request: " + lotStatusRequest + "with error:" + ex);
-            return marketAuctionHelper.retrunIfError(rw, "error while processing the request");
         }
+        Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(lotStatusRequest.getMarketId(), lotStatusRequest.getAllottedLotId(), Util.getISTLocalDate());
+        if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
+            throw new ValidationException(String.format("expected Lot status is blank but found:%s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
+        }
+        int acceptStartChecker = marketAuctionHelper.checkCurrentAuctionAccept(lotStatusRequest.getMarketId());
+        ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), acceptStartChecker);
+        if (reelerAuction != null) {
+            Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
+            l.setStatus(LotStatus.ACCEPTED.getLabel());
+            l.setReelerAuctionId(reelerAuction.getId());
+            l.setBidAcceptedBy(token.getUsername());
+            reelerAuction.setStatus(LotStatus.ACCEPTED.getLabel());
+            lotRepository.save(l);
+            reelerAuctionRepository.save(reelerAuction);
+
+            // Create and save ReelerAuctionAccepted entity
+            ReelerAuctionAccepted reelerAuctionAccepted = new ReelerAuctionAccepted();
+            reelerAuctionAccepted.setMarketId(reelerAuction.getMarketId());
+            reelerAuctionAccepted.setAllottedLotId(reelerAuction.getAllottedLotId());
+            reelerAuctionAccepted.setReelerId(reelerAuction.getReelerId());
+            reelerAuctionAccepted.setAmount(reelerAuction.getAmount());
+            reelerAuctionAccepted.setStatus(reelerAuction.getStatus());
+            reelerAuctionAccepted.setAuctionDate(reelerAuction.getAuctionDate());
+            reelerAuctionAccepted.setSurrogateBid(reelerAuction.isSurrogateBid());
+            reelerAuctionAccepted.setAuctionSession(reelerAuction.getAuctionSession());
+            reelerAuctionRepository.save(reelerAuctionAccepted);
+
+            l.setReelerAuctionAcceptedId(reelerAuctionAccepted.getId());
+        } else {
+            throw new ValidationException(String.format("No bids found for the given lot %s",lotStatusRequest.getAllottedLotId()));
+        }
+        log.info("Accept bid completed for request: " + lotStatusRequest);
+        return ResponseEntity.ok(rw);
+    } catch (Exception ex) {
+        if(ex instanceof ValidationException){
+            throw ex;
+        }
+        log.error("Error while processing request: " + lotStatusRequest + "with error:" + ex);
+        return marketAuctionHelper.retrunIfError(rw, "error while processing the request");
     }
+}
 
     @Transactional
     public ResponseEntity<?> rejectReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
