@@ -160,7 +160,7 @@ public class WeigmentService {
         EntityManager entityManager = null;
         ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
         try {
-            JwtPayloadData token = marketAuctionHelper.getAuthToken(completeLotWeighmentRequest);
+            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(completeLotWeighmentRequest);
             MarketMaster marketMaster = marketMasterRepository.findById(completeLotWeighmentRequest.getMarketId());
             String paymentMode = marketMaster.getPaymentMode();
             entityManager = entityManagerFactory.createEntityManager();
@@ -273,7 +273,7 @@ public class WeigmentService {
         EntityManager entityManager = null;
         ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
         try {
-            JwtPayloadData token = marketAuctionHelper.getAuthToken(completeLotWeighmentRequest);
+            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(completeLotWeighmentRequest);
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
