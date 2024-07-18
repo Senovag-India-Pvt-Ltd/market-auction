@@ -132,18 +132,18 @@ public class MarketAuctionHelper {
         return ResponseEntity.ok(rw);
     }
 
-    public JwtPayloadData getMOAuthToken(RequestBody requestBody) {
-        return getAuthToken(requestBody.getMarketId(),USERTYPE.MO.getType());
+    public JwtPayloadData getAuthToken(RequestBody requestBody) {
+        JwtPayloadData jwtPayloadData = Util.getTokenValues();
+        if (jwtPayloadData.getMarketId() != requestBody.getMarketId() || jwtPayloadData.getUserType()!= USERTYPE.MO.getType()) {
+            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(),USERTYPE.MO.getType(),jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
+        }
+        return jwtPayloadData;
     }
 
     public JwtPayloadData getReelerAuthToken(RequestBody requestBody) {
-        return getAuthToken(requestBody.getMarketId(),USERTYPE.REELER.getType());
-    }
-
-    public JwtPayloadData getAuthToken(int marketId,int userType){
         JwtPayloadData jwtPayloadData = Util.getTokenValues();
-        if (jwtPayloadData.getMarketId() != marketId|| jwtPayloadData.getUserType()!= userType) {
-            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),marketId,userType,jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
+        if (jwtPayloadData.getMarketId() != requestBody.getMarketId() || jwtPayloadData.getUserType()!= USERTYPE.REELER.getType()) {
+            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(),USERTYPE.REELER.getType(),jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
         }
         return jwtPayloadData;
     }
