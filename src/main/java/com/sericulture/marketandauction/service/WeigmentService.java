@@ -57,41 +57,51 @@ public class WeigmentService {
 
     public ResponseEntity<?> canContinueToWeighmentProcess(CanContinueToWeighmentRequest canContinueToWeighmentRequest) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
         ResponseWrapper rw = ResponseWrapper.createWrapper(CanContinueToWeighmentResponse.class);
-        CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
-        LotWeightResponse lotWeightResponse = getLotWeightResponse(canContinueToWeighmentRequest);
-        if(!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())){
-            if (entityManager.isOpen()) {
-                entityManager.close();
+        try {
+            entityManager.getTransaction().begin();
+            CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
+            LotWeightResponse lotWeightResponse = getLotWeightResponse(canContinueToWeighmentRequest);
+            if (!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())) {
+                if (entityManager.isOpen()) {
+                    entityManager.close();
+                }
+                return marketAuctionHelper.retrunIfError(rw, "Lot is accepted. But " + lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
+                //return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
             }
-            return marketAuctionHelper.retrunIfError(rw,"Lot is accepted. But " + lotWeightResponse.getLotStatus() + " for lot " +canContinueToWeighmentRequest.getAllottedLotId());
-            //return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
-        }
-        if (util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber())) {
-            if (entityManager.isOpen()) {
-                entityManager.close();
+            if (util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber())) {
+                if (entityManager.isOpen()) {
+                    entityManager.close();
+                }
+                return marketAuctionHelper.retrunIfError(rw, "No Reeler Virtual Account found for Reeler " + lotWeightResponse.getReelerId());
             }
-            return marketAuctionHelper.retrunIfError(rw, "No Reeler Virtual Account found for Reeler " + lotWeightResponse.getReelerId());
-        }
-        CrateMaster crateMaster = crateMasterRepository.findByMarketIdAndGodownIdAndRaceMasterId(canContinueToWeighmentRequest.getMarketId(), canContinueToWeighmentRequest.getGodownId(), lotWeightResponse.getRaceMasterId());
-        int totalCrateCapacityWeight = canContinueToWeighmentRequest.getNoOfCrates() * crateMaster.getApproxWeightPerCrate();
-        double lotSoldOutAmount = totalCrateCapacityWeight * lotWeightResponse.getBidAmount();
-        Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(canContinueToWeighmentRequest.getMarketId());
-        double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
-        double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
-        double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee,2);
-        double hasEnoughMoney = lotWeightResponse.getReelerCurrentAvailableBalance() - amountDebitedFromReeler;
-        canContinueToWeighmentResponse.setWeight(totalCrateCapacityWeight);
-        rw.setContent(canContinueToWeighmentResponse);
+            CrateMaster crateMaster = crateMasterRepository.findByMarketIdAndGodownIdAndRaceMasterId(canContinueToWeighmentRequest.getMarketId(), canContinueToWeighmentRequest.getGodownId(), lotWeightResponse.getRaceMasterId());
+            int totalCrateCapacityWeight = canContinueToWeighmentRequest.getNoOfCrates() * crateMaster.getApproxWeightPerCrate();
+            double lotSoldOutAmount = totalCrateCapacityWeight * lotWeightResponse.getBidAmount();
+            Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(canContinueToWeighmentRequest.getMarketId());
+            double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
+            double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
+            double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee, 2);
+            double hasEnoughMoney = lotWeightResponse.getReelerCurrentAvailableBalance() - amountDebitedFromReeler;
+            canContinueToWeighmentResponse.setWeight(totalCrateCapacityWeight);
+            rw.setContent(canContinueToWeighmentResponse);
 
-        if (hasEnoughMoney < 0) {
-            if (entityManager.isOpen()) {
+            if (hasEnoughMoney < 0) {
+                if (entityManager.isOpen()) {
+                    entityManager.close();
+                }
+                return marketAuctionHelper.retrunIfError(rw, "Reeler current balance is not enough and he need " + Math.abs(hasEnoughMoney) + " more money");
+            }
+            entityManager.close();
+        }catch (NoResultException ex){
+            entityManager.close();
+            throw new ValidationException(ex.getMessage());
+
+        }finally {
+            if (entityManager != null && entityManager.isOpen()) {
                 entityManager.close();
             }
-            return marketAuctionHelper.retrunIfError(rw, "Reeler current balance is not enough and he need " + Math.abs(hasEnoughMoney) + " more money");
         }
-
         return ResponseEntity.ok(rw);
     }
 
@@ -130,6 +140,10 @@ public class WeigmentService {
         }catch (NoResultException ex){
             entityManager.close();
             throw new ValidationException(String.format("No data found for the given lot %s, Please check whether it is accepted or not",lotStatusRequest.getAllottedLotId()));
+        }finally {
+            if (entityManager != null && entityManager.isOpen()) {
+                entityManager.close();
+            }
         }
         float reelerCurrentBalance = Util.objectToFloat(lotWeightDetails[10]);
         float blockedAmount =Util.objectToFloat(lotWeightDetails[11]);
