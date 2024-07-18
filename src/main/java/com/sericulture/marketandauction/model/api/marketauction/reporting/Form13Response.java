@@ -1,6 +1,7 @@
 package com.sericulture.marketandauction.model.api.marketauction.reporting;
 
 import com.sericulture.marketandauction.model.api.ResponseBody;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketReport.MarketReportRaceWise;
 import lombok.*;
 
 import java.util.List;
@@ -18,5 +19,7 @@ public class Form13Response extends ResponseBody {
     List<BreakdownLotStatus> averageLotStatus;
     List<GroupLotStatus> totalLotStatus;
     List<GroupLotStatus> stateWiseLotStatus;
+    List<GroupLotStatus> genderWiseLotStatus;
     List<GroupLotStatus> raceWiseLotStatus;
+
 }
