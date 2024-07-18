@@ -128,7 +128,7 @@ public class ReelerAuctionService {
         log.info("Bid submission request:" + reelerBidRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(reelerBidRequest);
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(reelerBidRequest);
             boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTION, reelerBidRequest.getMarketId(), reelerBidRequest.getGodownId());
             if (!canIssue) {
                 ValidationMessage validationMessage = new ValidationMessage(MessageLabelType.NON_LABEL_MESSAGE.name(), "Cannot accept bid as time either over or not started", "-1");
@@ -323,7 +323,7 @@ public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotSt
     log.info("Accept bid received for request: " + lotStatusRequest);
     ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
     try {
-        JwtPayloadData token = marketAuctionHelper.getMOAuthToken(lotStatusRequest);
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(lotStatusRequest);
 
         boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTIONACCEPT, lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
         if (!canIssue) {
@@ -379,7 +379,7 @@ public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotSt
         log.info("Reject bid received for request: " + lotStatusRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(lotStatusRequest);
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(lotStatusRequest);
 
             boolean canIssue = marketAuctionHelper.canPerformActivity(MarketAuctionHelper.activityType.AUCTIONACCEPT, lotStatusRequest.getMarketId(), lotStatusRequest.getGodownId());
             if (!canIssue) {
