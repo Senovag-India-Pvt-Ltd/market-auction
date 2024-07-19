@@ -44,6 +44,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getDTROnlineReport(dtrOnlineReportRequest);
     }
 
+    @PostMapping("/getBlankDTROnlineReport")
+    public ResponseEntity<?> getBlankDTROnlineReport(@RequestBody DTROnlineReportRequest dtrOnlineReportRequest){
+        return marketAuctionReportService.getBlankDTROnlineReport(dtrOnlineReportRequest);
+    }
+
     @PostMapping("/getUnitCounterReport")
     public ResponseEntity<?> getUnitCounterReport(@RequestBody ReportRequest reportRequest){
         return marketAuctionReportService.getUnitCounterReport(reportRequest);
@@ -72,6 +77,11 @@ public class MarketAuctionReportController {
     @PostMapping("/getForm13Report")
     public ResponseEntity<?> getForm13Report(@RequestBody Form13Request requestBody){
         return marketAuctionReportService.getForm13Report(requestBody);
+    }
+
+    @PostMapping("/getForm13ReportByDist")
+    public ResponseEntity<?> getForm13ReportByDist(@RequestBody Form13Request requestBody){
+        return marketAuctionReportService.getForm13ReportByDistrict(requestBody);
     }
 
     @PostMapping("/averageReportForYearsReport")

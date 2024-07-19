@@ -149,6 +149,37 @@ public class MarketAuctionReportService {
         return ResponseEntity.ok(rw);
     }
 
+    public ResponseEntity<?> getBlankDTROnlineReport(DTROnlineReportRequest dtrOnlineReportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<Integer> reelerIdList = null;
+        if (dtrOnlineReportRequest.getReelerId() > 0) {
+            reelerIdList = List.of(dtrOnlineReportRequest.getReelerId());
+        }
+        List<Object[]> reportPaymentSuccessResponse = lotRepository.
+                getPaymentSuccessLotsForBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+
+        MarketMaster marketMaster = marketMasterRepository.findById(dtrOnlineReportRequest.getMarketId());
+        List<Object[]> reportResponse;
+        if(marketMaster.getPaymentMode().equals("cash")){
+            reportResponse = lotRepository.
+                    getDTROnlineReportForCashForBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+        }else{
+            reportResponse = lotRepository.
+                    getBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+        }
+
+        DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
+        if(reportResponse.size()>0) {
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+        }
+        prepareDTROnlineInfo(dtrOnlineReportResponse, reportResponse);
+        if(reportPaymentSuccessResponse.size()>0) {
+            dtrOnlineReportResponse.setPaymentSuccessLots(Util.objectToInteger(reportPaymentSuccessResponse.get(0)[0]));
+        }
+        rw.setContent(dtrOnlineReportResponse);
+        return ResponseEntity.ok(rw);
+    }
+
     public ResponseEntity<?> getAllHighestBidsByMarketIdAndOptionalGodownId(RequestBody requestBody) {
         List<LotHighestBidResponse> lotHighestBidResponseList = new ArrayList<>();
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -597,7 +628,7 @@ public class MarketAuctionReportService {
         lotsFrom210to300.add(breakdownLotStatusList231to240);
 
         List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatus(241, 250,requestBody.getMarketId(), requestBody.getAuctionDate());
-        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween201to210Response, 241, 250, totalWeight, "");
+        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList241to250);
 
         List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatus(251, 275,requestBody.getMarketId(), requestBody.getAuctionDate());
@@ -605,7 +636,7 @@ public class MarketAuctionReportService {
         lotsFrom210to300.add(breakdownLotStatusList251to275);
 
         List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatus(276, 300,requestBody.getMarketId(), requestBody.getAuctionDate());
-        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween201to210Response, 276, 300, totalWeight, "");
+        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList276to300);
 
         form13Response.setLotsFrom201to300(lotsFrom210to300);
@@ -626,6 +657,122 @@ public class MarketAuctionReportService {
         return ResponseEntity.ok(rw);
 
     }
+
+    public ResponseEntity<?> getForm13ReportByDistrict(Form13Request requestBody) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> avgResponse = lotRepository.getAvgLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+
+        List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+
+        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+
+        List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
+
+        float totalWeight = 0.0F;
+
+        if(Util.isNullOrEmptyList(totalLotStatusResponse))
+        {
+            throw new ValidationException("No data found");
+        }
+        Form13Response form13Response = new Form13Response();
+        form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[2]));
+        form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
+
+        List<GroupLotStatus> totalLotStatus = prepareGroup13Report(totalLotStatusResponse, "Reeler");
+        form13Response.setTotalLotStatus(totalLotStatus);
+        totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[3]);
+
+        List<GroupLotStatus> stateWiseLotStatus = prepareGroup13Report(stateWiseLotStatusResponse, "");
+        form13Response.setStateWiseLotStatus(stateWiseLotStatus);
+
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
+        form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
+
+        List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
+
+        List<Object[]> lotBetween1to100Response = lotRepository.getLotBreakDownStatusByDist(1, 100,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList1to100 = prepareBreakdown13Report(lotBetween1to100Response, 000, 100, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList1to100);
+
+        List<Object[]> lotBetween101to150Response = lotRepository.getLotBreakDownStatusByDist(101, 150,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList101to150 = prepareBreakdown13Report(lotBetween101to150Response, 101, 150, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList101to150);
+
+        List<Object[]> lotBetween150to200Response = lotRepository.getLotBreakDownStatusByDist(151, 200,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList150to200 = prepareBreakdown13Report(lotBetween150to200Response, 150, 200, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList150to200);
+
+        List<Object[]> lotBetween201to250Response = lotRepository.getLotBreakDownStatusByDist(201, 250,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList201to250 = prepareBreakdown13Report(lotBetween201to250Response, 201, 250, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList201to250);
+
+        List<Object[]> lotBetween250to300Response = lotRepository.getLotBreakDownStatusByDist(251, 300,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList250to300 = prepareBreakdown13Report(lotBetween250to300Response, 250, 300, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList250to300);
+
+        List<Object[]> lotBetween301to350Response = lotRepository.getLotBreakDownStatusByDist(301, 350,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList301to350 = prepareBreakdown13Report(lotBetween301to350Response, 301, 350, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList301to350);
+
+        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), 350, requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
+        lotsFrom0to351.add(breakdownLotStatusList350Above);
+
+        form13Response.setLotsFrom0to351(lotsFrom0to351);
+
+        List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
+
+        List<Object[]> lotBetween201to210Response = lotRepository.getLotBreakDownStatusByDist(201, 210,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList201to210 = prepareBreakdown13Report(lotBetween201to210Response, 201, 210, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList201to210);
+
+        List<Object[]> lotBetween211to220Response = lotRepository.getLotBreakDownStatusByDist(211, 220,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList211to220 = prepareBreakdown13Report(lotBetween211to220Response, 211, 220, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList211to220);
+
+        List<Object[]> lotBetween221to230Response = lotRepository.getLotBreakDownStatusByDist(221, 230,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList221to230 = prepareBreakdown13Report(lotBetween221to230Response, 221, 230, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList221to230);
+
+        List<Object[]> lotBetween231to240Response = lotRepository.getLotBreakDownStatusByDist(231, 240,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList231to240 = prepareBreakdown13Report(lotBetween231to240Response, 231, 240, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList231to240);
+
+        List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatusByDist(241, 250,requestBody.getMarketId(), requestBody.getAuctionDate(),  requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList241to250);
+
+        List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatusByDist(251, 275,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList251to275 = prepareBreakdown13Report(lotBetween251to275Response, 251, 275, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList251to275);
+
+        List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatusByDist(276, 300,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList276to300);
+
+        form13Response.setLotsFrom201to300(lotsFrom210to300);
+
+        List<BreakdownLotStatus> averageLots = new ArrayList<>();
+
+        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
+        BreakdownLotStatus lotlesserThanAverage = prepareBreakdown13Report(lotlesserThanAverageResponse, 301, 350, totalWeight, "Lots less than average");
+        averageLots.add(lotlesserThanAverage);
+
+        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
+        BreakdownLotStatus lotGreaterThanAverage = prepareBreakdown13Report(lotGreaterThanAverageResponse, 301, 350, totalWeight, "Lots more than average");
+        averageLots.add(lotGreaterThanAverage);
+
+        form13Response.setAverageLotStatus(averageLots);
+
+        rw.setContent(form13Response);
+        return ResponseEntity.ok(rw);
+
+    }
+
 
     BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
         BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();

@@ -126,133 +126,140 @@ public class ReportService {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         ReelerTransactionReportWrapper reelerTransactionReportWrapper = new ReelerTransactionReportWrapper();
-
-        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        if(!marketMaster.getPaymentMode().equals("cash")) {
-            Object[] reelerResult = (Object[]) entityManager.createNativeQuery(REELER_QUERY)
-                    .setParameter("marketId", marketId)
-                    .setParameter("reelerNumber", reelerNumber)
-                    .getSingleResult();
-
-            if (Objects.isNull(reelerResult)) {
-                return new ReelerTransactionReportWrapper();
-            }
-            String reelerName = (String) reelerResult[0];
-            String virtualAccountNumber = (String) reelerResult[1];
-
-            //Balance Query
-            Object object = entityManager.createNativeQuery(CURRENT_BALANCE_QUERY)
-                    .setParameter("virtualAccount", virtualAccountNumber)
-                    .getSingleResult();
-            Object[] array = (Object[]) object;
-            ReportCurrentBalance reportCurrentBalance = new ReportCurrentBalance();
-            reportCurrentBalance.setCurrentBalance(((BigDecimal) array[0]).doubleValue());
-            reportCurrentBalance.setVirtualAccountNumber((String) array[1]);
-            reportCurrentBalance.setCreatedDate(((Timestamp) array[2]).toLocalDateTime());
-
-            List<Object[]> objectList = entityManager.createNativeQuery(TRANSACTION_PASS_BOOK)
-                    .setParameter("fromDate", fromDate)
-                    .setParameter("toDate", toDate)
-                    // .setParameter("balanceTime", Timestamp.valueOf(reportCurrentBalance.getCreatedDate()))
-                    .setParameter("vAccount", reportCurrentBalance.getVirtualAccountNumber())
-                    .setParameter("marketId", marketId)
-                    .getResultList();
-
-            List<ReportAllTransaction> reportAllTransactions = new ArrayList<>();
-            for (Object[] obj : objectList) {
-                ReportAllTransaction rat = new ReportAllTransaction();
-                rat.setTransactionType(obj[0] + "");
-                rat.setAmount(((BigDecimal) obj[1]).doubleValue());
-                rat.setCreatedDate(((Timestamp) obj[2]).toLocalDateTime());
-                rat.setLot((Long) obj[3]);
-                rat.setDateOn(((java.sql.Date) obj[4]).toLocalDate());
-                rat.setFarmerName((String) obj[5]);
-                reportAllTransactions.add(rat);
-            }
-            double debitSum = 0.00;
-            double creditSum = 0.00;
-            double creditDebitDiff = 0.00;
-            double openingBalance = 0.00;
-            double currentBalance = 0.00;
-
-            List<ReelerTransactionReport> reelerTransactionReports = new ArrayList<>();
-            // prepare all the sums
-            for (ReportAllTransaction rat : reportAllTransactions) {
-                ReelerTransactionReport rtp = new ReelerTransactionReport();
-                if (Objects.isNull(rat.getAmount())) {
-                    continue;
-                }
-                rtp.setTransactionType(rat.getTransactionType());
-                rtp.setTransactionDate(rat.getCreatedDate().toLocalDate());
-                if ("D".equalsIgnoreCase(rat.getTransactionType())) {
-                    debitSum = debitSum + rat.getAmount();
-                    rtp.setPaymentAmount(rat.getAmount());
-                    rtp.setOperationDescription("Paid to " + rat.getFarmerName() + ", for lot " + rat.getLot());
-                } else {
-                    creditSum = creditSum + rat.getAmount();
-                    rtp.setDepositAmount(rat.getAmount());
-                    rtp.setOperationDescription("Deposited by " + reelerName);
-                }
-                reelerTransactionReports.add(rtp);
-            }
-            //susbtract credit and debit
-            creditDebitDiff = debitSum - creditSum;
-            openingBalance = currentBalance - creditDebitDiff;
-
-            double runningBalance = openingBalance;
-            //Need to loop again to fill the running balance
-            for (ReelerTransactionReport rtp : reelerTransactionReports) {
-                if ("D".equalsIgnoreCase(rtp.getTransactionType())) {
-                    runningBalance = runningBalance - rtp.getPaymentAmount();
-                    rtp.setBalance(runningBalance);
-                } else {
-                    runningBalance = runningBalance + rtp.getDepositAmount();
-                    rtp.setBalance(runningBalance);
-                }
-            }
-           // ReelerTransactionReportWrapper reelerTransactionReportWrapper = new ReelerTransactionReportWrapper();
-            reelerTransactionReportWrapper.setReelerTransactionReports(reelerTransactionReports);
-            reelerTransactionReportWrapper.setOpeningBalance(openingBalance);
-            reelerTransactionReportWrapper.setTotalDeposits(creditSum);
-            reelerTransactionReportWrapper.setTotalPurchase(debitSum);
-            reelerTransactionReportWrapper.setName(reelerName);
-        }else{
-            List<Object[]> objectList;
-            if(reelerNumber != null && !reelerNumber.equals("")) {
-                objectList = entityManager.createNativeQuery(CASH_REELER_BALANCE_WITH_REELER)
-                        .setParameter("fromDate", fromDate)
-                        .setParameter("toDate", toDate)
+        try {
+            MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+            if (!marketMaster.getPaymentMode().equals("cash")) {
+                Object[] reelerResult = (Object[]) entityManager.createNativeQuery(REELER_QUERY)
+                        .setParameter("marketId", marketId)
                         .setParameter("reelerNumber", reelerNumber)
-                        .setParameter("marketId", marketId)
-                        .getResultList();
-            }else{
-                objectList = entityManager.createNativeQuery(CASH_REELER_BALANCE)
+                        .getSingleResult();
+
+                if (Objects.isNull(reelerResult)) {
+                    return new ReelerTransactionReportWrapper();
+                }
+                String reelerName = (String) reelerResult[0];
+                String virtualAccountNumber = (String) reelerResult[1];
+
+                //Balance Query
+                Object object = entityManager.createNativeQuery(CURRENT_BALANCE_QUERY)
+                        .setParameter("virtualAccount", virtualAccountNumber)
+                        .getSingleResult();
+                Object[] array = (Object[]) object;
+                ReportCurrentBalance reportCurrentBalance = new ReportCurrentBalance();
+                reportCurrentBalance.setCurrentBalance(((BigDecimal) array[0]).doubleValue());
+                reportCurrentBalance.setVirtualAccountNumber((String) array[1]);
+                reportCurrentBalance.setCreatedDate(((Timestamp) array[2]).toLocalDateTime());
+
+                List<Object[]> objectList = entityManager.createNativeQuery(TRANSACTION_PASS_BOOK)
                         .setParameter("fromDate", fromDate)
                         .setParameter("toDate", toDate)
+                        // .setParameter("balanceTime", Timestamp.valueOf(reportCurrentBalance.getCreatedDate()))
+                        .setParameter("vAccount", reportCurrentBalance.getVirtualAccountNumber())
                         .setParameter("marketId", marketId)
                         .getResultList();
-            }
 
-            List<ReelerTransactionReport> reportAllTransactions = new ArrayList<>();
-            Double reelerTotalPurchase = 0.0;
-            String reelerName = "";
-            for (Object[] obj : objectList) {
-                reelerTotalPurchase = ((Double) obj[7]).doubleValue();
-                reelerName = ((String) obj[6]);
-                ReelerTransactionReport rat = new ReelerTransactionReport();
-                rat.setTransactionType("Cash");
-                rat.setPaymentAmount(((Double) obj[0]).doubleValue());
-                rat.setTransactionDate(((java.sql.Date) obj[2]).toLocalDate());
-                int lotId = (Integer) obj[1];
-                rat.setOperationDescription("Paid to " + (String) obj[3] + "" + (String) obj[4] + "" +(String) obj[5] + ", for lot " + lotId);
-                reportAllTransactions.add(rat);
-            }
+                List<ReportAllTransaction> reportAllTransactions = new ArrayList<>();
+                for (Object[] obj : objectList) {
+                    ReportAllTransaction rat = new ReportAllTransaction();
+                    rat.setTransactionType(obj[0] + "");
+                    rat.setAmount(((BigDecimal) obj[1]).doubleValue());
+                    rat.setCreatedDate(((Timestamp) obj[2]).toLocalDateTime());
+                    rat.setLot((Long) obj[3]);
+                    rat.setDateOn(((java.sql.Date) obj[4]).toLocalDate());
+                    rat.setFarmerName((String) obj[5]);
+                    reportAllTransactions.add(rat);
+                }
+                double debitSum = 0.00;
+                double creditSum = 0.00;
+                double creditDebitDiff = 0.00;
+                double openingBalance = 0.00;
+                double currentBalance = 0.00;
 
-            reelerTransactionReportWrapper.setReelerTransactionReports(reportAllTransactions);
-            reelerTransactionReportWrapper.setOpeningBalance(Double.valueOf(0));
-            reelerTransactionReportWrapper.setTotalDeposits(Double.valueOf(0));
-            reelerTransactionReportWrapper.setTotalPurchase(reelerTotalPurchase);
-            reelerTransactionReportWrapper.setName(reelerName);
+                List<ReelerTransactionReport> reelerTransactionReports = new ArrayList<>();
+                // prepare all the sums
+                for (ReportAllTransaction rat : reportAllTransactions) {
+                    ReelerTransactionReport rtp = new ReelerTransactionReport();
+                    if (Objects.isNull(rat.getAmount())) {
+                        continue;
+                    }
+                    rtp.setTransactionType(rat.getTransactionType());
+                    rtp.setTransactionDate(rat.getCreatedDate().toLocalDate());
+                    if ("D".equalsIgnoreCase(rat.getTransactionType())) {
+                        debitSum = debitSum + rat.getAmount();
+                        rtp.setPaymentAmount(rat.getAmount());
+                        rtp.setOperationDescription("Paid to " + rat.getFarmerName() + ", for lot " + rat.getLot());
+                    } else {
+                        creditSum = creditSum + rat.getAmount();
+                        rtp.setDepositAmount(rat.getAmount());
+                        rtp.setOperationDescription("Deposited by " + reelerName);
+                    }
+                    reelerTransactionReports.add(rtp);
+                }
+                //susbtract credit and debit
+                creditDebitDiff = debitSum - creditSum;
+                openingBalance = currentBalance - creditDebitDiff;
+
+                double runningBalance = openingBalance;
+                //Need to loop again to fill the running balance
+                for (ReelerTransactionReport rtp : reelerTransactionReports) {
+                    if ("D".equalsIgnoreCase(rtp.getTransactionType())) {
+                        runningBalance = runningBalance - rtp.getPaymentAmount();
+                        rtp.setBalance(runningBalance);
+                    } else {
+                        runningBalance = runningBalance + rtp.getDepositAmount();
+                        rtp.setBalance(runningBalance);
+                    }
+                }
+                // ReelerTransactionReportWrapper reelerTransactionReportWrapper = new ReelerTransactionReportWrapper();
+                reelerTransactionReportWrapper.setReelerTransactionReports(reelerTransactionReports);
+                reelerTransactionReportWrapper.setOpeningBalance(openingBalance);
+                reelerTransactionReportWrapper.setTotalDeposits(creditSum);
+                reelerTransactionReportWrapper.setTotalPurchase(debitSum);
+                reelerTransactionReportWrapper.setName(reelerName);
+            } else {
+                List<Object[]> objectList;
+                if (reelerNumber != null && !reelerNumber.equals("")) {
+                    objectList = entityManager.createNativeQuery(CASH_REELER_BALANCE_WITH_REELER)
+                            .setParameter("fromDate", fromDate)
+                            .setParameter("toDate", toDate)
+                            .setParameter("reelerNumber", reelerNumber)
+                            .setParameter("marketId", marketId)
+                            .getResultList();
+                } else {
+                    objectList = entityManager.createNativeQuery(CASH_REELER_BALANCE)
+                            .setParameter("fromDate", fromDate)
+                            .setParameter("toDate", toDate)
+                            .setParameter("marketId", marketId)
+                            .getResultList();
+                }
+
+                List<ReelerTransactionReport> reportAllTransactions = new ArrayList<>();
+                Double reelerTotalPurchase = 0.0;
+                String reelerName = "";
+                for (Object[] obj : objectList) {
+                    reelerTotalPurchase = ((Double) obj[7]).doubleValue();
+                    reelerName = ((String) obj[6]);
+                    ReelerTransactionReport rat = new ReelerTransactionReport();
+                    rat.setTransactionType("Cash");
+                    rat.setPaymentAmount(((Double) obj[0]).doubleValue());
+                    rat.setTransactionDate(((java.sql.Date) obj[2]).toLocalDate());
+                    int lotId = (Integer) obj[1];
+                    rat.setOperationDescription("Paid to " + (String) obj[3] + "" + (String) obj[4] + "" + (String) obj[5] + ", for lot " + lotId);
+                    reportAllTransactions.add(rat);
+                }
+
+                reelerTransactionReportWrapper.setReelerTransactionReports(reportAllTransactions);
+                reelerTransactionReportWrapper.setOpeningBalance(Double.valueOf(0));
+                reelerTransactionReportWrapper.setTotalDeposits(Double.valueOf(0));
+                reelerTransactionReportWrapper.setTotalPurchase(reelerTotalPurchase);
+                reelerTransactionReportWrapper.setName(reelerName);
+            }
+        }catch (Exception ex){
+            throw ex;
+        }finally {
+            if(entityManager!=null && entityManager.isOpen()){
+                entityManager.close();
+            }
         }
         return reelerTransactionReportWrapper;
     }
