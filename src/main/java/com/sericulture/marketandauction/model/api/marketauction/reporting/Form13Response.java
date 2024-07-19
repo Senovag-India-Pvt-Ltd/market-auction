@@ -1,9 +1,11 @@
 package com.sericulture.marketandauction.model.api.marketauction.reporting;
 
 import com.sericulture.marketandauction.model.api.ResponseBody;
+import com.sericulture.marketandauction.model.api.marketauction.DTROnlineReportUnitDetail;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketReport.MarketReportRaceWise;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -21,4 +23,5 @@ public class Form13Response extends ResponseBody {
     List<GroupLotStatus> stateWiseLotStatus;
     List<GroupLotStatus> genderWiseLotStatus;
     List<GroupLotStatus> raceWiseLotStatus;
+    List<Form13TotalResponse> totalStatus;
 }
