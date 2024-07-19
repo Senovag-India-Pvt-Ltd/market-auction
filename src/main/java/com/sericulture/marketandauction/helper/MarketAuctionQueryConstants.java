@@ -66,6 +66,58 @@ public class MarketAuctionQueryConstants {
              and rvcb.CURRENT_BALANCE > 0.0
             ORDER by l.lot_id""";
 
+    public static final String BLANK_REPORT = """
+            WITH CombinedResults AS (
+                                 SELECT
+                                     ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN ra.REELER_AUCTION_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
+                                     ROW_NUMBER() OVER (ORDER BY l.lot_id ASC) AS row_id,
+                                     l.allotted_lot_id,
+                                     f.first_name,
+                                     f.middle_name,
+                                     f.last_name,
+                                     f.farmer_number,
+                                     f.mobile_number,
+                                     l.LOT_WEIGHT_AFTER_WEIGHMENT,
+                                     COALESCE(ra.AMOUNT, l.LOT_WEIGHT_AFTER_WEIGHMENT) AS amount,
+                                     l.LOT_SOLD_OUT_AMOUNT,
+                                     l.MARKET_FEE_FARMER,
+                                     l.MARKET_FEE_REELER,
+                                     r.reeling_license_number,
+                                     r.name AS reeler_name,
+                                     r.mobile_number AS reeler_mobile_number,
+                                     fba.farmer_bank_name,
+                                     fba.farmer_bank_branch_name,
+                                     fba.farmer_bank_ifsc_code,
+                                     fba.farmer_bank_account_number,
+                                     mm.market_name_in_kannada,
+                                     fa.address_text,
+                                     l.auction_date
+                                 FROM FARMER f
+                                 INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
+                                 LEFT JOIN dbo.lot l ON l.market_auction_id = ma.market_auction_id AND l.auction_date = ma.market_auction_date
+                                 LEFT JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID = l.REELER_AUCTION_ID AND ra.AUCTION_DATE = l.auction_date
+                                 LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID AND fa.default_address = 1
+                                 LEFT JOIN dbo.farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID
+                                 INNER JOIN dbo.market_master mm ON mm.market_master_id = ma.market_id
+                                 LEFT JOIN dbo.reeler r ON r.reeler_id = ra.REELER_ID
+                                 LEFT JOIN dbo.reeler_virtual_bank_account rvba ON rvba.reeler_id = r.reeler_id AND rvba.market_master_id = ma.market_id
+                                 LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number = rvba.virtual_account_number
+                                 WHERE\s
+                                    l.auction_date BETWEEN :fromDate AND :toDate
+                                   AND l.market_id = :marketId
+                                   AND (:reelerIdList IS NULL OR r.reeler_id IN (:reelerIdList))
+                                   AND fba.farmer_bank_account_number != ''
+                                   AND fba.farmer_bank_ifsc_code != ''
+                                   AND rvcb.CURRENT_BALANCE > 0.0
+                             )
+                             
+                             SELECT *
+                             FROM CombinedResults
+                             WHERE rank = 1
+                             ORDER BY row_id;
+            """;
+
+
     private static final String FARMER_TXN_SPECIFIC_TABLES = """
              LEFT JOIN dbo.race_master rm on ma.RACE_MASTER_ID = rm.race_id
              LEFT JOIN  Village v ON   fa.Village_ID = v.village_id 
@@ -106,6 +158,51 @@ public class MarketAuctionQueryConstants {
               and fba.farmer_bank_account_number != ''
               and fba.farmer_bank_ifsc_code !=''
              ORDER by l.lot_id""";
+
+    public static final String DTR_ONLINE_REPORT_QUERY_FOR_CASH_BLANK_REPORT = """
+            WITH CombinedResults AS (
+          SELECT
+              ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN ra.REELER_AUCTION_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
+              l.allotted_lot_id,
+              f.first_name,
+              f.middle_name,
+              f.last_name,
+              f.farmer_number,
+              f.mobile_number,
+              l.LOT_WEIGHT_AFTER_WEIGHMENT,
+              COALESCE(ra.AMOUNT, 0) AS amount,
+              l.LOT_SOLD_OUT_AMOUNT,
+              l.MARKET_FEE_FARMER,
+              l.MARKET_FEE_REELER,
+              r.reeling_license_number,
+              r.name AS reeler_name,
+              r.mobile_number AS reeler_mobile_number,
+              fba.farmer_bank_name,
+              fba.farmer_bank_branch_name,
+              fba.farmer_bank_ifsc_code,
+              fba.farmer_bank_account_number,
+              mm.market_name_in_kannada,
+              fa.address_text,
+              l.auction_date
+          FROM FARMER f
+          INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
+          LEFT OUTER JOIN dbo.lot l ON l.market_auction_id = ma.market_auction_id AND l.auction_date = ma.market_auction_date
+          LEFT JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID = l.REELER_AUCTION_ID AND ra.AUCTION_DATE = l.auction_date
+          LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID AND fa.default_address = 1
+          LEFT JOIN dbo.farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID
+          INNER JOIN dbo.market_master mm ON mm.market_master_id = ma.market_id
+          LEFT JOIN dbo.reeler r ON r.reeler_id = ra.REELER_ID
+          WHERE l.auction_date BETWEEN :fromDate AND :toDate
+            AND l.market_id = :marketId
+             AND (:reelerIdList IS NULL OR r.reeler_id IN (:reelerIdList))
+            AND fba.farmer_bank_account_number != ''
+            AND fba.farmer_bank_ifsc_code != ''
+            AND (ra.REELER_AUCTION_ID IS NOT NULL OR (ra.REELER_AUCTION_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL))
+      )
+      
+      SELECT *
+      FROM CombinedResults
+      WHERE rank = 1""";
     public static final String UNIT_COUNTER_REPORT_QUERY = """
             select  l.allotted_lot_id ,l.auction_date,
             l.LOT_WEIGHT_AFTER_WEIGHMENT,ra.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
@@ -133,7 +230,7 @@ public class MarketAuctionQueryConstants {
 
     private static final String SELECT_FIELDS_PENDING_REPORT_BASE = """
             select  f.farmer_number,f.first_name ,f.middle_name,
-             f.last_name,fa.address_text,t.TALUK_NAME,v.VILLAGE_NAME,
+             f.last_name,fa.address_text,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
              fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
              l.allotted_lot_id,l.auction_date,ma.estimated_weight,
              mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
@@ -327,6 +424,12 @@ public class MarketAuctionQueryConstants {
               where l.status = 'paymentsucess' and l.market_id = :marketId and (:reelerIdList is null OR ra.reeler_id in (:reelerIdList))
               and l.auction_date BETWEEN :fromDate and :toDate ;""";
 
+    public static final String PAYMENT_SUCCESS_LOTS_FOR_BLANK_REPORT = """
+            select  COUNT(l.lot_id) from lot l\s
+              INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date
+              where l.market_id = :marketId and (:reelerIdList is null OR ra.reeler_id in (:reelerIdList))
+              and l.auction_date BETWEEN :fromDate and :toDate ;""";
+
     public static final String REELER_PENDING_REPORT = """
             SELECT r.reeler_number, r.name, r.reeling_license_number, r.mobile_number, cm.CURRENT_BALANCE, cm.CREATED_DATE, cm.modified_date from reeler r
                           join user_master um on um.user_type_id = r.reeler_id
@@ -346,6 +449,22 @@ public class MarketAuctionQueryConstants {
             AND auction_date = :auctionDate
             GROUP BY auction_date, market_id ;""";
 
+    public static final String break_down_of_lot_amount_by_dist = """
+            SELECT l.auction_date,
+                    l.market_id,
+                    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+                    SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                    COUNT(l.lot_id) AS total_lot_count
+                    FROM lot l
+                    left join market_auction ma on ma.market_auction_id = l.market_auction_id
+        left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+                    WHERE rejected_by IS NULL
+                    AND l.LOT_SOLD_OUT_AMOUNT BETWEEN :fromAmount AND :toAmount
+                    AND l.market_id = :marketId
+                    AND l.auction_date = :auctionDate
+                      AND fa.district_id = :districtId
+                    GROUP BY l.auction_date, l.market_id ;""";
+
     public static final String avg_of_lot_amount = """
             SELECT auction_date,
                    market_id,
@@ -357,6 +476,19 @@ public class MarketAuctionQueryConstants {
               AND market_id = :marketId
               AND auction_date = :auctionDate
             GROUP BY auction_date, market_id ;""";
+
+    public static final String avg_of_lot_amount_by_dist = """
+            SELECT l.auction_date,
+                   l.market_id,
+                   AVG(LOT_SOLD_OUT_AMOUNT) AS avg_amount
+            FROM lot l
+            left join market_auction ma on ma.market_auction_id = l.market_auction_id
+            left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+            WHERE rejected_by IS NULL
+              AND l.market_id = :marketId
+              AND l.auction_date = :auctionDate
+              AND fa.district_id = :districtId
+            GROUP BY l.auction_date, l.market_id ;""";
 
     public static final String greater_than_lot_amount = """
             SELECT auction_date,
@@ -372,6 +504,23 @@ public class MarketAuctionQueryConstants {
            GROUP BY auction_date, market_id
             ;""";
 
+    public static final String greater_than_lot_amount_dist = """
+             SELECT l.auction_date,
+                   l.market_id,
+                   SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+                SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                   COUNT(l.lot_id) AS total_lot_count
+            FROM lot l
+             left join market_auction ma on ma.market_auction_id = l.market_auction_id
+             left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+            WHERE l.rejected_by IS NULL
+              AND l.LOT_SOLD_OUT_AMOUNT > :amount
+              AND l.market_id = :marketId
+              AND l.auction_date = :auctionDate
+                 AND fa.district_id = :districtId
+            GROUP BY l.auction_date, l.market_id
+             ;""";
+
     public static final String less_than_lot_amount = """
             SELECT auction_date,
                   market_id,
@@ -385,6 +534,23 @@ public class MarketAuctionQueryConstants {
              AND auction_date = :auctionDate
            GROUP BY auction_date, market_id
             ;""";
+
+    public static final String less_than_lot_amount_dist = """
+             SELECT l.auction_date,
+                   l.market_id,
+                   SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+                SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                   COUNT(l.lot_id) AS total_lot_count
+            FROM lot l
+             left join market_auction ma on ma.market_auction_id = l.market_auction_id
+             left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+            WHERE l.rejected_by IS NULL
+              AND l.LOT_SOLD_OUT_AMOUNT < :amount
+              AND l.market_id = :marketId
+              AND l.auction_date = :auctionDate
+               AND fa.district_id = :districtId
+            GROUP BY l.auction_date, l.market_id
+             ;""";
 
     public static final String total_lot_status = """
             SELECT auction_date,
@@ -404,6 +570,27 @@ public class MarketAuctionQueryConstants {
               AND market_id = :marketId
               AND auction_date = :auctionDate
             GROUP BY auction_date, market_id ;""";
+
+    public static final String total_lot_status_by_dist = """
+                        
+            SELECT l.auction_date,
+                   l.market_id,
+                   COUNT(l.LOT_ID) AS total_lots,
+                   SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+                   SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                   MIN(l.LOT_SOLD_OUT_AMOUNT) AS min_amount,
+                   MAX(l.LOT_SOLD_OUT_AMOUNT) AS max_amount,
+                   AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_amount,
+                   SUM(l.MARKET_FEE_REELER) AS reeler_mf,
+                   SUM(l.MARKET_FEE_FARMER) AS farmer_mf
+            FROM lot l
+            left join market_auction ma on ma.market_auction_id = l.market_auction_id
+            left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+            WHERE rejected_by IS NULL
+              AND l.market_id = :marketId
+              AND l.auction_date =:auctionDate
+               AND fa.district_id = :districtId
+            GROUP BY l.auction_date, l.market_id ;""";
 
     public static final String state_wise_lot_status = """
             SELECT\s
@@ -460,6 +647,39 @@ public class MarketAuctionQueryConstants {
                 AND l.auction_date = :auctionDate
             GROUP BY\s
                 l.auction_date, l.market_id,rm.race_id,rm.race_name ;""";
+
+    public static final String race_wise_lot_status_dist = """
+            SELECT
+                l.auction_date,
+                l.market_id,
+                COUNT(l.LOT_ID) AS total_lots,
+                SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+                SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+                MIN(l.LOT_SOLD_OUT_AMOUNT) AS min_amount,
+                MAX(l.LOT_SOLD_OUT_AMOUNT) AS max_amount,
+                AVG(l.LOT_SOLD_OUT_AMOUNT) AS avg_amount,
+                SUM(l.MARKET_FEE_REELER) AS reeler_mf,
+                SUM(l.MARKET_FEE_FARMER) AS farmer_mf,
+                rm.race_id,
+                rm.race_name
+            FROM
+                lot l
+                JOIN market_auction ma ON ma.market_auction_date = l.auction_date\s
+                AND ma.market_auction_id = l.market_auction_id
+                left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+                JOIN race_master rm ON ma.RACE_MASTER_ID = rm.race_id\s
+                AND rm.active = 1
+            WHERE
+                l.rejected_by IS NULL
+                AND l.active = 1
+                AND l.market_id = :marketId
+                AND l.auction_date = :auctionDate
+                 AND fa.DISTRICT_ID = :districtId
+            GROUP BY
+                l.auction_date,\s
+                l.market_id,
+                rm.race_id,
+                rm.race_name;""";
 
     public static final String reeler_report_for__app = """
             select l.allotted_lot_id,ra.AMOUNT, l.LOT_WEIGHT_AFTER_WEIGHMENT,l.LOT_SOLD_OUT_AMOUNT, l.MARKET_FEE_REELER
