@@ -551,7 +551,9 @@ public class MarketAuctionReportService {
 
         List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
-        List<Object[]> stateWiseLotStatusResponse = lotRepository.getStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
         List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
@@ -567,12 +569,15 @@ public class MarketAuctionReportService {
         form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[2]));
         form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
 
-        List<GroupLotStatus> totalLotStatus = prepareGroup13Report(totalLotStatusResponse, "Reeler");
+        List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
         form13Response.setTotalLotStatus(totalLotStatus);
         totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[3]);
 
-        List<GroupLotStatus> stateWiseLotStatus = prepareGroup13Report(stateWiseLotStatusResponse, "");
+        List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
         form13Response.setStateWiseLotStatus(stateWiseLotStatus);
+
+        List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
+        form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
 
         List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
         form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
@@ -658,6 +663,104 @@ public class MarketAuctionReportService {
 
     }
 
+
+
+    BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
+        BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();
+        if(lotBetweenResponse.size()>0) {
+            for (Object[] response : lotBetweenResponse) {
+                if(lotText.equals("")){
+                    lotText = "Lot between Rs." + fromCount + " to " + toCount;
+                }
+                BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
+                        .description(lotText)
+                        .lot(Util.objectToString(response[4]))
+                        .weight(Util.objectToString(response[2]))
+                        .percentage(Util.objectToString((Util.objectToFloat(response[2]) / totalWeight) * 100))
+                        .build();
+                breakdownLotStatus = breakdownLotStatus1;
+            }
+        }else{
+            BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
+                    .description("Lot between " + fromCount + " to " + toCount)
+                    .lot(Util.objectToString(0))
+                    .weight(Util.objectToString(""))
+                    .percentage(Util.objectToString(0.00))
+                    .build();
+            breakdownLotStatus = breakdownLotStatus1;
+        }
+        return breakdownLotStatus;
+    }
+
+    List<GroupLotStatus> prepareGroup13Report(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[11]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[2]))
+                    .weight(Util.objectToString(response[3]))
+                    .amount(Util.objectToString(response[4]))
+                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+                    .min(Util.objectToString(response[5]))
+                    .max(Util.objectToString(response[6]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+                    .build();
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
+    List<GroupLotStatus> prepareGroupStateReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[2]))
+                    .weight(Util.objectToString(response[3]))
+                    .amount(Util.objectToString(response[4]))
+                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+                    .min(Util.objectToString(response[5]))
+                    .max(Util.objectToString(response[6]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+                    .build();
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
+    List<GroupLotStatus> prepareGroupGenderReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[1]))
+                    .weight(Util.objectToString(response[2]))
+                    .amount(Util.objectToString(response[3]))
+                    .mf(String.valueOf(Util.objectToFloat(response[7]) + Util.objectToFloat(response[8])))
+                    .min(Util.objectToString(response[4]))
+                    .max(Util.objectToString(response[5]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[3]) / Util.objectToFloat(response[2])))
+                    .build();
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
     public ResponseEntity<?> getForm13ReportByDistrict(Form13Request requestBody) {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -666,7 +769,7 @@ public class MarketAuctionReportService {
 
         List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
 
-        List<Object[]> stateWiseLotStatusResponse = lotRepository.getStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
         List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
 
@@ -682,11 +785,11 @@ public class MarketAuctionReportService {
         form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[2]));
         form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
 
-        List<GroupLotStatus> totalLotStatus = prepareGroup13Report(totalLotStatusResponse, "Reeler");
+        List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
         form13Response.setTotalLotStatus(totalLotStatus);
         totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[3]);
 
-        List<GroupLotStatus> stateWiseLotStatus = prepareGroup13Report(stateWiseLotStatusResponse, "");
+        List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
         form13Response.setStateWiseLotStatus(stateWiseLotStatus);
 
         List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
@@ -773,40 +876,40 @@ public class MarketAuctionReportService {
 
     }
 
+//    BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
+//        BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();
+//        if(lotBetweenResponse.size()>0) {
+//            for (Object[] response : lotBetweenResponse) {
+//                if(lotText.equals("")){
+//                    lotText = "Lot between Rs." + fromCount + " to " + toCount;
+//                }
+//                BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
+//                        .description(lotText)
+//                        .lot(Util.objectToString(response[4]))
+//                        .weight(Util.objectToString(response[2]))
+//                        .percentage(Util.objectToString((Util.objectToFloat(response[2]) / totalWeight) * 100))
+//                        .build();
+//                breakdownLotStatus = breakdownLotStatus1;
+//            }
+//        }else{
+//            BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
+//                    .description("Lot between " + fromCount + " to " + toCount)
+//                    .lot(Util.objectToString(0))
+//                    .weight(Util.objectToString(""))
+//                    .percentage(Util.objectToString(0.00))
+//                    .build();
+//            breakdownLotStatus = breakdownLotStatus1;
+//        }
+//        return breakdownLotStatus;
+//    }
+//
 
-    BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
-        BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();
-        if(lotBetweenResponse.size()>0) {
-            for (Object[] response : lotBetweenResponse) {
-                if(lotText.equals("")){
-                    lotText = "Lot between Rs." + fromCount + " to " + toCount;
-                }
-                BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
-                        .description(lotText)
-                        .lot(Util.objectToString(response[4]))
-                        .weight(Util.objectToString(response[2]))
-                        .percentage(Util.objectToString((Util.objectToFloat(response[2]) / totalWeight) * 100))
-                        .build();
-                breakdownLotStatus = breakdownLotStatus1;
-            }
-        }else{
-            BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
-                    .description("Lot between " + fromCount + " to " + toCount)
-                    .lot(Util.objectToString(0))
-                    .weight(Util.objectToString(""))
-                    .percentage(Util.objectToString(0.00))
-                    .build();
-            breakdownLotStatus = breakdownLotStatus1;
-        }
-        return breakdownLotStatus;
-    }
-
-    List<GroupLotStatus> prepareGroup13Report(List<Object[]> groupLotStatusResponse, String descriptionText) {
+    List<GroupLotStatus> prepareGroup13TotalDistrictReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
         List<GroupLotStatus> groupLotList = new ArrayList<>();
         for (Object[] response : groupLotStatusResponse) {
-            if(descriptionText.equals("")){
-                descriptionText = Util.objectToString(response[11]);
-            }
+//            if(descriptionText.equals("")){
+//                descriptionText = Util.objectToString(response[11]);
+//            }
             GroupLotStatus groupLotStatus = GroupLotStatus.builder()
                     .description(descriptionText)
                     .lot(Util.objectToString(response[2]))
