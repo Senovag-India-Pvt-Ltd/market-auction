@@ -16,4 +16,12 @@ public class GroupLotStatus {
     private String min;
     private String max;
     private String avg;
+
+//    private String totalLots;
+//    private String totalWeight;
+//    private String totalAmount;
+//    private String totalMarketFee;
+//    private String totalMin;
+//    private String totalMax;
+//    private String totalAvg;
 }
