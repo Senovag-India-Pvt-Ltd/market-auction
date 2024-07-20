@@ -832,6 +832,8 @@ public class MarketAuctionReportService {
 
         List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(),requestBody.getDistrictId());
+
         List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
 
         List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
@@ -853,8 +855,19 @@ public class MarketAuctionReportService {
         List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
         form13Response.setStateWiseLotStatus(stateWiseLotStatus);
 
+        List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
+        form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
+
         List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
         form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
+
+        Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");
+        Form13TotalResponse genderWiseTotalValues = calculateTotalValues(genderWiseLotStatus,"Gender Total");
+        Form13TotalResponse raceWiseTotalValues = calculateTotalValues(raceWiseLotStatus,"Race Total");
+
+// Set the total values in the response object
+        form13Response.setTotalStatus(Arrays.asList(stateWiseTotalValues, genderWiseTotalValues, raceWiseTotalValues));
+
 
         List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
 
