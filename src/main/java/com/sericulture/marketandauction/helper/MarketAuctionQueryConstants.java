@@ -279,7 +279,7 @@ public class MarketAuctionQueryConstants {
             r.reeling_license_number, r.name,
             r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
             l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
-            ra.AMOUNT,rvcb.CURRENT_BALANCE,r.reeler_name_kannada,r.mobile_number,r.reeler_number,
+            ra.AMOUNT,rvcb.CURRENT_BALANCE,r.father_name,r.mobile_number,r.reeler_number,
             l.BID_ACCEPTED_BY, f.fruits_id, gm.godown_name
             from 
             FARMER f
