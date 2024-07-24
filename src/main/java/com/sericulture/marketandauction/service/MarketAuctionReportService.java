@@ -671,36 +671,69 @@ public class MarketAuctionReportService {
 
     }
 
-    public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses,String text) {
-        String totalLots = "0";
-        String totalWeight = "0";
-        String totalAmount = "0";
-        String totalMarketFee = "0";
-        String totalMin = "0";
-        String totalMax = "0";
-        String totalAvg = "0";
+//    public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses,String text) {
+//        String totalLots = "0";
+//        String totalWeight = "0";
+//        String totalAmount = "0";
+//        String totalMarketFee = "0";
+//        String totalMin = "0";
+//        String totalMax = "0";
+//        String totalAvg = "0";
+//
+//        for (GroupLotStatus status : totalResponses) {
+//            totalLots = addValues(totalLots, status.getLot());
+//            totalWeight = addValues(totalWeight, status.getWeight());
+//            totalAmount = addValues(totalAmount, status.getAmount());
+//            totalMarketFee = addValues(totalMarketFee, status.getMf());
+//            totalMin = addValues(totalMin, status.getMin());
+//            totalMax = addValues(totalMax, status.getMax());
+//            totalAvg = addValues(totalAvg, status.getAvg());
+//        }
+//
+//        return Form13TotalResponse.builder()
+//                .description(text)
+//                .totalLots(totalLots)
+//                .totalWeight(totalWeight)
+//                .totalAmount(totalAmount)
+//                .totalMarketFee(totalMarketFee)
+//                .totalMin(totalMin)
+//                .totalMax(totalMax)
+//                .totalAvg(totalAvg)
+//                .build();
+//    }
+public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses, String text) {
+    String totalLots = "0";
+    String totalWeight = "0";
+    String totalAmount = "0";
+    String totalMarketFee = "0";
+    String totalMin = "0";
+    String totalMax = "0";
 
-        for (GroupLotStatus status : totalResponses) {
-            totalLots = addValues(totalLots, status.getLot());
-            totalWeight = addValues(totalWeight, status.getWeight());
-            totalAmount = addValues(totalAmount, status.getAmount());
-            totalMarketFee = addValues(totalMarketFee, status.getMf());
-            totalMin = addValues(totalMin, status.getMin());
-            totalMax = addValues(totalMax, status.getMax());
-            totalAvg = addValues(totalAvg, status.getAvg());
-        }
-
-        return Form13TotalResponse.builder()
-                .description(text)
-                .totalLots(totalLots)
-                .totalWeight(totalWeight)
-                .totalAmount(totalAmount)
-                .totalMarketFee(totalMarketFee)
-                .totalMin(totalMin)
-                .totalMax(totalMax)
-                .totalAvg(totalAvg)
-                .build();
+    for (GroupLotStatus status : totalResponses) {
+        totalLots = addValues(totalLots, status.getLot());
+        totalWeight = addValues(totalWeight, status.getWeight());
+        totalAmount = addValues(totalAmount, status.getAmount());
+        totalMarketFee = addValues(totalMarketFee, status.getMf());
+        totalMin = addValues(totalMin, status.getMin());
+        totalMax = addValues(totalMax, status.getMax());
     }
+
+    // Calculate totalAvg after summing the totalAmount and totalWeight
+    float totalAmountFloat = Float.parseFloat(totalAmount);
+    float totalWeightFloat = Float.parseFloat(totalWeight);
+    String totalAvg = totalWeightFloat != 0 ? String.valueOf(totalAmountFloat / totalWeightFloat) : "NaN";
+
+    return Form13TotalResponse.builder()
+            .description(text)
+            .totalLots(totalLots)
+            .totalWeight(totalWeight)
+            .totalAmount(totalAmount)
+            .totalMarketFee(totalMarketFee)
+            .totalMin(totalMin)
+            .totalMax(totalMax)
+            .totalAvg(totalAvg)
+            .build();
+}
 
     BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
         BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();

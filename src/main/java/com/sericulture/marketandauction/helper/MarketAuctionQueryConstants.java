@@ -465,22 +465,52 @@ public class MarketAuctionQueryConstants {
                       AND fa.district_id = :districtId
                     GROUP BY l.auction_date, l.market_id ;""";
 
-    public static final String avg_of_lot_amount = """
-            SELECT auction_date,
-                   market_id,
-                  \s
-                   AVG(LOT_SOLD_OUT_AMOUNT) AS avg_amount
-            FROM lot
-            WHERE rejected_by IS NULL
-            \s
-              AND market_id = :marketId
-              AND auction_date = :auctionDate
-            GROUP BY auction_date, market_id ;""";
+//    public static final String avg_of_lot_amount = """
+//            SELECT auction_date,
+//                   market_id,
+//                  \s
+//                   AVG(LOT_SOLD_OUT_AMOUNT) AS avg_amount
+//            FROM lot
+//            WHERE rejected_by IS NULL
+//            \s
+//              AND market_id = :marketId
+//              AND auction_date = :auctionDate
+//            GROUP BY auction_date, market_id ;""";
+public static final String avg_of_lot_amount = """
+    SELECT
+    l.auction_date,
+    l.market_id,
+    CASE
+    WHEN SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) <> 0
+    THEN SUM(l.LOT_SOLD_OUT_AMOUNT) / SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT)
+    ELSE 0
+    END AS avg_amount
+    FROM lot l
+    WHERE rejected_by IS NULL
+    AND l.market_id = :marketId
+    AND l.auction_date = :auctionDate
+    GROUP BY l.auction_date, l.market_id ;""";
 
-    public static final String avg_of_lot_amount_by_dist = """
+//    public static final String avg_of_lot_amount_by_dist = """
+//            SELECT l.auction_date,
+//                   l.market_id,
+//                   AVG(LOT_SOLD_OUT_AMOUNT) AS avg_amount
+//            FROM lot l
+//            left join market_auction ma on ma.market_auction_id = l.market_auction_id
+//            left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+//            WHERE rejected_by IS NULL
+//              AND l.market_id = :marketId
+//              AND l.auction_date = :auctionDate
+//              AND fa.district_id = :districtId
+//            GROUP BY l.auction_date, l.market_id ;""";
+public static final String avg_of_lot_amount_by_dist = """
             SELECT l.auction_date,
                    l.market_id,
-                   AVG(LOT_SOLD_OUT_AMOUNT) AS avg_amount
+                   CASE
+                     WHEN SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) <> 0
+                     THEN SUM(l.LOT_SOLD_OUT_AMOUNT) / SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT)
+                     ELSE 0
+                   END AS avg_amount
             FROM lot l
             left join market_auction ma on ma.market_auction_id = l.market_auction_id
             left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
@@ -676,14 +706,13 @@ public class MarketAuctionQueryConstants {
         COALESCE(SUM(l.MARKET_FEE_FARMER), 0) AS farmer_mf
     FROM
         farmer f
-    LEFT JOIN farmer_address fa ON f.farmer_id = fa.farmer_id
     LEFT JOIN market_auction ma ON f.farmer_id = ma.farmer_id
     LEFT JOIN lot l ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
         AND l.rejected_by IS NULL
         AND l.market_id = :marketId
         AND l.auction_date = :auctionDate
     LEFT JOIN reeler_auction_accepted raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-     AND raa.STATUS ='accepted'
+        AND raa.STATUS ='accepted'
         AND raa.AUCTION_DATE = l.auction_date
     WHERE
         f.GENDER_ID IN (1, 2)
