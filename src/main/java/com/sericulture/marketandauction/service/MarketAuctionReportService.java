@@ -579,7 +579,7 @@ public class MarketAuctionReportService {
         List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
         form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
 
-        List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroupRaceReport(raceWiseLotStatusResponse, "");
         form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
 
         Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");
@@ -787,6 +787,30 @@ public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> tota
         return groupLotList;
     }
 
+    List<GroupLotStatus> prepareGroupRaceReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[2]))
+                    .weight(Util.objectToString(response[3]))
+                    .amount(Util.objectToString(response[4]))
+                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+                    .min(Util.objectToString(response[5]))
+                    .max(Util.objectToString(response[6]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+                    .build();
+
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
     List<GroupLotStatus> prepareGroupStateReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
         List<GroupLotStatus> groupLotList = new ArrayList<>();
         for (Object[] response : groupLotStatusResponse) {
@@ -891,7 +915,7 @@ public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> tota
         List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
         form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
 
-        List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroupRaceReport(raceWiseLotStatusResponse, "");
         form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
 
         Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");

@@ -750,8 +750,8 @@ public static final String avg_of_lot_amount_by_dist = """
 //                l.auction_date, l.market_id,rm.race_id,rm.race_name ;""";
     public static final String race_wise_lot_status = """
             SELECT
-            l.auction_date,
-            l.market_id,
+            rm.race_name,
+            rmm.race_id,
             COUNT(l.LOT_ID) AS total_lots,
             SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
             SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
@@ -763,9 +763,7 @@ public static final String avg_of_lot_amount_by_dist = """
             ELSE 0\s
             END AS avg_amount,
             SUM(l.MARKET_FEE_REELER) AS reeler_mf,
-            SUM(l.MARKET_FEE_FARMER) AS farmer_mf,
-            rmm.race_id,
-            rm.race_name
+            SUM(l.MARKET_FEE_FARMER) AS farmer_mf
             FROM race_market_master rmm
             LEFT JOIN race_master rm ON rm.race_id = rmm.race_id
             LEFT JOIN market_auction ma ON ma.RACE_MASTER_ID = rm.race_id AND ma.market_auction_date = :auctionDate
@@ -780,7 +778,8 @@ public static final String avg_of_lot_amount_by_dist = """
             rmm.market_master_id = :marketId
             AND rm.active = 1
             GROUP BY
-            l.auction_date, l.market_id, rmm.race_id, rm.race_name;
+            rm.race_name,
+            rmm.race_id;
             """;
 
 
@@ -809,8 +808,8 @@ public static final String avg_of_lot_amount_by_dist = """
 
     public static final String race_wise_lot_status_dist = """
             SELECT
-                l.auction_date,
-                l.market_id,
+                rm.race_name,
+                rmm.race_id,
                 COUNT(l.LOT_ID) AS total_lots,
                 SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
                 SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
@@ -822,9 +821,7 @@ public static final String avg_of_lot_amount_by_dist = """
                     ELSE 0
                 END AS avg_amount,
                 SUM(l.MARKET_FEE_REELER) AS reeler_mf,
-                SUM(l.MARKET_FEE_FARMER) AS farmer_mf,
-                rmm.race_id,
-                rm.race_name
+                SUM(l.MARKET_FEE_FARMER) AS farmer_mf
             FROM race_market_master rmm
             LEFT JOIN race_master rm ON rm.race_id = rmm.race_id
             LEFT JOIN market_auction ma ON ma.RACE_MASTER_ID = rm.race_id\s
@@ -842,10 +839,8 @@ public static final String avg_of_lot_amount_by_dist = """
                 AND rm.active = 1
                 AND fa.district_id = :districtId
             GROUP BY
-                l.auction_date,
-                l.market_id,
-                rmm.race_id,
-                rm.race_name;
+                rm.race_name,
+                rmm.race_id;
             """;
 
     public static final String gender_wise_lot_status_by_dist = """
