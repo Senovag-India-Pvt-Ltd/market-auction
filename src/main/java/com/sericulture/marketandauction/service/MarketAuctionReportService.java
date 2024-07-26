@@ -579,8 +579,16 @@ public class MarketAuctionReportService {
         List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
         form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
 
-        List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroupRaceReport(raceWiseLotStatusResponse, "");
         form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
+
+        Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");
+        Form13TotalResponse genderWiseTotalValues = calculateTotalValues(genderWiseLotStatus,"Gender Total");
+        Form13TotalResponse raceWiseTotalValues = calculateTotalValues(raceWiseLotStatus,"Race Total");
+
+// Set the total values in the response object
+        form13Response.setTotalStatus(Arrays.asList(stateWiseTotalValues, genderWiseTotalValues, raceWiseTotalValues));
+
 
         List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
 
@@ -663,7 +671,69 @@ public class MarketAuctionReportService {
 
     }
 
+//    public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses,String text) {
+//        String totalLots = "0";
+//        String totalWeight = "0";
+//        String totalAmount = "0";
+//        String totalMarketFee = "0";
+//        String totalMin = "0";
+//        String totalMax = "0";
+//        String totalAvg = "0";
+//
+//        for (GroupLotStatus status : totalResponses) {
+//            totalLots = addValues(totalLots, status.getLot());
+//            totalWeight = addValues(totalWeight, status.getWeight());
+//            totalAmount = addValues(totalAmount, status.getAmount());
+//            totalMarketFee = addValues(totalMarketFee, status.getMf());
+//            totalMin = addValues(totalMin, status.getMin());
+//            totalMax = addValues(totalMax, status.getMax());
+//            totalAvg = addValues(totalAvg, status.getAvg());
+//        }
+//
+//        return Form13TotalResponse.builder()
+//                .description(text)
+//                .totalLots(totalLots)
+//                .totalWeight(totalWeight)
+//                .totalAmount(totalAmount)
+//                .totalMarketFee(totalMarketFee)
+//                .totalMin(totalMin)
+//                .totalMax(totalMax)
+//                .totalAvg(totalAvg)
+//                .build();
+//    }
+public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses, String text) {
+    String totalLots = "0";
+    String totalWeight = "0";
+    String totalAmount = "0";
+    String totalMarketFee = "0";
+    String totalMin = "0";
+    String totalMax = "0";
 
+    for (GroupLotStatus status : totalResponses) {
+        totalLots = addValues(totalLots, status.getLot());
+        totalWeight = addValues(totalWeight, status.getWeight());
+        totalAmount = addValues(totalAmount, status.getAmount());
+        totalMarketFee = addValues(totalMarketFee, status.getMf());
+        totalMin = addValues(totalMin, status.getMin());
+        totalMax = addValues(totalMax, status.getMax());
+    }
+
+    // Calculate totalAvg after summing the totalAmount and totalWeight
+    float totalAmountFloat = Float.parseFloat(totalAmount);
+    float totalWeightFloat = Float.parseFloat(totalWeight);
+    String totalAvg = totalWeightFloat != 0 ? String.valueOf(totalAmountFloat / totalWeightFloat) : "NaN";
+
+    return Form13TotalResponse.builder()
+            .description(text)
+            .totalLots(totalLots)
+            .totalWeight(totalWeight)
+            .totalAmount(totalAmount)
+            .totalMarketFee(totalMarketFee)
+            .totalMin(totalMin)
+            .totalMax(totalMax)
+            .totalAvg(totalAvg)
+            .build();
+}
 
     BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
         BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();
@@ -694,6 +764,7 @@ public class MarketAuctionReportService {
 
     List<GroupLotStatus> prepareGroup13Report(List<Object[]> groupLotStatusResponse, String descriptionText) {
         List<GroupLotStatus> groupLotList = new ArrayList<>();
+
         for (Object[] response : groupLotStatusResponse) {
             if(descriptionText.equals("")){
                 descriptionText = Util.objectToString(response[11]);
@@ -709,6 +780,31 @@ public class MarketAuctionReportService {
 //                    .avg(Util.objectToString(response[7]))
                     .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
                     .build();
+
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
+    List<GroupLotStatus> prepareGroupRaceReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[2]))
+                    .weight(Util.objectToString(response[3]))
+                    .amount(Util.objectToString(response[4]))
+                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+                    .min(Util.objectToString(response[5]))
+                    .max(Util.objectToString(response[6]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+                    .build();
+
             groupLotList.add(groupLotStatus);
             descriptionText = "";
         }
@@ -732,14 +828,34 @@ public class MarketAuctionReportService {
 //                    .avg(Util.objectToString(response[7]))
                     .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
                     .build();
+
             groupLotList.add(groupLotStatus);
             descriptionText = "";
         }
         return groupLotList;
     }
 
+    private static String addValues(String total, String value) {
+        if (Objects.isNull(total) || total.isEmpty()) {
+            total = "0";
+        }
+        if (Objects.isNull(value) || value.isEmpty()) {
+            value = "0";
+        }
+        try {
+            float totalFloat = Float.parseFloat(total);
+            float valueFloat = Float.parseFloat(value);
+            return String.valueOf(totalFloat + valueFloat);
+        } catch (NumberFormatException e) {
+            return "0";
+        }
+    }
+
+
     List<GroupLotStatus> prepareGroupGenderReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
         List<GroupLotStatus> groupLotList = new ArrayList<>();
+
+
         for (Object[] response : groupLotStatusResponse) {
             if(descriptionText.equals("")){
                 descriptionText = Util.objectToString(response[0]);
@@ -755,11 +871,13 @@ public class MarketAuctionReportService {
 //                    .avg(Util.objectToString(response[7]))
                     .avg(String.valueOf(Util.objectToFloat(response[3]) / Util.objectToFloat(response[2])))
                     .build();
+
             groupLotList.add(groupLotStatus);
             descriptionText = "";
         }
         return groupLotList;
     }
+
 
     public ResponseEntity<?> getForm13ReportByDistrict(Form13Request requestBody) {
 
@@ -770,6 +888,8 @@ public class MarketAuctionReportService {
         List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
 
         List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(),requestBody.getDistrictId());
 
         List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
 
@@ -792,8 +912,19 @@ public class MarketAuctionReportService {
         List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
         form13Response.setStateWiseLotStatus(stateWiseLotStatus);
 
-        List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
+        List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
+        form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
+
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroupRaceReport(raceWiseLotStatusResponse, "");
         form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
+
+        Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");
+        Form13TotalResponse genderWiseTotalValues = calculateTotalValues(genderWiseLotStatus,"Gender Total");
+        Form13TotalResponse raceWiseTotalValues = calculateTotalValues(raceWiseLotStatus,"Race Total");
+
+// Set the total values in the response object
+        form13Response.setTotalStatus(Arrays.asList(stateWiseTotalValues, genderWiseTotalValues, raceWiseTotalValues));
+
 
         List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
 
