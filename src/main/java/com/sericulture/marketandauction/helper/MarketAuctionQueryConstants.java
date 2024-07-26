@@ -203,20 +203,54 @@ public class MarketAuctionQueryConstants {
       SELECT *
       FROM CombinedResults
       WHERE rank = 1""";
+//    public static final String UNIT_COUNTER_REPORT_QUERY = """
+//            select  l.allotted_lot_id ,l.auction_date,
+//            l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
+//            r.reeling_license_number,r.name
+//            from
+//            dbo.market_auction ma
+//            INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
+//           INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
+//            INNER JOIN dbo.reeler r ON r.reeler_id =raa.REELER_ID
+//            INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id
+//            where
+//            l.auction_date =:reportDate
+//            and l.market_id =:marketId
+//            ORDER by l.lot_id""";
+
     public static final String UNIT_COUNTER_REPORT_QUERY = """
-            select  l.allotted_lot_id ,l.auction_date,
-            l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
-            r.reeling_license_number,r.name
-            from
-            dbo.market_auction ma
-            INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
-           INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
-            INNER JOIN dbo.reeler r ON r.reeler_id =raa.REELER_ID 
-            INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id
-            where
-            l.auction_date =:reportDate
-            and l.market_id =:marketId
-            ORDER by l.lot_id""";
+    SELECT
+    COUNT(l.LOT_ID) AS total_lots,
+    l.auction_date,
+    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+    SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+    SUM(l.MARKET_FEE_FARMER) AS total_market_fee_farmer,
+    SUM(l.MARKET_FEE_REELER) AS total_market_fee_reeler,
+    r.reeling_license_number,
+    r.name
+    FROM
+    dbo.market_auction ma
+    INNER JOIN dbo.lot l
+    ON l.market_auction_id = ma.market_auction_id
+    AND l.auction_date = ma.market_auction_date
+    INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
+    ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+    AND raa.STATUS = 'accepted'
+    AND raa.AUCTION_DATE = l.auction_date
+    INNER JOIN dbo.reeler r
+    ON r.reeler_id = raa.REELER_ID
+    INNER JOIN dbo.market_master mm
+    ON mm.market_master_id = ma.market_id
+    WHERE
+    l.auction_date =:reportDate
+    and l.market_id =:marketId
+    GROUP BY
+    l.auction_date,
+    r.reeling_license_number,
+    r.name
+    ORDER BY
+    l.auction_date,
+    r.reeling_license_number""";
 
     private static final String WHERE_CLAUSE_AUCTION_DATE_LIST = """
                  where l.status =:lotStatus
