@@ -338,6 +338,7 @@ public class ReelerAuctionService {
     public ResponseEntity<?> acceptReelerBidForGivenLot(ReelerBidAcceptRequest lotStatusRequest) {
         log.info("Accept bid received for request: " + lotStatusRequest);
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        EntityManager entityManager = null;
         try {
             JwtPayloadData token = marketAuctionHelper.getAuthToken(lotStatusRequest);
 
@@ -352,8 +353,48 @@ public class ReelerAuctionService {
             if (!Util.isNullOrEmptyOrBlank(lot.getStatus())) {
                 throw new ValidationException(String.format("expected Lot status is blank but found:%s for the allottedLotId: %s",lot.getStatus(),lot.getAllottedLotId()));
             }
-            int acceptStartChecker = marketAuctionHelper.checkCurrentAuctionAccept(lotStatusRequest.getMarketId());
-            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), acceptStartChecker);
+//            int acceptStartChecker = marketAuctionHelper.checkCurrentAuctionAccept(lotStatusRequest.getMarketId());
+//            ReelerAuction reelerAuction = reelerAuctionRepository.getHighestBidForLot(lotStatusRequest.getAllottedLotId(), lotStatusRequest.getMarketId(), Util.getISTLocalDate(), acceptStartChecker);
+//
+//            LotStatusRequest lotStatusRequest1 = new LotStatusRequest();
+//            lotStatusRequest1.setAllottedLotId(lotStatusRequest.getAllottedLotId());
+//            lotStatusRequest1.setMarketId(lotStatusRequest.getMarketId());
+//            getHighestBidPerLotDetails(lotStatusRequest1);
+            ReelerAuction reelerAuction = new ReelerAuction();
+
+
+                entityManager = entityManagerFactory.createEntityManager();
+                StoredProcedureQuery procedureQuery = entityManager
+                        .createStoredProcedureQuery("GET_ACCEPT_REELER_AUCTION");
+                procedureQuery.registerStoredProcedureParameter("LotId", Integer.class, ParameterMode.IN);
+                procedureQuery.registerStoredProcedureParameter("MarketId", Integer.class, ParameterMode.IN);
+                procedureQuery.registerStoredProcedureParameter("AuctionDate", LocalDate.class, ParameterMode.IN);
+                entityManager.getTransaction().begin();
+                procedureQuery.setParameter("LotId",  lotStatusRequest.getAllottedLotId());
+                procedureQuery.setParameter("MarketId", lotStatusRequest.getMarketId());
+                procedureQuery.setParameter("AuctionDate", Util.getISTLocalDate());
+                procedureQuery.execute();
+                entityManager.getTransaction().commit();
+
+                List<Object[]> reelerLotHighestAndHisBidList = procedureQuery.getResultList();
+                if(reelerLotHighestAndHisBidList.size()>0) {
+                    Object[] obj = reelerLotHighestAndHisBidList.get(0);
+                    reelerAuction = reelerAuctionRepository.findById(BigInteger.valueOf(Long.parseLong(Util.objectToString(obj[0]))));
+
+                    if (reelerAuction != null) {
+                        Object[][] reelerDetails = reelerAuctionRepository.getReelerDetailsForHighestBidWithReelingNumber(reelerAuction.getId());
+                        if (reelerDetails == null || reelerDetails.length == 0) {
+                            rw.setErrorCode(-1);
+                            rw.setErrorMessages(List.of("No reeler found please check for allotedLotId:" + lotStatusRequest.getAllottedLotId() + "and market: " + lotStatusRequest.getMarketId()));
+
+                            return ResponseEntity.ok(rw);
+                        }
+                    } else {
+                        marketAuctionHelper.retrunIfError(rw, "No bid found for the given lot please check the input");
+                    }
+                }
+
+
             if (reelerAuction != null) {
                 Lot l = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(reelerAuction.getMarketId(), reelerAuction.getAllottedLotId(), Util.getISTLocalDate());
                 l.setStatus(LotStatus.ACCEPTED.getLabel());
@@ -387,6 +428,10 @@ public class ReelerAuctionService {
             }
             log.error("Error while processing request: " + lotStatusRequest + "with error:" + ex);
             return marketAuctionHelper.retrunIfError(rw, "error while processing the request");
+        }finally {
+            if(entityManager!=null && entityManager.isOpen()){
+                entityManager.close();
+            }
         }
     }
     @Transactional
