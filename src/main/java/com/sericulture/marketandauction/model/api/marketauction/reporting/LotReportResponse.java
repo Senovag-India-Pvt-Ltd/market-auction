@@ -22,4 +22,8 @@ public class LotReportResponse extends ResponseBody {
     private String acceptedBy;
     private String marketName;
     private String auctionSession;
+    private int serialNumber;
+
+    private long serailNumberForPagination;
+
 }

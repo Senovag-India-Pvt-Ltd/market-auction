@@ -314,7 +314,7 @@ public class MarketAuctionQueryConstants {
     public static final String PENDING_REPORT_ACCEPTED_LOTS = ACCEPTED_LOTS + LOT_CLAUSE_FOR_PENDING_REPORT;
 
     private static final String BIDDING_REPORT_QUERY = """
-            select l.allotted_lot_id ,r.reeling_license_number ,ra.AMOUNT ,ra.CREATED_DATE ,ra.STATUS ,ra.MODIFIED_DATE, l.BID_ACCEPTED_BY,mm.market_name, ra.auction_session
+            select l.allotted_lot_id ,r.reeling_license_number ,ra.AMOUNT ,ra.CREATED_DATE ,ra.STATUS ,ra.MODIFIED_DATE, l.BID_ACCEPTED_BY,mm.market_name, ra.auction_session, ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id
             FROM dbo.lot l
             LEFT JOIN dbo.REELER_AUCTION ra ON ra.MARKET_ID  = l.market_id 
             and ra.ALLOTTED_LOT_ID  = l.allotted_lot_id  and ra.AUCTION_DATE =l.auction_date
