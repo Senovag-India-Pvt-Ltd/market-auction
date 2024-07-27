@@ -282,12 +282,12 @@ public class MarketAuctionReportService {
                     .allottedLotId(Util.objectToInteger(row[0]))
                     .lotTransactionDate(Util.objectToString(row[1]))
                     .weight(Util.objectToFloat(row[2]))
-                    .bidAmount(Util.objectToInteger(row[3]))
-                    .lotSoldOutAmount(Util.objectToFloat(row[4]))
-                    .farmerMarketFee(Util.objectToFloat(row[5]))
-                    .reelerMarketFee(Util.objectToFloat(row[6]))
-                    .reelerLicense(Util.objectToString(row[7]))
-                    .reelerName(Util.objectToString(row[8])).build();
+//                    .bidAmount(Util.objectToInteger(row[3]))
+                    .lotSoldOutAmount(Util.objectToFloat(row[3]))
+                    .farmerMarketFee(Util.objectToFloat(row[4]))
+                    .reelerMarketFee(Util.objectToFloat(row[5]))
+                    .reelerLicense(Util.objectToString(row[6]))
+                    .reelerName(Util.objectToString(row[7])).build();
             unitCounterReportResponses.add(unitCounterReportResponse);
         }
         rw.setContent(unitCounterReportResponses);
