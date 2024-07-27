@@ -1160,8 +1160,8 @@ public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> tota
 
             DashboardReport dashboardReport = new DashboardReport();
             dashboardReport.setMarketName(Util.objectToString(marketNameResponse.get(0)[0]));
-            dashboardReport.setAuctionStarted(Util.objectToString(responsesIsAuctionStarted.get(0)[0]));
-            dashboardReport.setAcceptanceStarted(Util.objectToString(responsesIsAcceptanceStarted.get(0)[0]));
+            dashboardReport.setAuctionStarted(Util.objectToString(responsesIsAuctionStarted.get(0)));
+            dashboardReport.setAcceptanceStarted(Util.objectToString(responsesIsAcceptanceStarted.get(0)));
 
             List<DashboardReportInfo> dashboardReportInfoList = new ArrayList<>();
             for (Object[] response : responses) {
