@@ -2336,7 +2336,14 @@ public class MarketAuctionReportService {
     public ResponseEntity<?> getBiddingReport(LotReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         List<LotReportResponse> lotReportResponseList = new ArrayList<>();
-        List<Object[]> responses = reelerAuctionRepository.getBiddingReportWithoutLot(reportRequest.getMarketId(),reportRequest.getReportFromDate());
+        // Correct the ternary operator usage
+        Integer lotId = (reportRequest.getLotId() == 0) ? null : reportRequest.getLotId();
+
+        List<Object[]> responses = reelerAuctionRepository.getBiddingReportWithoutLot(
+                reportRequest.getMarketId(),
+                reportRequest.getReportFromDate(),
+                lotId
+        );
         return getBiddingReportLotOrReeler(reportRequest.getMarketId(), rw, lotReportResponseList, responses);
     }
 
