@@ -113,11 +113,12 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.UNIT_COUNTER_REPORT_QUERY)
     public List<Object[]> getUnitCounterReport(LocalDate reportDate,int marketId);
 
-//    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_LOT)
-//    public List<Object[]> getBiddingReport(int marketId, LocalDate auctionDate,int lotId);
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_LOT)
+    public List<Object[]> getBiddingReport(int marketId, LocalDate auctionDate,int lotId);
 
-    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_WITHOUT_LOT)
-    public List<Object[]> getBiddingReportWithoutLot(int marketId, LocalDate auctionDate);
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_WITHOUT_LOT)
+    public List<Object[]> getBiddingReportWithoutLot(int marketId, LocalDate auctionDate, Integer lotId);
+
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_REELER)
     public List<Object[]> getReelerBiddingReport(int marketId, LocalDate auctionDate,String reelerLicenseNumber);
