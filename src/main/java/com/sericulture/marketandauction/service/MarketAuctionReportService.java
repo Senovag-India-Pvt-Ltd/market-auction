@@ -39,6 +39,7 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -671,69 +672,92 @@ public class MarketAuctionReportService {
 
     }
 
-//    public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses,String text) {
-//        String totalLots = "0";
-//        String totalWeight = "0";
-//        String totalAmount = "0";
-//        String totalMarketFee = "0";
-//        String totalMin = "0";
-//        String totalMax = "0";
-//        String totalAvg = "0";
+//public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses, String text) {
+//    String totalLots = "0";
+//    String totalWeight = "0";
+//    String totalAmount = "0";
+//    String totalMarketFee = "0";
+//    String totalMin = "0";
+//    String totalMax = "0";
 //
-//        for (GroupLotStatus status : totalResponses) {
-//            totalLots = addValues(totalLots, status.getLot());
-//            totalWeight = addValues(totalWeight, status.getWeight());
-//            totalAmount = addValues(totalAmount, status.getAmount());
-//            totalMarketFee = addValues(totalMarketFee, status.getMf());
-//            totalMin = addValues(totalMin, status.getMin());
-//            totalMax = addValues(totalMax, status.getMax());
-//            totalAvg = addValues(totalAvg, status.getAvg());
-//        }
-//
-//        return Form13TotalResponse.builder()
-//                .description(text)
-//                .totalLots(totalLots)
-//                .totalWeight(totalWeight)
-//                .totalAmount(totalAmount)
-//                .totalMarketFee(totalMarketFee)
-//                .totalMin(totalMin)
-//                .totalMax(totalMax)
-//                .totalAvg(totalAvg)
-//                .build();
+//    for (GroupLotStatus status : totalResponses) {
+//        totalLots = addValues(totalLots, status.getLot());
+//        totalWeight = addValues(totalWeight, status.getWeight());
+//        totalAmount = addValues(totalAmount, status.getAmount());
+//        totalMarketFee = addValues(totalMarketFee, status.getMf());
+//        totalMin = addValues(totalMin, status.getMin());
+//        totalMax = addValues(totalMax, status.getMax());
 //    }
-public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses, String text) {
-    String totalLots = "0";
-    String totalWeight = "0";
-    String totalAmount = "0";
-    String totalMarketFee = "0";
-    String totalMin = "0";
-    String totalMax = "0";
+//
+//    // Calculate totalAvg after summing the totalAmount and totalWeight
+//    float totalAmountFloat = Float.parseFloat(totalAmount);
+//    float totalWeightFloat = Float.parseFloat(totalWeight);
+//    String totalAvg = totalWeightFloat != 0 ? String.valueOf(totalAmountFloat / totalWeightFloat) : "NaN";
+//
+//    return Form13TotalResponse.builder()
+//            .description(text)
+//            .totalLots(totalLots)
+//            .totalWeight(totalWeight)
+//            .totalAmount(totalAmount)
+//            .totalMarketFee(totalMarketFee)
+//            .totalMin(totalMin)
+//            .totalMax(totalMax)
+//            .totalAvg(totalAvg)
+//            .build();
+//}
 
-    for (GroupLotStatus status : totalResponses) {
-        totalLots = addValues(totalLots, status.getLot());
-        totalWeight = addValues(totalWeight, status.getWeight());
-        totalAmount = addValues(totalAmount, status.getAmount());
-        totalMarketFee = addValues(totalMarketFee, status.getMf());
-        totalMin = addValues(totalMin, status.getMin());
-        totalMax = addValues(totalMax, status.getMax());
+    public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses, String text) {
+        String totalLots = "0";
+        String totalWeight = "0";
+        String totalAmount = "0";
+        String totalMarketFee = "0";
+        String totalMin = null;
+        String totalMax = null;
+
+        for (GroupLotStatus status : totalResponses) {
+            totalLots = addValues(totalLots, status.getLot());
+            totalWeight = addValues(totalWeight, status.getWeight());
+            totalAmount = addValues(totalAmount, status.getAmount());
+            totalMarketFee = addValues(totalMarketFee, status.getMf());
+
+            String currentMin = status.getMin();
+            String currentMax = status.getMax();
+
+            if (((currentMin != null) && !currentMin.equals("0") && !currentMin.isEmpty()) && ((totalMin == null) || (parseSafeFloat(currentMin) < parseSafeFloat(totalMin)))) {
+                totalMin = currentMin;
+            }
+
+            if (currentMax != null && (totalMax == null || parseSafeFloat(currentMax) > parseSafeFloat(totalMax))) {
+                totalMax = currentMax;
+            }
+        }
+
+        // Calculate totalAvg after summing the totalAmount and totalWeight
+        float totalAmountFloat = parseSafeFloat(totalAmount);
+        float totalWeightFloat = parseSafeFloat(totalWeight);
+        String totalAvg = totalWeightFloat != 0 ? String.valueOf(totalAmountFloat / totalWeightFloat) : "NaN";
+
+        return Form13TotalResponse.builder()
+                .description(text)
+                .totalLots(totalLots)
+                .totalWeight(totalWeight)
+                .totalAmount(totalAmount)
+                .totalMarketFee(totalMarketFee)
+                .totalMin(totalMin)
+                .totalMax(totalMax)
+                .totalAvg(totalAvg)
+                .build();
     }
 
-    // Calculate totalAvg after summing the totalAmount and totalWeight
-    float totalAmountFloat = Float.parseFloat(totalAmount);
-    float totalWeightFloat = Float.parseFloat(totalWeight);
-    String totalAvg = totalWeightFloat != 0 ? String.valueOf(totalAmountFloat / totalWeightFloat) : "NaN";
+    private static float parseSafeFloat(String value) {
+        try {
+            return value != null && !value.isEmpty() ? Float.parseFloat(value) : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
-    return Form13TotalResponse.builder()
-            .description(text)
-            .totalLots(totalLots)
-            .totalWeight(totalWeight)
-            .totalAmount(totalAmount)
-            .totalMarketFee(totalMarketFee)
-            .totalMin(totalMin)
-            .totalMax(totalMax)
-            .totalAvg(totalAvg)
-            .build();
-}
+
 
     BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
         BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();
@@ -2225,32 +2249,67 @@ public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> tota
     public ResponseEntity<?> getBiddingReport(LotReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         List<LotReportResponse> lotReportResponseList = new ArrayList<>();
-        List<Object[]> responses = reelerAuctionRepository.getBiddingReport(reportRequest.getMarketId(),reportRequest.getReportFromDate(),reportRequest.getLotId());
+        List<Object[]> responses = reelerAuctionRepository.getBiddingReportWithoutLot(reportRequest.getMarketId(),reportRequest.getReportFromDate());
         return getBiddingReportLotOrReeler(reportRequest.getMarketId(), rw, lotReportResponseList, responses);
     }
 
+//    private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
+//        if(Util.isNullOrEmptyList(responses))
+//        {
+//            throw new ValidationException("No data found");
+//        }
+//        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
+//        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+//        for(Object[] response: responses){
+//            LotReportResponse lotReportResponse = LotReportResponse.builder()
+//                    .lotId(Util.objectToInteger(response[0]))
+//                    .reelerLicenseNumber(Util.objectToString(response[1]))
+//                    .bidAmount(Util.objectToInteger(response[2]))
+//                    .bidTime(((Timestamp)response[3]).toLocalDateTime().toLocalTime())
+//                    .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
+//                    .marketName(Util.objectToString(response[7]))
+//                    .auctionSession(Util.objectToString(response[8]))
+//                    .build();
+//            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
+//            if(StringUtils.isNotBlank(lotReportResponse.getAccepted())){
+//                lotReportResponse.setAcceptedTime(((Timestamp)response[5]).toLocalDateTime().toLocalTime());
+//                lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
+//            }
+//            lotReportResponseList.add(lotReportResponse);
+//        }
+//        rw.setContent(lotReportResponseList);
+//        return ResponseEntity.ok(rw);
+//    }
+
+
     private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
-        if(Util.isNullOrEmptyList(responses))
-        {
+        if (Util.isNullOrEmptyList(responses)) {
             throw new ValidationException("No data found");
         }
         ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
         MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        for(Object[] response: responses){
+        for (Object[] response : responses) {
+            LocalDateTime bidDateTime = ((Timestamp) response[3]).toLocalDateTime();
+            LocalTime bidTime = bidDateTime.toLocalTime();
+
             LotReportResponse lotReportResponse = LotReportResponse.builder()
                     .lotId(Util.objectToInteger(response[0]))
                     .reelerLicenseNumber(Util.objectToString(response[1]))
                     .bidAmount(Util.objectToInteger(response[2]))
-                    .bidTime(((Timestamp)response[3]).toLocalDateTime().toLocalTime())
+                    .bidTime(bidTime)  // Pass LocalTime here
                     .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
                     .marketName(Util.objectToString(response[7]))
                     .auctionSession(Util.objectToString(response[8]))
                     .build();
-            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
-            if(StringUtils.isNotBlank(lotReportResponse.getAccepted())){
-                lotReportResponse.setAcceptedTime(((Timestamp)response[5]).toLocalDateTime().toLocalTime());
+
+            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime, marketMaster, bidTime));
+
+            if (StringUtils.isNotBlank(lotReportResponse.getAccepted())) {
+                LocalTime acceptedTime = ((Timestamp) response[5]).toLocalDateTime().toLocalTime();
+                lotReportResponse.setAcceptedTime(acceptedTime);  // Pass LocalTime here
                 lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
             }
+
             lotReportResponseList.add(lotReportResponse);
         }
         rw.setContent(lotReportResponseList);

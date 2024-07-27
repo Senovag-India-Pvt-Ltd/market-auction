@@ -361,7 +361,20 @@ public class MarketAuctionQueryConstants {
             
             """;
 
+    private static final String LOT_BIDDING_REPORT_QUERY = """
+        SELECT l.allotted_lot_id, r.reeling_license_number, ra.AMOUNT, ra.CREATED_DATE, ra.STATUS, ra.MODIFIED_DATE, l.BID_ACCEPTED_BY, mm.market_name, ra.auction_session
+        FROM dbo.lot l
+        LEFT JOIN dbo.REELER_AUCTION ra ON ra.MARKET_ID = l.market_id AND ra.ALLOTTED_LOT_ID = l.allotted_lot_id AND ra.AUCTION_DATE = l.auction_date
+        INNER JOIN dbo.reeler r ON r.reeler_id = ra.REELER_ID
+        INNER JOIN market_auction ma ON ma.market_auction_id = l.market_auction_id
+        LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id
+        WHERE l.auction_date = :auctionDate
+        AND l.market_id = :marketId
+        """;
+
     public static final String BIDDING_REPORT_QUERY_LOT = BIDDING_REPORT_QUERY + "and l.allotted_lot_id =:lotId order by ra.CREATED_DATE desc";
+
+    public static final String BIDDING_REPORT_QUERY_WITHOUT_LOT = LOT_BIDDING_REPORT_QUERY + " order by ra.CREATED_DATE desc";
 
     public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by ra.CREATED_DATE desc";
 
