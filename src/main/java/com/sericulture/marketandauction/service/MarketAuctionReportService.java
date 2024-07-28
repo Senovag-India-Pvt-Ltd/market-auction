@@ -103,6 +103,8 @@ public class MarketAuctionReportService {
                     .accountNumber(Util.objectToString(unit[18]))
                     .farmerAddress(Util.objectToString(unit[20]))
                     .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
+                    .farmerTaluk(Util.objectToString(unit[22]))
+                    .farmerVillage(Util.objectToString(unit[23]))
                     .build();
             dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
             dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
