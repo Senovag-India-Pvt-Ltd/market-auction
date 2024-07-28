@@ -127,7 +127,7 @@ public class WeigmentService {
                 LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
                 LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID  
                 where l.allotted_lot_id = ? and l.auction_date = ? and l.market_id = ?
-                and f.ACTIVE =1 and ma.active = 1 and r.active =1  """);
+                and f.ACTIVE =1 and ma.active = 1 and r.active =1 and rvba.active =1 """);
 
         nativeQuery.setParameter(1, lotStatusRequest.getAllottedLotId());
         nativeQuery.setParameter(2, Util.getISTLocalDate());
