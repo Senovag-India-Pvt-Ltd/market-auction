@@ -29,7 +29,7 @@ public class MarketAuctionQueryConstants {
             select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
             f.mobile_number,l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
             r.reeling_license_number,r.name,r.mobile_number,
-            fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date """;
+            fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME""";
 
     private static final String FROM =" from ";
 
@@ -143,12 +143,14 @@ public class MarketAuctionQueryConstants {
             select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
              f.mobile_number,l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
              r.reeling_license_number,r.name,r.mobile_number,
-             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date from  FARMER f
+             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME from  FARMER f
              INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
              INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
              INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
              LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1
              LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID = f.FARMER_ID
+             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
+             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
              INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id
               INNER JOIN dbo.reeler r ON r.reeler_id =raa.REELER_ID
              where l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
@@ -361,7 +363,22 @@ public class MarketAuctionQueryConstants {
             
             """;
 
+    private static final String LOT_BIDDING_REPORT_QUERY = """
+        SELECT l.allotted_lot_id, r.reeling_license_number, ra.AMOUNT, ra.CREATED_DATE, ra.STATUS, ra.MODIFIED_DATE, l.BID_ACCEPTED_BY, mm.market_name, ra.auction_session
+        FROM dbo.lot l
+        LEFT JOIN dbo.REELER_AUCTION ra ON ra.MARKET_ID = l.market_id AND ra.ALLOTTED_LOT_ID = l.allotted_lot_id AND ra.AUCTION_DATE = l.auction_date
+        INNER JOIN dbo.reeler r ON r.reeler_id = ra.REELER_ID
+        INNER JOIN market_auction ma ON ma.market_auction_id = l.market_auction_id
+        LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id
+        WHERE l.auction_date = :auctionDate
+        AND l.market_id = :marketId
+        """;
+
     public static final String BIDDING_REPORT_QUERY_LOT = BIDDING_REPORT_QUERY + "and l.allotted_lot_id =:lotId order by ra.CREATED_DATE desc";
+
+    public static final String BIDDING_REPORT_QUERY_WITHOUT_LOT = LOT_BIDDING_REPORT_QUERY +
+            " AND (:lotId IS NULL OR l.allotted_lot_id = :lotId) " +
+            " ORDER BY ra.CREATED_DATE DESC";
 
     public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by ra.CREATED_DATE desc";
 
@@ -402,10 +419,10 @@ public class MarketAuctionQueryConstants {
                   COUNT(lot.lot_id) AS total_lots_in_reeler_auction,
                   SUM(ra.amount) AS total_bids_amount,
                   COUNT(DISTINCT ra.reeler_id) AS unique_reeler_count,
-                  COUNT(CASE WHEN lot.status = 'accepted' THEN 1 END) AS accepted_lots_count,
-                  MAX(CASE WHEN lot.status = 'accepted' THEN ra.amount END) AS max_sold_out_amount_accepted,
-                  MIN(CASE WHEN lot.status = 'accepted' THEN ra.amount END) AS min_sold_out_amount_accepted,
-                  AVG(CASE WHEN lot.status = 'accepted' THEN ra.amount END) AS average_sold_out_amount_accepted,
+                  COUNT(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN 1 END) AS accepted_lots_count,
+                  MAX(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS max_sold_out_amount_accepted,
+                  MIN(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS min_sold_out_amount_accepted,
+                  AVG(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS average_sold_out_amount_accepted,
                 COUNT(CASE WHEN lot.LOT_WEIGHT_AFTER_WEIGHMENT > 0 THEN lot.LOT_WEIGHT_AFTER_WEIGHMENT END) AS total_lots_after_weighment,
                   COUNT(ra.reeler_auction_id) AS total_bid_count,
                   MAX(ra.amount) AS current_auction_max_amount,
