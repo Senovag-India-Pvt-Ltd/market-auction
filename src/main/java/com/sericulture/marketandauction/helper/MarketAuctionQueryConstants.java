@@ -308,6 +308,36 @@ public class MarketAuctionQueryConstants {
              WHERE l.auction_date =:paymentDate and l.market_id =:marketId and l.status is NULL""";
 
 
+    private static final String SELECT_FIELDS_PENDING_REPORT_FOR_NULL_BASE = """
+            select  f.farmer_number,f.first_name ,f.middle_name,
+             f.last_name,fa.address_text,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
+             fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
+             l.allotted_lot_id,l.auction_date,ma.estimated_weight,
+             mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
+             l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
+             f.name_kan,f.mobile_number,ma.market_auction_id,f.father_name_kan,v.VILLAGE_NAME,""";
+
+    public static final String NEWLY_CREATED_LOTS_NULL_FOR_PENDING_REPORT = SELECT_FIELDS_PENDING_REPORT_FOR_NULL_BASE + """
+             l.created_date,
+             gm.godown_name
+             from  
+             FARMER f
+             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
+             INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
+             and l.auction_date = ma.market_auction_date  
+             left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
+             LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID  
+             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+             LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id  
+             LEFT JOIN godown_master gm ON gm.godown_master_id = ma.godown_id  
+             LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
+             LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID 
+             WHERE l.auction_date =:paymentDate and l.market_id =:marketId and l.status is NULL""";
+
+    public static final String PENDING_REPORT_NEWLY_CREATED_LOTS_NULL= NEWLY_CREATED_LOTS_NULL_FOR_PENDING_REPORT;
+
+
     public static final String AND_LOT_ID = " and  l.allotted_lot_id =:allottedLotId";
 
     public static final String ACCEPTED_LOTS = SELECT_FIELDS_PENDING_REPORT_BASE + """

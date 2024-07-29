@@ -350,7 +350,7 @@ public class MarketAuctionReportService {
             acceptedLotList.add(lotPendingReportResponse.getAllottedLotId());
         }
 
-        List<Object[]> newlyCreatedLotDetails = lotRepository.getNewlyCreatedLotDetailsForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId(), acceptedLotList.size() == 0 ? null : acceptedLotList);
+        List<Object[]> newlyCreatedLotDetails = lotRepository.getNewlyCreatedLotDetailsNullForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId());
 
         for (Object[] response : newlyCreatedLotDetails) {
             BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
@@ -2450,7 +2450,8 @@ public class MarketAuctionReportService {
 
                 .farmerMobileNumber(Util.objectToString(response[21]))
                 .marketAuctionId((BigDecimal) response[22])
-                .auctionDateWithTime((Date)(response[24]))
+                .farmerVillage(Util.objectToString(response[24]))
+                .auctionDateWithTime((Date)(response[25]))
                 .build();
         lotPendingReportResponse.setLoginName(token.getUsername());
         return lotPendingReportResponse;
