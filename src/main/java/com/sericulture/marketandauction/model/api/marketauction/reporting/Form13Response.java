@@ -19,6 +19,7 @@ public class Form13Response extends ResponseBody {
     List<BreakdownLotStatus> lotsFrom0to351;
     List<BreakdownLotStatus> lotsFrom201to300;
     List<BreakdownLotStatus> averageLotStatus;
+    List<BreakDownLotStatusTotalResponse> lotsFrom0to351Total;
     List<GroupLotStatus> totalLotStatus;
     List<GroupLotStatus> stateWiseLotStatus;
     List<GroupLotStatus> genderWiseLotStatus;

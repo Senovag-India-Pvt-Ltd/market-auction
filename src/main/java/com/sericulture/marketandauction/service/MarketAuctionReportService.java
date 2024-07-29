@@ -445,7 +445,7 @@ public class MarketAuctionReportService {
         for (Object[] response : lotDetails) {
             BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
             LotPendingReportResponse lotPendingReportResponse = prepareResponseForLotBaseResponse(token, response, lotId);
-            lotPendingReportResponse.setAuctionDateWithTime((Date) (response[24]));
+//            lotPendingReportResponse.setAuctionDateWithTime(convertToDate(response[24]));
             lotPendingReportResponse.setReelerLicense(Util.objectToString(response[25]));
             lotPendingReportResponse.setReelerName(Util.objectToString(response[26]));
             lotPendingReportResponse.setReelerAddress(Util.objectToString(response[27]));
@@ -478,6 +478,7 @@ public class MarketAuctionReportService {
         rw.setContent(lotPendingReportResponses);
         return ResponseEntity.ok(rw);
     }
+
 
 
     public ResponseEntity<?> getFarmerTxnReport(FarmerTxnReportRequest farmerTxnReportRequest) {
@@ -703,6 +704,7 @@ public class MarketAuctionReportService {
         Form13TotalResponse genderWiseTotalValues = calculateTotalValues(genderWiseLotStatus,"Gender Total");
         Form13TotalResponse raceWiseTotalValues = calculateTotalValues(raceWiseLotStatus,"Race Total");
 
+
 // Set the total values in the response object
         form13Response.setTotalStatus(Arrays.asList(stateWiseTotalValues, genderWiseTotalValues, raceWiseTotalValues));
 
@@ -737,7 +739,10 @@ public class MarketAuctionReportService {
         BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
         lotsFrom0to351.add(breakdownLotStatusList350Above);
 
+        BreakDownLotStatusTotalResponse totalDetails0to351 = calculateTotal0To351Values(lotsFrom0to351,"Total");
         form13Response.setLotsFrom0to351(lotsFrom0to351);
+
+        form13Response.setLotsFrom0to351Total(Arrays.asList(totalDetails0to351));
 
         List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
 
@@ -873,7 +878,27 @@ public class MarketAuctionReportService {
         }
     }
 
+    public static BreakDownLotStatusTotalResponse calculateTotal0To351Values(List<BreakdownLotStatus> totalResponses, String text) {
+        String totalLots = "0";
+        String totalWeight = "0";
+        String totalPercentage = "0";
 
+
+        for (BreakdownLotStatus status : totalResponses) {
+            totalLots = addValues(totalLots, status.getLot());
+            totalWeight = addValues(totalWeight, status.getWeight());
+            totalPercentage = addValues(totalPercentage, status.getPercentage());
+
+        }
+            return BreakDownLotStatusTotalResponse.builder()
+                    .description(text)
+                    .totalLots(totalLots)
+                    .totalWeight(totalWeight)
+                    .totalPercentage(totalPercentage)
+                    .build();
+
+
+    }
 
     BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
         BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();
@@ -1096,7 +1121,10 @@ public class MarketAuctionReportService {
         BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
         lotsFrom0to351.add(breakdownLotStatusList350Above);
 
+        BreakDownLotStatusTotalResponse totalDetails0to351 = calculateTotal0To351Values(lotsFrom0to351,"Total");
         form13Response.setLotsFrom0to351(lotsFrom0to351);
+
+        form13Response.setLotsFrom0to351Total(Arrays.asList(totalDetails0to351));
 
         List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
 
@@ -2540,7 +2568,7 @@ public class MarketAuctionReportService {
     }
 
 
-    public LotPendingReportResponse prepareResponseForLotBaseResponse(JwtPayloadData token, Object[] response, BigInteger lotId) {
+    public LotPendingReportResponse prepareResponseForLotBaseResponse(JwtPayloadData token, Object[]  response, BigInteger lotId) {
         LotPendingReportResponse lotPendingReportResponse;
         lotPendingReportResponse = LotPendingReportResponse.builder().
                 farmerNumber(Util.objectToString(response[0]))
@@ -2565,8 +2593,8 @@ public class MarketAuctionReportService {
 
                 .farmerMobileNumber(Util.objectToString(response[21]))
                 .marketAuctionId((BigDecimal) response[22])
-                .farmerVillage(Util.objectToString(response[24]))
-                .auctionDateWithTime((Date)(response[25]))
+                .farmerVillage(Util.objectToString(response[23]))
+//                .auctionDateWithTime(convertToDate(response[25]))
                 .build();
         lotPendingReportResponse.setLoginName(token.getUsername());
         return lotPendingReportResponse;

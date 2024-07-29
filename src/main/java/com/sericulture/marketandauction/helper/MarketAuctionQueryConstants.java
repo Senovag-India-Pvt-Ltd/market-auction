@@ -364,10 +364,9 @@ public class MarketAuctionQueryConstants {
              l.allotted_lot_id,l.auction_date,ma.estimated_weight,
              mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
              l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
-             f.name_kan,f.mobile_number,ma.market_auction_id,f.father_name_kan,v.VILLAGE_NAME,""";
+             f.name_kan,f.mobile_number,ma.market_auction_id,v.VILLAGE_NAME,""";
 
     public static final String NEWLY_CREATED_LOTS_NULL_FOR_PENDING_REPORT = SELECT_FIELDS_PENDING_REPORT_FOR_NULL_BASE + """
-             l.created_date,
              gm.godown_name
              from  
              FARMER f
@@ -566,18 +565,35 @@ public class MarketAuctionQueryConstants {
                           join REELER_VID_CURRENT_BALANCE cm on cm.REELER_ID = r.reeler_id
                           where um.market_id = :marketId ;""";
 
-    public static final String break_down_of_lot_amount = """
-            SELECT auction_date,
-            market_id,
-            SUM(LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-            SUM(LOT_SOLD_OUT_AMOUNT) AS total_amount,
-            COUNT(lot_id) AS total_lot_count
-            FROM lot
-            WHERE rejected_by IS NULL
-            AND LOT_SOLD_OUT_AMOUNT BETWEEN :fromAmount AND :toAmount
-            AND market_id = :marketId
-            AND auction_date = :auctionDate
-            GROUP BY auction_date, market_id ;""";
+//    public static final String break_down_of_lot_amount = """
+//            SELECT auction_date,
+//            market_id,
+//            SUM(LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+//            SUM(LOT_SOLD_OUT_AMOUNT) AS total_amount,
+//            COUNT(lot_id) AS total_lot_count
+//            FROM lot
+//            WHERE rejected_by IS NULL
+//            AND LOT_SOLD_OUT_AMOUNT BETWEEN :fromAmount AND :toAmount
+//            AND market_id = :marketId
+//            AND auction_date = :auctionDate
+//            GROUP BY auction_date, market_id ;""";
+public static final String break_down_of_lot_amount = """
+    SELECT
+    l.auction_date,
+    l.market_id,
+    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+    SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+    COUNT(l.lot_id) AS total_lot_count
+    FROM
+    lot l
+    LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+    WHERE
+    l.rejected_by IS NULL
+    AND raa.amount BETWEEN :fromAmount AND :toAmount
+    AND l.market_id = :marketId
+    AND l.auction_date = :auctionDate
+    GROUP BY
+    l.auction_date, l.market_id;""";
 
     public static final String break_down_of_lot_amount_by_dist = """
             SELECT l.auction_date,
@@ -587,9 +603,10 @@ public class MarketAuctionQueryConstants {
                     COUNT(l.lot_id) AS total_lot_count
                     FROM lot l
                     left join market_auction ma on ma.market_auction_id = l.market_auction_id
-        left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+                    left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+                    LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
                     WHERE rejected_by IS NULL
-                    AND l.LOT_SOLD_OUT_AMOUNT BETWEEN :fromAmount AND :toAmount
+                    AND raa.amount BETWEEN :fromAmount AND :toAmount
                     AND l.market_id = :marketId
                     AND l.auction_date = :auctionDate
                       AND fa.district_id = :districtId
@@ -651,17 +668,18 @@ public static final String avg_of_lot_amount_by_dist = """
             GROUP BY l.auction_date, l.market_id ;""";
 
     public static final String greater_than_lot_amount = """
-            SELECT auction_date,
-                  market_id,
-                  SUM(LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-               SUM(LOT_SOLD_OUT_AMOUNT) AS total_amount,
-                  COUNT(lot_id) AS total_lot_count
-           FROM lot
+           SELECT l.auction_date,
+              l.market_id,
+              SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+              SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+              COUNT(l.lot_id) AS total_lot_count
+           FROM lot l
+           LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
            WHERE rejected_by IS NULL
-             AND LOT_SOLD_OUT_AMOUNT > :amount
-             AND market_id = :marketId
-             AND auction_date = :auctionDate
-           GROUP BY auction_date, market_id
+             AND raa.amount > :amount
+             AND l.market_id = :marketId
+             AND l.auction_date = :auctionDate
+           GROUP BY l.auction_date, l.market_id
             ;""";
 
     public static final String greater_than_lot_amount_dist = """
@@ -673,8 +691,9 @@ public static final String avg_of_lot_amount_by_dist = """
             FROM lot l
              left join market_auction ma on ma.market_auction_id = l.market_auction_id
              left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+             LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
             WHERE l.rejected_by IS NULL
-              AND l.LOT_SOLD_OUT_AMOUNT > :amount
+              AND raa.amount > :amount
               AND l.market_id = :marketId
               AND l.auction_date = :auctionDate
                  AND fa.district_id = :districtId
@@ -682,17 +701,18 @@ public static final String avg_of_lot_amount_by_dist = """
              ;""";
 
     public static final String less_than_lot_amount = """
-            SELECT auction_date,
-                  market_id,
-                  SUM(LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-               SUM(LOT_SOLD_OUT_AMOUNT) AS total_amount,
-                  COUNT(lot_id) AS total_lot_count
-           FROM lot
+            SELECT l.auction_date,
+            l.market_id,
+            SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+            SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+            COUNT(l.lot_id) AS total_lot_count
+           FROM lot l
+           LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
            WHERE rejected_by IS NULL
-             AND LOT_SOLD_OUT_AMOUNT < :amount
-             AND market_id = :marketId
-             AND auction_date = :auctionDate
-           GROUP BY auction_date, market_id
+             AND raa.amount < :amount
+             AND l.market_id = :marketId
+             AND l.auction_date = :auctionDate
+           GROUP BY l.auction_date, l.market_id
             ;""";
 
     public static final String less_than_lot_amount_dist = """
@@ -704,8 +724,9 @@ public static final String avg_of_lot_amount_by_dist = """
             FROM lot l
              left join market_auction ma on ma.market_auction_id = l.market_auction_id
              left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+             LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
             WHERE l.rejected_by IS NULL
-              AND l.LOT_SOLD_OUT_AMOUNT < :amount
+              AND raa.amount < :amount
               AND l.market_id = :marketId
               AND l.auction_date = :auctionDate
                AND fa.district_id = :districtId
