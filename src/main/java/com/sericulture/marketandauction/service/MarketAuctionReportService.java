@@ -1206,6 +1206,7 @@ public class MarketAuctionReportService {
                         .totalLotsBid(Util.objectToString(response[11]))
                         .currentAuctionMaxAmount(Util.objectToString(response[12]))
                         .totalLotsNotBid(Util.objectToString(response[13]))
+                        .auctionCount(Util.objectToString(response[14]))
                         .build();
 
                 dashboardReportInfoList.add(dashboardReportInfo);

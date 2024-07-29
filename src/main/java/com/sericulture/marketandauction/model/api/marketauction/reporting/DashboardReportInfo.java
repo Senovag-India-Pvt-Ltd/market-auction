@@ -23,4 +23,5 @@ public class DashboardReportInfo {
     private String totalBidCount;
     private String currentAuctionMaxAmount;
     private String totalNotBid;
+    private String auctionCount;
 }
