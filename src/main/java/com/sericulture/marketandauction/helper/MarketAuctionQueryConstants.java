@@ -31,6 +31,37 @@ public class MarketAuctionQueryConstants {
             r.reeling_license_number,r.name,r.mobile_number,
             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME""";
 
+    private static final String SELECT_FIELDS_DTR_ONLINE_REPORT = """
+    SELECT
+        ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,
+        l.allotted_lot_id,
+        f.first_name,
+        f.middle_name,
+        f.last_name,
+        f.farmer_number,
+        f.mobile_number,
+        l.LOT_WEIGHT_AFTER_WEIGHMENT,
+        raa.AMOUNT,
+        l.LOT_SOLD_OUT_AMOUNT,
+        l.MARKET_FEE_FARMER,
+        l.MARKET_FEE_REELER,
+        r.reeling_license_number,
+        r.name,
+        r.mobile_number,
+        fba.farmer_bank_name,
+        fba.farmer_bank_branch_name,
+        fba.farmer_bank_ifsc_code,
+        fba.farmer_bank_account_number,
+        mm.market_name_in_kannada,
+        fa.address_text,
+        l.auction_date,
+        v.VILLAGE_NAME,
+        t.TALUK_NAME,
+        MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
+        MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
+        AVG(l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT) OVER (PARTITION BY l.lot_id) AS avg_amount
+    """;
+
     private static final String FROM =" from ";
 
     private static final String SPACE = " ";
@@ -137,13 +168,17 @@ public class MarketAuctionQueryConstants {
 
     public static final String FARMER_TXN_REPORT_CASH = SELECT_FIELDS_FARMER_TXN +SPACE+FROM+SPACE+ LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER + SPACE+ FARMER_TXN_SPECIFIC_TABLES + SPACE + WHERE_CLAUSE_FARMER_TXN_CASH;
 
-    public static final String DTR_ONLINE_REPORT_QUERY = SELECT_FIELDS_DTR_ONLINE + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ WHERE_CLAUSE_DTR_ONLINE;
+    public static final String DTR_ONLINE_REPORT_QUERY = SELECT_FIELDS_DTR_ONLINE_REPORT + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ WHERE_CLAUSE_DTR_ONLINE;
 
     public static final String DTR_ONLINE_REPORT_QUERY_FOR_CASH = """
             select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
              f.mobile_number,l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
              r.reeling_license_number,r.name,r.mobile_number,
-             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME from  FARMER f
+             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME,
+             MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
+             MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
+             AVG(l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT) OVER (PARTITION BY l.lot_id) AS avg_amount
+             from  FARMER f
              INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
              INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
              INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
@@ -501,14 +536,14 @@ public class MarketAuctionQueryConstants {
 
     public static final String PAYMENT_SUCCESS_LOTS = """
             select  COUNT(l.lot_id) from lot l\s
-              INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date
-              where l.status = 'paymentsucess' and l.market_id = :marketId and (:reelerIdList is null OR ra.reeler_id in (:reelerIdList))
+              INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
+              where l.status = 'paymentsucess' and l.market_id = :marketId and (:reelerIdList is null OR raa.reeler_id in (:reelerIdList))
               and l.auction_date BETWEEN :fromDate and :toDate ;""";
 
     public static final String PAYMENT_SUCCESS_LOTS_FOR_BLANK_REPORT = """
             select  COUNT(l.lot_id) from lot l\s
-              INNER JOIN dbo.REELER_AUCTION ra ON ra.REELER_AUCTION_ID  = l.REELER_AUCTION_ID and ra.STATUS ='accepted' and ra.AUCTION_DATE =l.auction_date
-              where l.market_id = :marketId and (:reelerIdList is null OR ra.reeler_id in (:reelerIdList))
+              INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
+              where l.market_id = :marketId and (:reelerIdList is null OR raa.reeler_id in (:reelerIdList))
               and l.auction_date BETWEEN :fromDate and :toDate ;""";
 
     public static final String REELER_PENDING_REPORT = """
