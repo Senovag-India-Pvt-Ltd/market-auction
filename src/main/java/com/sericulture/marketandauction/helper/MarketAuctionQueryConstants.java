@@ -476,92 +476,37 @@ public class MarketAuctionQueryConstants {
 //                             GROUP BY\s
 //                                 rm.race_name;""";
 
-//    public static final String DASHBOARD_COUNT = """
-//            SELECT\s
-//                  rm.race_name,
-//                  COUNT(ma.number_of_lot) AS total_lots,
-//                  SUM(lot.lot_sold_out_amount) AS total_sold_out_amount,
-//                  COUNT(lot.lot_id) AS total_lots_in_reeler_auction,
-//                  SUM(ra.amount) AS total_bids_amount,
-//                  COUNT(DISTINCT ra.reeler_id) AS unique_reeler_count,
-//                  COUNT(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN 1 END) AS accepted_lots_count,
-//                  MAX(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS max_sold_out_amount_accepted,
-//                  MIN(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS min_sold_out_amount_accepted,
-//                  AVG(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS average_sold_out_amount_accepted,
-//                COUNT(CASE WHEN lot.LOT_WEIGHT_AFTER_WEIGHMENT > 0 THEN lot.LOT_WEIGHT_AFTER_WEIGHMENT END) AS total_lots_after_weighment,
-//                  COUNT(ra.reeler_auction_id) AS total_bid_count,
-//                  MAX(ra.amount) AS current_auction_max_amount,
-//                  COUNT(CASE WHEN ra.reeler_auction_id IS NULL THEN 1 END) AS total_not_bid
-//              FROM\s
-//                  market_auction ma
-//              LEFT JOIN\s
-//                  dbo.race_master rm ON ma.RACE_MASTER_ID = rm.race_id
-//              LEFT JOIN\s
-//                  lot ON ma.market_auction_id = lot.market_auction_id
-//              LEFT JOIN\s
-//                  reeler_auction ra ON lot.reeler_auction_id = ra.reeler_auction_id
-//                  AND ra.MARKET_ID = :marketId\s
-//                  AND ra.AUCTION_DATE = :marketAuctionDate
-//              WHERE\s
-//                  ma.market_id = :marketId
-//                  AND ma.market_auction_date = :marketAuctionDate
-//              GROUP BY\s
-//                  rm.race_name;
-//              """;
-
     public static final String DASHBOARD_COUNT = """
             SELECT\s
-                                    rm.race_name,
-                                    COUNT(ma.number_of_lot) AS total_lots,
-                                    SUM(lot.lot_sold_out_amount) AS total_sold_out_amount,
-                                    COUNT(lot.lot_id) AS total_lots_in_reeler_auction,
-                                    SUM(ra.amount) AS total_bids_amount,
-                                    COUNT(DISTINCT ra.reeler_id) AS unique_reeler_count,
-                                    COUNT(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN 1 END) AS accepted_lots_count,
-                                    MAX(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS max_sold_out_amount_accepted,
-                                    MIN(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS min_sold_out_amount_accepted,
-                                    AVG(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS average_sold_out_amount_accepted,
-                                    COUNT(CASE WHEN lot.LOT_WEIGHT_AFTER_WEIGHMENT > 0 THEN lot.lot_id END) AS total_lots_after_weighment,
-                                    COUNT(ra.REELER_AUCTION_Accepted_id) AS total_bid_count,
-                                    MAX(ra.amount) AS current_auction_max_amount,
-                                    COUNT(CASE WHEN ra.REELER_AUCTION_Accepted_id IS NULL THEN 1 END) AS total_not_bid,
-                                    COALESCE(auction_count.auction_count, 0) AS auction_count
-                                FROM\s
-                                    market_auction ma
-                                LEFT JOIN\s
-                                    dbo.race_master rm ON ma.RACE_MASTER_ID = rm.race_id
-                                LEFT JOIN\s
-                                    lot ON ma.market_auction_id = lot.market_auction_id
-                                LEFT JOIN\s
-                                    REELER_AUCTION_ACCEPTED ra ON lot.reeler_auction_accepted_id = ra.REELER_AUCTION_Accepted_id
-                                    AND ra.MARKET_ID = 38
-                                    AND ra.AUCTION_DATE = '2024-07-27'
-                                LEFT JOIN\s
-                                    (
-                                        SELECT\s
-                                            rm.race_name,\s
-                                            COUNT(ra.REELER_AUCTION_Accepted_id) AS auction_count
-                                        FROM\s
-                                            REELER_AUCTION_ACCEPTED ra
-                                        LEFT JOIN\s
-                                            lot l ON l.REELER_AUCTION_ACCEPTED_ID = ra.REELER_AUCTION_Accepted_id
-                                        LEFT JOIN\s
-                                            market_auction ma ON l.market_auction_id = ma.market_auction_id
-                                        LEFT JOIN\s
-                                            race_market_master rmm ON rmm.market_master_id = ma.market_id AND ma.RACE_MASTER_ID = rmm.race_id
-                                        LEFT JOIN\s
-                                            race_master rm ON rm.race_id = rmm.race_id
-                                        WHERE\s
-                                            ra.market_id = :marketId\s
-                                            AND ra.AUCTION_DATE = :marketAuctionDate
-                                        GROUP BY\s
-                                            rm.race_name
-                                    ) AS auction_count ON rm.race_name = auction_count.race_name
-                                WHERE\s
-                                    ma.market_id = :marketId
-                                    AND ma.market_auction_date = :marketAuctionDate
-                                GROUP BY\s
-                                    rm.race_name, auction_count.auction_count;
+                  rm.race_name,
+                  COUNT(ma.number_of_lot) AS total_lots,
+                  SUM(lot.lot_sold_out_amount) AS total_sold_out_amount,
+                  COUNT(lot.lot_id) AS total_lots_in_reeler_auction,
+                  SUM(ra.amount) AS total_bids_amount,
+                  COUNT(DISTINCT ra.reeler_id) AS unique_reeler_count,
+                  COUNT(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN 1 END) AS accepted_lots_count,
+                  MAX(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS max_sold_out_amount_accepted,
+                  MIN(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS min_sold_out_amount_accepted,
+                  AVG(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS average_sold_out_amount_accepted,
+                COUNT(CASE WHEN lot.LOT_WEIGHT_AFTER_WEIGHMENT > 0 THEN lot.LOT_WEIGHT_AFTER_WEIGHMENT END) AS total_lots_after_weighment,
+                  COUNT(ra.reeler_auction_id) AS total_bid_count,
+                  MAX(ra.amount) AS current_auction_max_amount,
+                  COUNT(CASE WHEN ra.reeler_auction_id IS NULL THEN 1 END) AS total_not_bid
+              FROM\s
+                  market_auction ma
+              LEFT JOIN\s
+                  dbo.race_master rm ON ma.RACE_MASTER_ID = rm.race_id
+              LEFT JOIN\s
+                  lot ON ma.market_auction_id = lot.market_auction_id
+              LEFT JOIN\s
+                  reeler_auction ra ON lot.reeler_auction_id = ra.reeler_auction_id
+                  AND ra.MARKET_ID = :marketId\s
+                  AND ra.AUCTION_DATE = :marketAuctionDate
+              WHERE\s
+                  ma.market_id = :marketId
+                  AND ma.market_auction_date = :marketAuctionDate
+              GROUP BY\s
+                  rm.race_name;
               """;
 
     public static final String ACCEPTANCE_STARTED = """
@@ -592,7 +537,7 @@ public class MarketAuctionQueryConstants {
     public static final String PAYMENT_SUCCESS_LOTS = """
             select  COUNT(l.lot_id) from lot l\s
               INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
-              where l.status = 'paymentsucess' and l.market_id = :marketId and (:reelerIdList is null OR raa.reeler_id in (:reelerIdList))
+              where l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing') and l.market_id = :marketId and (:reelerIdList is null OR raa.reeler_id in (:reelerIdList))
               and l.auction_date BETWEEN :fromDate and :toDate ;""";
 
     public static final String PAYMENT_SUCCESS_LOTS_FOR_BLANK_REPORT = """
