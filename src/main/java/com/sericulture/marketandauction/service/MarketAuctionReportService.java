@@ -125,16 +125,16 @@ public class MarketAuctionReportService {
 
 
     private void prepareDTROnlineInfo(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
-        if (queryResponse.isEmpty()) {
-            dtrOnlineReportResponse.setTotalLots(0);
-            return;
-        }
+//        if (queryResponse.isEmpty()) {
+//            dtrOnlineReportResponse.setTotalLots(0);
+//            return;
+//        }
 
         Long minAmount = Long.MAX_VALUE;
         Long maxAmount = Long.MIN_VALUE;
         Float totalLotSoldOutAmount = 0.0f;
         Float totalWeight = 0.0f;
-        int totalLots = 0;
+//        int totalLots = 0;
 
 
         for (Object[] unit : queryResponse) {
@@ -183,11 +183,11 @@ public class MarketAuctionReportService {
                 maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
                 totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
                 totalWeight += dtrOnlineReportUnitDetail.getWeight();
-                totalLots++;
+//                totalLots++;
             }
         }
 
-        dtrOnlineReportResponse.setTotalLots(totalLots);
+//        dtrOnlineReportResponse.setTotalLots(totalLots);
 
         if (totalWeight > 0) {
             dtrOnlineReportResponse.setMinAmount(minAmount);
@@ -198,6 +198,7 @@ public class MarketAuctionReportService {
             dtrOnlineReportResponse.setMaxAmount(null);
             dtrOnlineReportResponse.setAvgAmount(0.0f);
         }
+        dtrOnlineReportResponse.setTotalLots(queryResponse.size());
     }
 
 
