@@ -475,7 +475,7 @@ public class MarketAuctionQueryConstants {
             """;
 
     private static final String LOT_BIDDING_REPORT_QUERY = """
-        SELECT l.allotted_lot_id, r.reeling_license_number, ra.AMOUNT, ra.CREATED_DATE, ra.STATUS, ra.MODIFIED_DATE, l.BID_ACCEPTED_BY, mm.market_name, ra.auction_session
+        SELECT l.allotted_lot_id, r.reeling_license_number, ra.AMOUNT, ra.CREATED_DATE, ra.STATUS, ra.MODIFIED_DATE, l.BID_ACCEPTED_BY, mm.market_name, ra.auction_session , ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id
         FROM dbo.lot l
         LEFT JOIN dbo.REELER_AUCTION ra ON ra.MARKET_ID = l.market_id AND ra.ALLOTTED_LOT_ID = l.allotted_lot_id AND ra.AUCTION_DATE = l.auction_date
         INNER JOIN dbo.reeler r ON r.reeler_id = ra.REELER_ID
@@ -489,7 +489,7 @@ public class MarketAuctionQueryConstants {
 
     public static final String BIDDING_REPORT_QUERY_WITHOUT_LOT = LOT_BIDDING_REPORT_QUERY +
             " AND (:lotId IS NULL OR l.allotted_lot_id = :lotId) " +
-            " ORDER BY ra.CREATED_DATE DESC";
+            " ORDER BY ra.CREATED_DATE asc";
 
     public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by ra.CREATED_DATE asc";
 
