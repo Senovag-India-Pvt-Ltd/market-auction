@@ -141,7 +141,7 @@ public class UpdateLotWeightDetailService {
         entityManager.getTransaction().begin();
 
         try {
-            JwtPayloadData token = marketAuctionHelper.getAuthToken(updateNetWeightRequest);
+            JwtPayloadData token = marketAuctionHelper.getMOAuthToken(updateNetWeightRequest);
             MarketMaster marketMaster = marketMasterRepository.findById(updateNetWeightRequest.getMarketId());
             String paymentMode = marketMaster.getPaymentMode();
             entityManager = entityManagerFactory.createEntityManager();
