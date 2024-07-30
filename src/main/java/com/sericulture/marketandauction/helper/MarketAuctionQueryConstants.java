@@ -387,6 +387,36 @@ public class MarketAuctionQueryConstants {
 
     public static final String PENDING_REPORT_NEWLY_CREATED_LOTS_NULL= NEWLY_CREATED_LOTS_NULL_FOR_PENDING_REPORT;
 
+    public static final String ACCEPTED_LOTS_FOR_PENDING_REPORT = SELECT_FIELDS_PENDING_REPORT_FOR_NULL_BASE + """
+            raa.CREATED_DATE,
+            r.reeling_license_number, r.name,
+            r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
+            l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
+            raa.AMOUNT,rvcb.CURRENT_BALANCE,r.father_name,r.mobile_number,r.reeler_number,
+            l.BID_ACCEPTED_BY, f.fruits_id, gm.godown_name
+            from 
+            FARMER f
+            INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID 
+            INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
+            INNER JOIN REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID
+            INNER JOIN reeler r ON r.reeler_id =raa.REELER_ID  
+            LEFT JOIN reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
+            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
+            LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 
+            LEFT JOIN  Village v ON   fa.Village_ID = v.village_id 
+            LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID 
+            LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+            LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id  
+            LEFT JOIN godown_master gm ON gm.godown_master_id = ma.godown_id  
+            LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
+            LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID  
+            WHERE l.auction_date =:paymentDate and l.market_id =:marketId
+            """;
+
+    public static final String LOT_CLAUSE_FOR_NULL_PENDING_REPORT =  " and ( l.status IS NULL OR l.status='accepted')";
+
+    public static final String PENDING_REPORT_NULL_ACCEPTED_LOTS = ACCEPTED_LOTS_FOR_PENDING_REPORT + LOT_CLAUSE_FOR_NULL_PENDING_REPORT;
+
 
     public static final String AND_LOT_ID = " and  l.allotted_lot_id =:allottedLotId";
 
@@ -415,6 +445,7 @@ public class MarketAuctionQueryConstants {
             LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID  
             WHERE l.auction_date =:paymentDate and l.market_id =:marketId
             """;
+
     public static final String ACTIVE_FILTERS_NEWLY_CREATED = " and f.ACTIVE =1 and ma.active = 1";
 
     public static final String ACTIVE_FILTERS_ACCEPTED_CREATED = " and r.active =1";

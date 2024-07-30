@@ -122,6 +122,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PENDING_REPORT_ACCEPTED_LOTS)
     public List<Object[]> getAcceptedLotDetailsForPendingReport(LocalDate paymentDate,int marketId);
 
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PENDING_REPORT_NULL_ACCEPTED_LOTS)
+    public List<Object[]> getAcceptedLotDetailsNullForPendingReport(LocalDate paymentDate,int marketId);
+
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PENDING_REPORT_NEWLY_CREATED_LOTS)
     public List<Object[]> getNewlyCreatedLotDetailsForPendingReport(LocalDate paymentDate,int marketId,List lotList);
 
