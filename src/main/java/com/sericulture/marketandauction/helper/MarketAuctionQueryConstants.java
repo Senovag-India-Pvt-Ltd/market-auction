@@ -59,7 +59,7 @@ public class MarketAuctionQueryConstants {
         t.TALUK_NAME,
         MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
         MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
-        AVG(l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT) OVER (PARTITION BY l.lot_id) AS avg_amount
+        AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
     """;
 
     private static final String FROM =" from ";
@@ -88,7 +88,8 @@ public class MarketAuctionQueryConstants {
             l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,rm.race_name,v.VILLAGE_NAME """;
 
     private static final String WHERE_CLAUSE_DTR_ONLINE = """
-              where l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
+             WHERE
+             (l.status IS NULL OR l.status IN ('generated','accepted','weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing'))
              and l.auction_date BETWEEN :fromDate and :toDate 
              and l.market_id =:marketId 
              and (:reelerIdList is null OR r.reeler_id in (:reelerIdList))
@@ -127,7 +128,7 @@ public class MarketAuctionQueryConstants {
                                      t.TALUK_NAME,
                                     MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
                                     MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
-                                    AVG(l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT) OVER (PARTITION BY l.lot_id) AS avg_amount
+                                    AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
                                  FROM FARMER f
                                  INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
                                  LEFT JOIN dbo.lot l ON l.market_auction_id = ma.market_auction_id AND l.auction_date = ma.market_auction_date
@@ -184,7 +185,7 @@ public class MarketAuctionQueryConstants {
              fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME,
              MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
              MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
-             AVG(l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT) OVER (PARTITION BY l.lot_id) AS avg_amount
+             AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
              from  FARMER f
              INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
              INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
@@ -195,7 +196,8 @@ public class MarketAuctionQueryConstants {
              LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
              INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id
               INNER JOIN dbo.reeler r ON r.reeler_id =raa.REELER_ID
-             where l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
+             WHERE 
+             (l.status IS NULL OR l.status IN ('generated','accepted','weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing'))
               and l.auction_date BETWEEN :fromDate and :toDate
               and l.market_id = :marketId
               and (:reelerIdList is null OR r.reeler_id in (:reelerIdList))
@@ -232,7 +234,7 @@ public class MarketAuctionQueryConstants {
               t.TALUK_NAME,
                 MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
                 MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
-                AVG(l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT) OVER (PARTITION BY l.lot_id) AS avg_amount
+                AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
           FROM FARMER f
           INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
           LEFT OUTER JOIN dbo.lot l ON l.market_auction_id = ma.market_auction_id AND l.auction_date = ma.market_auction_date
