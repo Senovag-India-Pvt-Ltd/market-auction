@@ -2539,6 +2539,7 @@ public class MarketAuctionReportService {
                     .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
                     .marketName(Util.objectToString(response[7]))
                     .auctionSession(Util.objectToString(response[8]))
+                    .serialNumber(Util.objectToInteger(response[9]))
                     .build();
 
             lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime, marketMaster, bidTime));
