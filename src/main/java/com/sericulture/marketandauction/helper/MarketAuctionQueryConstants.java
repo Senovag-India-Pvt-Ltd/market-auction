@@ -612,6 +612,60 @@ public class MarketAuctionQueryConstants {
                                     rm.race_name, auction_count.auction_count;
               """;
 
+    public static final String MONTHLY_DISTRICT_REPORT = """
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY t.taluk_name ASC) AS row_id,
+                \s
+                d.district_name,
+                t.taluk_name,
+                COUNT(l.LOT_ID) AS total_lots,
+                ROUND(SUM(ROUND(l.LOT_WEIGHT_AFTER_WEIGHMENT, 3)), 3) AS total_weight,
+                rm.race_name
+                FROM
+                lot l
+                JOIN market_auction ma on  ma.market_auction_id = l.market_auction_id
+                JOIN race_master rm on ma.RACE_MASTER_ID = rm.race_id and rm.active = 1
+                LEFT JOIN farmer_address fa ON fa.FARMER_ID = ma.farmer_id				   \s
+                LEFT JOIN DISTRICT d ON d.district_id = fa.district_id
+                LEFT JOIN TALUK t ON t.taluk_id = fa.taluk_id
+                \s
+                WHERE
+                l.rejected_by IS NULL
+                AND l.active = 1
+                AND l.market_id = :marketId
+                AND l.auction_date BETWEEN :startDate AND :endDate
+                AND l.status ='weighmentcompleted'\s
+                GROUP BY
+                
+                d.district_name,
+                t.taluk_name,rm.race_name ;
+              """;
+
+    public static final String SUM_OF_MONTHLY_DISTRICT_REPORT = """
+            SELECT
+                \s
+                  rm.race_name,
+                  COUNT(l.LOT_ID) AS total_lots,
+                  ROUND(SUM(ROUND(l.LOT_WEIGHT_AFTER_WEIGHMENT, 3)), 3) AS total_weight
+                FROM
+                  lot l
+                  JOIN market_auction ma ON ma.market_auction_id = l.market_auction_id
+                  JOIN race_master rm ON ma.RACE_MASTER_ID = rm.race_id AND rm.active = 1
+                  LEFT JOIN farmer_address fa ON fa.FARMER_ID = ma.farmer_id
+                  LEFT JOIN DISTRICT d ON d.district_id = fa.district_id
+                  LEFT JOIN TALUK t ON t.taluk_id = fa.taluk_id
+                WHERE
+                  l.rejected_by IS NULL
+                  AND l.active = 1
+                  AND l.market_id = :marketId
+                  AND l.auction_date BETWEEN :startDate AND :endDate
+                  AND l.status = 'weighmentcompleted'
+                GROUP BY
+                  rm.race_name
+                ORDER BY
+                  rm.race_name ASC;
+              """;
+
     public static final String ACCEPTANCE_STARTED = """
             SELECT\s
                  CASE\s

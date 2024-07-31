@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -1368,6 +1369,68 @@ public class MarketAuctionReportService {
             if (entityManager2 != null && entityManager2.isOpen()) {
                 entityManager2.close();
             }
+        }
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getMonthlyDistrictReport(MonthlyDistrictRequest dashboardReportRequest) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        try {
+            List<Object[]> marketNameResponse = lotRepository.getMarketName(dashboardReportRequest.getMarketId());
+            List<Object[]> responses = lotRepository.getMonthlyDistrictReport(dashboardReportRequest.getMarketId(), dashboardReportRequest.getStartDate(), dashboardReportRequest.getEndDate());
+            List<Object[]> sumResponses = lotRepository.getSumOfMonthlyDistrictReport(dashboardReportRequest.getMarketId(), dashboardReportRequest.getStartDate(), dashboardReportRequest.getEndDate());
+
+            if (Util.isNullOrEmptyList(responses)) {
+                throw new ValidationException("No data found");
+            }
+
+            MonthlyDistrictReport monthlyDistrictReport = new MonthlyDistrictReport();
+            monthlyDistrictReport.setMarketName(Util.objectToString(marketNameResponse.get(0)[0]));
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedDate;
+            Date parsedDate2;
+            parsedDate = inputFormat.parse(String.valueOf(dashboardReportRequest.getStartDate()));
+            parsedDate2 = inputFormat.parse(String.valueOf(dashboardReportRequest.getEndDate()));
+
+            SimpleDateFormat outputFormat1 = new SimpleDateFormat("dd-MM-yyyy");
+            String formattedDateTime1 = outputFormat1.format(parsedDate);
+            String formattedDateTime2 = outputFormat1.format(parsedDate2);
+            monthlyDistrictReport.setStartDate(formattedDateTime1);
+            monthlyDistrictReport.setEndDate(formattedDateTime2);
+
+            List<MonthlyDistrictReportInfo> dashboardReportInfoList = new ArrayList<>();
+            for (Object[] response : responses) {
+                MonthlyDistrictReportInfo dashboardReportInfo = MonthlyDistrictReportInfo.builder()
+                        .serialNumber(Util.objectToString(response[0]))
+                        .districtName(Util.objectToString(response[1]))
+                        .talukName(Util.objectToString(response[2]))
+                        .totalLots(Util.objectToString(response[3]))
+                        .totalWeight(Util.objectToString(response[4]))
+                        .raceName(Util.objectToString(response[5]))
+                        .build();
+
+                dashboardReportInfoList.add(dashboardReportInfo);
+            }
+            monthlyDistrictReport.setMonthlyDistrictReportInfoList(dashboardReportInfoList);
+
+
+            List<SumOfMonthlyDistrictReportInfo> sumOfMonthlyDistrictReportInfos = new ArrayList<>();
+            for (Object[] response : responses) {
+                SumOfMonthlyDistrictReportInfo dashboardReportInfo = SumOfMonthlyDistrictReportInfo.builder()
+                        .totalLots(Util.objectToString(response[1]))
+                        .totalWeight(Util.objectToString(response[2]))
+                        .raceName(Util.objectToString(response[0]))
+                        .build();
+
+                sumOfMonthlyDistrictReportInfos.add(dashboardReportInfo);
+            }
+            monthlyDistrictReport.setSumOfMonthlyDistrictReportInfoList(sumOfMonthlyDistrictReportInfos);
+
+            rw.setContent(monthlyDistrictReport);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return ResponseEntity.ok(rw);
     }

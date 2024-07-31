@@ -140,6 +140,11 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DASHBOARD_COUNT)
     public List<Object[]> getDashboardCount(int marketId, LocalDate marketAuctionDate);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.MONTHLY_DISTRICT_REPORT)
+    public List<Object[]> getMonthlyDistrictReport(int marketId, LocalDate startDate, LocalDate endDate);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.SUM_OF_MONTHLY_DISTRICT_REPORT)
+    public List<Object[]> getSumOfMonthlyDistrictReport(int marketId, LocalDate startDate, LocalDate endDate);
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.AUCTION_STARTED)
     public List<Object[]> getIsAuctionStarted(int marketId, String marketAuctionDate);
 
