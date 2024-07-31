@@ -101,8 +101,8 @@ public class MarketAuctionQueryConstants {
     public static final String BLANK_REPORT = """
             WITH CombinedResults AS (
                                  SELECT
-                                     ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
                                      ROW_NUMBER() OVER (ORDER BY l.lot_id ASC) AS row_id,
+                                     -- ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
                                      l.allotted_lot_id,
                                      f.first_name,
                                      f.middle_name,
@@ -152,7 +152,7 @@ public class MarketAuctionQueryConstants {
                              
                              SELECT *
                              FROM CombinedResults
-                             WHERE rank = 1
+                           -- WHERE rank = 1
                              ORDER BY row_id;
             """;
 
@@ -208,7 +208,8 @@ public class MarketAuctionQueryConstants {
     public static final String DTR_ONLINE_REPORT_QUERY_FOR_CASH_BLANK_REPORT = """
             WITH CombinedResults AS (
           SELECT
-              ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
+              ROW_NUMBER() OVER (ORDER BY l.allotted_lot_id, f.first_name, l.lot_id, l.auction_date) AS row_id,
+             -- ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
               l.allotted_lot_id,
               f.first_name,
               f.middle_name,
@@ -255,7 +256,8 @@ public class MarketAuctionQueryConstants {
       
       SELECT *
       FROM CombinedResults
-      WHERE rank = 1""";
+      --WHERE rank = 1
+      """;
 //    public static final String UNIT_COUNTER_REPORT_QUERY = """
 //            select  l.allotted_lot_id ,l.auction_date,
 //            l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
@@ -489,11 +491,11 @@ public class MarketAuctionQueryConstants {
 
     public static final String BIDDING_REPORT_QUERY_WITHOUT_LOT = LOT_BIDDING_REPORT_QUERY +
             " AND (:lotId IS NULL OR l.allotted_lot_id = :lotId) " +
-            " ORDER BY ra.CREATED_DATE asc";
+            " ORDER BY l.allotted_lot_id asc";
 
-    public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by ra.CREATED_DATE asc";
+    public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by l.allotted_lot_id asc";
 
-    public static final String BIDDING_REPORT_QUERY_WITHOUT_REELER = BIDDING_REPORT_QUERY + " order by ra.CREATED_DATE asc";
+    public static final String BIDDING_REPORT_QUERY_WITHOUT_REELER = BIDDING_REPORT_QUERY + " order by l.allotted_lot_id asc";
 
 //    public static final String DASHBOARD_COUNT = """
 //            SELECT\s
