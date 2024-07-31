@@ -2525,40 +2525,80 @@ public class MarketAuctionReportService {
 //    }
 
 
-    private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
-        if (Util.isNullOrEmptyList(responses)) {
-            throw new ValidationException("No data found");
-        }
-        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
-        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        for (Object[] response : responses) {
-            LocalDateTime bidDateTime = ((Timestamp) response[3]).toLocalDateTime();
-            LocalTime bidTime = bidDateTime.toLocalTime();
-
-            LotReportResponse lotReportResponse = LotReportResponse.builder()
-                    .lotId(Util.objectToInteger(response[0]))
-                    .reelerLicenseNumber(Util.objectToString(response[1]))
-                    .bidAmount(Util.objectToInteger(response[2]))
-                    .bidTime(bidTime)  // Pass LocalTime here
-                    .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
-                    .marketName(Util.objectToString(response[7]))
-                    .auctionSession(Util.objectToString(response[8]))
-                    .serialNumber(Util.objectToInteger(response[9]))
-                    .build();
-
-            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime, marketMaster, bidTime));
-
-            if (StringUtils.isNotBlank(lotReportResponse.getAccepted())) {
-                LocalTime acceptedTime = ((Timestamp) response[5]).toLocalDateTime().toLocalTime();
-                lotReportResponse.setAcceptedTime(acceptedTime);  // Pass LocalTime here
-                lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
-            }
-
-            lotReportResponseList.add(lotReportResponse);
-        }
-        rw.setContent(lotReportResponseList);
-        return ResponseEntity.ok(rw);
+//    private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
+//        if (Util.isNullOrEmptyList(responses)) {
+//            throw new ValidationException("No data found");
+//        }
+//        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
+//        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+//        for (Object[] response : responses) {
+//            LocalDateTime bidDateTime = ((Timestamp) response[3]).toLocalDateTime();
+//            LocalTime bidTime = bidDateTime.toLocalTime();
+//
+//            LotReportResponse lotReportResponse = LotReportResponse.builder()
+//                    .lotId(Util.objectToInteger(response[0]))
+//                    .reelerLicenseNumber(Util.objectToString(response[1]))
+//                    .bidAmount(Util.objectToInteger(response[2]))
+//                    .bidTime(bidTime)  // Pass LocalTime here
+//                    .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
+//                    .marketName(Util.objectToString(response[7]))
+//                    .auctionSession(Util.objectToString(response[8]))
+//                    .serialNumber(Util.objectToInteger(response[9]))
+//                    .build();
+//
+//            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime, marketMaster, bidTime));
+//
+//            if (StringUtils.isNotBlank(lotReportResponse.getAccepted())) {
+//                LocalTime acceptedTime = ((Timestamp) response[5]).toLocalDateTime().toLocalTime();
+//                lotReportResponse.setAcceptedTime(acceptedTime);  // Pass LocalTime here
+//                lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
+//            }
+//
+//            lotReportResponseList.add(lotReportResponse);
+//        }
+//        rw.setContent(lotReportResponseList);
+//        return ResponseEntity.ok(rw);
+//    }
+private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
+    if (Util.isNullOrEmptyList(responses)) {
+        throw new ValidationException("No data found");
     }
+
+    ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
+    MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+
+    for (Object[] response : responses) {
+        LocalDateTime bidDateTime = ((Timestamp) response[3]).toLocalDateTime();
+        LocalTime bidTime = bidDateTime.toLocalTime();
+
+        LotReportResponse lotReportResponse = LotReportResponse.builder()
+                .lotId(Util.objectToInteger(response[0]))
+                .reelerLicenseNumber(Util.objectToString(response[1]))
+                .bidAmount(Util.objectToInteger(response[2]))
+                .bidTime(bidTime)  // Pass LocalTime here
+                .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
+                .marketName(Util.objectToString(response[7]))
+                .auctionSession(Util.objectToString(response[8]))
+                .serialNumber(Util.objectToInteger(response[9]))
+                .build();
+
+        lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime, marketMaster, bidTime));
+
+        if ("Yes".equals(lotReportResponse.getAccepted())) {
+            LocalTime acceptedTime = ((Timestamp) response[5]).toLocalDateTime().toLocalTime();
+            lotReportResponse.setAcceptedTime(acceptedTime);  // Pass LocalTime here
+            lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
+        } else {
+            lotReportResponse.setAcceptedTime(LocalTime.of(0, 0));  // Set to an empty LocalTime
+        }
+
+        lotReportResponseList.add(lotReportResponse);
+    }
+
+    rw.setContent(lotReportResponseList);
+    return ResponseEntity.ok(rw);
+}
+
 
     public ResponseEntity<?> getReelerBiddingReport(ReelerReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
