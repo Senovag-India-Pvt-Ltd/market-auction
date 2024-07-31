@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -77,80 +78,155 @@ public class MarketAuctionReportService {
     @Autowired
     private BinRepository binRepository;
 
+//    private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
+//
+//        Long minAmount = Long.MAX_VALUE;
+//        Long maxAmount = Long.MIN_VALUE;
+//        Float totalLotSoldOutAmount = 0.0f;
+//        Float totalWeight = 0.0f;
+//
+//        for (Object[] unit : queryResponse) {
+//            DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
+//                    .serialNumber(Util.objectToInteger(unit[0]))
+//                    .allottedLotId(Util.objectToInteger(unit[1]))
+//                    .farmerFirstName(Util.objectToString(unit[2]))
+//                    .farmerMiddleName(Util.objectToString(unit[3]))
+//                    .farmerLastName(Util.objectToString(unit[4]))
+//                    .farmerNumber(Util.objectToString(unit[5]))
+//                    .farmerMobileNumber(Util.objectToString(unit[6]))
+//                    .weight(Util.objectToFloat(unit[7]))
+//                    .bidAmount(Util.objectToInteger(unit[8]))
+//                    .lotSoldOutAmount(Util.objectToFloat(unit[9]))
+//                    .farmerMarketFee(Util.objectToFloat(unit[10]))
+//                    .reelerMarketFee(Util.objectToFloat(unit[11]))
+//                    .reelerLicense(Util.objectToString(unit[12]))
+//                    .reelerName(Util.objectToString(unit[13]))
+//                    .reelerMobile(Util.objectToString(unit[14]))
+//                    .bankName(Util.objectToString(unit[15]))
+//                    .branchName(Util.objectToString(unit[16]))
+//                    .ifscCode(Util.objectToString(unit[17]))
+//                    .accountNumber(Util.objectToString(unit[18]))
+//                    .farmerAddress(Util.objectToString(unit[20]))
+//                    .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
+//                    .farmerTaluk(Util.objectToString(unit[22]))
+//                    .farmerVillage(Util.objectToString(unit[23]))
+//                    .minAmount(Util.objectToLong(unit[24]))
+//                    .maxAmount(Util.objectToLong(unit[25]))
+//                    .avgAmount(Util.objectToFloat(unit[26]))
+//                    .build();
+//
+//            dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+//            dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
+//            dtrOnlineReportResponse.setTotalFarmerMarketFee(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee());
+//            dtrOnlineReportResponse.setTotalReelerMarketFee(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+//            dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
+//            dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
+//            dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
+//            dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount());
+//            dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
+//
+//            // Update min and max amounts
+//            if (dtrOnlineReportUnitDetail.getMaxAmount() != null) {
+//                maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
+//            }
+//            if (dtrOnlineReportUnitDetail.getMinAmount() != null) {
+//                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+//            }
+//
+//            // Accumulate total values regardless of min/max amount
+//            totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+//            totalWeight += dtrOnlineReportUnitDetail.getWeight();
+//        }
+//
+//        // Set the min, max, and avg amount if totalWeight is greater than 0
+//        if (totalWeight > 0) {
+//            dtrOnlineReportResponse.setMinAmount(minAmount.equals(Long.MAX_VALUE) ? null : minAmount);
+//            dtrOnlineReportResponse.setMaxAmount(maxAmount.equals(Long.MIN_VALUE) ? null : maxAmount);
+//            dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
+//        } else {
+//            dtrOnlineReportResponse.setMinAmount(null);
+//            dtrOnlineReportResponse.setMaxAmount(null);
+//            dtrOnlineReportResponse.setAvgAmount(0.0f);
+//        }
+//        dtrOnlineReportResponse.setTotalLots(queryResponse.size());
+//    }
+private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
 
-    private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
+    Long minAmount = Long.MAX_VALUE;
+    Long maxAmount = Long.MIN_VALUE;
+    Float totalLotSoldOutAmount = 0.0f;
+    Float totalWeight = 0.0f;
 
-        Long minAmount = Long.MAX_VALUE;
-        Long maxAmount = Long.MIN_VALUE;
-        Float totalLotSoldOutAmount = 0.0f;
-        Float totalWeight = 0.0f;
+    for (Object[] unit : queryResponse) {
+        DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
+                .serialNumber(Util.objectToInteger(unit[0]))
+                .allottedLotId(Util.objectToInteger(unit[1]))
+                .farmerFirstName(Util.objectToString(unit[2]))
+                .farmerMiddleName(Util.objectToString(unit[3]))
+                .farmerLastName(Util.objectToString(unit[4]))
+                .farmerNumber(Util.objectToString(unit[5]))
+                .farmerMobileNumber(Util.objectToString(unit[6]))
+                .weight(Util.objectToFloat(unit[7]))
+                .bidAmount(Util.objectToInteger(unit[8]))
+                .lotSoldOutAmount(Util.objectToFloat(unit[9]))
+                .farmerMarketFee(Util.objectToFloat(unit[10]))
+                .reelerMarketFee(Util.objectToFloat(unit[11]))
+                .reelerLicense(Util.objectToString(unit[12]))
+                .reelerName(Util.objectToString(unit[13]))
+                .reelerMobile(Util.objectToString(unit[14]))
+                .bankName(Util.objectToString(unit[15]))
+                .branchName(Util.objectToString(unit[16]))
+                .ifscCode(Util.objectToString(unit[17]))
+                .accountNumber(Util.objectToString(unit[18]))
+                .farmerAddress(Util.objectToString(unit[20]))
+                .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
+                .farmerTaluk(Util.objectToString(unit[22]))
+                .farmerVillage(Util.objectToString(unit[23]))
+                .minAmount(Util.objectToLong(unit[24]))
+                .maxAmount(Util.objectToLong(unit[25]))
+                .avgAmount(Util.objectToFloat(unit[26]))
+                .build();
 
-        for (Object[] unit : queryResponse) {
-            DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
-                    .serialNumber(Util.objectToInteger(unit[0]))
-                    .allottedLotId(Util.objectToInteger(unit[1]))
-                    .farmerFirstName(Util.objectToString(unit[2]))
-                    .farmerMiddleName(Util.objectToString(unit[3]))
-                    .farmerLastName(Util.objectToString(unit[4]))
-                    .farmerNumber(Util.objectToString(unit[5]))
-                    .farmerMobileNumber(Util.objectToString(unit[6]))
-                    .weight(Util.objectToFloat(unit[7]))
-                    .bidAmount(Util.objectToInteger(unit[8]))
-                    .lotSoldOutAmount(Util.objectToFloat(unit[9]))
-                    .farmerMarketFee(Util.objectToFloat(unit[10]))
-                    .reelerMarketFee(Util.objectToFloat(unit[11]))
-                    .reelerLicense(Util.objectToString(unit[12]))
-                    .reelerName(Util.objectToString(unit[13]))
-                    .reelerMobile(Util.objectToString(unit[14]))
-                    .bankName(Util.objectToString(unit[15]))
-                    .branchName(Util.objectToString(unit[16]))
-                    .ifscCode(Util.objectToString(unit[17]))
-                    .accountNumber(Util.objectToString(unit[18]))
-                    .farmerAddress(Util.objectToString(unit[20]))
-                    .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
-                    .farmerTaluk(Util.objectToString(unit[22]))
-                    .farmerVillage(Util.objectToString(unit[23]))
-                    .minAmount(Util.objectToLong(unit[24]))
-                    .maxAmount(Util.objectToLong(unit[25]))
-                    .avgAmount(Util.objectToFloat(unit[26]))
-                    .build();
-            dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
-            dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
-            dtrOnlineReportResponse.setTotalFarmerMarketFee(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee());
-            dtrOnlineReportResponse.setTotalReelerMarketFee(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee());
-            dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
-            dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
-            dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
-            dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount()+dtrOnlineReportUnitDetail.getLotSoldOutAmount());
-            dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
+        dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+        dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
+        dtrOnlineReportResponse.setTotalFarmerMarketFee(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee());
+        dtrOnlineReportResponse.setTotalReelerMarketFee(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+        dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
+        dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
+        dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
+        dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount());
+        dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
 
-            if (dtrOnlineReportUnitDetail.getMinAmount() != null) {
-                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
-                maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
-                totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
-                totalWeight += dtrOnlineReportUnitDetail.getWeight();
-            }
+        // Update min and max amounts
+        if (dtrOnlineReportUnitDetail.getMaxAmount() != null) {
+            maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
+        }
+        if (dtrOnlineReportUnitDetail.getMinAmount() != null && dtrOnlineReportUnitDetail.getMinAmount() != 0 ) {
+            minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
         }
 
-
-        if (totalWeight > 0) {
-            dtrOnlineReportResponse.setMinAmount(minAmount);
-            dtrOnlineReportResponse.setMaxAmount(maxAmount);
-            dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
-        } else {
-            dtrOnlineReportResponse.setMinAmount(null);
-            dtrOnlineReportResponse.setMaxAmount(null);
-            dtrOnlineReportResponse.setAvgAmount(0.0f);
-        }
-        dtrOnlineReportResponse.setTotalLots(queryResponse.size());
+        // Accumulate total values regardless of min/max amount
+        totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+        totalWeight += dtrOnlineReportUnitDetail.getWeight();
     }
+
+    // Set the min, max, and avg amount
+    dtrOnlineReportResponse.setMinAmount(minAmount.equals(Long.MAX_VALUE) ? null : minAmount);
+    dtrOnlineReportResponse.setMaxAmount(maxAmount.equals(Long.MIN_VALUE) ? null : maxAmount);
+
+    // Calculate average amount based on totalLotSoldOutAmount and totalWeight
+    if (totalWeight > 0) {
+        dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
+    } else {
+        dtrOnlineReportResponse.setAvgAmount(0.0f);
+    }
+
+    dtrOnlineReportResponse.setTotalLots(queryResponse.size());
+}
 
 
     private void prepareDTROnlineInfo(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
-//        if (queryResponse.isEmpty()) {
-//            dtrOnlineReportResponse.setTotalLots(0);
-//            return;
-//        }
+
 
         Long minAmount = Long.MAX_VALUE;
         Long maxAmount = Long.MIN_VALUE;
@@ -293,6 +369,15 @@ public class MarketAuctionReportService {
         if(reportPaymentSuccessResponse.size()>0) {
             dtrOnlineReportResponse.setPaymentSuccessLots(Util.objectToInteger(reportPaymentSuccessResponse.get(0)[0]));
         }
+
+        // Set totalLots and calculate notTransactedLots
+        int totalLots = dtrOnlineReportResponse.getTotalLots();
+        int paymentSuccessLots = dtrOnlineReportResponse.getPaymentSuccessLots();
+        int notTransactedLots = totalLots - paymentSuccessLots;
+
+        dtrOnlineReportResponse.setTotalLots(totalLots);
+        dtrOnlineReportResponse.setNotTransactedLots(notTransactedLots);
+
         rw.setContent(dtrOnlineReportResponse);
         return ResponseEntity.ok(rw);
     }
@@ -1368,6 +1453,69 @@ public class MarketAuctionReportService {
             if (entityManager2 != null && entityManager2.isOpen()) {
                 entityManager2.close();
             }
+        }
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getMonthlyDistrictReport(MonthlyDistrictRequest dashboardReportRequest) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        try {
+            List<Object[]> marketNameResponse = lotRepository.getMarketName(dashboardReportRequest.getMarketId());
+            List<Object[]> responses = lotRepository.getMonthlyDistrictReport(dashboardReportRequest.getMarketId(), dashboardReportRequest.getStartDate(), dashboardReportRequest.getEndDate());
+            List<Object[]> sumResponses = lotRepository.getSumOfMonthlyDistrictReport(dashboardReportRequest.getMarketId(), dashboardReportRequest.getStartDate(), dashboardReportRequest.getEndDate());
+
+            if (Util.isNullOrEmptyList(responses)) {
+                throw new ValidationException("No data found");
+            }
+
+            MonthlyDistrictReport monthlyDistrictReport = new MonthlyDistrictReport();
+            monthlyDistrictReport.setMarketNameInKannada(Util.objectToString(marketNameResponse.get(0)[1]));
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedDate;
+            Date parsedDate2;
+            parsedDate = inputFormat.parse(String.valueOf(dashboardReportRequest.getStartDate()));
+            parsedDate2 = inputFormat.parse(String.valueOf(dashboardReportRequest.getEndDate()));
+
+            SimpleDateFormat outputFormat1 = new SimpleDateFormat("dd-MM-yyyy");
+            String formattedDateTime1 = outputFormat1.format(parsedDate);
+            String formattedDateTime2 = outputFormat1.format(parsedDate2);
+            monthlyDistrictReport.setStartDate(formattedDateTime1);
+            monthlyDistrictReport.setEndDate(formattedDateTime2);
+
+            List<MonthlyDistrictReportInfo> dashboardReportInfoList = new ArrayList<>();
+            for (Object[] response : responses) {
+                MonthlyDistrictReportInfo dashboardReportInfo = MonthlyDistrictReportInfo.builder()
+                        .serialNumber(Util.objectToString(response[0]))
+                        .districtName(Util.objectToString(response[1]))
+                        .talukName(Util.objectToString(response[2]))
+                        .totalLots(Util.objectToString(response[3]))
+                        .totalWeight(Util.objectToString(response[4]))
+                        .raceName(Util.objectToString(response[5]))
+                        .stateName(Util.objectToString(response[6]))
+                        .build();
+
+                dashboardReportInfoList.add(dashboardReportInfo);
+            }
+            monthlyDistrictReport.setMonthlyDistrictReportInfoList(dashboardReportInfoList);
+
+
+            List<SumOfMonthlyDistrictReportInfo> sumOfMonthlyDistrictReportInfos = new ArrayList<>();
+            for (Object[] response : sumResponses) {
+                SumOfMonthlyDistrictReportInfo dashboardReportInfo = SumOfMonthlyDistrictReportInfo.builder()
+                        .raceName(Util.objectToString(response[0]))
+                        .totalLots(Util.objectToString(response[1]))
+                        .totalWeight(Util.objectToString(response[2]))
+                        .build();
+
+                sumOfMonthlyDistrictReportInfos.add(dashboardReportInfo);
+            }
+            monthlyDistrictReport.setSumOfMonthlyDistrictReportInfoList(sumOfMonthlyDistrictReportInfos);
+
+            rw.setContent(monthlyDistrictReport);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return ResponseEntity.ok(rw);
     }
