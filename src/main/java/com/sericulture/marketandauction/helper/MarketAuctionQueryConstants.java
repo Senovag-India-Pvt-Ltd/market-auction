@@ -377,7 +377,7 @@ public class MarketAuctionQueryConstants {
              INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
              INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
              and l.auction_date = ma.market_auction_date  
-             left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+             left join farmer_address fa on ma.farmer_id = fa.FARMER_ID and fa.default_address = 1
              LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
              LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID  
              LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
