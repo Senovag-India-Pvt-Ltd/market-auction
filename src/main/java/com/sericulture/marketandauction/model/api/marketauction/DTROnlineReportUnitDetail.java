@@ -34,4 +34,9 @@ public class DTROnlineReportUnitDetail {
     private String ifscCode;
     private String accountNumber;
     private LocalDate auctionDate;
+    private String farmerTaluk;
+    private String farmerVillage;
+    private Long maxAmount;
+    private Long minAmount;
+    private float avgAmount;
 }

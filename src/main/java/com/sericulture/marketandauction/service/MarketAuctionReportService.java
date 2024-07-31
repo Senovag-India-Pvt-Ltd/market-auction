@@ -39,6 +39,7 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -77,7 +78,12 @@ public class MarketAuctionReportService {
     private BinRepository binRepository;
 
 
-    private void prepareDTROnlineInfo(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
+    private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
+
+        Long minAmount = Long.MAX_VALUE;
+        Long maxAmount = Long.MIN_VALUE;
+        Float totalLotSoldOutAmount = 0.0f;
+        Float totalWeight = 0.0f;
 
         for (Object[] unit : queryResponse) {
             DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
@@ -102,6 +108,11 @@ public class MarketAuctionReportService {
                     .accountNumber(Util.objectToString(unit[18]))
                     .farmerAddress(Util.objectToString(unit[20]))
                     .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
+                    .farmerTaluk(Util.objectToString(unit[22]))
+                    .farmerVillage(Util.objectToString(unit[23]))
+                    .minAmount(Util.objectToLong(unit[24]))
+                    .maxAmount(Util.objectToLong(unit[25]))
+                    .avgAmount(Util.objectToFloat(unit[26]))
                     .build();
             dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
             dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
@@ -110,13 +121,108 @@ public class MarketAuctionReportService {
             dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
             dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
             dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
-            dtrOnlineReportResponse.setTotalBidAmount(dtrOnlineReportResponse.getTotalBidAmount()+dtrOnlineReportUnitDetail.getBidAmount());
             dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount()+dtrOnlineReportUnitDetail.getLotSoldOutAmount());
             dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
 
+            if (dtrOnlineReportUnitDetail.getMinAmount() != null) {
+                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+                maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
+                totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+                totalWeight += dtrOnlineReportUnitDetail.getWeight();
+            }
+        }
+
+
+        if (totalWeight > 0) {
+            dtrOnlineReportResponse.setMinAmount(minAmount);
+            dtrOnlineReportResponse.setMaxAmount(maxAmount);
+            dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
+        } else {
+            dtrOnlineReportResponse.setMinAmount(null);
+            dtrOnlineReportResponse.setMaxAmount(null);
+            dtrOnlineReportResponse.setAvgAmount(0.0f);
         }
         dtrOnlineReportResponse.setTotalLots(queryResponse.size());
     }
+
+
+    private void prepareDTROnlineInfo(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
+//        if (queryResponse.isEmpty()) {
+//            dtrOnlineReportResponse.setTotalLots(0);
+//            return;
+//        }
+
+        Long minAmount = Long.MAX_VALUE;
+        Long maxAmount = Long.MIN_VALUE;
+        Float totalLotSoldOutAmount = 0.0f;
+        Float totalWeight = 0.0f;
+//        int totalLots = 0;
+
+
+        for (Object[] unit : queryResponse) {
+            DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
+                    .serialNumber(Util.objectToInteger(unit[0]))
+                    .allottedLotId(Util.objectToInteger(unit[1]))
+                    .farmerFirstName(Util.objectToString(unit[2]))
+                    .farmerMiddleName(Util.objectToString(unit[3]))
+                    .farmerLastName(Util.objectToString(unit[4]))
+                    .farmerNumber(Util.objectToString(unit[5]))
+                    .farmerMobileNumber(Util.objectToString(unit[6]))
+                    .weight(Util.objectToFloat(unit[7]))
+                    .bidAmount(Util.objectToInteger(unit[8]))
+                    .lotSoldOutAmount(Util.objectToFloat(unit[9]))
+                    .farmerMarketFee(Util.objectToFloat(unit[10]))
+                    .reelerMarketFee(Util.objectToFloat(unit[11]))
+                    .reelerLicense(Util.objectToString(unit[12]))
+                    .reelerName(Util.objectToString(unit[13]))
+                    .reelerMobile(Util.objectToString(unit[14]))
+                    .bankName(Util.objectToString(unit[15]))
+                    .branchName(Util.objectToString(unit[16]))
+                    .ifscCode(Util.objectToString(unit[17]))
+                    .accountNumber(Util.objectToString(unit[18]))
+                    .farmerAddress(Util.objectToString(unit[20]))
+                    .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
+                    .farmerTaluk(Util.objectToString(unit[22]))
+                    .farmerVillage(Util.objectToString(unit[23]))
+                    .minAmount(Util.objectToLong(unit[24]))
+                    .maxAmount(Util.objectToLong(unit[25]))
+                    .avgAmount(Util.objectToFloat(unit[26]))
+                    .build();
+
+            dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+            dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
+
+            dtrOnlineReportResponse.setTotalFarmerMarketFee(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee());
+            dtrOnlineReportResponse.setTotalReelerMarketFee(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+            dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
+            dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
+            dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
+            dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount());
+            dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
+
+            if (dtrOnlineReportUnitDetail.getMinAmount() != null) {
+                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+                maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
+                totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+                totalWeight += dtrOnlineReportUnitDetail.getWeight();
+//                totalLots++;
+            }
+        }
+
+//        dtrOnlineReportResponse.setTotalLots(totalLots);
+
+        if (totalWeight > 0) {
+            dtrOnlineReportResponse.setMinAmount(minAmount);
+            dtrOnlineReportResponse.setMaxAmount(maxAmount);
+            dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
+        } else {
+            dtrOnlineReportResponse.setMinAmount(null);
+            dtrOnlineReportResponse.setMaxAmount(null);
+            dtrOnlineReportResponse.setAvgAmount(0.0f);
+        }
+        dtrOnlineReportResponse.setTotalLots(queryResponse.size());
+    }
+
 
     public ResponseEntity<?> getDTROnlineReport(DTROnlineReportRequest dtrOnlineReportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -142,6 +248,48 @@ public class MarketAuctionReportService {
             dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
         }
         prepareDTROnlineInfo(dtrOnlineReportResponse, reportResponse);
+        if(reportPaymentSuccessResponse.size()>0) {
+            dtrOnlineReportResponse.setPaymentSuccessLots(Util.objectToInteger(reportPaymentSuccessResponse.get(0)[0]));
+        }
+
+        // Set totalLots and calculate notTransactedLots
+        int totalLots = dtrOnlineReportResponse.getTotalLots();
+        int paymentSuccessLots = dtrOnlineReportResponse.getPaymentSuccessLots();
+        int notTransactedLots = totalLots - paymentSuccessLots;
+
+        dtrOnlineReportResponse.setTotalLots(totalLots);
+        dtrOnlineReportResponse.setNotTransactedLots(notTransactedLots);
+
+
+
+        rw.setContent(dtrOnlineReportResponse);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getBlankDTROnlineReport(DTROnlineReportRequest dtrOnlineReportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<Integer> reelerIdList = null;
+        if (dtrOnlineReportRequest.getReelerId() > 0) {
+            reelerIdList = List.of(dtrOnlineReportRequest.getReelerId());
+        }
+        List<Object[]> reportPaymentSuccessResponse = lotRepository.
+                getPaymentSuccessLotsForBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+
+        MarketMaster marketMaster = marketMasterRepository.findById(dtrOnlineReportRequest.getMarketId());
+        List<Object[]> reportResponse;
+        if(marketMaster.getPaymentMode().equals("cash")){
+            reportResponse = lotRepository.
+                    getDTROnlineReportForCashForBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+        }else{
+            reportResponse = lotRepository.
+                    getBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+        }
+
+        DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
+        if(reportResponse.size()>0) {
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+        }
+        prepareDTROnlineInfoForBlankReport(dtrOnlineReportResponse, reportResponse);
         if(reportPaymentSuccessResponse.size()>0) {
             dtrOnlineReportResponse.setPaymentSuccessLots(Util.objectToInteger(reportPaymentSuccessResponse.get(0)[0]));
         }
@@ -251,12 +399,12 @@ public class MarketAuctionReportService {
                     .allottedLotId(Util.objectToInteger(row[0]))
                     .lotTransactionDate(Util.objectToString(row[1]))
                     .weight(Util.objectToFloat(row[2]))
-                    .bidAmount(Util.objectToInteger(row[3]))
-                    .lotSoldOutAmount(Util.objectToFloat(row[4]))
-                    .farmerMarketFee(Util.objectToFloat(row[5]))
-                    .reelerMarketFee(Util.objectToFloat(row[6]))
-                    .reelerLicense(Util.objectToString(row[7]))
-                    .reelerName(Util.objectToString(row[8])).build();
+//                    .bidAmount(Util.objectToInteger(row[3]))
+                    .lotSoldOutAmount(Util.objectToFloat(row[3]))
+                    .farmerMarketFee(Util.objectToFloat(row[4]))
+                    .reelerMarketFee(Util.objectToFloat(row[5]))
+                    .reelerLicense(Util.objectToString(row[6]))
+                    .reelerName(Util.objectToString(row[7])).build();
             unitCounterReportResponses.add(unitCounterReportResponse);
         }
         rw.setContent(unitCounterReportResponses);
@@ -267,7 +415,7 @@ public class MarketAuctionReportService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         JwtPayloadData token = marketAuctionHelper.getAuthToken(requestBody);
         List<LotPendingReportResponse> lotPendingReportResponses = new ArrayList<>();
-        List<Object[]> lotDetails = lotRepository.getAcceptedLotDetailsForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId());
+        List<Object[]> lotDetails = lotRepository.getAcceptedLotDetailsNullForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId());
         List<Object[]> binForPendingReportList = binRepository.findAllByAuctionDateAndMarketId(requestBody.getReportFromDate(),requestBody.getMarketId());
 
 
@@ -297,14 +445,14 @@ public class MarketAuctionReportService {
         for (Object[] response : lotDetails) {
             BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
             LotPendingReportResponse lotPendingReportResponse = prepareResponseForLotBaseResponse(token, response, lotId);
-            lotPendingReportResponse.setAuctionDateWithTime((Date) (response[24]));
+            lotPendingReportResponse.setAuctionDateWithTime(Util.objectToString(response[24]));
             lotPendingReportResponse.setReelerLicense(Util.objectToString(response[25]));
             lotPendingReportResponse.setReelerName(Util.objectToString(response[26]));
             lotPendingReportResponse.setReelerAddress(Util.objectToString(response[27]));
             lotPendingReportResponse.setLotWeight(Util.objectToFloat(response[28]));
-            lotPendingReportResponse.setBidAmount(Util.objectToFloat(response[31]));
+            lotPendingReportResponse.setBidAmount(Util.objectToFloat(response[32]));
             lotPendingReportResponse.setReelerCurrentBalance(Util.objectToFloat(response[33]));
-            lotPendingReportResponse.setReelerNameKannada(Util.objectToString(response[34]));
+            lotPendingReportResponse.setReelerFatherName(Util.objectToString(response[34]));
             lotPendingReportResponse.setReelerMobileNumber(Util.objectToString(response[35]));
             lotPendingReportResponse.setReelerNumber(Util.objectToString(response[36]));
             lotPendingReportResponse.setAcceptedBy(Util.objectToString(response[37]));
@@ -316,7 +464,7 @@ public class MarketAuctionReportService {
             acceptedLotList.add(lotPendingReportResponse.getAllottedLotId());
         }
 
-        List<Object[]> newlyCreatedLotDetails = lotRepository.getNewlyCreatedLotDetailsForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId(), acceptedLotList.size() == 0 ? null : acceptedLotList);
+        List<Object[]> newlyCreatedLotDetails = lotRepository.getNewlyCreatedLotDetailsNullForPendingReport(requestBody.getReportFromDate(), requestBody.getMarketId());
 
         for (Object[] response : newlyCreatedLotDetails) {
             BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
@@ -330,6 +478,7 @@ public class MarketAuctionReportService {
         rw.setContent(lotPendingReportResponses);
         return ResponseEntity.ok(rw);
     }
+
 
 
     public ResponseEntity<?> getFarmerTxnReport(FarmerTxnReportRequest farmerTxnReportRequest) {
@@ -520,7 +669,9 @@ public class MarketAuctionReportService {
 
         List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
-        List<Object[]> stateWiseLotStatusResponse = lotRepository.getStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
         List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
 
@@ -536,15 +687,27 @@ public class MarketAuctionReportService {
         form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[2]));
         form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
 
-        List<GroupLotStatus> totalLotStatus = prepareGroup13Report(totalLotStatusResponse, "Reeler");
+        List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
         form13Response.setTotalLotStatus(totalLotStatus);
         totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[3]);
 
-        List<GroupLotStatus> stateWiseLotStatus = prepareGroup13Report(stateWiseLotStatusResponse, "");
+        List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
         form13Response.setStateWiseLotStatus(stateWiseLotStatus);
 
-        List<GroupLotStatus> raceWiseLotStatus = prepareGroup13Report(raceWiseLotStatusResponse, "");
+        List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
+        form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
+
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroupRaceReport(raceWiseLotStatusResponse, "");
         form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
+
+        Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");
+        Form13TotalResponse genderWiseTotalValues = calculateTotalValues(genderWiseLotStatus,"Gender Total");
+        Form13TotalResponse raceWiseTotalValues = calculateTotalValues(raceWiseLotStatus,"Race Total");
+
+
+// Set the total values in the response object
+        form13Response.setTotalStatus(Arrays.asList(stateWiseTotalValues, genderWiseTotalValues, raceWiseTotalValues));
+
 
         List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
 
@@ -576,7 +739,10 @@ public class MarketAuctionReportService {
         BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
         lotsFrom0to351.add(breakdownLotStatusList350Above);
 
+        BreakDownLotStatusTotalResponse totalDetails0to351 = calculateTotal0To351Values(lotsFrom0to351,"Total");
         form13Response.setLotsFrom0to351(lotsFrom0to351);
+
+        form13Response.setLotsFrom0to351Total(Arrays.asList(totalDetails0to351));
 
         List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
 
@@ -597,7 +763,7 @@ public class MarketAuctionReportService {
         lotsFrom210to300.add(breakdownLotStatusList231to240);
 
         List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatus(241, 250,requestBody.getMarketId(), requestBody.getAuctionDate());
-        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween201to210Response, 241, 250, totalWeight, "");
+        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList241to250);
 
         List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatus(251, 275,requestBody.getMarketId(), requestBody.getAuctionDate());
@@ -605,7 +771,7 @@ public class MarketAuctionReportService {
         lotsFrom210to300.add(breakdownLotStatusList251to275);
 
         List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatus(276, 300,requestBody.getMarketId(), requestBody.getAuctionDate());
-        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween201to210Response, 276, 300, totalWeight, "");
+        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList276to300);
 
         form13Response.setLotsFrom201to300(lotsFrom210to300);
@@ -624,6 +790,113 @@ public class MarketAuctionReportService {
 
         rw.setContent(form13Response);
         return ResponseEntity.ok(rw);
+
+    }
+
+//public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses, String text) {
+//    String totalLots = "0";
+//    String totalWeight = "0";
+//    String totalAmount = "0";
+//    String totalMarketFee = "0";
+//    String totalMin = "0";
+//    String totalMax = "0";
+//
+//    for (GroupLotStatus status : totalResponses) {
+//        totalLots = addValues(totalLots, status.getLot());
+//        totalWeight = addValues(totalWeight, status.getWeight());
+//        totalAmount = addValues(totalAmount, status.getAmount());
+//        totalMarketFee = addValues(totalMarketFee, status.getMf());
+//        totalMin = addValues(totalMin, status.getMin());
+//        totalMax = addValues(totalMax, status.getMax());
+//    }
+//
+//    // Calculate totalAvg after summing the totalAmount and totalWeight
+//    float totalAmountFloat = Float.parseFloat(totalAmount);
+//    float totalWeightFloat = Float.parseFloat(totalWeight);
+//    String totalAvg = totalWeightFloat != 0 ? String.valueOf(totalAmountFloat / totalWeightFloat) : "NaN";
+//
+//    return Form13TotalResponse.builder()
+//            .description(text)
+//            .totalLots(totalLots)
+//            .totalWeight(totalWeight)
+//            .totalAmount(totalAmount)
+//            .totalMarketFee(totalMarketFee)
+//            .totalMin(totalMin)
+//            .totalMax(totalMax)
+//            .totalAvg(totalAvg)
+//            .build();
+//}
+
+    public static Form13TotalResponse calculateTotalValues(List<GroupLotStatus> totalResponses, String text) {
+        String totalLots = "0";
+        String totalWeight = "0";
+        String totalAmount = "0";
+        String totalMarketFee = "0";
+        String totalMin = null;
+        String totalMax = null;
+
+        for (GroupLotStatus status : totalResponses) {
+            totalLots = addValues(totalLots, status.getLot());
+            totalWeight = addValues(totalWeight, status.getWeight());
+            totalAmount = addValues(totalAmount, status.getAmount());
+            totalMarketFee = addValues(totalMarketFee, status.getMf());
+
+            String currentMin = status.getMin();
+            String currentMax = status.getMax();
+
+            if (((currentMin != null) && !currentMin.equals("0") && !currentMin.isEmpty()) && ((totalMin == null) || (parseSafeFloat(currentMin) < parseSafeFloat(totalMin)))) {
+                totalMin = currentMin;
+            }
+
+            if (currentMax != null && (totalMax == null || parseSafeFloat(currentMax) > parseSafeFloat(totalMax))) {
+                totalMax = currentMax;
+            }
+        }
+
+        // Calculate totalAvg after summing the totalAmount and totalWeight
+        float totalAmountFloat = parseSafeFloat(totalAmount);
+        float totalWeightFloat = parseSafeFloat(totalWeight);
+        String totalAvg = totalWeightFloat != 0 ? String.valueOf(totalAmountFloat / totalWeightFloat) : "NaN";
+
+        return Form13TotalResponse.builder()
+                .description(text)
+                .totalLots(totalLots)
+                .totalWeight(totalWeight)
+                .totalAmount(totalAmount)
+                .totalMarketFee(totalMarketFee)
+                .totalMin(totalMin)
+                .totalMax(totalMax)
+                .totalAvg(totalAvg)
+                .build();
+    }
+
+    private static float parseSafeFloat(String value) {
+        try {
+            return value != null && !value.isEmpty() ? Float.parseFloat(value) : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    public static BreakDownLotStatusTotalResponse calculateTotal0To351Values(List<BreakdownLotStatus> totalResponses, String text) {
+        String totalLots = "0";
+        String totalWeight = "0";
+        String totalPercentage = "0";
+
+
+        for (BreakdownLotStatus status : totalResponses) {
+            totalLots = addValues(totalLots, status.getLot());
+            totalWeight = addValues(totalWeight, status.getWeight());
+            totalPercentage = addValues(totalPercentage, status.getPercentage());
+
+        }
+            return BreakDownLotStatusTotalResponse.builder()
+                    .description(text)
+                    .totalLots(totalLots)
+                    .totalWeight(totalWeight)
+                    .totalPercentage(totalPercentage)
+                    .build();
+
 
     }
 
@@ -656,6 +929,7 @@ public class MarketAuctionReportService {
 
     List<GroupLotStatus> prepareGroup13Report(List<Object[]> groupLotStatusResponse, String descriptionText) {
         List<GroupLotStatus> groupLotList = new ArrayList<>();
+
         for (Object[] response : groupLotStatusResponse) {
             if(descriptionText.equals("")){
                 descriptionText = Util.objectToString(response[11]);
@@ -668,13 +942,292 @@ public class MarketAuctionReportService {
                     .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
                     .min(Util.objectToString(response[5]))
                     .max(Util.objectToString(response[6]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+                    .build();
+
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
+    List<GroupLotStatus> prepareGroupRaceReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[2]))
+                    .weight(Util.objectToString(response[3]))
+                    .amount(Util.objectToString(response[4]))
+                    .mf(String.valueOf(Util.objectToFloat(response[9])))
+//                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+                    .min(Util.objectToString(response[5]))
+                    .max(Util.objectToString(response[6]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+                    .build();
+
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
+    List<GroupLotStatus> prepareGroupStateReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[2]))
+                    .weight(Util.objectToString(response[3]))
+                    .amount(Util.objectToString(response[4]))
+//                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+                    .mf(String.valueOf(Util.objectToFloat(response[9])))
+                    .min(Util.objectToString(response[5]))
+                    .max(Util.objectToString(response[6]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[4]) / Util.objectToFloat(response[3])))
+                    .build();
+
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
+    private static String addValues(String total, String value) {
+        if (Objects.isNull(total) || total.isEmpty()) {
+            total = "0";
+        }
+        if (Objects.isNull(value) || value.isEmpty()) {
+            value = "0";
+        }
+        try {
+            float totalFloat = Float.parseFloat(total);
+            float valueFloat = Float.parseFloat(value);
+            return String.valueOf(totalFloat + valueFloat);
+        } catch (NumberFormatException e) {
+            return "0";
+        }
+    }
+
+
+    List<GroupLotStatus> prepareGroupGenderReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+
+
+        for (Object[] response : groupLotStatusResponse) {
+            if(descriptionText.equals("")){
+                descriptionText = Util.objectToString(response[0]);
+            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[1]))
+                    .weight(Util.objectToString(response[2]))
+                    .amount(Util.objectToString(response[3]))
+//                    .mf(String.valueOf(Util.objectToFloat(response[7]) + Util.objectToFloat(response[8])))
+                    .mf(String.valueOf(Util.objectToFloat(response[8])))
+                    .min(Util.objectToString(response[4]))
+                    .max(Util.objectToString(response[5]))
+//                    .avg(Util.objectToString(response[7]))
+                    .avg(String.valueOf(Util.objectToFloat(response[3]) / Util.objectToFloat(response[2])))
+                    .build();
+
+            groupLotList.add(groupLotStatus);
+            descriptionText = "";
+        }
+        return groupLotList;
+    }
+
+
+    public ResponseEntity<?> getForm13ReportByDistrict(Form13Request requestBody) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> avgResponse = lotRepository.getAvgLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+
+        List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(),requestBody.getDistrictId());
+
+        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+
+        List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
+
+        float totalWeight = 0.0F;
+
+        if(Util.isNullOrEmptyList(totalLotStatusResponse))
+        {
+            throw new ValidationException("No data found");
+        }
+        Form13Response form13Response = new Form13Response();
+        form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[2]));
+        form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
+
+        List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
+        form13Response.setTotalLotStatus(totalLotStatus);
+        totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[3]);
+
+        List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
+        form13Response.setStateWiseLotStatus(stateWiseLotStatus);
+
+        List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
+        form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
+
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroupRaceReport(raceWiseLotStatusResponse, "");
+        form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
+
+        Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");
+        Form13TotalResponse genderWiseTotalValues = calculateTotalValues(genderWiseLotStatus,"Gender Total");
+        Form13TotalResponse raceWiseTotalValues = calculateTotalValues(raceWiseLotStatus,"Race Total");
+
+// Set the total values in the response object
+        form13Response.setTotalStatus(Arrays.asList(stateWiseTotalValues, genderWiseTotalValues, raceWiseTotalValues));
+
+
+        List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
+
+        List<Object[]> lotBetween1to100Response = lotRepository.getLotBreakDownStatusByDist(1, 100,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList1to100 = prepareBreakdown13Report(lotBetween1to100Response, 000, 100, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList1to100);
+
+        List<Object[]> lotBetween101to150Response = lotRepository.getLotBreakDownStatusByDist(101, 150,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList101to150 = prepareBreakdown13Report(lotBetween101to150Response, 101, 150, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList101to150);
+
+        List<Object[]> lotBetween150to200Response = lotRepository.getLotBreakDownStatusByDist(151, 200,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList150to200 = prepareBreakdown13Report(lotBetween150to200Response, 150, 200, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList150to200);
+
+        List<Object[]> lotBetween201to250Response = lotRepository.getLotBreakDownStatusByDist(201, 250,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList201to250 = prepareBreakdown13Report(lotBetween201to250Response, 201, 250, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList201to250);
+
+        List<Object[]> lotBetween250to300Response = lotRepository.getLotBreakDownStatusByDist(251, 300,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList250to300 = prepareBreakdown13Report(lotBetween250to300Response, 250, 300, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList250to300);
+
+        List<Object[]> lotBetween301to350Response = lotRepository.getLotBreakDownStatusByDist(301, 350,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList301to350 = prepareBreakdown13Report(lotBetween301to350Response, 301, 350, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList301to350);
+
+        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), 350, requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
+        lotsFrom0to351.add(breakdownLotStatusList350Above);
+
+        BreakDownLotStatusTotalResponse totalDetails0to351 = calculateTotal0To351Values(lotsFrom0to351,"Total");
+        form13Response.setLotsFrom0to351(lotsFrom0to351);
+
+        form13Response.setLotsFrom0to351Total(Arrays.asList(totalDetails0to351));
+
+        List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
+
+        List<Object[]> lotBetween201to210Response = lotRepository.getLotBreakDownStatusByDist(201, 210,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList201to210 = prepareBreakdown13Report(lotBetween201to210Response, 201, 210, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList201to210);
+
+        List<Object[]> lotBetween211to220Response = lotRepository.getLotBreakDownStatusByDist(211, 220,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList211to220 = prepareBreakdown13Report(lotBetween211to220Response, 211, 220, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList211to220);
+
+        List<Object[]> lotBetween221to230Response = lotRepository.getLotBreakDownStatusByDist(221, 230,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList221to230 = prepareBreakdown13Report(lotBetween221to230Response, 221, 230, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList221to230);
+
+        List<Object[]> lotBetween231to240Response = lotRepository.getLotBreakDownStatusByDist(231, 240,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList231to240 = prepareBreakdown13Report(lotBetween231to240Response, 231, 240, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList231to240);
+
+        List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatusByDist(241, 250,requestBody.getMarketId(), requestBody.getAuctionDate(),  requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList241to250);
+
+        List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatusByDist(251, 275,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList251to275 = prepareBreakdown13Report(lotBetween251to275Response, 251, 275, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList251to275);
+
+        List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatusByDist(276, 300,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList276to300);
+
+        form13Response.setLotsFrom201to300(lotsFrom210to300);
+
+        List<BreakdownLotStatus> averageLots = new ArrayList<>();
+
+        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
+        BreakdownLotStatus lotlesserThanAverage = prepareBreakdown13Report(lotlesserThanAverageResponse, 301, 350, totalWeight, "Lots less than average");
+        averageLots.add(lotlesserThanAverage);
+
+        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
+        BreakdownLotStatus lotGreaterThanAverage = prepareBreakdown13Report(lotGreaterThanAverageResponse, 301, 350, totalWeight, "Lots more than average");
+        averageLots.add(lotGreaterThanAverage);
+
+        form13Response.setAverageLotStatus(averageLots);
+
+        rw.setContent(form13Response);
+        return ResponseEntity.ok(rw);
+
+    }
+
+//    BreakdownLotStatus prepareBreakdown13Report(List<Object[]> lotBetweenResponse, int fromCount, int toCount, float totalWeight, String lotText){
+//        BreakdownLotStatus breakdownLotStatus = new BreakdownLotStatus();
+//        if(lotBetweenResponse.size()>0) {
+//            for (Object[] response : lotBetweenResponse) {
+//                if(lotText.equals("")){
+//                    lotText = "Lot between Rs." + fromCount + " to " + toCount;
+//                }
+//                BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
+//                        .description(lotText)
+//                        .lot(Util.objectToString(response[4]))
+//                        .weight(Util.objectToString(response[2]))
+//                        .percentage(Util.objectToString((Util.objectToFloat(response[2]) / totalWeight) * 100))
+//                        .build();
+//                breakdownLotStatus = breakdownLotStatus1;
+//            }
+//        }else{
+//            BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
+//                    .description("Lot between " + fromCount + " to " + toCount)
+//                    .lot(Util.objectToString(0))
+//                    .weight(Util.objectToString(""))
+//                    .percentage(Util.objectToString(0.00))
+//                    .build();
+//            breakdownLotStatus = breakdownLotStatus1;
+//        }
+//        return breakdownLotStatus;
+//    }
+//
+
+    List<GroupLotStatus> prepareGroup13TotalDistrictReport(List<Object[]> groupLotStatusResponse, String descriptionText) {
+        List<GroupLotStatus> groupLotList = new ArrayList<>();
+        for (Object[] response : groupLotStatusResponse) {
+//            if(descriptionText.equals("")){
+//                descriptionText = Util.objectToString(response[11]);
+//            }
+            GroupLotStatus groupLotStatus = GroupLotStatus.builder()
+                    .description(descriptionText)
+                    .lot(Util.objectToString(response[2]))
+                    .weight(Util.objectToString(response[3]))
+                    .amount(Util.objectToString(response[4]))
+//                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
+                    .mf(String.valueOf(Util.objectToFloat(response[9])))
+                    .min(Util.objectToString(response[5]))
+                    .max(Util.objectToString(response[6]))
                     .avg(Util.objectToString(response[7]))
                     .build();
             groupLotList.add(groupLotStatus);
         }
         return groupLotList;
     }
-    public ResponseEntity<?> getDashboardReport(DashboardReportRequest dashboardReportRequest) {
+    /*public ResponseEntity<?> getDashboardReport(DashboardReportRequest dashboardReportRequest) {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
@@ -729,6 +1282,94 @@ public class MarketAuctionReportService {
         rw.setContent(dashboardReport);
         return ResponseEntity.ok(rw);
 
+    }*/
+
+    public ResponseEntity<?> getDashboardReport(DashboardReportRequest dashboardReportRequest) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+        String formattedDateTime = now.format(formatter);
+
+        EntityManager entityManager = null;
+        EntityManager entityManager2 = null;
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
+            StoredProcedureQuery procedureQuery = entityManager
+                    .createStoredProcedureQuery("sp_CheckBidStatus");
+
+            procedureQuery.registerStoredProcedureParameter("marketId", Integer.class, ParameterMode.IN);
+
+            entityManager.getTransaction().begin();
+            procedureQuery.setParameter("marketId", dashboardReportRequest.getMarketId());
+            procedureQuery.execute();
+
+            entityManager.getTransaction().commit();
+            List<Object[]> responsesIsAuctionStarted = procedureQuery.getResultList();
+
+            entityManager2 = entityManagerFactory.createEntityManager();
+            StoredProcedureQuery procedureQuery2 = entityManager
+                    .createStoredProcedureQuery("sp_CheckAuctionStatus");
+
+            procedureQuery2.registerStoredProcedureParameter("marketId", Integer.class, ParameterMode.IN);
+
+            entityManager2.getTransaction().begin();
+            procedureQuery2.setParameter("marketId", dashboardReportRequest.getMarketId());
+            procedureQuery2.execute();
+
+            entityManager2.getTransaction().commit();
+            List<Object[]> responsesIsAcceptanceStarted = procedureQuery2.getResultList();
+
+            // List<Object[]> responsesIsAuctionStarted = lotRepository.getIsAuctionStarted(dashboardReportRequest.getMarketId(), formattedDateTime);
+            //List<Object[]> responsesIsAcceptanceStarted = lotRepository.getIsAcceptanceStarted(dashboardReportRequest.getMarketId(), formattedDateTime);
+            List<Object[]> marketNameResponse = lotRepository.getMarketName(dashboardReportRequest.getMarketId());
+            List<Object[]> responses = lotRepository.getDashboardCount(dashboardReportRequest.getMarketId(), dashboardReportRequest.getDashboardReportDate());
+
+            if (Util.isNullOrEmptyList(responses)) {
+                throw new ValidationException("No data found");
+            }
+
+            DashboardReport dashboardReport = new DashboardReport();
+            dashboardReport.setMarketName(Util.objectToString(marketNameResponse.get(0)[0]));
+            dashboardReport.setAuctionStarted(Util.objectToString(responsesIsAuctionStarted.get(0)));
+            dashboardReport.setAcceptanceStarted(Util.objectToString(responsesIsAcceptanceStarted.get(0)));
+
+            List<DashboardReportInfo> dashboardReportInfoList = new ArrayList<>();
+            for (Object[] response : responses) {
+                DashboardReportInfo dashboardReportInfo = DashboardReportInfo.builder()
+                        .raceName(Util.objectToString(response[0]))
+                        .totalLots(Util.objectToString(response[1]))
+                        .totalSoldOutAmount(Util.objectToString(response[2]))
+                        .totalLotsBid(Util.objectToString(response[3]))
+                        .totalBids(Util.objectToString(response[4]))
+                        .totalReelers(Util.objectToString(response[5]))
+                        .accecptedLots(Util.objectToString(response[6]))
+                        .accecptedLotsMaxBid(Util.objectToString(response[7]))
+                        .accectedLotsMinBid(Util.objectToString(response[8]))
+                        .averagRate(Util.objectToString(response[9]))
+                        .weighedLots(Util.objectToString(response[10]))
+                        .totalLotsBid(Util.objectToString(response[11]))
+                        .currentAuctionMaxAmount(Util.objectToString(response[12]))
+                        .totalLotsNotBid(Util.objectToString(response[13]))
+                        .auctionCount(Util.objectToString(response[14]))
+                        .build();
+
+                dashboardReportInfoList.add(dashboardReportInfo);
+            }
+            dashboardReport.setDashboardReportInfoList(dashboardReportInfoList);
+            rw.setContent(dashboardReport);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (entityManager != null && entityManager.isOpen()) {
+                entityManager.close();
+            }
+            if (entityManager2 != null && entityManager2.isOpen()) {
+                entityManager2.close();
+            }
+        }
+        return ResponseEntity.ok(rw);
     }
 
     public ResponseEntity<?> getAverageReportForYearsReport(AverageReportRequest averageReportRequest) {
@@ -1844,37 +2485,120 @@ public class MarketAuctionReportService {
     public ResponseEntity<?> getBiddingReport(LotReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         List<LotReportResponse> lotReportResponseList = new ArrayList<>();
-        List<Object[]> responses = reelerAuctionRepository.getBiddingReport(reportRequest.getMarketId(),reportRequest.getReportFromDate(),reportRequest.getLotId());
+        // Correct the ternary operator usage
+        Integer lotId = (reportRequest.getLotId() == 0) ? null : reportRequest.getLotId();
+
+        List<Object[]> responses = reelerAuctionRepository.getBiddingReportWithoutLot(
+                reportRequest.getMarketId(),
+                reportRequest.getReportFromDate(),
+                lotId
+        );
         return getBiddingReportLotOrReeler(reportRequest.getMarketId(), rw, lotReportResponseList, responses);
     }
 
-    private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
-        if(Util.isNullOrEmptyList(responses))
-        {
-            throw new ValidationException("No data found");
-        }
-        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
-        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
-        for(Object[] response: responses){
-            LotReportResponse lotReportResponse = LotReportResponse.builder()
-                    .lotId(Util.objectToInteger(response[0]))
-                    .reelerLicenseNumber(Util.objectToString(response[1]))
-                    .bidAmount(Util.objectToInteger(response[2]))
-                    .bidTime(((Timestamp)response[3]).toLocalDateTime().toLocalTime())
-                    .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
-                    .marketName(Util.objectToString(response[7]))
-                    .auctionSession(Util.objectToString(response[8]))
-                    .build();
-            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
-            if(StringUtils.isNotBlank(lotReportResponse.getAccepted())){
-                lotReportResponse.setAcceptedTime(((Timestamp)response[5]).toLocalDateTime().toLocalTime());
-                lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
-            }
-            lotReportResponseList.add(lotReportResponse);
-        }
-        rw.setContent(lotReportResponseList);
-        return ResponseEntity.ok(rw);
+//    private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
+//        if(Util.isNullOrEmptyList(responses))
+//        {
+//            throw new ValidationException("No data found");
+//        }
+//        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
+//        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+//        for(Object[] response: responses){
+//            LotReportResponse lotReportResponse = LotReportResponse.builder()
+//                    .lotId(Util.objectToInteger(response[0]))
+//                    .reelerLicenseNumber(Util.objectToString(response[1]))
+//                    .bidAmount(Util.objectToInteger(response[2]))
+//                    .bidTime(((Timestamp)response[3]).toLocalDateTime().toLocalTime())
+//                    .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
+//                    .marketName(Util.objectToString(response[7]))
+//                    .auctionSession(Util.objectToString(response[8]))
+//                    .build();
+//            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
+//            if(StringUtils.isNotBlank(lotReportResponse.getAccepted())){
+//                lotReportResponse.setAcceptedTime(((Timestamp)response[5]).toLocalDateTime().toLocalTime());
+//                lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
+//            }
+//            lotReportResponseList.add(lotReportResponse);
+//        }
+//        rw.setContent(lotReportResponseList);
+//        return ResponseEntity.ok(rw);
+//    }
+
+
+//    private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
+//        if (Util.isNullOrEmptyList(responses)) {
+//            throw new ValidationException("No data found");
+//        }
+//        ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
+//        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+//        for (Object[] response : responses) {
+//            LocalDateTime bidDateTime = ((Timestamp) response[3]).toLocalDateTime();
+//            LocalTime bidTime = bidDateTime.toLocalTime();
+//
+//            LotReportResponse lotReportResponse = LotReportResponse.builder()
+//                    .lotId(Util.objectToInteger(response[0]))
+//                    .reelerLicenseNumber(Util.objectToString(response[1]))
+//                    .bidAmount(Util.objectToInteger(response[2]))
+//                    .bidTime(bidTime)  // Pass LocalTime here
+//                    .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
+//                    .marketName(Util.objectToString(response[7]))
+//                    .auctionSession(Util.objectToString(response[8]))
+//                    .serialNumber(Util.objectToInteger(response[9]))
+//                    .build();
+//
+//            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime, marketMaster, bidTime));
+//
+//            if (StringUtils.isNotBlank(lotReportResponse.getAccepted())) {
+//                LocalTime acceptedTime = ((Timestamp) response[5]).toLocalDateTime().toLocalTime();
+//                lotReportResponse.setAcceptedTime(acceptedTime);  // Pass LocalTime here
+//                lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
+//            }
+//
+//            lotReportResponseList.add(lotReportResponse);
+//        }
+//        rw.setContent(lotReportResponseList);
+//        return ResponseEntity.ok(rw);
+//    }
+private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId, ResponseWrapper rw, List<LotReportResponse> lotReportResponseList, List<Object[]> responses) {
+    if (Util.isNullOrEmptyList(responses)) {
+        throw new ValidationException("No data found");
     }
+
+    ExceptionalTime exceptionalTime = exceptionalTimeRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
+    MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+
+    for (Object[] response : responses) {
+        LocalDateTime bidDateTime = ((Timestamp) response[3]).toLocalDateTime();
+        LocalTime bidTime = bidDateTime.toLocalTime();
+
+        LotReportResponse lotReportResponse = LotReportResponse.builder()
+                .lotId(Util.objectToInteger(response[0]))
+                .reelerLicenseNumber(Util.objectToString(response[1]))
+                .bidAmount(Util.objectToInteger(response[2]))
+                .bidTime(bidTime)  // Pass LocalTime here
+                .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
+                .marketName(Util.objectToString(response[7]))
+                .auctionSession(Util.objectToString(response[8]))
+                .serialNumber(Util.objectToInteger(response[9]))
+                .build();
+
+        lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime, marketMaster, bidTime));
+
+        if ("Yes".equals(lotReportResponse.getAccepted())) {
+            LocalTime acceptedTime = ((Timestamp) response[5]).toLocalDateTime().toLocalTime();
+            lotReportResponse.setAcceptedTime(acceptedTime);  // Pass LocalTime here
+            lotReportResponse.setAcceptedBy(Util.objectToString(response[6]));
+        } else {
+            lotReportResponse.setAcceptedTime(LocalTime.of(0, 0));  // Set to an empty LocalTime
+        }
+
+        lotReportResponseList.add(lotReportResponse);
+    }
+
+    rw.setContent(lotReportResponseList);
+    return ResponseEntity.ok(rw);
+}
+
 
     public ResponseEntity<?> getReelerBiddingReport(ReelerReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -1889,7 +2613,7 @@ public class MarketAuctionReportService {
     }
 
 
-    public LotPendingReportResponse prepareResponseForLotBaseResponse(JwtPayloadData token, Object[] response, BigInteger lotId) {
+    public LotPendingReportResponse prepareResponseForLotBaseResponse(JwtPayloadData token, Object[]  response, BigInteger lotId) {
         LotPendingReportResponse lotPendingReportResponse;
         lotPendingReportResponse = LotPendingReportResponse.builder().
                 farmerNumber(Util.objectToString(response[0]))
@@ -1897,8 +2621,8 @@ public class MarketAuctionReportService {
                 .farmerMiddleName(Util.objectToString(response[2]))
                 .farmerLastName(Util.objectToString(response[3]))
                 .farmerAddress(Util.objectToString(response[4]))
-                .farmerTaluk(Util.objectToString(response[5]))
-                .farmerVillage(Util.objectToString(response[6]))
+                .farmerTalukInKannada(Util.objectToString(response[5]))
+                .farmerVillageInKannada(Util.objectToString(response[6]))
                 .ifscCode(Util.objectToString(response[7]))
                 .accountNumber(Util.objectToString(response[8]))
                 .allottedLotId(Integer.parseInt(String.valueOf(response[9])))
@@ -1914,7 +2638,8 @@ public class MarketAuctionReportService {
 
                 .farmerMobileNumber(Util.objectToString(response[21]))
                 .marketAuctionId((BigDecimal) response[22])
-                .auctionDateWithTime((Date)(response[24]))
+                .farmerVillage(Util.objectToString(response[23]))
+//                .auctionDateWithTime(convertToDate(response[25]))
                 .build();
         lotPendingReportResponse.setLoginName(token.getUsername());
         return lotPendingReportResponse;

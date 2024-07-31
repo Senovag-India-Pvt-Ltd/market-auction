@@ -25,4 +25,9 @@ public class DTROnlineReportResponse extends ResponseBody {
     private float totallotSoldOutAmount;
     private String marketNameKannada;
     private int paymentSuccessLots;
+    private Long maxAmount;
+    private Long minAmount;
+    private float avgAmount;
+    private long notTransactedLots;
+
 }

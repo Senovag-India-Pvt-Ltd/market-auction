@@ -3,6 +3,7 @@ package com.sericulture.marketandauction.repository;
 import com.sericulture.marketandauction.helper.MarketAuctionQueryConstants;
 import com.sericulture.marketandauction.model.api.marketauction.ReelerBalanceResponse;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
+import com.sericulture.marketandauction.model.entity.ReelerAuctionAccepted;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -14,6 +15,8 @@ import java.util.List;
 public interface ReelerAuctionRepository  extends PagingAndSortingRepository<ReelerAuction, Integer> {
 
     public ReelerAuction save(ReelerAuction reelerAuction);
+
+    public ReelerAuctionAccepted save(ReelerAuctionAccepted reelerAuctionAccepted);
 
     @Query("select r from ReelerAuction r where r.allottedLotId =:lotId and" +
             " r.marketId =:marketId and r.auctionSession = :auctionSession and r.auctionDate =:auctionDate order by amount desc,createdDate asc limit 1")
@@ -112,6 +115,10 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_LOT)
     public List<Object[]> getBiddingReport(int marketId, LocalDate auctionDate,int lotId);
+
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_WITHOUT_LOT)
+    public List<Object[]> getBiddingReportWithoutLot(int marketId, LocalDate auctionDate, Integer lotId);
+
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_REELER)
     public List<Object[]> getReelerBiddingReport(int marketId, LocalDate auctionDate,String reelerLicenseNumber);

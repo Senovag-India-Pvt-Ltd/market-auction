@@ -23,6 +23,8 @@ public class LotPendingReportResponse {
     private String farmerAddress;
     private String farmerTaluk;
     private String farmerVillage;
+    private String farmerTalukInKannada;
+    private String farmerVillageInKannada;
     private String ifscCode;
     private String accountNumber;
     private String reelerLicense;
@@ -46,11 +48,12 @@ public class LotPendingReportResponse {
     private BigDecimal marketAuctionId;
     private String marketNameKannada;
     private String farmerNameKannada;
-    private Date auctionDateWithTime;
+    private String auctionDateWithTime;
     private String farmerMobileNumber;
     private String reelerMobileNumber;
     private String reelerNumber;
     private String reelerNameKannada;
+    private String reelerFatherName;
     private double farmerAmount;
     private double reelerAmount;
     private List<Integer> smallBinList;
