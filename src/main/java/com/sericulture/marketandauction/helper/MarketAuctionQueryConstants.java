@@ -491,11 +491,11 @@ public class MarketAuctionQueryConstants {
 
     public static final String BIDDING_REPORT_QUERY_WITHOUT_LOT = LOT_BIDDING_REPORT_QUERY +
             " AND (:lotId IS NULL OR l.allotted_lot_id = :lotId) " +
-            " ORDER BY l.allotted_lot_id asc";
+            " ORDER BY l.lot_id asc,ra.CREATED_DATE DESC";
 
-    public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by l.allotted_lot_id asc";
+    public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by l.lot_id asc,ra.CREATED_DATE DESC";
 
-    public static final String BIDDING_REPORT_QUERY_WITHOUT_REELER = BIDDING_REPORT_QUERY + " order by l.allotted_lot_id asc";
+    public static final String BIDDING_REPORT_QUERY_WITHOUT_REELER = BIDDING_REPORT_QUERY + " order by l.lot_id asc,ra.CREATED_DATE DESC";
 
 //    public static final String DASHBOARD_COUNT = """
 //            SELECT\s
