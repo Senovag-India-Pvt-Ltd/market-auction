@@ -14,7 +14,7 @@ import java.util.List;
 public class MonthlyDistrictReport extends ResponseBody {
     private String startDate;
     private String endDate;
-    private String marketName;
+    private String marketNameInKannada;
     List<MonthlyDistrictReportInfo> monthlyDistrictReportInfoList;
     List<SumOfMonthlyDistrictReportInfo> sumOfMonthlyDistrictReportInfoList;
 }

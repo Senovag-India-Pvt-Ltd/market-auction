@@ -620,13 +620,15 @@ public class MarketAuctionQueryConstants {
                 t.taluk_name,
                 COUNT(l.LOT_ID) AS total_lots,
                 ROUND(SUM(ROUND(l.LOT_WEIGHT_AFTER_WEIGHMENT, 3)), 3) AS total_weight,
-                rm.race_name
+                rm.race_name,
+                s.STATE_NAME
                 FROM
                 lot l
                 JOIN market_auction ma on  ma.market_auction_id = l.market_auction_id
                 JOIN race_master rm on ma.RACE_MASTER_ID = rm.race_id and rm.active = 1
                 LEFT JOIN farmer_address fa ON fa.FARMER_ID = ma.farmer_id				   \s
                 LEFT JOIN DISTRICT d ON d.district_id = fa.district_id
+                LEFT JOIN State s ON s.STATE_ID = fa.STATE_ID
                 LEFT JOIN TALUK t ON t.taluk_id = fa.taluk_id
                 \s
                 WHERE
@@ -636,7 +638,7 @@ public class MarketAuctionQueryConstants {
                 AND l.auction_date BETWEEN :startDate AND :endDate
                 AND l.status ='weighmentcompleted'\s
                 GROUP BY
-                
+                s.state_name,
                 d.district_name,
                 t.taluk_name,rm.race_name ;
               """;

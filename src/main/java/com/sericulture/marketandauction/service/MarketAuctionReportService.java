@@ -1471,7 +1471,7 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
             }
 
             MonthlyDistrictReport monthlyDistrictReport = new MonthlyDistrictReport();
-            monthlyDistrictReport.setMarketName(Util.objectToString(marketNameResponse.get(0)[0]));
+            monthlyDistrictReport.setMarketNameInKannada(Util.objectToString(marketNameResponse.get(0)[1]));
             SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
             Date parsedDate;
             Date parsedDate2;
@@ -1493,6 +1493,7 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                         .totalLots(Util.objectToString(response[3]))
                         .totalWeight(Util.objectToString(response[4]))
                         .raceName(Util.objectToString(response[5]))
+                        .stateName(Util.objectToString(response[6]))
                         .build();
 
                 dashboardReportInfoList.add(dashboardReportInfo);
@@ -1501,11 +1502,11 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
 
             List<SumOfMonthlyDistrictReportInfo> sumOfMonthlyDistrictReportInfos = new ArrayList<>();
-            for (Object[] response : responses) {
+            for (Object[] response : sumResponses) {
                 SumOfMonthlyDistrictReportInfo dashboardReportInfo = SumOfMonthlyDistrictReportInfo.builder()
+                        .raceName(Util.objectToString(response[0]))
                         .totalLots(Util.objectToString(response[1]))
                         .totalWeight(Util.objectToString(response[2]))
-                        .raceName(Util.objectToString(response[0]))
                         .build();
 
                 sumOfMonthlyDistrictReportInfos.add(dashboardReportInfo);

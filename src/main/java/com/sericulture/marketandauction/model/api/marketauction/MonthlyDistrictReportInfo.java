@@ -11,6 +11,7 @@ public class MonthlyDistrictReportInfo {
     private String serialNumber;
     private String districtName;
     private String talukName;
+    private String stateName;
     private String totalLots;
     private String totalWeight;
     private String raceName;
