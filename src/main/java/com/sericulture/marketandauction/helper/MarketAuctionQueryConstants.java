@@ -582,8 +582,8 @@ public class MarketAuctionQueryConstants {
                                     lot ON ma.market_auction_id = lot.market_auction_id
                                 LEFT JOIN\s
                                     REELER_AUCTION_ACCEPTED ra ON lot.reeler_auction_accepted_id = ra.REELER_AUCTION_Accepted_id
-                                    AND ra.MARKET_ID = 38
-                                    AND ra.AUCTION_DATE = '2024-07-27'
+                                    AND ra.MARKET_ID = :marketId
+                                    AND ra.AUCTION_DATE = :marketAuctionDate
                                 LEFT JOIN\s
                                     (
                                         SELECT\s
