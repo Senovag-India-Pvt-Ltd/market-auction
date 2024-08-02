@@ -276,26 +276,50 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
             dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount());
             dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
 
-            if (dtrOnlineReportUnitDetail.getMinAmount() != null) {
-                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+//            if (dtrOnlineReportUnitDetail.getMinAmount() != null) {
+//                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+//                maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
+//                totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+//                totalWeight += dtrOnlineReportUnitDetail.getWeight();
+////                totalLots++;
+//            }
+//        }
+//
+////        dtrOnlineReportResponse.setTotalLots(totalLots);
+//
+//        if (totalWeight > 0) {
+//            dtrOnlineReportResponse.setMinAmount(minAmount);
+//            dtrOnlineReportResponse.setMaxAmount(maxAmount);
+//            dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
+//        } else {
+//            dtrOnlineReportResponse.setMinAmount(null);
+//            dtrOnlineReportResponse.setMaxAmount(null);
+//            dtrOnlineReportResponse.setAvgAmount(0.0f);
+//        }
+            // Update min and max amounts
+            if (dtrOnlineReportUnitDetail.getMaxAmount() != null) {
                 maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
-                totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
-                totalWeight += dtrOnlineReportUnitDetail.getWeight();
-//                totalLots++;
             }
+            if (dtrOnlineReportUnitDetail.getMinAmount() != null && dtrOnlineReportUnitDetail.getMinAmount() != 0 ) {
+                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+            }
+
+            // Accumulate total values regardless of min/max amount
+            totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+            totalWeight += dtrOnlineReportUnitDetail.getWeight();
         }
 
-//        dtrOnlineReportResponse.setTotalLots(totalLots);
+        // Set the min, max, and avg amount
+        dtrOnlineReportResponse.setMinAmount(minAmount.equals(Long.MAX_VALUE) ? null : minAmount);
+        dtrOnlineReportResponse.setMaxAmount(maxAmount.equals(Long.MIN_VALUE) ? null : maxAmount);
 
+        // Calculate average amount based on totalLotSoldOutAmount and totalWeight
         if (totalWeight > 0) {
-            dtrOnlineReportResponse.setMinAmount(minAmount);
-            dtrOnlineReportResponse.setMaxAmount(maxAmount);
             dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
         } else {
-            dtrOnlineReportResponse.setMinAmount(null);
-            dtrOnlineReportResponse.setMaxAmount(null);
             dtrOnlineReportResponse.setAvgAmount(0.0f);
         }
+
         dtrOnlineReportResponse.setTotalLots(queryResponse.size());
     }
 
