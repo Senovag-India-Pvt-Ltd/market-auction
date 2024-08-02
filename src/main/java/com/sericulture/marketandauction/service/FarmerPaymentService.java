@@ -467,9 +467,14 @@ public class FarmerPaymentService {
                         farmerReadyPaymentInfoForSeedMarketResponse.getSerialNumber(),
                         farmerReadyPaymentInfoForSeedMarketResponse.getAllottedLotId(),
                         farmerReadyPaymentInfoForSeedMarketResponse.getFarmerFirstName() + " " + farmerReadyPaymentInfoForSeedMarketResponse.getFarmerMiddleName() + " " + farmerReadyPaymentInfoForSeedMarketResponse.getFarmerLastName(),
-                        farmerReadyPaymentInfoForSeedMarketResponse.getFarmerNumber(), farmerReadyPaymentInfoForSeedMarketResponse.getFarmerMobileNumber(),
-                        farmerReadyPaymentInfoForSeedMarketResponse.getBuyerType(), farmerReadyPaymentInfoForSeedMarketResponse.getBuyerName() + " " + farmerReadyPaymentInfoForSeedMarketResponse.getLotWeight(),
-                        farmerReadyPaymentInfoForSeedMarketResponse.getAmount(), farmerReadyPaymentInfoForSeedMarketResponse.getMarketFee(), (farmerReadyPaymentInfoForSeedMarketResponse.getSoldAmount())
+                        farmerReadyPaymentInfoForSeedMarketResponse.getFarmerNumber(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getFarmerMobileNumber(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getBuyerType(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getBuyerName() ,
+                        farmerReadyPaymentInfoForSeedMarketResponse.getLotWeight(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getAmount(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getMarketFee(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getSoldAmount()
                 );
 
                 csvPrinter.printRecord(data);
