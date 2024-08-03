@@ -233,7 +233,7 @@ public class WeigmentService {
         CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
         LotWeightResponse lotWeightResponse = getLotWeightResponseForSeedMarket(canContinueToWeighmentRequest);
         if (lotWeightResponse.getLotStatus() != null && !lotWeightResponse.getLotStatus().isEmpty()) {
-        return marketAuctionHelper.retrunIfError(rw, "Weighment is " + lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
+        return marketAuctionHelper.retrunIfError(rw,  lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
     }
 //        if (!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())) {
 //            return marketAuctionHelper.retrunIfError(rw, "Lot is accepted. But " + lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
