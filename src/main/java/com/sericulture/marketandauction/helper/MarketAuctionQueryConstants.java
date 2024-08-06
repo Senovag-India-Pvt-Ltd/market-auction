@@ -1306,7 +1306,7 @@ public static final String avg_of_lot_amount_by_dist = """
     LEFT JOIN (
         SELECT DISTINCT farmer_id, state_id, district_id
         FROM farmer_address
-    ) fa ON s.STATE_ID = fa.state_id
+    ) fa ON s.STATE_ID = fa.state_id AND fa.district_id = :districtId
     LEFT JOIN market_auction ma ON fa.farmer_id = ma.farmer_id
     LEFT JOIN farmer f ON fa.farmer_id = f.farmer_id
     LEFT JOIN lot l ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
@@ -1320,7 +1320,6 @@ public static final String avg_of_lot_amount_by_dist = """
     WHERE
         s.ACTIVE = 1
         AND s.STATE_NAME IN ('Karnataka', 'Andhra Pradesh', 'Telangana', 'Maharashtra', 'Tamil Nadu')
-        AND fa.district_id = :districtId
     GROUP BY
         s.STATE_NAME, fa.state_id
     ORDER BY
