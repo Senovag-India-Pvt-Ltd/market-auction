@@ -199,6 +199,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.all_state_wise_lot_status)
     public List<Object[]> getAllStateWiseLotStatus(int marketId, LocalDate auctionDate);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.all_state_wise_lot_status_by_dist)
+    public List<Object[]> getAllStateWiseLotStatusByDist(int marketId, LocalDate auctionDate, Long districtId);
+
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.gender_wise_lot_status)
     public List<Object[]> getGenderWiseLotStatus(int marketId, LocalDate auctionDate);
 

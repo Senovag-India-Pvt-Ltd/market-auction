@@ -738,6 +738,7 @@ public static final String break_down_of_lot_amount = """
     AND raa.amount BETWEEN :fromAmount AND :toAmount
     AND l.market_id = :marketId
     AND l.auction_date = :auctionDate
+    AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
     GROUP BY
     l.auction_date, l.market_id;""";
 
@@ -755,6 +756,7 @@ public static final String break_down_of_lot_amount = """
                     AND raa.amount BETWEEN :fromAmount AND :toAmount
                     AND l.market_id = :marketId
                     AND l.auction_date = :auctionDate
+                    AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
                       AND fa.district_id = :districtId
                     GROUP BY l.auction_date, l.market_id ;""";
 
@@ -782,6 +784,7 @@ public static final String avg_of_lot_amount = """
     WHERE rejected_by IS NULL
     AND l.market_id = :marketId
     AND l.auction_date = :auctionDate
+    AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
     GROUP BY l.auction_date, l.market_id ;""";
 
 //    public static final String avg_of_lot_amount_by_dist = """
@@ -811,6 +814,7 @@ public static final String avg_of_lot_amount_by_dist = """
               AND l.market_id = :marketId
               AND l.auction_date = :auctionDate
               AND fa.district_id = :districtId
+              AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
             GROUP BY l.auction_date, l.market_id ;""";
 
     public static final String greater_than_lot_amount = """
@@ -825,6 +829,7 @@ public static final String avg_of_lot_amount_by_dist = """
              AND raa.amount > :amount
              AND l.market_id = :marketId
              AND l.auction_date = :auctionDate
+             AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
            GROUP BY l.auction_date, l.market_id
             ;""";
 
@@ -842,7 +847,8 @@ public static final String avg_of_lot_amount_by_dist = """
               AND raa.amount > :amount
               AND l.market_id = :marketId
               AND l.auction_date = :auctionDate
-                 AND fa.district_id = :districtId
+              AND fa.district_id = :districtId
+              AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
             GROUP BY l.auction_date, l.market_id
              ;""";
 
@@ -858,6 +864,7 @@ public static final String avg_of_lot_amount_by_dist = """
              AND raa.amount < :amount
              AND l.market_id = :marketId
              AND l.auction_date = :auctionDate
+             AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
            GROUP BY l.auction_date, l.market_id
             ;""";
 
@@ -875,7 +882,8 @@ public static final String avg_of_lot_amount_by_dist = """
               AND raa.amount < :amount
               AND l.market_id = :marketId
               AND l.auction_date = :auctionDate
-               AND fa.district_id = :districtId
+              AND fa.district_id = :districtId
+              AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
             GROUP BY l.auction_date, l.market_id
              ;""";
 
@@ -902,6 +910,7 @@ public static final String avg_of_lot_amount_by_dist = """
           WHERE l.rejected_by IS NULL
           AND l.market_id = :marketId
           AND l.auction_date = :auctionDate
+          AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
           GROUP BY l.auction_date, l.market_id ;""";
 
     public static final String state_wise_lot_status = """
@@ -934,6 +943,7 @@ public static final String avg_of_lot_amount_by_dist = """
             l.rejected_by IS NULL
             AND l.market_id = :marketId
             AND l.auction_date = :auctionDate
+            AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
         GROUP BY
             l.auction_date, l.market_id, fa.state_id, s.STATE_NAME;
     """;
@@ -966,8 +976,8 @@ public static final String avg_of_lot_amount_by_dist = """
                 AND l.rejected_by IS NULL
                 AND l.market_id = :marketId
                 AND l.auction_date = :auctionDate
+                AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
                     LEFT JOIN REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID\s
-                            AND raa.STATUS ='accepted'
                             AND raa.AUCTION_DATE = l.auction_date
             LEFT JOIN reeler r ON r.reeler_id = raa.REELER_ID AND r.active = 1
             WHERE
@@ -1008,8 +1018,8 @@ public static final String avg_of_lot_amount_by_dist = """
         AND l.rejected_by IS NULL
         AND l.market_id = :marketId
         AND l.auction_date = :auctionDate
+        AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
     LEFT JOIN reeler_auction_accepted raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-        AND raa.STATUS ='accepted'
         AND raa.AUCTION_DATE = l.auction_date
     WHERE
         f.GENDER_ID IN (1, 2)
@@ -1161,6 +1171,7 @@ public static final String avg_of_lot_amount_by_dist = """
             WHERE
     l.market_id = :marketId
     AND l.auction_date = :auctionDate
+    AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
     AND rm.active = 1
     GROUP BY
     rm.race_name,
@@ -1187,7 +1198,54 @@ public static final String avg_of_lot_amount_by_dist = """
           AND l.market_id = :marketId
           AND l.auction_date =:auctionDate
        AND fa.district_id = :districtId
+       AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
         GROUP BY l.auction_date, l.market_id ;""";
+
+    public static final String all_state_wise_lot_status_by_dist = """
+    SELECT
+        s.STATE_NAME,
+        COALESCE(fa.state_id, 0) AS state_id,
+        COUNT(l.LOT_ID) AS total_lots,
+        COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) AS total_weight,
+        COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) AS total_amount,
+        COALESCE(MIN(raa.AMOUNT), 0) AS min_amount,
+        COALESCE(MAX(raa.AMOUNT), 0) AS max_amount,
+        CASE
+            WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0
+            THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)
+            ELSE 0
+        END AS avg_amount,
+        COALESCE(SUM(l.MARKET_FEE_REELER), 0) AS reeler_mf,
+        COALESCE(SUM(l.MARKET_FEE_FARMER), 0) AS farmer_mf
+    FROM
+        state s
+    LEFT JOIN (
+        SELECT DISTINCT farmer_id, state_id, district_id
+        FROM farmer_address
+    ) fa ON s.STATE_ID = fa.state_id
+    LEFT JOIN market_auction ma ON fa.farmer_id = ma.farmer_id
+    LEFT JOIN farmer f ON fa.farmer_id = f.farmer_id
+    LEFT JOIN lot l ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
+        AND l.rejected_by IS NULL
+        AND l.market_id = :marketId
+        AND l.auction_date = :auctionDate
+        AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
+    LEFT JOIN REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+        AND raa.AUCTION_DATE = l.auction_date
+    LEFT JOIN reeler r ON r.reeler_id = raa.REELER_ID AND r.active = 1
+    WHERE
+        s.ACTIVE = 1
+        AND s.STATE_NAME IN ('Karnataka', 'Andhra Pradesh', 'Telangana', 'Maharashtra', 'Tamil Nadu')
+        AND fa.district_id = :districtId
+    GROUP BY
+        s.STATE_NAME, fa.state_id
+    ORDER BY
+        CASE s.STATE_NAME
+            WHEN 'Karnataka' THEN 1
+            ELSE 2
+        END,
+        s.STATE_NAME;
+""";
 
 
     public static final String race_wise_lot_status_dist = """
@@ -1254,6 +1312,7 @@ public static final String avg_of_lot_amount_by_dist = """
     l.market_id = :marketId
     AND l.auction_date = :auctionDate
     AND fa.district_id = :districtId
+    AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
     AND rm.active = 1
     GROUP BY
     rm.race_name,
@@ -1286,8 +1345,8 @@ public static final String avg_of_lot_amount_by_dist = """
         AND l.market_id = :marketId
         AND l.auction_date = :auctionDate
         AND fa.DISTRICT_ID = :districtId
+        AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
     LEFT JOIN reeler_auction_accepted raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-     AND raa.STATUS ='accepted'
         AND raa.AUCTION_DATE = l.auction_date
     WHERE
         f.GENDER_ID IN (1, 2)
