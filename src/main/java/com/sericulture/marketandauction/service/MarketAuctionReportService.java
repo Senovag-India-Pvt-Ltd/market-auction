@@ -1172,7 +1172,7 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
 
-        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(),requestBody.getDistrictId());
 
         List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(),requestBody.getDistrictId());
 
