@@ -208,7 +208,8 @@ public class MarketAuctionQueryConstants {
     public static final String DTR_ONLINE_REPORT_QUERY_FOR_CASH_BLANK_REPORT = """
             WITH CombinedResults AS (
           SELECT
-              ROW_NUMBER() OVER (ORDER BY l.allotted_lot_id, f.first_name, l.lot_id, l.auction_date) AS row_id,
+
+             ROW_NUMBER() OVER (ORDER BY l.lot_id ASC) AS row_id,
              -- ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
               l.allotted_lot_id,
               f.first_name,
