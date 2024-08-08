@@ -254,9 +254,9 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                     .farmerMobileNumber(Util.objectToString(unit[6]))
                     .weight(Util.objectToFloat(unit[7]))
                     .bidAmount(Util.objectToInteger(unit[8]))
-                    .lotSoldOutAmount(Util.objectToFloat(unit[9]))
-                    .farmerMarketFee(Util.objectToFloat(unit[10]))
-                    .reelerMarketFee(Util.objectToFloat(unit[11]))
+                    .lotSoldOutAmount(Math.round(Util.objectToFloat(unit[9])))
+                    .farmerMarketFee(Math.round(Util.objectToFloat(unit[10])))
+                    .reelerMarketFee(Math.round(Util.objectToFloat(unit[11])))
                     .reelerLicense(Util.objectToString(unit[12]))
                     .reelerName(Util.objectToString(unit[13]))
                     .reelerMobile(Util.objectToString(unit[14]))
@@ -270,18 +270,25 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                     .farmerVillage(Util.objectToString(unit[23]))
                     .minAmount(Util.objectToLong(unit[24]))
                     .maxAmount(Util.objectToLong(unit[25]))
-                    .avgAmount(Util.objectToFloat(unit[26]))
+                    .avgAmount(Math.round(Util.objectToFloat(unit[26])))
                     .build();
+//            dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+//            dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
+//
+//            dtrOnlineReportResponse.setTotalFarmerMarketFee(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee());
+//            dtrOnlineReportResponse.setTotalReelerMarketFee(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+//            dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
+//            dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
+//            dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount());
 
-            dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
-            dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
-
-            dtrOnlineReportResponse.setTotalFarmerMarketFee(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee());
-            dtrOnlineReportResponse.setTotalReelerMarketFee(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee());
-            dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
-            dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
             dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
-            dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount());
+            dtrOnlineReportUnitDetail.setReelerAmount(Math.round(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()));
+            dtrOnlineReportUnitDetail.setFarmerAmount(Math.round(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()));
+            dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()));
+            dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()));
+            dtrOnlineReportResponse.setTotalFarmerAmount(Math.round(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()));
+            dtrOnlineReportResponse.setTotalReelerAmount(Math.round(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()));
+            dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()));
             dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
 
 //            if (dtrOnlineReportUnitDetail.getMinAmount() != null) {
