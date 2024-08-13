@@ -2417,7 +2417,8 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
         List<MonthlyReportRaceWise> monthlyReportRaceWiseList = new ArrayList<>();
 
         LocalDate startDate = request.getStartDate();
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+//        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        LocalDate endDate = request.getEndDate();
         LocalDate financialYearStartDate = LocalDate.of(startDate.getYear() - 1, 4, 1);
         monthlyReportResponse.setThisYearDate(financialYearStartDate.getYear()+"-"+startDate.getYear());
         monthlyReportResponse.setPrevYearDate(startDate.minusYears(2).getYear()+"-"+startDate.minusYears(1).getYear());
