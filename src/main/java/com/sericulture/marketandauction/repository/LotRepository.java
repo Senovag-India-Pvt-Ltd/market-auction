@@ -164,55 +164,55 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public List<Object[]> getReelerPendingReport(int marketId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.break_down_of_lot_amount)
-    public List<Object[]> getLotBreakDownStatus(int fromAmount, int toAmount, int marketId, LocalDate auctionDate);
+    public List<Object[]> getLotBreakDownStatus(int fromAmount, int toAmount, int marketId, LocalDate fromDate,LocalDate toDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.break_down_of_lot_amount_by_dist)
-    public List<Object[]> getLotBreakDownStatusByDist(int fromAmount, int toAmount, int marketId, LocalDate auctionDate, Long districtId);
+    public List<Object[]> getLotBreakDownStatusByDist(int fromAmount, int toAmount, int marketId, LocalDate fromDate,LocalDate toDate, Long districtId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.avg_of_lot_amount)
-    public List<Object[]> getAvgLotStatus(int marketId, LocalDate auctionDate);
+    public List<Object[]> getAvgLotStatus(int marketId, LocalDate fromDate,LocalDate toDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.avg_of_lot_amount_by_dist)
-    public List<Object[]> getAvgLotStatusByDist(int marketId, LocalDate auctionDate, Long districtId);
+    public List<Object[]> getAvgLotStatusByDist(int marketId, LocalDate fromDate,LocalDate toDate, Long districtId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.less_than_lot_amount)
-    public List<Object[]> getLessLotStatus(int marketId, LocalDate auctionDate, float amount);
+    public List<Object[]> getLessLotStatus(int marketId, LocalDate fromDate,LocalDate toDate, float amount);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.less_than_lot_amount_dist)
-    public List<Object[]> getLessLotStatusByDist(int marketId, LocalDate auctionDate, float amount, Long districtId);
+    public List<Object[]> getLessLotStatusByDist(int marketId, LocalDate fromDate,LocalDate toDate, float amount, Long districtId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.greater_than_lot_amount)
-    public List<Object[]> getGreaterLotStatus(int marketId, LocalDate auctionDate, float amount);
+    public List<Object[]> getGreaterLotStatus(int marketId, LocalDate fromDate,LocalDate toDate, float amount);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.greater_than_lot_amount_dist)
-    public List<Object[]> getGreaterLotStatusByDist(int marketId, LocalDate auctionDate, float amount, Long districtId);
+    public List<Object[]> getGreaterLotStatusByDist(int marketId, LocalDate fromDate,LocalDate toDate, float amount, Long districtId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.total_lot_status)
-    public List<Object[]> getTotalLotStatus(int marketId, LocalDate auctionDate);
+    public List<Object[]> getTotalLotStatus(int marketId, LocalDate fromDate,LocalDate toDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.total_lot_status_by_dist)
-    public List<Object[]> getTotalLotStatusByDist(int marketId, LocalDate auctionDate, Long districtId);
+    public List<Object[]> getTotalLotStatusByDist(int marketId, LocalDate fromDate,LocalDate toDate, Long districtId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.state_wise_lot_status)
     public List<Object[]> getStateWiseLotStatus(int marketId, LocalDate auctionDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.all_state_wise_lot_status)
-    public List<Object[]> getAllStateWiseLotStatus(int marketId, LocalDate auctionDate);
+    public List<Object[]> getAllStateWiseLotStatus(int marketId, LocalDate fromDate,LocalDate toDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.all_state_wise_lot_status_by_dist)
-    public List<Object[]> getAllStateWiseLotStatusByDist(int marketId, LocalDate auctionDate, Long districtId);
+    public List<Object[]> getAllStateWiseLotStatusByDist(int marketId, LocalDate fromDate,LocalDate toDate, Long districtId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.gender_wise_lot_status)
-    public List<Object[]> getGenderWiseLotStatus(int marketId, LocalDate auctionDate);
+    public List<Object[]> getGenderWiseLotStatus(int marketId, LocalDate fromDate,LocalDate toDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.race_market_wise_lot_status)
-    public List<Object[]> getRaceWiseStatus(int marketId, LocalDate auctionDate);
+    public List<Object[]> getRaceWiseStatus(int marketId, LocalDate fromDate,LocalDate toDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.race_market_wise_lot_status_dist)
-    public List<Object[]> getRaceWiseStatusByDist(int marketId, LocalDate auctionDate, Long districtId);
+    public List<Object[]> getRaceWiseStatusByDist(int marketId,LocalDate fromDate,LocalDate toDate, Long districtId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.gender_wise_lot_status_by_dist)
-    public List<Object[]> getGenderWiseLotStatusByDist(int marketId, LocalDate auctionDate, Long districtId);
+    public List<Object[]> getGenderWiseLotStatusByDist(int marketId, LocalDate fromDate,LocalDate toDate, Long districtId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_report_for__app)
     public List<Object[]> getReelerReportForApp(int reelerId, int marketId, LocalDate auctionDate);

@@ -789,15 +789,15 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
-        List<Object[]> avgResponse = lotRepository.getAvgLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> avgResponse = lotRepository.getAvgLotStatus(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
 
-        List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatus(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
 
-        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatus(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
 
-        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatus(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
 
-        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatus(requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatus(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
 
         List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
 
@@ -835,31 +835,31 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
 
-        List<Object[]> lotBetween1to100Response = lotRepository.getLotBreakDownStatus(1, 100,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween1to100Response = lotRepository.getLotBreakDownStatus(1, 100,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList1to100 = prepareBreakdown13Report(lotBetween1to100Response, 000, 100, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList1to100);
 
-        List<Object[]> lotBetween101to150Response = lotRepository.getLotBreakDownStatus(101, 150,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween101to150Response = lotRepository.getLotBreakDownStatus(101, 150,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList101to150 = prepareBreakdown13Report(lotBetween101to150Response, 101, 150, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList101to150);
 
-        List<Object[]> lotBetween150to200Response = lotRepository.getLotBreakDownStatus(151, 200,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween150to200Response = lotRepository.getLotBreakDownStatus(151, 200,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList150to200 = prepareBreakdown13Report(lotBetween150to200Response, 150, 200, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList150to200);
 
-        List<Object[]> lotBetween201to250Response = lotRepository.getLotBreakDownStatus(201, 250,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween201to250Response = lotRepository.getLotBreakDownStatus(201, 250,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList201to250 = prepareBreakdown13Report(lotBetween201to250Response, 201, 250, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList201to250);
 
-        List<Object[]> lotBetween250to300Response = lotRepository.getLotBreakDownStatus(251, 300,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween250to300Response = lotRepository.getLotBreakDownStatus(251, 300,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList250to300 = prepareBreakdown13Report(lotBetween250to300Response, 250, 300, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList250to300);
 
-        List<Object[]> lotBetween301to350Response = lotRepository.getLotBreakDownStatus(301, 350,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween301to350Response = lotRepository.getLotBreakDownStatus(301, 350,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList301to350 = prepareBreakdown13Report(lotBetween301to350Response, 301, 350, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList301to350);
 
-        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatus( requestBody.getMarketId(), requestBody.getAuctionDate(), 350);
+        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatus( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), 350);
         BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
         lotsFrom0to351.add(breakdownLotStatusList350Above);
 
@@ -870,31 +870,31 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
 
-        List<Object[]> lotBetween201to210Response = lotRepository.getLotBreakDownStatus(201, 210,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween201to210Response = lotRepository.getLotBreakDownStatus(201, 210,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList201to210 = prepareBreakdown13Report(lotBetween201to210Response, 201, 210, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList201to210);
 
-        List<Object[]> lotBetween211to220Response = lotRepository.getLotBreakDownStatus(211, 220,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween211to220Response = lotRepository.getLotBreakDownStatus(211, 220,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList211to220 = prepareBreakdown13Report(lotBetween211to220Response, 211, 220, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList211to220);
 
-        List<Object[]> lotBetween221to230Response = lotRepository.getLotBreakDownStatus(221, 230,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween221to230Response = lotRepository.getLotBreakDownStatus(221, 230,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList221to230 = prepareBreakdown13Report(lotBetween221to230Response, 221, 230, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList221to230);
 
-        List<Object[]> lotBetween231to240Response = lotRepository.getLotBreakDownStatus(231, 240,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween231to240Response = lotRepository.getLotBreakDownStatus(231, 240,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList231to240 = prepareBreakdown13Report(lotBetween231to240Response, 231, 240, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList231to240);
 
-        List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatus(241, 250,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatus(241, 250,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList241to250);
 
-        List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatus(251, 275,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatus(251, 275,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList251to275 = prepareBreakdown13Report(lotBetween251to275Response, 251, 275, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList251to275);
 
-        List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatus(276, 300,requestBody.getMarketId(), requestBody.getAuctionDate());
+        List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatus(276, 300,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate());
         BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList276to300);
 
@@ -902,11 +902,11 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<BreakdownLotStatus> averageLots = new ArrayList<>();
 
-        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatus( requestBody.getMarketId(), requestBody.getAuctionDate(), Util.objectToFloat(avgResponse.get(0)[2]));
+        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatus( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[2]));
         BreakdownLotStatus lotlesserThanAverage = prepareBreakdown13Report(lotlesserThanAverageResponse, 301, 350, totalWeight, "Lots less than average");
         averageLots.add(lotlesserThanAverage);
 
-        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatus( requestBody.getMarketId(), requestBody.getAuctionDate(), Util.objectToFloat(avgResponse.get(0)[2]));
+        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatus( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[2]));
         BreakdownLotStatus lotGreaterThanAverage = prepareBreakdown13Report(lotGreaterThanAverageResponse, 301, 350, totalWeight, "Lots more than average");
         averageLots.add(lotGreaterThanAverage);
 
@@ -1175,15 +1175,15 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
-        List<Object[]> avgResponse = lotRepository.getAvgLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> avgResponse = lotRepository.getAvgLotStatusByDist(requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
 
-        List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusByDist(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
 
-        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(),requestBody.getDistrictId());
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getFromDate(),requestBody.getToDate(),requestBody.getDistrictId());
 
-        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(),requestBody.getDistrictId());
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(),requestBody.getDistrictId());
 
-        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
 
         List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
 
@@ -1220,31 +1220,31 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
 
-        List<Object[]> lotBetween1to100Response = lotRepository.getLotBreakDownStatusByDist(1, 100,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween1to100Response = lotRepository.getLotBreakDownStatusByDist(1, 100,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList1to100 = prepareBreakdown13Report(lotBetween1to100Response, 000, 100, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList1to100);
 
-        List<Object[]> lotBetween101to150Response = lotRepository.getLotBreakDownStatusByDist(101, 150,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween101to150Response = lotRepository.getLotBreakDownStatusByDist(101, 150,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList101to150 = prepareBreakdown13Report(lotBetween101to150Response, 101, 150, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList101to150);
 
-        List<Object[]> lotBetween150to200Response = lotRepository.getLotBreakDownStatusByDist(151, 200,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween150to200Response = lotRepository.getLotBreakDownStatusByDist(151, 200,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList150to200 = prepareBreakdown13Report(lotBetween150to200Response, 150, 200, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList150to200);
 
-        List<Object[]> lotBetween201to250Response = lotRepository.getLotBreakDownStatusByDist(201, 250,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween201to250Response = lotRepository.getLotBreakDownStatusByDist(201, 250,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList201to250 = prepareBreakdown13Report(lotBetween201to250Response, 201, 250, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList201to250);
 
-        List<Object[]> lotBetween250to300Response = lotRepository.getLotBreakDownStatusByDist(251, 300,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween250to300Response = lotRepository.getLotBreakDownStatusByDist(251, 300,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList250to300 = prepareBreakdown13Report(lotBetween250to300Response, 250, 300, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList250to300);
 
-        List<Object[]> lotBetween301to350Response = lotRepository.getLotBreakDownStatusByDist(301, 350,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween301to350Response = lotRepository.getLotBreakDownStatusByDist(301, 350,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList301to350 = prepareBreakdown13Report(lotBetween301to350Response, 301, 350, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList301to350);
 
-        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), 350, requestBody.getDistrictId());
+        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), 350, requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
         lotsFrom0to351.add(breakdownLotStatusList350Above);
 
@@ -1255,31 +1255,31 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
 
-        List<Object[]> lotBetween201to210Response = lotRepository.getLotBreakDownStatusByDist(201, 210,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween201to210Response = lotRepository.getLotBreakDownStatusByDist(201, 210,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList201to210 = prepareBreakdown13Report(lotBetween201to210Response, 201, 210, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList201to210);
 
-        List<Object[]> lotBetween211to220Response = lotRepository.getLotBreakDownStatusByDist(211, 220,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween211to220Response = lotRepository.getLotBreakDownStatusByDist(211, 220,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList211to220 = prepareBreakdown13Report(lotBetween211to220Response, 211, 220, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList211to220);
 
-        List<Object[]> lotBetween221to230Response = lotRepository.getLotBreakDownStatusByDist(221, 230,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween221to230Response = lotRepository.getLotBreakDownStatusByDist(221, 230,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList221to230 = prepareBreakdown13Report(lotBetween221to230Response, 221, 230, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList221to230);
 
-        List<Object[]> lotBetween231to240Response = lotRepository.getLotBreakDownStatusByDist(231, 240,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween231to240Response = lotRepository.getLotBreakDownStatusByDist(231, 240,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList231to240 = prepareBreakdown13Report(lotBetween231to240Response, 231, 240, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList231to240);
 
-        List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatusByDist(241, 250,requestBody.getMarketId(), requestBody.getAuctionDate(),  requestBody.getDistrictId());
+        List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatusByDist(241, 250,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(),  requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList241to250);
 
-        List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatusByDist(251, 275,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatusByDist(251, 275,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList251to275 = prepareBreakdown13Report(lotBetween251to275Response, 251, 275, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList251to275);
 
-        List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatusByDist(276, 300,requestBody.getMarketId(), requestBody.getAuctionDate(), requestBody.getDistrictId());
+        List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatusByDist(276, 300,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
         lotsFrom210to300.add(breakdownLotStatusList276to300);
 
@@ -1287,11 +1287,11 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<BreakdownLotStatus> averageLots = new ArrayList<>();
 
-        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
+        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatusByDist( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
         BreakdownLotStatus lotlesserThanAverage = prepareBreakdown13Report(lotlesserThanAverageResponse, 301, 350, totalWeight, "Lots less than average");
         averageLots.add(lotlesserThanAverage);
 
-        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getAuctionDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
+        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
         BreakdownLotStatus lotGreaterThanAverage = prepareBreakdown13Report(lotGreaterThanAverageResponse, 301, 350, totalWeight, "Lots more than average");
         averageLots.add(lotGreaterThanAverage);
 

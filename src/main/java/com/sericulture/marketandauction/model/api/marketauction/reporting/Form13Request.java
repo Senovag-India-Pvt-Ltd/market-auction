@@ -11,5 +11,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public class Form13Request extends ReportRequest{
     private LocalDate auctionDate;
+    private LocalDate fromDate;
+    private LocalDate toDate;
     private Long districtId;
 }
