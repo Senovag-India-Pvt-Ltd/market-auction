@@ -808,12 +808,12 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
             throw new ValidationException("No data found");
         }
         Form13Response form13Response = new Form13Response();
-        form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[2]));
+        form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[1]));
         form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
 
         List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
         form13Response.setTotalLotStatus(totalLotStatus);
-        totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[3]);
+        totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[2]);
 
         List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
         form13Response.setStateWiseLotStatus(stateWiseLotStatus);
@@ -902,11 +902,11 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<BreakdownLotStatus> averageLots = new ArrayList<>();
 
-        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatus( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[2]));
+        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatus( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[1]));
         BreakdownLotStatus lotlesserThanAverage = prepareBreakdown13Report(lotlesserThanAverageResponse, 301, 350, totalWeight, "Lots less than average");
         averageLots.add(lotlesserThanAverage);
 
-        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatus( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[2]));
+        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatus( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[1]));
         BreakdownLotStatus lotGreaterThanAverage = prepareBreakdown13Report(lotGreaterThanAverageResponse, 301, 350, totalWeight, "Lots more than average");
         averageLots.add(lotGreaterThanAverage);
 
@@ -1033,9 +1033,9 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                 }
                 BreakdownLotStatus breakdownLotStatus1 = BreakdownLotStatus.builder()
                         .description(lotText)
-                        .lot(Util.objectToString(response[4]))
-                        .weight(Util.objectToString(response[2]))
-                        .percentage(Util.objectToString((Util.objectToFloat(response[2]) / totalWeight) * 100))
+                        .lot(Util.objectToString(response[3]))
+                        .weight(Util.objectToString(response[1]))
+                        .percentage(Util.objectToString((Util.objectToFloat(response[1]) / totalWeight) * 100))
                         .build();
                 breakdownLotStatus = breakdownLotStatus1;
             }
@@ -1194,12 +1194,12 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
             throw new ValidationException("No data found");
         }
         Form13Response form13Response = new Form13Response();
-        form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[2]));
+        form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[1]));
         form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
 
         List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
         form13Response.setTotalLotStatus(totalLotStatus);
-        totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[3]);
+        totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[2]);
 
         List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
         form13Response.setStateWiseLotStatus(stateWiseLotStatus);
@@ -1287,11 +1287,11 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         List<BreakdownLotStatus> averageLots = new ArrayList<>();
 
-        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatusByDist( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
+        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatusByDist( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[1]), requestBody.getDistrictId());
         BreakdownLotStatus lotlesserThanAverage = prepareBreakdown13Report(lotlesserThanAverageResponse, 301, 350, totalWeight, "Lots less than average");
         averageLots.add(lotlesserThanAverage);
 
-        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[2]), requestBody.getDistrictId());
+        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[1]), requestBody.getDistrictId());
         BreakdownLotStatus lotGreaterThanAverage = prepareBreakdown13Report(lotGreaterThanAverageResponse, 301, 350, totalWeight, "Lots more than average");
         averageLots.add(lotGreaterThanAverage);
 
@@ -1338,14 +1338,14 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 //            }
             GroupLotStatus groupLotStatus = GroupLotStatus.builder()
                     .description(descriptionText)
-                    .lot(Util.objectToString(response[2]))
-                    .weight(Util.objectToString(response[3]))
-                    .amount(Util.objectToString(response[4]))
+                    .lot(Util.objectToString(response[1]))
+                    .weight(Util.objectToString(response[2]))
+                    .amount(Util.objectToString(response[3]))
 //                    .mf(String.valueOf(Util.objectToFloat(response[8]) + Util.objectToFloat(response[9])))
-                    .mf(String.valueOf(Util.objectToFloat(response[9])))
-                    .min(Util.objectToString(response[5]))
-                    .max(Util.objectToString(response[6]))
-                    .avg(Util.objectToString(response[7]))
+                    .mf(String.valueOf(Util.objectToFloat(response[8])))
+                    .min(Util.objectToString(response[4]))
+                    .max(Util.objectToString(response[5]))
+                    .avg(Util.objectToString(response[6]))
                     .build();
             groupLotList.add(groupLotStatus);
         }

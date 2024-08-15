@@ -810,7 +810,6 @@ public static final String DASHBOARD_COUNT = """
 //            GROUP BY auction_date, market_id ;""";
 public static final String break_down_of_lot_amount = """
     SELECT
-    l.auction_date,
     l.market_id,
     SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
     SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
@@ -825,10 +824,10 @@ public static final String break_down_of_lot_amount = """
     AND l.auction_date BETWEEN :fromDate AND :toDate
     AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
     GROUP BY
-    l.auction_date, l.market_id;""";
+    l.market_id;""";
 
     public static final String break_down_of_lot_amount_by_dist = """
-            SELECT l.auction_date,
+            SELECT
                     l.market_id,
                     SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
                     SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
@@ -843,7 +842,7 @@ public static final String break_down_of_lot_amount = """
                     AND l.auction_date BETWEEN :fromDate AND :toDate
                     AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
                       AND fa.district_id = :districtId
-                    GROUP BY l.auction_date, l.market_id ;""";
+                    GROUP BY l.market_id ;""";
 
 //    public static final String avg_of_lot_amount = """
 //            SELECT auction_date,
@@ -858,7 +857,6 @@ public static final String break_down_of_lot_amount = """
 //            GROUP BY auction_date, market_id ;""";
 public static final String avg_of_lot_amount = """
     SELECT
-    l.auction_date,
     l.market_id,
     CASE
     WHEN SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) <> 0
@@ -870,7 +868,7 @@ public static final String avg_of_lot_amount = """
     AND l.market_id = :marketId
     AND l.auction_date BETWEEN :fromDate AND :toDate
     AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-    GROUP BY l.auction_date, l.market_id ;""";
+    GROUP BY l.market_id ;""";
 
 //    public static final String avg_of_lot_amount_by_dist = """
 //            SELECT l.auction_date,
@@ -885,7 +883,7 @@ public static final String avg_of_lot_amount = """
 //              AND fa.district_id = :districtId
 //            GROUP BY l.auction_date, l.market_id ;""";
 public static final String avg_of_lot_amount_by_dist = """
-            SELECT l.auction_date,
+            SELECT
                    l.market_id,
                    CASE
                      WHEN SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) <> 0
@@ -900,10 +898,10 @@ public static final String avg_of_lot_amount_by_dist = """
               AND l.auction_date BETWEEN :fromDate AND :toDate
               AND fa.district_id = :districtId
               AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-            GROUP BY l.auction_date, l.market_id ;""";
+            GROUP BY l.market_id ;""";
 
     public static final String greater_than_lot_amount = """
-           SELECT l.auction_date,
+           SELECT
               l.market_id,
               SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
               SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
@@ -915,11 +913,11 @@ public static final String avg_of_lot_amount_by_dist = """
              AND l.market_id = :marketId
              AND l.auction_date BETWEEN :fromDate AND :toDate
              AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-           GROUP BY l.auction_date, l.market_id
+           GROUP BY l.market_id
             ;""";
 
     public static final String greater_than_lot_amount_dist = """
-             SELECT l.auction_date,
+             SELECT
                    l.market_id,
                    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
                 SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
@@ -934,11 +932,11 @@ public static final String avg_of_lot_amount_by_dist = """
               AND l.auction_date BETWEEN :fromDate AND :toDate
               AND fa.district_id = :districtId
               AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-            GROUP BY l.auction_date, l.market_id
+            GROUP BY l.market_id
              ;""";
 
     public static final String less_than_lot_amount = """
-            SELECT l.auction_date,
+            SELECT
             l.market_id,
             SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
             SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
@@ -950,11 +948,11 @@ public static final String avg_of_lot_amount_by_dist = """
              AND l.market_id = :marketId
              AND l.auction_date BETWEEN :fromDate AND :toDate
              AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-           GROUP BY l.auction_date, l.market_id
+           GROUP BY l.market_id
             ;""";
 
     public static final String less_than_lot_amount_dist = """
-             SELECT l.auction_date,
+             SELECT
                    l.market_id,
                    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
                 SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
@@ -969,12 +967,12 @@ public static final String avg_of_lot_amount_by_dist = """
               AND l.auction_date BETWEEN :fromDate AND :toDate
               AND fa.district_id = :districtId
               AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-            GROUP BY l.auction_date, l.market_id
+            GROUP BY l.market_id
              ;""";
 
 
     public static final String total_lot_status = """
-            SELECT l.auction_date,
+            SELECT
                    l.market_id,
                   \s
                    COUNT(l.LOT_ID) AS total_lots,
@@ -996,7 +994,7 @@ public static final String avg_of_lot_amount_by_dist = """
           AND l.market_id = :marketId
           AND l.auction_date BETWEEN :fromDate AND :toDate
           AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-          GROUP BY l.auction_date, l.market_id ;""";
+          GROUP BY l.market_id ;""";
 
     public static final String state_wise_lot_status = """
         SELECT
@@ -1264,7 +1262,7 @@ public static final String avg_of_lot_amount_by_dist = """
 
 
     public static final String total_lot_status_by_dist = """
-    SELECT l.auction_date,
+    SELECT
            l.market_id,
            COUNT(l.LOT_ID) AS total_lots,
            SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
@@ -1284,7 +1282,7 @@ public static final String avg_of_lot_amount_by_dist = """
           AND l.auction_date BETWEEN :fromDate AND :toDate
        AND fa.district_id = :districtId
        AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-        GROUP BY l.auction_date, l.market_id ;""";
+        GROUP BY l.market_id ;""";
 
     public static final String all_state_wise_lot_status_by_dist = """
     SELECT
