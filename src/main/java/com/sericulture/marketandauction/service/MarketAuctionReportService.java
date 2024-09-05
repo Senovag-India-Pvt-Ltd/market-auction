@@ -199,9 +199,10 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                 .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
                 .farmerTaluk(Util.objectToString(unit[22]))
                 .farmerVillage(Util.objectToString(unit[23]))
-                .minAmount(Util.objectToLong(unit[24]))
-                .maxAmount(Util.objectToLong(unit[25]))
-                .avgAmount(Math.round(Util.objectToFloat(unit[26])))
+                .raceName(Util.objectToString(unit[24]))
+                .minAmount(Util.objectToLong(unit[25]))
+                .maxAmount(Util.objectToLong(unit[26]))
+                .avgAmount(Math.round(Util.objectToFloat(unit[27])))
                 .build();
         // Calculate ReelerAmount and FarmerAmount with two decimal precision
         dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
@@ -290,9 +291,10 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                     .auctionDate(((java.sql.Date) unit[21]).toLocalDate())
                     .farmerTaluk(Util.objectToString(unit[22]))
                     .farmerVillage(Util.objectToString(unit[23]))
-                    .minAmount(Util.objectToLong(unit[24]))
-                    .maxAmount(Util.objectToLong(unit[25]))
-                    .avgAmount(Math.round(Util.objectToFloat(unit[26])))
+                    .raceName(Util.objectToString(unit[24]))
+                    .minAmount(Util.objectToLong(unit[25]))
+                    .maxAmount(Util.objectToLong(unit[26]))
+                    .avgAmount(Math.round(Util.objectToFloat(unit[27])))
                     .build();
             dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportUnitDetail.setFarmerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);

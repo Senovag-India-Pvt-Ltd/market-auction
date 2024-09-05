@@ -57,6 +57,7 @@ public class MarketAuctionQueryConstants {
         l.auction_date,
         v.VILLAGE_NAME,
         t.TALUK_NAME,
+        rm.race_name,
         MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
         MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
         AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -126,6 +127,7 @@ public class MarketAuctionQueryConstants {
                                      l.auction_date,
                                      v.VILLAGE_NAME,
                                      t.TALUK_NAME,
+                                     rm.race_name,
                                     MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
                                     MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
                                     AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -139,6 +141,7 @@ public class MarketAuctionQueryConstants {
                                  LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
                                  INNER JOIN dbo.market_master mm ON mm.market_master_id = ma.market_id
                                  LEFT JOIN dbo.reeler r ON r.reeler_id = raa.REELER_ID
+                                 LEFT JOIN dbo.race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
                                  LEFT JOIN dbo.reeler_virtual_bank_account rvba ON rvba.reeler_id = r.reeler_id AND rvba.market_master_id = ma.market_id
                                  LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number = rvba.virtual_account_number
                                  WHERE\s
@@ -182,7 +185,7 @@ public class MarketAuctionQueryConstants {
             select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
              f.mobile_number,l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_FARMER,l.MARKET_FEE_REELER,
              r.reeling_license_number,r.name,r.mobile_number,
-             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME,
+             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME,rm.race_name,
              MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
              MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
              AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -194,6 +197,7 @@ public class MarketAuctionQueryConstants {
              LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID = f.FARMER_ID
              LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
              LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+             LEFT JOIN dbo.race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
              INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id
               INNER JOIN dbo.reeler r ON r.reeler_id =raa.REELER_ID
              WHERE 
@@ -234,6 +238,7 @@ public class MarketAuctionQueryConstants {
               l.auction_date,
               v.VILLAGE_NAME,
               t.TALUK_NAME,
+              rm.race_name,
                 MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
                 MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
                 AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -247,6 +252,7 @@ public class MarketAuctionQueryConstants {
           LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
           INNER JOIN dbo.market_master mm ON mm.market_master_id = ma.market_id
           LEFT JOIN dbo.reeler r ON r.reeler_id = raa.REELER_ID
+          LEFT JOIN dbo.race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
           WHERE l.auction_date BETWEEN :fromDate AND :toDate
             AND l.market_id = :marketId
              AND (:reelerIdList IS NULL OR r.reeler_id IN (:reelerIdList))

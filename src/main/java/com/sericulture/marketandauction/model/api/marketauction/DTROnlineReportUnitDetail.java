@@ -40,7 +40,9 @@ public class DTROnlineReportUnitDetail {
     private LocalDate auctionDate;
     private String farmerTaluk;
     private String farmerVillage;
+    private String raceName;
     private Long maxAmount;
     private Long minAmount;
     private float avgAmount;
+
 }
