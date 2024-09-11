@@ -201,9 +201,13 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                 .farmerVillage(Util.objectToString(unit[23]))
                 .raceName(Util.objectToString(unit[24]))
                 .cocoonAge(Util.objectToLong(unit[25]))
-                .minAmount(Util.objectToLong(unit[26]))
-                .maxAmount(Util.objectToLong(unit[27]))
-                .avgAmount(Math.round(Util.objectToFloat(unit[28])))
+                .farmerNameKannada(Util.objectToString(unit[26]))
+                .fatherNameKannada(Util.objectToString(unit[27]))
+                .talukNameInKannada(Util.objectToString(unit[28]))
+                .villageNameInKannada(Util.objectToString(unit[29]))
+                .minAmount(Util.objectToLong(unit[30]))
+                .maxAmount(Util.objectToLong(unit[31]))
+                .avgAmount(Math.round(Util.objectToFloat(unit[32])))
                 .build();
         // Calculate ReelerAmount and FarmerAmount with two decimal precision
         dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);

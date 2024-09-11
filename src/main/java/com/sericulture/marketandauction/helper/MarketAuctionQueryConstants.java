@@ -133,6 +133,11 @@ public class MarketAuctionQueryConstants {
                                      v.VILLAGE_NAME,
                                      t.TALUK_NAME,
                                      rm.race_name,
+                                     mm.cocoon_age,
+                                     f.name_kan,
+                                     f.father_name_kan,
+                                     t.TALUK_NAME_IN_KANNADA,
+                                     v.VILLAGE_NAME_IN_KANNADA,
                                     MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
                                     MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
                                     AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -245,6 +250,10 @@ public class MarketAuctionQueryConstants {
               t.TALUK_NAME,
               rm.race_name,
               mm.cocoon_age,
+              f.name_kan,
+              f.father_name_kan,
+              t.TALUK_NAME_IN_KANNADA,
+              v.VILLAGE_NAME_IN_KANNADA,
                 MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
                 MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
                 AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
