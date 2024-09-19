@@ -2740,7 +2740,7 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 //                    .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
 //                    .marketName(Util.objectToString(response[7]))
 //                    .auctionSession(Util.objectToString(response[8]))
-//                    .build();
+//                    .build();0
 //            lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime,marketMaster,lotReportResponse.getBidTime()));
 //            if(StringUtils.isNotBlank(lotReportResponse.getAccepted())){
 //                lotReportResponse.setAcceptedTime(((Timestamp)response[5]).toLocalDateTime().toLocalTime());
@@ -2807,7 +2807,8 @@ private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId
                 .accepted((Util.objectToString(response[4])).equals("accepted") ? "Yes" : "No")
                 .marketName(Util.objectToString(response[7]))
                 .auctionSession(Util.objectToString(response[8]))
-                .serialNumber(Util.objectToInteger(response[9]))
+                .marketNameInKannada(Util.objectToString(response[9]))
+                .serialNumber(Util.objectToInteger(response[10]))
                 .build();
 
         lotReportResponse.setAuctionNumber(marketAuctionHelper.getAuctionNumber(exceptionalTime, marketMaster, bidTime));
