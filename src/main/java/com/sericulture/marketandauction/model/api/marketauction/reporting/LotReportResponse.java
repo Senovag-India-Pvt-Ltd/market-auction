@@ -21,6 +21,8 @@ public class LotReportResponse extends ResponseBody {
     private LocalTime acceptedTime;
     private String acceptedBy;
     private String marketName;
+    private String marketNameInKannada;
+
     private String auctionSession;
     private int serialNumber;
 

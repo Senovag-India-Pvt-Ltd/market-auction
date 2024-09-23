@@ -21,11 +21,15 @@ public class DTROnlineReportUnitDetail {
     private String farmerAddress;
     private float weight;
     private int bidAmount;
-    private double farmerAmount;
-    private double reelerAmount;
+//    private double farmerAmount;
+//    private double reelerAmount;
+    private float farmerAmount;
+    private float reelerAmount;
     private float lotSoldOutAmount;
-    private double farmerMarketFee;
-    private double reelerMarketFee;
+//    private double farmerMarketFee;
+//    private double reelerMarketFee;
+    private float farmerMarketFee;
+    private float reelerMarketFee;
     private String reelerLicense;
     private String reelerName;
     private String reelerMobile;
@@ -36,7 +40,14 @@ public class DTROnlineReportUnitDetail {
     private LocalDate auctionDate;
     private String farmerTaluk;
     private String farmerVillage;
+    private String raceName;
+    private Long cocoonAge;
+    private String farmerNameKannada;
+    private String fatherNameKannada;
+    private String talukNameInKannada;
+    private String villageNameInKannada;
     private Long maxAmount;
     private Long minAmount;
     private float avgAmount;
+
 }

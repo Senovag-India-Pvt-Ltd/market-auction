@@ -71,4 +71,7 @@ public class MarketMaster extends BaseEntity implements Serializable {
     private String serailNumberPrefix;
     @Column(name="PAYMENT_MODE")
     private String paymentMode;
+
+    @Column(name="cocoon_age")
+    private Long cocoonAge;
 }
