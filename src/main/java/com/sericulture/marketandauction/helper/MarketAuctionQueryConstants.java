@@ -319,7 +319,42 @@ public class MarketAuctionQueryConstants {
     INNER JOIN dbo.market_master mm
     ON mm.market_master_id = ma.market_id
     WHERE
-    l.auction_date =:reportDate
+    l.auction_date BETWEEN :fromDate and :toDate
+    and l.market_id =:marketId
+    and r.reeling_license_number =:reelerLicenseNumber
+    GROUP BY
+    l.auction_date,
+    r.reeling_license_number,
+    r.name
+    ORDER BY
+    l.auction_date,
+    r.reeling_license_number""";
+
+    public static final String UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERYS = """
+    SELECT
+    COUNT(l.LOT_ID) AS total_lots,
+    l.auction_date,
+    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+    SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+    SUM(l.MARKET_FEE_FARMER) AS total_market_fee_farmer,
+    SUM(l.MARKET_FEE_REELER) AS total_market_fee_reeler,
+    r.reeling_license_number,
+    r.name
+    FROM
+    dbo.market_auction ma
+    INNER JOIN dbo.lot l
+    ON l.market_auction_id = ma.market_auction_id
+    AND l.auction_date = ma.market_auction_date
+    INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
+    ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+    AND raa.STATUS = 'accepted'
+    AND raa.AUCTION_DATE = l.auction_date
+    INNER JOIN dbo.reeler r
+    ON r.reeler_id = raa.REELER_ID
+    INNER JOIN dbo.market_master mm
+    ON mm.market_master_id = ma.market_id
+    WHERE
+    l.auction_date BETWEEN :fromDate and :toDate
     and l.market_id =:marketId
     GROUP BY
     l.auction_date,
@@ -518,6 +553,11 @@ public class MarketAuctionQueryConstants {
     public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by l.lot_id asc,ra.CREATED_DATE DESC";
 
     public static final String BIDDING_REPORT_QUERY_WITHOUT_REELER = BIDDING_REPORT_QUERY + " order by l.lot_id asc,ra.CREATED_DATE DESC";
+
+
+    public static final String UNIT_COUNTER_REPORT = UNIT_COUNTER_REPORT_QUERY;
+
+    public static final String UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERY = UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERYS;
 
 //    public static final String DASHBOARD_COUNT = """
 //            SELECT\s

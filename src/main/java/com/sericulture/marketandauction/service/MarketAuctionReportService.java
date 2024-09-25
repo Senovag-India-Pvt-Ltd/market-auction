@@ -552,29 +552,70 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 }
 
 
-    public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
-        List<UnitCounterReportResponse> unitCounterReportResponses = new ArrayList<>();
-        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<Object[]> resultSet = reelerAuctionRepository.getUnitCounterReport(reportRequest.getReportFromDate(), reportRequest.getMarketId());
-        if (Util.isNullOrEmptyList(resultSet)) {
-            marketAuctionHelper.retrunIfError(rw, "No data found");
-        }
-        for (Object[] row : resultSet) {
-            UnitCounterReportResponse unitCounterReportResponse = UnitCounterReportResponse.builder()
-                    .allottedLotId(Util.objectToInteger(row[0]))
-                    .lotTransactionDate(Util.objectToString(row[1]))
-                    .weight(Util.objectToFloat(row[2]))
-//                    .bidAmount(Util.objectToInteger(row[3]))
-                    .lotSoldOutAmount(Util.objectToFloat(row[3]))
-                    .farmerMarketFee(Util.objectToFloat(row[4]))
-                    .reelerMarketFee(Util.objectToFloat(row[5]))
-                    .reelerLicense(Util.objectToString(row[6]))
-                    .reelerName(Util.objectToString(row[7])).build();
-            unitCounterReportResponses.add(unitCounterReportResponse);
-        }
-        rw.setContent(unitCounterReportResponses);
-        return ResponseEntity.ok(rw);
+//    public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
+//        List<UnitCounterReportResponse> unitCounterReportResponses = new ArrayList<>();
+//        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+//        List<Object[]> resultSet = reelerAuctionRepository.getUnitCounterReport(reportRequest.getFromDate(),reportRequest.getToDate(), reportRequest.getMarketId(),reportRequest.getReelerNumber());
+//        if (Util.isNullOrEmptyList(resultSet)) {
+//            marketAuctionHelper.retrunIfError(rw, "No data found");
+//        }
+//        for (Object[] row : resultSet) {
+//            UnitCounterReportResponse unitCounterReportResponse = UnitCounterReportResponse.builder()
+//                    .allottedLotId(Util.objectToInteger(row[0]))
+//                    .lotTransactionDate(Util.objectToString(row[1]))
+//                    .weight(Util.objectToFloat(row[2]))
+////                    .bidAmount(Util.objectToInteger(row[3]))
+//                    .lotSoldOutAmount(Util.objectToFloat(row[3]))
+//                    .farmerMarketFee(Util.objectToFloat(row[4]))
+//                    .reelerMarketFee(Util.objectToFloat(row[5]))
+//                    .reelerLicense(Util.objectToString(row[6]))
+//                    .reelerName(Util.objectToString(row[7])).build();
+//            unitCounterReportResponses.add(unitCounterReportResponse);
+//        }
+//        rw.setContent(unitCounterReportResponses);
+//        return ResponseEntity.ok(rw);
+//    }
+public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
+    List<UnitCounterReportResponse> unitCounterReportResponses = new ArrayList<>();
+    ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+    List<Object[]> resultSet;
+
+    // Check if reelerNumber is provided
+    if (reportRequest.getReelerNumber() == null || reportRequest.getReelerNumber().isEmpty()) {
+        // Fetch based on other parameters if reelerNumber is not provided
+        resultSet = reelerAuctionRepository.getUnitCounterReportWithoutReelerNumber(
+                reportRequest.getFromDate(), reportRequest.getToDate(),
+                reportRequest.getMarketId());
+    } else {
+        // Fetch data for the specific reelerNumber if provided
+        resultSet = reelerAuctionRepository.getUnitCounterReport(
+                reportRequest.getFromDate(), reportRequest.getToDate(),
+                reportRequest.getMarketId(), reportRequest.getReelerNumber());
     }
+
+    if (Util.isNullOrEmptyList(resultSet)) {
+        marketAuctionHelper.retrunIfError(rw, "No data found");
+        return ResponseEntity.ok(rw);  // Ensure response is returned if no data is found
+    }
+
+    for (Object[] row : resultSet) {
+        UnitCounterReportResponse unitCounterReportResponse = UnitCounterReportResponse.builder()
+                .allottedLotId(Util.objectToInteger(row[0]))
+                .lotTransactionDate(Util.objectToString(row[1]))
+                .weight(Util.objectToFloat(row[2]))
+                .lotSoldOutAmount(Util.objectToFloat(row[3]))
+                .farmerMarketFee(Util.objectToFloat(row[4]))
+                .reelerMarketFee(Util.objectToFloat(row[5]))
+                .reelerLicense(Util.objectToString(row[6]))
+                .reelerName(Util.objectToString(row[7])).build();
+        unitCounterReportResponses.add(unitCounterReportResponse);
+    }
+
+    rw.setContent(unitCounterReportResponses);
+    return ResponseEntity.ok(rw);
+}
+
 
     public ResponseEntity<?> getPendingLotReport(ReportRequest requestBody) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
