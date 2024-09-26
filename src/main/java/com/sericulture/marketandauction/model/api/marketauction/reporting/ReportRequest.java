@@ -13,4 +13,8 @@ import java.time.LocalDate;
 public class ReportRequest extends RequestBody {
 
     private LocalDate reportFromDate;
+    private LocalDate fromDate;
+    private LocalDate toDate;
+    private String reelerNumber;
+
 }
