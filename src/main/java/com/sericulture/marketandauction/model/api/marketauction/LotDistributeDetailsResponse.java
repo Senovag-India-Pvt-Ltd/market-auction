@@ -1,9 +1,9 @@
 package com.sericulture.marketandauction.model.api.marketauction;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sericulture.marketandauction.model.api.ResponseBody;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -11,15 +11,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString
-public class CompleteLotWeighmentRequest extends LotStatusRequest {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class LotDistributeDetailsResponse extends ResponseBody {
 
-    List<Weighment> weighmentList;
-
-    private String userName;
-
-    private LocalDate auctionDate;
-
-
+    private List<LotDistributeResponse> lotDistributeResponses;
 }
-

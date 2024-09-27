@@ -1,8 +1,6 @@
 package com.sericulture.marketandauction.controller;
 
-import com.sericulture.marketandauction.model.api.marketauction.CanContinueToWeighmentRequest;
-import com.sericulture.marketandauction.model.api.marketauction.CompleteLotWeighmentRequest;
-import com.sericulture.marketandauction.model.api.marketauction.LotStatusRequest;
+import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.service.WeigmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,5 +32,23 @@ public class WeigmentController {
     @PostMapping("/completeWeighmentForLot")
     public ResponseEntity<?> completeWeighMentForLot(@RequestBody  CompleteLotWeighmentRequest completeLotWeighmentRequest){
         return weigmentService.completeLotWeighMent(completeLotWeighmentRequest);
+    }
+
+
+    @PostMapping("/getUpdateWeighmentByLotIdForSeedMarket")
+    public ResponseEntity<?> getLotUpdateWeighmentScreenPrepForSeedMarke(@RequestBody LotStatusSeedMarketRequest lotStatusRequest){
+
+        return weigmentService.getWeigmentByLotAndMarketAndAuctionDateForSeedMarket(lotStatusRequest);
+
+    }
+
+    @PostMapping("/canContinuetoWeighmentForSeedMarket")
+    public ResponseEntity<?> canContinueToWeighmentProcessForSeedMarket(@RequestBody CanContinueToWeighmentForSeedMarketRequest canContinueToWeighmentRequest){
+        return weigmentService.canContinueToWeighmentProcessForSeedMarket(canContinueToWeighmentRequest);
+    }
+
+    @PostMapping("/completeWeighmentForLotSeedMarket")
+    public ResponseEntity<?> completeLotWeighmentForSeedMarket(@RequestBody  CompleteLotWeighmentRequest completeLotWeighmentRequest){
+        return weigmentService.completeLotWeighmentForSeedMarket(completeLotWeighmentRequest);
     }
 }

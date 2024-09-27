@@ -3,7 +3,6 @@ package com.sericulture.marketandauction.model.api.marketauction;
 import com.sericulture.marketandauction.model.api.ResponseBody;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -11,15 +10,11 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString
-public class CompleteLotWeighmentRequest extends LotStatusRequest {
+public class FarmerReadyForPaymentForSeedMarketResponse extends ResponseBody {
 
-    List<Weighment> weighmentList;
+    private List<FarmerReadyPaymentInfoForSeedMarketResponse> farmerReadyPaymentInfoForSeedMarketResponseList;
 
-    private String userName;
+    private Long soldAmount;
 
-    private LocalDate auctionDate;
-
-
+    private String paymentMode;
 }
-
