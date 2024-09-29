@@ -1,10 +1,8 @@
 package com.sericulture.marketandauction.model.mapper;
 
+import com.sericulture.marketandauction.model.api.cocoon.LotBasePriceFixationRequest;
 import com.sericulture.marketandauction.model.api.marketauction.*;
-import com.sericulture.marketandauction.model.entity.FlexTime;
-import com.sericulture.marketandauction.model.entity.LotGroupage;
-import com.sericulture.marketandauction.model.entity.MarketAuction;
-import com.sericulture.marketandauction.model.entity.ReelerAuction;
+import com.sericulture.marketandauction.model.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -129,6 +127,18 @@ public class Mapper {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         log.info("Mapping lotGroupageRequestEdit to lotGroupage: {}", lotGroupageRequestEdit);
         mapper.map(lotGroupageRequestEdit, lotGroupage);
+    }
+
+    public <T> T lotBasePriceFixationObjectToEntity(LotBasePriceFixationRequest lotBasePriceFixationRequest , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, lotBasePriceFixationRequest);
+        return (T) mapper.map(lotBasePriceFixationRequest, claaz);
+    }
+
+    public <T> T lotBasePriceFixationEntityToObject(LotBasePriceFixation lotBasePriceFixation , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, lotBasePriceFixation);
+        return (T) mapper.map(lotBasePriceFixation, claaz);
     }
 
 

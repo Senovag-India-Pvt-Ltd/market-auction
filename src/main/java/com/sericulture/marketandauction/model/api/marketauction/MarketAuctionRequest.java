@@ -47,6 +47,10 @@ public class MarketAuctionRequest extends RequestBody {
     @Schema(name = "numberOfBigBin", example = "number of big bins assigned to this transaction", required = true)
     private int numberOfBigBin;
 
+    private String dflLotNumber;
+    private String lotVariety;
+    private String lotParentalLevel;
+
 
     @Override
     public List<ValidationMessage> validate(){

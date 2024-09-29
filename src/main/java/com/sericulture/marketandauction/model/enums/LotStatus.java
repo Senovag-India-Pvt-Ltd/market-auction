@@ -16,7 +16,9 @@ public enum LotStatus {
     CANCELLED("cancelled"),
     INUPDATEWEIGHT("inupdateweight"),
     REQUESTED("requested"),
-    PROCESSING("processing");
+    PROCESSING("processing"),
+
+    ASSESSMENT("assessment");
 
     private String label ;
 
