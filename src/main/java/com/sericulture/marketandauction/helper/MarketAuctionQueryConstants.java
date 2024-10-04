@@ -300,6 +300,7 @@ public class MarketAuctionQueryConstants {
     COUNT(l.LOT_ID) AS total_lots,
     l.auction_date,
     SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+    raa.AMOUNT,
     SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
     SUM(l.MARKET_FEE_FARMER) AS total_market_fee_farmer,
     SUM(l.MARKET_FEE_REELER) AS total_market_fee_reeler,
@@ -322,10 +323,12 @@ public class MarketAuctionQueryConstants {
     l.auction_date BETWEEN :fromDate and :toDate
     and l.market_id =:marketId
     and r.reeling_license_number =:reelerLicenseNumber
+    AND (raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL))
     GROUP BY
     l.auction_date,
     r.reeling_license_number,
-    r.name
+    r.name,
+    raa.AMOUNT
     ORDER BY
     l.auction_date,
     r.reeling_license_number""";
@@ -335,6 +338,7 @@ public class MarketAuctionQueryConstants {
     COUNT(l.LOT_ID) AS total_lots,
     l.auction_date,
     SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+    raa.AMOUNT,
     SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
     SUM(l.MARKET_FEE_FARMER) AS total_market_fee_farmer,
     SUM(l.MARKET_FEE_REELER) AS total_market_fee_reeler,
@@ -356,10 +360,12 @@ public class MarketAuctionQueryConstants {
     WHERE
     l.auction_date BETWEEN :fromDate and :toDate
     and l.market_id =:marketId
+    AND (raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL))
     GROUP BY
     l.auction_date,
     r.reeling_license_number,
-    r.name
+    r.name,
+    raa.AMOUNT
     ORDER BY
     l.auction_date,
     r.reeling_license_number""";
