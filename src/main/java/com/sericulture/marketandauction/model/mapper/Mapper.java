@@ -1,6 +1,7 @@
 package com.sericulture.marketandauction.model.mapper;
 
 import com.sericulture.marketandauction.model.api.cocoon.LotBasePriceFixationRequest;
+import com.sericulture.marketandauction.model.api.cocoon.PupaTestAndCocoonAssessmentRequest;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.*;
 import lombok.extern.slf4j.Slf4j;
@@ -140,6 +141,20 @@ public class Mapper {
         log.info("Value of mapper is:",mapper, lotBasePriceFixation);
         return (T) mapper.map(lotBasePriceFixation, claaz);
     }
+
+    public <T> T pupaTestAndCocoonAssessmentObjectToEntity(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, pupaTestAndCocoonAssessmentRequest);
+        return (T) mapper.map(pupaTestAndCocoonAssessmentRequest, claaz);
+    }
+
+    public <T> T pupaTestAndCocoonAssessmentEntityToObject(PupaTestAndCocoonAssessment pupaTestAndCocoonAssessment , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, pupaTestAndCocoonAssessment);
+        return (T) mapper.map(pupaTestAndCocoonAssessment, claaz);
+    }
+
+
 
 
 }

@@ -4,13 +4,13 @@ import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
-import com.sericulture.marketandauction.model.api.cocoon.LotBasePriceFixationRequest;
-import com.sericulture.marketandauction.model.api.cocoon.LotBasePriceFixationResponse;
+import com.sericulture.marketandauction.model.api.cocoon.*;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.LotBasePriceFixation;
 import com.sericulture.marketandauction.model.entity.MarketAuction;
+import com.sericulture.marketandauction.model.entity.PupaTestAndCocoonAssessment;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
@@ -68,6 +68,9 @@ public class CocoonMarketService {
 
     @Autowired
     private LotBasePriceFixationRepository lotBasePriceFixationRepository;
+
+    @Autowired
+    private PupaTestAndCocoonAssessmentRepository pupaTestAndCocoonAssessmentRepository;
 
     public ResponseEntity<?> marketAuctionFacade(MarketAuctionRequest marketAuctionRequest) {
 
@@ -191,5 +194,32 @@ public class CocoonMarketService {
         }
         rw.setContent(lotBasePriceFixationResponseList);
         return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> savePupaTestAndCocoonAssessmentResult(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
+        PupaTestAndCocoonAssessment pupaTestAndCocoonAssessment = mapper.pupaTestAndCocoonAssessmentObjectToEntity(pupaTestAndCocoonAssessmentRequest, PupaTestAndCocoonAssessment.class);
+        pupaTestAndCocoonAssessmentRepository.save(pupaTestAndCocoonAssessment);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getPupaTestAndCocoonAssessmentResult(PupaTestResultFinderRequest pupaTestResultFinderRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
+        List<PupaTestAndCocoonAssessment> pupaTestAndCocoonAssessmentList = new ArrayList<>();
+        if(pupaTestResultFinderRequest.getMarketAuctionId()>0){
+            pupaTestAndCocoonAssessmentList.add(pupaTestAndCocoonAssessmentRepository.findByMarketAuctionId(pupaTestResultFinderRequest.getMarketAuctionId()));
+        }
+        else if(pupaTestResultFinderRequest.getTestDate()!=null){
+            pupaTestAndCocoonAssessmentList.addAll(pupaTestAndCocoonAssessmentRepository.findAllByTestDate(pupaTestResultFinderRequest.getTestDate()));
+        }else if(pupaTestResultFinderRequest.getPupaTestResult()!=null && pupaTestResultFinderRequest.getCocoonAssessmentResult()!=null){
+            pupaTestAndCocoonAssessmentList.addAll(pupaTestAndCocoonAssessmentRepository.findAllByCocoonAssessmentResultAndPupaTestResult(pupaTestResultFinderRequest.getPupaTestResult(), pupaTestResultFinderRequest.getCocoonAssessmentResult()));
+        }else if(pupaTestResultFinderRequest.getCocoonAssessmentResult()!=null){
+            pupaTestAndCocoonAssessmentList.addAll(pupaTestAndCocoonAssessmentRepository.findAllByCocoonAssessmentResult(pupaTestResultFinderRequest.getCocoonAssessmentResult()));
+        }else if(pupaTestResultFinderRequest.getPupaTestResult()!=null){
+            pupaTestAndCocoonAssessmentList.addAll(pupaTestAndCocoonAssessmentRepository.findAllByPupaTestResult(pupaTestResultFinderRequest.getPupaTestResult()));
+        }
+        rw.setContent(pupaTestAndCocoonAssessmentList);
+        return ResponseEntity.ok(rw);
+
     }
 }
