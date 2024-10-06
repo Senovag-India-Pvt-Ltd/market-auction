@@ -22,6 +22,10 @@ public class MarketAuctionRequest extends RequestBody {
     @NotNull(message = "")
     private BigInteger farmerId;
 
+    @Schema(name = "reelerId", example = "123", required = true)
+    @NotNull(message = "")
+    private Integer reelerId;
+
 
     @Schema(name = "sourceMasterId", example = "2", required = true)
     private Integer sourceMasterId;

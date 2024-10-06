@@ -33,6 +33,9 @@ public class ReelerAuction extends BaseEntity implements Serializable {
     @Column(name = "REELER_ID")
     private int reelerId;
 
+    @Column(name = "trader_license_id")
+    private int traderLicenseId;
+
     @Column(name = "AMOUNT")
     private int amount;
 

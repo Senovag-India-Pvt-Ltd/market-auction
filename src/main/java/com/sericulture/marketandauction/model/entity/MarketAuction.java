@@ -55,4 +55,6 @@ public class MarketAuction extends BaseEntity implements Serializable {
     private String lotVariety;
     @Column(name = "lot_parental_level")
     private String lotParentalLevel;
+    @Column(name = "reeler_id")
+    private int reelerId;
 }

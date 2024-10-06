@@ -92,15 +92,16 @@ public class MarketAuctionService {
             marketAuctionResponse.setMarketId(marketAuction.getMarketId());
             marketAuctionResponse.setGodownId(marketAuction.getGodownId());
             marketAuctionResponse.setFarmerId(marketAuction.getFarmerId());
+            marketAuctionResponse.setReelerId(marketAuction.getReelerId());
             // saves bin and the lot
             log.info(String.format("marketAuction: processing the Requrest for marketId: %s gowdownId: %s and farmer: %s"
-                    ,marketAuction.getMarketId(),marketAuction.getGodownId(),marketAuction.getFarmerId()));
+                    ,marketAuction.getMarketId(),marketAuction.getGodownId(),marketAuction.getFarmerId(),marketAuction.getReelerId()));
             saveBinAndLot(marketAuctionResponse, marketAuction);
 
             rw.setContent(marketAuctionResponse);
             marketAuction.setStatus("generated");
             log.info(String.format("marketAuction: succesfull generation of market auction Requrest for marketId: %s gowdownId: %s and farmer: %s"
-                    ,marketAuction.getMarketId(),marketAuction.getGodownId(),marketAuction.getFarmerId()));
+                    ,marketAuction.getMarketId(),marketAuction.getGodownId(),marketAuction.getFarmerId(),marketAuction.getReelerId()));
         } catch (Exception e) {
             marketAuction.setStatus("error");
             e.printStackTrace();
