@@ -265,13 +265,13 @@ public class TraderAuctionService {
                         return ResponseEntity.ok(rw);
                     }
                     lbdr.setReelerName(ldrDetails[0][0] == null ? "" : String.valueOf(ldrDetails[0][0]));
-                    lbdr.setReelingLicenseNumber(ldrDetails[0][2] == null ? "" : String.valueOf(ldrDetails[0][2]));
+                    lbdr.setReelingLicenseNumber(ldrDetails[0][1] == null ? "" : String.valueOf(ldrDetails[0][1]));
                     lbdr.setTraderName(traderDetaisl[0][0] == null ? "" : String.valueOf(traderDetaisl[0][0]));
                     lbdr.setTraderLicenseNumber(traderDetaisl[0][1] == null ? "" : String.valueOf(traderDetaisl[0][1]));
-                    lbdr.setReelerVillageName(ldrDetails[0][3] == null ? "" : String.valueOf(ldrDetails[0][3]));
-                    lbdr.setLotApproxWeightBeforeWeighment(ldrDetails[0][4] == null ? 0 : Integer.valueOf(String.valueOf(ldrDetails[0][4])));
-                    lbdr.setStatus(ldrDetails[0][5] == null ? "" : String.valueOf(ldrDetails[0][5]));
-                    lbdr.setBidAcceptedBy(ldrDetails[0][6] == null ? "" : String.valueOf(ldrDetails[0][6]));
+                    lbdr.setReelerVillageName(ldrDetails[0][2] == null ? "" : String.valueOf(ldrDetails[0][2]));
+                    lbdr.setLotApproxWeightBeforeWeighment(ldrDetails[0][3] == null ? 0 : Integer.valueOf(String.valueOf(ldrDetails[0][3])));
+                    lbdr.setStatus(ldrDetails[0][4] == null ? "" : String.valueOf(ldrDetails[0][4]));
+                    lbdr.setBidAcceptedBy(ldrDetails[0][5] == null ? "" : String.valueOf(ldrDetails[0][5]));
                     rw.setContent(lbdr);
                 } else {
                     marketAuctionHelper.retrunIfError(rw, "No bid found for the given lot please check the input");
