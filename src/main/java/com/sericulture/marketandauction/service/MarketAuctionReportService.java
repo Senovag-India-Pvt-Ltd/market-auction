@@ -616,6 +616,48 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
     rw.setContent(unitCounterReportResponses);
     return ResponseEntity.ok(rw);
 }
+    public ResponseEntity<?> getReelerMFReport(ReportRequest reportRequest) {
+        List<ReelerMFResponse> reelerMFResponses = new ArrayList<>();
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> resultSet;
+
+        // Check if reelerNumber is provided
+        if (reportRequest.getReelerNumber() == null || reportRequest.getReelerNumber().isEmpty()) {
+            // Fetch based on other parameters if reelerNumber is not provided
+            resultSet = reelerAuctionRepository.getReelerMFReportWithoutReelerNumber(
+                    reportRequest.getFromDate(), reportRequest.getToDate(),
+                    reportRequest.getMarketId());
+        } else {
+            // Fetch data for the specific reelerNumber if provided
+            resultSet = reelerAuctionRepository.getReelerMFReport(
+                    reportRequest.getFromDate(), reportRequest.getToDate(),
+                    reportRequest.getMarketId(), reportRequest.getReelerNumber());
+        }
+
+        if (Util.isNullOrEmptyList(resultSet)) {
+            marketAuctionHelper.retrunIfError(rw, "No data found");
+            return ResponseEntity.ok(rw);  // Ensure response is returned if no data is found
+        }
+
+        for (Object[] row : resultSet) {
+            ReelerMFResponse reelerMFResponse = ReelerMFResponse.builder()
+                    .allottedLotId(Util.objectToInteger(row[0]))
+                    .lotTransactionDate(Util.objectToString(row[1]))
+                    .weight(Util.objectToFloat(row[2]))
+                    .bidAmount(Util.objectToInteger(row[3]))
+                    .lotSoldOutAmount(Util.objectToFloat(row[4]))
+                    .farmerMarketFee(Util.objectToFloat(row[5]))
+                    .reelerMarketFee(Util.objectToFloat(row[6]))
+                    .reelerLicense(Util.objectToString(row[7]))
+                    .reelerName(Util.objectToString(row[8]))
+                    .serialNumber(Util.objectToInteger(row[9])).build();
+            reelerMFResponses.add(reelerMFResponse);
+        }
+
+        rw.setContent(reelerMFResponses);
+        return ResponseEntity.ok(rw);
+    }
 
 
     public ResponseEntity<?> getPendingLotReport(ReportRequest requestBody) {
@@ -880,9 +922,11 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
 
         List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatus(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
 
-        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatus(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatus(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(),requestBody.getRaceId());
 
         List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
+
+        List<Object[]> marketResponses = lotRepository.getRaceName(requestBody.getRaceId());
 
         float totalWeight = 0.0F;
 
@@ -893,6 +937,7 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
         Form13Response form13Response = new Form13Response();
         form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[1]));
         form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
+//        form13Response.setRaceName(Util.objectToString(marketResponses.get(0)[0]));
 
         List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
         form13Response.setTotalLotStatus(totalLotStatus);
@@ -1266,7 +1311,7 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
 
         List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusByDist(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(),requestBody.getDistrictId());
 
-        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDist(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId(),requestBody.getRaceId());
 
         List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
 

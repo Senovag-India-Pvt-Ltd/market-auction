@@ -154,6 +154,9 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_MARKET_NAME)
     public List<Object[]> getMarketName(int marketId);
 
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_RACE_NAME)
+    public List<Object[]> getRaceName(int raceId);
+
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PAYMENT_SUCCESS_LOTS)
     public List<Object[]> getPaymentSuccessLots(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
@@ -206,10 +209,10 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public List<Object[]> getGenderWiseLotStatus(int marketId, LocalDate fromDate,LocalDate toDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.race_market_wise_lot_status)
-    public List<Object[]> getRaceWiseStatus(int marketId, LocalDate fromDate,LocalDate toDate);
+    public List<Object[]> getRaceWiseStatus(int marketId, LocalDate fromDate,LocalDate toDate,int raceId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.race_market_wise_lot_status_dist)
-    public List<Object[]> getRaceWiseStatusByDist(int marketId,LocalDate fromDate,LocalDate toDate, Long districtId);
+    public List<Object[]> getRaceWiseStatusByDist(int marketId,LocalDate fromDate,LocalDate toDate, Long districtId,int raceId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.gender_wise_lot_status_by_dist)
     public List<Object[]> getGenderWiseLotStatusByDist(int marketId, LocalDate fromDate,LocalDate toDate, Long districtId);

@@ -55,6 +55,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getUnitCounterReport(reportRequest);
     }
 
+    @PostMapping("/getReelerMFReport")
+    public ResponseEntity<?> getReelerMFReport(@RequestBody ReportRequest reportRequest){
+        return marketAuctionReportService.getReelerMFReport(reportRequest);
+    }
+
     @PostMapping("/getPendingLotReport")
     public ResponseEntity<?> getPendingLotReport(@RequestBody ReportRequest reportRequest){
         return marketAuctionReportService.getPendingLotReport(reportRequest);
