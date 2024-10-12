@@ -20,4 +20,5 @@ public class PupaTestAndCocoonAssessmentRequest {
     private float meltPercentage;
     private String pupaTestResult;
     private String cocoonAssessmentResult;
+    private String pupaCocoonStatus;
 }

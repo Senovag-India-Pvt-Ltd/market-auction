@@ -10,8 +10,11 @@ import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionReq
 import com.sericulture.marketandauction.model.entity.LotBasePriceFixation;
 import com.sericulture.marketandauction.service.CocoonMarketService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/cocoon")
@@ -49,6 +52,16 @@ public class CocoonMarketController {
     public ResponseEntity<?> getPupaTestAndCocoonAssessmentResult(@RequestBody PupaTestResultFinderRequest pupaTestResultFinderRequest){
         return cocoonMarketService.getPupaTestAndCocoonAssessmentResult(pupaTestResultFinderRequest);
 
+    }
+
+    @PostMapping("/getPupaCocoonAssessmentList")
+    public ResponseEntity<?> getPupaAndCocoonAssessmentByMarket(@RequestBody com.sericulture.marketandauction.model.api.RequestBody pupaCocoonAssessmentRequest,
+                                                       @RequestParam(defaultValue = "0") final Integer pageNumber,
+                                                       @RequestParam(defaultValue = "5") final Integer size
+    ) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
+        rw.setContent(cocoonMarketService.getPupaAndCocoonAssessmentByMarket(pupaCocoonAssessmentRequest, PageRequest.of(pageNumber, size)));
+        return ResponseEntity.ok(rw);
     }
 
 

@@ -4,7 +4,10 @@ import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.api.cocoon.*;
+import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoResponse;
+import com.sericulture.marketandauction.model.api.marketauction.FarmerReadyForPaymentResponse;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
 import com.sericulture.marketandauction.model.entity.Lot;
@@ -21,6 +24,8 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,10 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -196,12 +198,29 @@ public class CocoonMarketService {
         return ResponseEntity.ok(rw);
     }
 
-    public ResponseEntity<?> savePupaTestAndCocoonAssessmentResult(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest){
+//    public ResponseEntity<?> savePupaTestAndCocoonAssessmentResult(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest){
+//        ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
+//        PupaTestAndCocoonAssessment pupaTestAndCocoonAssessment = mapper.pupaTestAndCocoonAssessmentObjectToEntity(pupaTestAndCocoonAssessmentRequest, PupaTestAndCocoonAssessment.class);
+//        pupaTestAndCocoonAssessmentRepository.save(pupaTestAndCocoonAssessment);
+//        return ResponseEntity.ok(rw);
+//    }
+
+    public ResponseEntity<?> savePupaTestAndCocoonAssessmentResult(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
+
+        // Map the request to entity
         PupaTestAndCocoonAssessment pupaTestAndCocoonAssessment = mapper.pupaTestAndCocoonAssessmentObjectToEntity(pupaTestAndCocoonAssessmentRequest, PupaTestAndCocoonAssessment.class);
+
+        // Set status to 'ACCEPTED'
+        pupaTestAndCocoonAssessment.setPupaCocoonStatus(LotStatus.ASSESSMENT.getLabel());
+
+        // Save the entity
         pupaTestAndCocoonAssessmentRepository.save(pupaTestAndCocoonAssessment);
+
+        // Return response
         return ResponseEntity.ok(rw);
     }
+
 
     public ResponseEntity<?> getPupaTestAndCocoonAssessmentResult(PupaTestResultFinderRequest pupaTestResultFinderRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
@@ -222,4 +241,61 @@ public class CocoonMarketService {
         return ResponseEntity.ok(rw);
 
     }
+
+    public Map<String, Object> getPupaAndCocoonAssessmentByMarket(RequestBody requestBody, final Pageable pageable) {
+        Map<String, Object> response = new HashMap<>();
+        marketAuctionHelper.getAuthToken(requestBody);
+        List<SeedMarketAuctionDetailsResponse> seedMarketAuctionDetailsResponseList = new ArrayList<>();
+        PupaTestAndCocoonAssessmentResponse pupaTestAndCocoonAssessmentResponse = new PupaTestAndCocoonAssessmentResponse();
+
+        Page<Object[]> paginatedResponse = pupaTestAndCocoonAssessmentRepository.getPupaAndCocoonAssessmentByMarket(pageable, requestBody.getMarketId());
+        pupaTestAndCocoonAssessmentResponse.setSeedMarketAuctionDetailsResponseList(seedMarketAuctionDetailsResponseList);
+
+        if (paginatedResponse == null || paginatedResponse.isEmpty()) {
+            response.put("pupaTestAndCocoonAssessmentResponse", pupaTestAndCocoonAssessmentResponse);
+            response.put("currentPage", 0);
+            response.put("totalItems", 0);
+            response.put("totalPages", 0);
+            return response;
+        }
+
+        // Call the method on the class instead of the instance
+        prepareSeedCocoonMarketDetailsList(paginatedResponse.getContent(), seedMarketAuctionDetailsResponseList);
+
+        response.put("pupaTestAndCocoonAssessmentResponse", pupaTestAndCocoonAssessmentResponse);
+        response.put("currentPage", paginatedResponse.getNumber());
+        response.put("totalItems", paginatedResponse.getTotalElements());
+        response.put("totalPages", paginatedResponse.getTotalPages());
+        return response;
+    }
+
+
+    public static void prepareSeedCocoonMarketDetailsList(List<Object[]> paginatedResponse, List<SeedMarketAuctionDetailsResponse> seedMarketAuctionDetailsResponseList) {
+        for (Object[] arr : paginatedResponse) {
+            SeedMarketAuctionDetailsResponse seedMarketAuctionDetailsResponse = SeedMarketAuctionDetailsResponse.builder()
+                    .farmerId(Util.objectToLong(arr[0]))
+                    .firstName(Util.objectToString(arr[1]))
+                    .middleName(Util.objectToString(arr[2]))
+                    .lastName(Util.objectToString(arr[3]))
+                    .fruitsId(Util.objectToString(arr[4]))
+                    .farmerNumber(Util.objectToString(arr[5]))
+                    .fatherName(Util.objectToString(arr[6]))
+                    .dob(Util.objectToString(arr[7]))
+                    .mobileNumber(Util.objectToString(arr[8]))
+                    .districtName(Util.objectToString(arr[9]))
+                    .talukName(Util.objectToString(arr[10]))
+                    .hobliName(Util.objectToString(arr[11]))
+                    .villageName(Util.objectToString(arr[12]))
+                    .dflsSource(Util.objectToString(arr[13]))
+                    .numbersOfDfls(Util.objectToString(arr[14]))
+                    .lotNumberRsp(Util.objectToString(arr[15]))
+                    .stateName(Util.objectToString(arr[16]))
+                    .raceOfDfls(Util.objectToLong(arr[17]))
+                    .raceName(Util.objectToString(arr[18]))
+                    .build();
+
+            seedMarketAuctionDetailsResponseList.add(seedMarketAuctionDetailsResponse);
+        }
+    }
+
 }
