@@ -54,15 +54,4 @@ public class CocoonMarketController {
 
     }
 
-    @PostMapping("/getPupaCocoonAssessmentList")
-    public ResponseEntity<?> getPupaAndCocoonAssessmentByMarket(@RequestBody com.sericulture.marketandauction.model.api.RequestBody pupaCocoonAssessmentRequest,
-                                                       @RequestParam(defaultValue = "0") final Integer pageNumber,
-                                                       @RequestParam(defaultValue = "5") final Integer size
-    ) {
-        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
-        rw.setContent(cocoonMarketService.getPupaAndCocoonAssessmentByMarket(pupaCocoonAssessmentRequest, PageRequest.of(pageNumber, size)));
-        return ResponseEntity.ok(rw);
-    }
-
-
 }
