@@ -77,6 +77,10 @@ public class CocoonMarketController {
     public List<PupaTestAndCocoonAssessment> getAllPupaTestAndCocoonAssessment() {
         return cocoonMarketService.getAllPupaTestAndCocoonAssessment();
     }
+    @GetMapping("/getFinalWeighmentList")
+    public List<SeedMarketAuctionDetailsResponse> getFinalWeighmentList() {
+        return cocoonMarketService.getFinalWeighmentList(Util.getMarketId(Util.getTokenValues()));
+    }
 
 
 }

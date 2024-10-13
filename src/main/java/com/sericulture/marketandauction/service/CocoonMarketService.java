@@ -293,5 +293,59 @@ public class CocoonMarketService {
         return pupaTestAndCocoonAssessmentRepository.findByActiveOrderByIdDesc(true);
     }
 
+    public List<SeedMarketAuctionDetailsResponse> getFinalWeighmentList(int marketId) {
+        List<Object[]> finalWeighmentList = pupaTestAndCocoonAssessmentRepository.getFinalWeighmentList(marketId);
+        List<SeedMarketAuctionDetailsResponse> responses = new ArrayList<>();
+
+        // Initialize a counter for the serial number
+        int serialNumber = 1;
+
+        for (Object[] arr : finalWeighmentList) {
+            SeedMarketAuctionDetailsResponse response = SeedMarketAuctionDetailsResponse.builder()
+                    .serialNumber(serialNumber)  // Add serial number here
+                    .farmerId(Util.objectToLong(arr[0]))
+                    .firstName(Util.objectToString(arr[1]))
+                    .middleName(Util.objectToString(arr[2]))
+                    .lastName(Util.objectToString(arr[3]))
+                    .fruitsId(Util.objectToString(arr[4]))
+                    .farmerNumber(Util.objectToString(arr[5]))
+                    .fatherName(Util.objectToString(arr[6]))
+                    .dob(Util.objectToString(arr[7]))
+                    .mobileNumber(Util.objectToString(arr[8]))
+                    .districtName(Util.objectToString(arr[9]))
+                    .talukName(Util.objectToString(arr[10]))
+                    .hobliName(Util.objectToString(arr[11]))
+                    .villageName(Util.objectToString(arr[12]))
+                    .dflsSource(Util.objectToString(arr[13]))
+                    .numbersOfDfls(Util.objectToString(arr[14]))
+                    .lotNumberRsp(Util.objectToString(arr[15]))
+                    .stateName(Util.objectToString(arr[16]))
+                    .raceOfDfls(Util.objectToLong(arr[17]))
+                    .raceName(Util.objectToString(arr[18]))
+                    .initialWeighment(Util.objectToLong(arr[19]))
+                    .marketAuctionId(Util.objectToLong(arr[20]))
+                    .pricePerKg(Util.objectToLong(arr[21]))
+                    .fixationDate(Util.objectToString(arr[22]))
+                    .testDate(Util.objectToString(arr[23]))
+                    .noOfCocoonTakenForExamination(Util.objectToLong(arr[24]))
+                    .noOfDFlFromFc(Util.objectToLong(arr[25]))
+                    .diseaseFree(Util.objectToString(arr[26]))
+                    .diseaseType(Util.objectToString(arr[27]))
+                    .noOfCocoonPerKg(Util.objectToLong(arr[28]))
+                    .meltPercentage(Util.objectToString(arr[29]))
+                    .pupaCocoonStatus(Util.objectToString(arr[30]))
+                    .noOfCocoonsExamined(Util.objectToString(arr[31]))
+                    .marketAuctionDate(Util.objectToString(arr[32]))
+                    .build();
+
+            responses.add(response);
+
+            // Increment the serial number for the next item
+            serialNumber++;
+        }
+
+        return responses;
+    }
+
 
 }

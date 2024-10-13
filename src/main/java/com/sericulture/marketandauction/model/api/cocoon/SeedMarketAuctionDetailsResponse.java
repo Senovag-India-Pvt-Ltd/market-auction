@@ -9,6 +9,7 @@ import lombok.*;
 @EqualsAndHashCode
 @Builder
 public class SeedMarketAuctionDetailsResponse {
+    private int serialNumber;
     private Long farmerId;
     private String firstName;
     private String middleName;
@@ -36,5 +37,16 @@ public class SeedMarketAuctionDetailsResponse {
     private String raceName;
     private Long initialWeighment;
     private Long marketAuctionId;
-
+    private Long pricePerKg;
+    private String fixationDate;
+    private String testDate;
+    private Long noOfCocoonTakenForExamination;
+    private Long noOfDFlFromFc;
+    private String diseaseFree;
+    private String diseaseType;
+    private Long noOfCocoonPerKg;
+    private String pupaCocoonStatus;
+    private String meltPercentage;
+    private String noOfCocoonsExamined;
+    private String marketAuctionDate;
 }
