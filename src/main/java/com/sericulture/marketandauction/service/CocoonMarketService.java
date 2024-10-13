@@ -289,5 +289,9 @@ public class CocoonMarketService {
         return responses;
     }
 
+    public List<PupaTestAndCocoonAssessment> getAllPupaTestAndCocoonAssessment() {
+        return pupaTestAndCocoonAssessmentRepository.findByActiveOrderByIdDesc(true);
+    }
+
 
 }

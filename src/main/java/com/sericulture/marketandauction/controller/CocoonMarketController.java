@@ -10,6 +10,7 @@ import com.sericulture.marketandauction.model.api.marketauction.LotGroupageDetai
 import com.sericulture.marketandauction.model.api.marketauction.LotGroupageResponse;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.entity.LotBasePriceFixation;
+import com.sericulture.marketandauction.model.entity.PupaTestAndCocoonAssessment;
 import com.sericulture.marketandauction.service.CocoonMarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -70,6 +71,11 @@ public class CocoonMarketController {
     @GetMapping("/getPupaCocoonAssessmentList")
     public List<SeedMarketAuctionDetailsResponse> getPupaAndCocoonAssessmentByMarket() {
         return cocoonMarketService.getPupaAndCocoonAssessmentByMarket(Util.getMarketId(Util.getTokenValues()));
+    }
+
+    @GetMapping("/get-all-pupa-cocoon-assessment-details-info")
+    public List<PupaTestAndCocoonAssessment> getAllPupaTestAndCocoonAssessment() {
+        return cocoonMarketService.getAllPupaTestAndCocoonAssessment();
     }
 
 

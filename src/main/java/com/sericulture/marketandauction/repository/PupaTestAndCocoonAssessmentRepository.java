@@ -26,6 +26,8 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
 
     public List<PupaTestAndCocoonAssessment> findAllByTestDate(LocalDate testDate);
 
+    List<PupaTestAndCocoonAssessment> findByActiveOrderByIdDesc(boolean isActive);
+
     @Query(nativeQuery = true , value = """
     WITH PrimaryAddress AS (
             SELECT
