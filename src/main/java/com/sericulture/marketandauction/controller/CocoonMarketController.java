@@ -1,9 +1,11 @@
 package com.sericulture.marketandauction.controller;
 
+import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.cocoon.LotBasePriceFixationRequest;
 import com.sericulture.marketandauction.model.api.cocoon.PupaTestAndCocoonAssessmentRequest;
 import com.sericulture.marketandauction.model.api.cocoon.PupaTestResultFinderRequest;
+import com.sericulture.marketandauction.model.api.cocoon.SeedMarketAuctionDetailsResponse;
 import com.sericulture.marketandauction.model.api.marketauction.LotGroupageDetailsRequest;
 import com.sericulture.marketandauction.model.api.marketauction.LotGroupageResponse;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -53,5 +56,21 @@ public class CocoonMarketController {
         return cocoonMarketService.getPupaTestAndCocoonAssessmentResult(pupaTestResultFinderRequest);
 
     }
+
+//    @PostMapping("/getPupaCocoonAssessmentList")
+//    public ResponseEntity<?> getPupaAndCocoonAssessmentByMarket(@RequestBody com.sericulture.marketandauction.model.api.RequestBody pupaTestAndCocoonAssessmentRequest,
+//                                                                @RequestParam(defaultValue = "0") final Integer pageNumber,
+//                                                                @RequestParam(defaultValue = "5") final Integer size
+//    ) {
+//        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
+//        rw.setContent(cocoonMarketService.getPupaAndCocoonAssessmentByMarket(pupaCocoonAssessmentRequest, PageRequest.of(pageNumber, size)));
+//        return ResponseEntity.ok(rw);
+//    }
+
+    @GetMapping("/getPupaCocoonAssessmentList")
+    public List<SeedMarketAuctionDetailsResponse> getPupaAndCocoonAssessmentByMarket() {
+        return cocoonMarketService.getPupaAndCocoonAssessmentByMarket(Util.getMarketId(Util.getTokenValues()));
+    }
+
 
 }

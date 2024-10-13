@@ -35,5 +35,6 @@ public class SeedMarketAuctionDetailsResponse {
     private Long raceOfDfls;
     private String raceName;
     private Long initialWeighment;
+    private Long marketAuctionId;
 
 }

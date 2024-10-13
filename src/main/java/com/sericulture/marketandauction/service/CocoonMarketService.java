@@ -208,18 +208,30 @@ public class CocoonMarketService {
     public ResponseEntity<?> savePupaTestAndCocoonAssessmentResult(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
 
-        // Map the request to entity
+        // Retrieve the marketAuctionId from the request
+        int marketAuctionId = pupaTestAndCocoonAssessmentRequest.getMarketAuctionId();
+
+        // Fetch existing assessments for the given marketAuctionId
+        List<PupaTestAndCocoonAssessment> existingAssessments =
+                pupaTestAndCocoonAssessmentRepository.findByMarketAuctionIdAndActive(marketAuctionId, true);
+
+        // Check if there are existing assessments
+        if (existingAssessments != null && !existingAssessments.isEmpty()) {
+            for (PupaTestAndCocoonAssessment assessment : existingAssessments) {
+                // Check if pupaCocoonStatus is not null
+                if (assessment.getPupaCocoonStatus() != null) {
+                    rw.setErrorCode(-1);
+                    rw.setContent("Already Assessment is done for this farmer");
+                    return ResponseEntity.ok(rw);
+                }
+            }
+        }
         PupaTestAndCocoonAssessment pupaTestAndCocoonAssessment = mapper.pupaTestAndCocoonAssessmentObjectToEntity(pupaTestAndCocoonAssessmentRequest, PupaTestAndCocoonAssessment.class);
-
-        // Set status to 'ACCEPTED'
         pupaTestAndCocoonAssessment.setPupaCocoonStatus(LotStatus.ASSESSMENT.getLabel());
-
-        // Save the entity
         pupaTestAndCocoonAssessmentRepository.save(pupaTestAndCocoonAssessment);
-
-        // Return response
         return ResponseEntity.ok(rw);
     }
+
 
 
     public ResponseEntity<?> getPupaTestAndCocoonAssessmentResult(PupaTestResultFinderRequest pupaTestResultFinderRequest){
@@ -240,6 +252,41 @@ public class CocoonMarketService {
         rw.setContent(pupaTestAndCocoonAssessmentList);
         return ResponseEntity.ok(rw);
 
+    }
+
+    public List<SeedMarketAuctionDetailsResponse> getPupaAndCocoonAssessmentByMarket(int marketId) {
+        List<Object[]> chowkiDetails = pupaTestAndCocoonAssessmentRepository.getPupaAndCocoonAssessmentByMarket(marketId);
+        List<SeedMarketAuctionDetailsResponse> responses = new ArrayList<>();
+
+        for (Object[] arr : chowkiDetails) {
+            SeedMarketAuctionDetailsResponse response = SeedMarketAuctionDetailsResponse.builder()
+                    .farmerId(Util.objectToLong(arr[0]))
+                    .firstName(Util.objectToString(arr[1]))
+                    .middleName(Util.objectToString(arr[2]))
+                    .lastName(Util.objectToString(arr[3]))
+                    .fruitsId(Util.objectToString(arr[4]))
+                    .farmerNumber(Util.objectToString(arr[5]))
+                    .fatherName(Util.objectToString(arr[6]))
+                    .dob(Util.objectToString(arr[7]))
+                    .mobileNumber(Util.objectToString(arr[8]))
+                    .districtName(Util.objectToString(arr[9]))
+                    .talukName(Util.objectToString(arr[10]))
+                    .hobliName(Util.objectToString(arr[11]))
+                    .villageName(Util.objectToString(arr[12]))
+                    .dflsSource(Util.objectToString(arr[13]))
+                    .numbersOfDfls(Util.objectToString(arr[14]))
+                    .lotNumberRsp(Util.objectToString(arr[15]))
+                    .stateName(Util.objectToString(arr[16]))
+                    .raceOfDfls(Util.objectToLong(arr[17]))
+                    .raceName(Util.objectToString(arr[18]))
+                    .initialWeighment(Util.objectToLong(arr[19]))
+                    .marketAuctionId(Util.objectToLong(arr[20]))
+                    .build();
+
+            responses.add(response);
+        }
+
+        return responses;
     }
 
 
