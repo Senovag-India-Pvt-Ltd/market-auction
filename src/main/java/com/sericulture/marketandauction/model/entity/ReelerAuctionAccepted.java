@@ -49,4 +49,7 @@ public class ReelerAuctionAccepted extends BaseEntity implements Serializable{
     @Column(name = "auction_session")
     private Integer auctionSession;
 
+    @Column(name = "trader_license_id")
+    private int traderLicenseId;
+
 }

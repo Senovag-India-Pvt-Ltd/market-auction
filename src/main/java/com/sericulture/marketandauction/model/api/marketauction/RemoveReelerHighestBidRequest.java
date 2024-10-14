@@ -13,5 +13,6 @@ import java.math.BigInteger;
 public class RemoveReelerHighestBidRequest extends LotStatusRequest {
     BigInteger reelerAuctionId;
     BigInteger reelerId;
+    BigInteger traderLicenseId;
 
 }

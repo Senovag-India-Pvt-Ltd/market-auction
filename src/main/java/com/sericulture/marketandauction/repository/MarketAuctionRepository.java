@@ -13,6 +13,7 @@ public interface MarketAuctionRepository extends PagingAndSortingRepository<Mark
 
     public List<MarketAuction> findAllByFarmerIdAndMarketAuctionDate(BigInteger farmerId,LocalDate date);
 
+    public List<MarketAuction> findAllByReelerIdAndMarketAuctionDate(Integer reelerId,LocalDate date);
 
     public List<MarketAuction> findAllByMarketAuctionDate(LocalDate date);
 

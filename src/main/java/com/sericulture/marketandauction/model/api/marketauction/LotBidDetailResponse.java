@@ -29,9 +29,15 @@ public class LotBidDetailResponse extends ResponseBody {
 
     private String reelerName;
 
+    private String traderName;
+
+    private String traderLicenseNumber;
+
     private String reelerFruitsId;
 
     private String reelingLicenseNumber;
+
+    private String reelerVillageName;
 
     @Schema(name = "reelerAuctionId", example = "1", required = true)
     private BigInteger reelerAuctionId;

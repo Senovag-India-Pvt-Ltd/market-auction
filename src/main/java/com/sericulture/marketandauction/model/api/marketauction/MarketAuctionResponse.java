@@ -28,6 +28,9 @@ public class MarketAuctionResponse extends ResponseBody {
     @Schema(name="farmerId", example = "1")
     BigInteger farmerId;
 
+    @Schema(name="reelerId", example = "1")
+    int reelerId;
+
     @Schema(name="allotedLotList", example = "[1,2]")
     List<Integer> allotedLotList;
 

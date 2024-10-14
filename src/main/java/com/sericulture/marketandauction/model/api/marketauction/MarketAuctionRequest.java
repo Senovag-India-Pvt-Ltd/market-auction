@@ -22,6 +22,10 @@ public class MarketAuctionRequest extends RequestBody {
     @NotNull(message = "")
     private BigInteger farmerId;
 
+    @Schema(name = "reelerId", example = "123", required = true)
+    @NotNull(message = "")
+    private Integer reelerId;
+
 
     @Schema(name = "sourceMasterId", example = "2", required = true)
     private Integer sourceMasterId;
@@ -46,6 +50,10 @@ public class MarketAuctionRequest extends RequestBody {
 
     @Schema(name = "numberOfBigBin", example = "number of big bins assigned to this transaction", required = true)
     private int numberOfBigBin;
+
+    private String dflLotNumber;
+    private String lotVariety;
+    private String lotParentalLevel;
 
 
     @Override

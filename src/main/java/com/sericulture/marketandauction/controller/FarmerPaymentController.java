@@ -2,6 +2,8 @@ package com.sericulture.marketandauction.controller;
 
 
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoForSeedMarketRequest;
+import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoForSeedMarketRequestByLotList;
 import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequest;
 import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequestByLotList;
 import com.sericulture.marketandauction.model.enums.LotStatus;
@@ -78,5 +80,56 @@ public class FarmerPaymentController {
     public ResponseEntity<?> generateBankStatementForAuctionDate(@RequestBody FarmerPaymentInfoRequest farmerPaymentInfoRequest){
         return farmerPaymentService.generateBankStatementForAuctionDate(farmerPaymentInfoRequest);
     }
+
+
+    @PostMapping("/readyForPaymentForSeedMarketList")
+    public ResponseEntity<?> readyForPaymentForSeedMarketList(@RequestBody com.sericulture.marketandauction.model.api.RequestBody farmerPaymentInfoRequest,
+                                                              @RequestParam(defaultValue = "0") final Integer pageNumber,
+                                                              @RequestParam(defaultValue = "5") final Integer size
+    ) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
+        rw.setContent(farmerPaymentService.getWeighmentCompletedListForSeedMarketByAuctionDateAndMarket(farmerPaymentInfoRequest,PageRequest.of(pageNumber, size)));
+        return ResponseEntity.ok(rw);
+    }
+
+    @PostMapping("/addSeedMarketSelectedLotlistToReadyForPayment")
+    public ResponseEntity<?> updateSeedMarketLotlistToReadyForPayment(@RequestBody FarmerPaymentInfoForSeedMarketRequestByLotList farmerPaymentInfoForSeedMarketRequestByLotList){
+        return farmerPaymentService.updateSeedMarketLotlistByChangingTheStatus(farmerPaymentInfoForSeedMarketRequestByLotList,true,LotStatus.WEIGHMENTCOMPLETED.getLabel(),LotStatus.READYFORPAYMENT.getLabel());
+    }
+
+    @PostMapping("/bulkSendToReadyForPaymentForSeedMarket")
+    public ResponseEntity<?> updateLotstatusByAuctionToReadyForPaymentForSeedMarket(@RequestBody FarmerPaymentInfoForSeedMarketRequestByLotList farmerPaymentInfoForSeedMarketRequestByLotList){
+        return farmerPaymentService.updateSeedMarketLotlistByChangingTheStatus(farmerPaymentInfoForSeedMarketRequestByLotList,false, LotStatus.WEIGHMENTCOMPLETED.getLabel(),LotStatus.READYFORPAYMENT.getLabel());
+    }
+
+    @PostMapping("/getAuctionDateListForBulkSendForSeedMarket")
+    public ResponseEntity<?> getAllWeighmentCompletedAuctionDatesBySeedMarket(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
+        return farmerPaymentService.getAllSeedMarketWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody,LotStatus.WEIGHMENTCOMPLETED.getLabel());
+    }
+
+    @PostMapping("/getAuctionDateSeedMarketListForPaymentStatement")
+    public ResponseEntity<?> getAuctionDateSeedMarketListForPaymentStatement(@RequestBody com.sericulture.marketandauction.model.api.RequestBody requestBody){
+        return farmerPaymentService.getAllSeedMarketWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(requestBody,LotStatus.READYFORPAYMENT.getLabel());
+    }
+
+    @PostMapping("/generatePaymentStatementSeedMarketForAuctionDate")
+    public ResponseEntity<?> generatePaymentStatementSeedMarketForAuctionDate(@RequestBody FarmerPaymentInfoForSeedMarketRequest farmerPaymentInfoForSeedMarketRequest){
+        return farmerPaymentService.generatePaymentStatementSeedMarketForAuctionDate(farmerPaymentInfoForSeedMarketRequest);
+    }
+
+    @GetMapping("/generateCSVFileForSeedMarket")
+    public ResponseEntity<InputStreamResource> generateCSVFileForSeedMarket(@RequestParam int marketId,@RequestParam LocalDate auctionDate,@RequestParam String fileName) {
+        InputStreamResource file = new InputStreamResource(farmerPaymentService.generateCSVFileForSeedMarket(marketId,auctionDate));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName+".csv")
+                .contentType(MediaType.parseMediaType("application/csv"))
+                .body(file);
+    }
+
+    @PostMapping("/markCashPaymentLotListToSuccessForSeedMarket")
+    public ResponseEntity<?> markCashPaymentLotListToSuccessForSeedMarket(@RequestBody FarmerPaymentInfoForSeedMarketRequestByLotList farmerPaymentInfoForSeedMarketRequestByLotList){
+        return farmerPaymentService.markCashPaymentLotListToSuccessForSeedMarket(farmerPaymentInfoForSeedMarketRequestByLotList);
+    }
+
 
 }

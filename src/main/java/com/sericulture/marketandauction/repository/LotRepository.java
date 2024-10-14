@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.repository;
 
+import com.sericulture.marketandauction.helper.LotTransactionQueryConstants;
 import com.sericulture.marketandauction.helper.MarketAuctionQueryConstants;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
@@ -318,4 +319,60 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.GET_MARKET_BY_DIVISION)
     public List<Object[]> getMarketByDivision(int divisionId);
+
+    @Query(nativeQuery = true, value = """
+           SELECT ROW_NUMBER() OVER (ORDER BY l.lot_id ASC) AS row_id,
+           l.lot_id AS FARMER_PAYMENT_ID,
+           lg.allotted_lot_id,
+           lg.auction_date,
+           f.first_name,
+           f.middle_name,
+           f.last_name,
+           f.farmer_number,
+           f.mobile_number,
+           lg.lot_groupage_id,
+           lg.buyer_type,
+           lg.lot_weight,
+           lg.amount,
+           lg.market_fee,
+           lg.sold_amount,
+           CASE
+               WHEN lg.buyer_type = 'Reeler' THEN r.name
+               WHEN lg.buyer_type = 'ExternalStakeHolders' THEN es.name
+               ELSE NULL
+           END AS buyer_name,
+           CASE
+               WHEN lg.buyer_type = 'Reeler' THEN r.reeler_id
+               WHEN lg.buyer_type = 'ExternalStakeHolders' THEN es.external_unit_registration_id
+               ELSE NULL
+           END AS buyer_id,
+           l.lot_id
+        FROM dbo.FARMER f
+        INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
+        INNER JOIN dbo.lot l ON l.market_auction_id = ma.market_auction_id AND l.auction_date = ma.market_auction_date
+        LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID AND fa.default_address = 1
+        INNER JOIN dbo.market_master mm ON mm.market_master_id = ma.market_id
+        LEFT JOIN dbo.market_type_master mtm ON mtm.market_type_master_id = mm.market_master_id
+        LEFT JOIN lot_groupage lg ON l.lot_id = lg.lot_id
+        LEFT JOIN dbo.reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeler'
+        LEFT JOIN dbo.external_unit_registration es ON lg.buyer_id = es.external_unit_registration_id AND lg.buyer_type = 'ExternalStakeHolders'
+        WHERE l.status = 'weighmentcompleted'
+        and l.market_id =:marketId
+        ORDER by lg.lot_id""")
+    public Page<Object[]> getAllWeighmentCompletedTxnForSeedMarketByMarket(final Pageable pageable, int marketId);
+
+    @Query(nativeQuery = true, value = LotTransactionQueryConstants.QUERY_ELIGIBLE_FOR_PAYMENT_FOR_SEED_MARKET_LOTS_CASH)
+    public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentModeForSeedMarket(LocalDate paymentDate, int marketId, List<Long> lotList, String lotStatus);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.AUCTION_DATE_LIST_BY_LOT_STATUS_FOR_SEED_MARKET_CASH_PAYMENT)
+    public List<Object> getAllWeighmentCompletedOrReadyForPaymentsSeedMarketAuctionDatesByMarketCashPayment(int marketId,String lotStatus);
+
+    @Query(nativeQuery = true, value = LotTransactionQueryConstants.QUERY_ELIGIBLE_FOR_PAYMENT_LOTS_ONLINE)
+    public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForOnlinePaymentMode(LocalDate paymentDate, int marketId, List<Long> lotList, String lotStatus);
+
+    @Query(nativeQuery = true, value = LotTransactionQueryConstants.QUERY_ELIGIBLE_FOR_PAYMENT_LOTS_CASH)
+    public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentMode(LocalDate paymentDate, int marketId, List<Long> lotList, String lotStatus);
+
+
+
 }

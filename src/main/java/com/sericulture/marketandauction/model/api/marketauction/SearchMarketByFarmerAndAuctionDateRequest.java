@@ -18,6 +18,9 @@ public class SearchMarketByFarmerAndAuctionDateRequest extends RequestBody {
     @Schema(name = "farmerId", example = "1")
     private BigInteger farmerId;
 
+    @Schema(name = "reelerId", example = "1")
+    private Integer reelerId;
+
     @Schema(name = "auctionDate", example = "2023-12-29")
     private LocalDate auctionDate;
 }

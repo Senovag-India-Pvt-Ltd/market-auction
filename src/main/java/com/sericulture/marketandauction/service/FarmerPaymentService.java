@@ -7,14 +7,15 @@ import com.sericulture.marketandauction.helper.MarketAuctionQueryConstants;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequest;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoRequestByLotList;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoResponse;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerReadyForPaymentResponse;
+import com.sericulture.marketandauction.model.api.marketauction.*;
+import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.entity.TransactionFileGenQueue;
 import com.sericulture.marketandauction.model.enums.LotStatus;
+import com.sericulture.marketandauction.model.enums.PAYMENTMODE;
+import com.sericulture.marketandauction.model.enums.USERTYPE;
 import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.repository.LotRepository;
+import com.sericulture.marketandauction.repository.MarketMasterRepository;
 import com.sericulture.marketandauction.repository.TransactionFileGenQueueRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -40,6 +41,8 @@ import java.util.*;
 public class FarmerPaymentService {
     @Autowired
     LotRepository lotRepository;
+    @Autowired
+    MarketMasterRepository marketMasterRepository;
     @PersistenceUnit
     private EntityManagerFactory entityManagerFactory;
     @Autowired
@@ -223,5 +226,270 @@ public class FarmerPaymentService {
 
         }
         return ResponseEntity.ok(rw);
+    }
+
+    public Map<String, Object>  getWeighmentCompletedListForSeedMarketByAuctionDateAndMarket(RequestBody requestBody, final Pageable pageable) {
+        Map<String, Object> response = new HashMap<>();
+        marketAuctionHelper.getAuthToken(requestBody);
+        MarketMaster marketMaster = marketMasterRepository.findById(requestBody.getMarketId());
+
+        List<FarmerReadyPaymentInfoForSeedMarketResponse> farmerReadyPaymentInfoForSeedMarketResponseList = new ArrayList<>();
+        FarmerReadyForPaymentForSeedMarketResponse farmerReadyForPaymentForSeedMarketResponse = new FarmerReadyForPaymentForSeedMarketResponse();
+        if(marketMaster.getPaymentMode()!=null){
+            farmerReadyForPaymentForSeedMarketResponse.setPaymentMode(marketMaster.getPaymentMode());
+        }
+        Page<Object[]> paginatedResponse = lotRepository.getAllWeighmentCompletedTxnForSeedMarketByMarket(pageable, requestBody.getMarketId());
+        farmerReadyForPaymentForSeedMarketResponse.setFarmerReadyPaymentInfoForSeedMarketResponseList(farmerReadyPaymentInfoForSeedMarketResponseList);
+        if (paginatedResponse == null || paginatedResponse.isEmpty()) {
+//            throw new ValidationException("No lot  found");
+            response.put("farmerReadyForPaymentForSeedMarketResponse", farmerReadyForPaymentForSeedMarketResponse);
+            response.put("currentPage", 0);
+            response.put("totalItems", 0);
+            response.put("totalPages", 0);
+            return response;
+        }
+
+        farmerReadyForPaymentForSeedMarketResponse.setSoldAmount(prepareFarmerReadyPaymentInfoForSeedMarketResponseList(paginatedResponse.getContent(), farmerReadyPaymentInfoForSeedMarketResponseList));
+        farmerReadyForPaymentForSeedMarketResponse.setFarmerReadyPaymentInfoForSeedMarketResponseList(farmerReadyPaymentInfoForSeedMarketResponseList);
+
+        response.put("farmerReadyForPaymentForSeedMarketResponse", farmerReadyForPaymentForSeedMarketResponse);
+        response.put("currentPage", paginatedResponse.getNumber());
+        response.put("totalItems", paginatedResponse.getTotalElements());
+        response.put("totalPages", paginatedResponse.getTotalPages());
+        return response;
+    }
+
+    public static Long prepareFarmerReadyPaymentInfoForSeedMarketResponseList(
+            List<Object[]> paginatedResponse,
+            List<FarmerReadyPaymentInfoForSeedMarketResponse> farmerReadyPaymentInfoForSeedMarketResponseList) {
+
+        long totalFarmerAmount = 0L;
+
+        for (Object[] response : paginatedResponse) {
+            long soldAmount = Util.objectToLong(response[14]);
+            long marketFee = Util.objectToLong(response[13]);
+            long farmerAmount = soldAmount - marketFee;
+            totalFarmerAmount = farmerAmount + totalFarmerAmount;
+
+            // Corrected instantiation of FarmerReadyPaymentInfoForSeedMarketResponse
+            FarmerReadyPaymentInfoForSeedMarketResponse farmerReadyPaymentInfoForSeedMarketResponse =
+                    new FarmerReadyPaymentInfoForSeedMarketResponse(
+                            Integer.parseInt(Util.objectToString(response[0])),
+                            Util.objectToLong(response[2]),
+                            Util.objectToString(response[3]),
+                            Util.objectToString(response[4]),
+                            Util.objectToString(response[5]),
+                            Util.objectToString(response[6]),
+                            Util.objectToString(response[7]),
+                            Util.objectToString(response[8]),
+                            Util.objectToLong(response[9]),   // lot_groupage_id
+                            Util.objectToString(response[10]),   // buyer_type
+                            Util.objectToLong(response[11]),  // buyer_id
+                            Util.objectToLong(response[12]),
+                            // lot_weight
+                            marketFee,
+                            soldAmount,
+                            Util.objectToString(response[15]),  // buyer_name
+                            Util.objectToLong(response[16]),   // lot_id
+                            Util.objectToLong(response[17]),farmerAmount
+                    );
+
+            farmerReadyPaymentInfoForSeedMarketResponseList.add(farmerReadyPaymentInfoForSeedMarketResponse);
+
+        }
+
+        return totalFarmerAmount;
+    }
+
+    public ResponseEntity<?> updateSeedMarketLotlistByChangingTheStatus(FarmerPaymentInfoForSeedMarketRequestByLotList farmerPaymentInfoForSeedMarketRequestByLotList, boolean selectedLot, String fromlotStatus, String toLotStatus) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(farmerPaymentInfoForSeedMarketRequestByLotList);
+        EntityManager entityManager = null;
+        try {
+            boolean exists = transactionFileGenQueueRepository.existsTransactionFileGenQueueByMarketIdAndAuctionDateAndStatusIn(farmerPaymentInfoForSeedMarketRequestByLotList.getMarketId(), farmerPaymentInfoForSeedMarketRequestByLotList.getPaymentDate(), Set.of(LotStatus.REQUESTED.getLabel(), LotStatus.PROCESSING.getLabel()));
+            if (exists) {
+                throw new ValidationException("Payment Request is under process please try after sometime.");
+            }
+            List<Long> lotList = null;
+            if (selectedLot) {
+                lotList = farmerPaymentInfoForSeedMarketRequestByLotList.getAllottedLotList();
+            }
+            if (selectedLot && Util.isNullOrEmptyList(lotList)) {
+                throw new ValidationException("Lot list is empty");
+            }
+            List<Object[]> paginatedResponse = null;
+            MarketMaster marketMaster = marketMasterRepository.findById(farmerPaymentInfoForSeedMarketRequestByLotList.getMarketId());
+            if (marketMaster.getPaymentMode() != null && marketMaster.getPaymentMode().equals(PAYMENTMODE.CASH.getLabel())) {
+                paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentModeForSeedMarket(
+                        farmerPaymentInfoForSeedMarketRequestByLotList.getPaymentDate(),
+                        farmerPaymentInfoForSeedMarketRequestByLotList.getMarketId(),
+                        lotList,
+                        fromlotStatus
+                );
+            }
+
+
+            if (paginatedResponse == null || paginatedResponse.size() == 0) {
+                throw new ValidationException("The lot has not been distributed as of this date");
+            }
+            List<Long> lotIds = new ArrayList<>();
+            for (Object[] response : paginatedResponse) {
+                lotIds.add(Util.objectToLong(response[1]));
+            }
+            entityManager = entityManagerFactory.createEntityManager();
+            changeTheLotStatusForSeedMarket(toLotStatus, entityManager, lotIds,null, token.getMarketId());
+        }catch (ValidationException validationException){
+            throw validationException;
+        }catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            return marketAuctionHelper.retrunIfError(rw, "Exception while updating the readyForPayement to list:" + farmerPaymentInfoForSeedMarketRequestByLotList + " error: " + ex);
+        } finally {
+            if (entityManager != null && entityManager.isOpen()) {
+                entityManager.close();
+            }
+        }
+        return ResponseEntity.ok(rw);
+    }
+
+    private static void changeTheLotStatusForSeedMarket(String toLotStatus, EntityManager entityManager, List<Long> lotIds,LocalDate autctionDate,int marketId) {
+        entityManager.getTransaction().begin();
+        String query = "UPDATE Lot set status = ? where lot_id in ( ? )";
+        if(autctionDate!=null){
+            query = "UPDATE Lot set status = ? where allotted_lot_id in ( ? ) and market_id = ? and auction_date = ?";
+        }
+        Query nativeQuery = entityManager.createNativeQuery(query);
+        nativeQuery.setParameter(1, toLotStatus);
+        nativeQuery.setParameter(2, lotIds);
+        if(autctionDate!=null){
+            nativeQuery.setParameter(3,marketId);
+            nativeQuery.setParameter(4,autctionDate);
+        }
+        nativeQuery.executeUpdate();
+        entityManager.getTransaction().commit();
+    }
+    public ResponseEntity<?> getAllSeedMarketWeighmentCompletedOrReadyForPaymentAuctionDatesByMarket(RequestBody requestBody, String status) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        marketAuctionHelper.getAuthToken(requestBody);
+
+        MarketMaster marketMaster = marketMasterRepository.findById(requestBody.getMarketId());
+        List<Object> auctionDates = null;
+        if(marketMaster.getPaymentMode()!=null && marketMaster.getPaymentMode().equals(PAYMENTMODE.CASH.getLabel())){
+            auctionDates = lotRepository.getAllWeighmentCompletedOrReadyForPaymentsSeedMarketAuctionDatesByMarketCashPayment(requestBody.getMarketId(), status);
+        }
+        if (Util.isNullOrEmptyList(auctionDates)) {
+            throw new ValidationException("No Auction dates found for bulk send");
+        }
+        rw.setContent(auctionDates);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> generatePaymentStatementSeedMarketForAuctionDate(FarmerPaymentInfoForSeedMarketRequest farmerPaymentInfoForSeedMarketRequest) {
+        marketAuctionHelper.getAuthToken(farmerPaymentInfoForSeedMarketRequest);
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        FarmerReadyForPaymentForSeedMarketResponse farmerReadyForPaymentForSeedMarketResponse = getReadyForPaymentForSeedMarketTxns(farmerPaymentInfoForSeedMarketRequest.getPaymentDate(), farmerPaymentInfoForSeedMarketRequest.getMarketId());
+        rw.setContent(farmerReadyForPaymentForSeedMarketResponse);
+        return ResponseEntity.ok(rw);
+    }
+
+//    private FarmerReadyForPaymentForSeedMarketResponse getReadyForPaymentForSeedMarketTxns(LocalDate auctionDate, int marketId) {
+//        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketId, USERTYPE.MO.getType());
+//        FarmerReadyForPaymentForSeedMarketResponse farmerReadyForPaymentForSeedMarketResponse = new FarmerReadyForPaymentForSeedMarketResponse();
+//        List<Object[]> paginatedResponse = null;
+//        MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+//        if(marketMaster.getPaymentMode()!=null && marketMaster.getPaymentMode().equals(PAYMENTMODE.CASH.getLabel())) {
+//            paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentModeForSeedMarket(auctionDate, marketId, null, LotStatus.READYFORPAYMENT.getLabel());
+//        }
+//        farmerReadyForPaymentForSeedMarketResponse.setPaymentMode(marketMaster.getPaymentMode());
+//        List<FarmerReadyPaymentInfoForSeedMarketResponse> farmerReadyPaymentInfoForSeedMarketResponseList = new ArrayList<>();
+//        prepareFarmerReadyPaymentInfoForSeedMarketResponseList(paginatedResponse, farmerReadyPaymentInfoForSeedMarketResponseList);
+//        farmerReadyForPaymentForSeedMarketResponse.setFarmerReadyPaymentInfoForSeedMarketResponseList(farmerReadyPaymentInfoForSeedMarketResponseList);
+//        return farmerReadyForPaymentForSeedMarketResponse;
+//    }
+private FarmerReadyForPaymentForSeedMarketResponse getReadyForPaymentForSeedMarketTxns(LocalDate auctionDate, int marketId) {
+    // Create a RequestBody object and set marketId and userType
+    RequestBody requestBody = new RequestBody();
+    requestBody.setMarketId(marketId);
+//    requestBody.setUserType(USERTYPE.MO.getType());
+
+    // Pass the RequestBody object to getAuthToken
+    JwtPayloadData token = marketAuctionHelper.getAuthToken(requestBody);
+
+    FarmerReadyForPaymentForSeedMarketResponse farmerReadyForPaymentForSeedMarketResponse = new FarmerReadyForPaymentForSeedMarketResponse();
+    List<Object[]> paginatedResponse = null;
+    MarketMaster marketMaster = marketMasterRepository.findById(marketId);
+
+    if(marketMaster.getPaymentMode() != null && marketMaster.getPaymentMode().equals(PAYMENTMODE.CASH.getLabel())) {
+        paginatedResponse = lotRepository.getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentModeForSeedMarket(
+                auctionDate, marketId, null, LotStatus.READYFORPAYMENT.getLabel());
+    }
+
+    farmerReadyForPaymentForSeedMarketResponse.setPaymentMode(marketMaster.getPaymentMode());
+
+    List<FarmerReadyPaymentInfoForSeedMarketResponse> farmerReadyPaymentInfoForSeedMarketResponseList = new ArrayList<>();
+    prepareFarmerReadyPaymentInfoForSeedMarketResponseList(paginatedResponse, farmerReadyPaymentInfoForSeedMarketResponseList);
+
+    farmerReadyForPaymentForSeedMarketResponse.setFarmerReadyPaymentInfoForSeedMarketResponseList(farmerReadyPaymentInfoForSeedMarketResponseList);
+
+    return farmerReadyForPaymentForSeedMarketResponse;
+}
+
+
+    public ByteArrayInputStream generateCSVFileForSeedMarket(int marketId, LocalDate auctionDate) {
+        FarmerReadyForPaymentForSeedMarketResponse farmerReadyForPaymentForSeedMarketResponse = getReadyForPaymentForSeedMarketTxns(auctionDate, marketId);
+        final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL);
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format);) {
+
+            csvPrinter.printRecord(Arrays.asList("Serial Number", "Lot Id", " Farmer Name", "Farmer Number", "Farmer Mobile Number",
+                    "Buyer Type", "Buyer Name", "Lot weight", "Amount", "Market Fee", "Sold Amount"));
+            for (FarmerReadyPaymentInfoForSeedMarketResponse farmerReadyPaymentInfoForSeedMarketResponse : farmerReadyForPaymentForSeedMarketResponse.getFarmerReadyPaymentInfoForSeedMarketResponseList()) {
+                List<? extends Serializable> data = Arrays.asList(
+                        farmerReadyPaymentInfoForSeedMarketResponse.getSerialNumber(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getAllottedLotId(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getFarmerFirstName() + " " + farmerReadyPaymentInfoForSeedMarketResponse.getFarmerMiddleName() + " " + farmerReadyPaymentInfoForSeedMarketResponse.getFarmerLastName(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getFarmerNumber(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getFarmerMobileNumber(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getBuyerType(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getBuyerName() ,
+                        farmerReadyPaymentInfoForSeedMarketResponse.getLotWeight(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getAmount(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getMarketFee(),
+                        farmerReadyPaymentInfoForSeedMarketResponse.getSoldAmount()
+                );
+
+                csvPrinter.printRecord(data);
+            }
+            csvPrinter.printRecord("Total Amount to be given to farmer is: " + farmerReadyForPaymentForSeedMarketResponse.getSoldAmount());
+            csvPrinter.flush();
+            return new ByteArrayInputStream(out.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException("fail to import data to CSV file: " + e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> markCashPaymentLotListToSuccessForSeedMarket(FarmerPaymentInfoForSeedMarketRequestByLotList farmerPaymentInfoForSeedMarketRequestByLotList) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        changeTheLotStatus(LotStatus.PAYMENTSUCCESS.getLabel(), entityManager,farmerPaymentInfoForSeedMarketRequestByLotList.getAllottedLotList(),farmerPaymentInfoForSeedMarketRequestByLotList.getPaymentDate(), farmerPaymentInfoForSeedMarketRequestByLotList.getMarketId());
+        rw.setContent("Success");
+        return ResponseEntity.ok(rw);
+    }
+
+    private static void changeTheLotStatus(String toLotStatus, EntityManager entityManager, List<Long> lotIds,LocalDate autctionDate,int marketId) {
+        entityManager.getTransaction().begin();
+        String query = "UPDATE Lot set status = ? where lot_id in ( ? )";
+        if(autctionDate!=null){
+            query = "UPDATE Lot set status = ? where allotted_lot_id in ( ? ) and market_id = ? and auction_date = ?";
+        }
+        Query nativeQuery = entityManager.createNativeQuery(query);
+        nativeQuery.setParameter(1, toLotStatus);
+        nativeQuery.setParameter(2, lotIds);
+        if(autctionDate!=null){
+            nativeQuery.setParameter(3,marketId);
+            nativeQuery.setParameter(4,autctionDate);
+        }
+        nativeQuery.executeUpdate();
+        entityManager.getTransaction().commit();
     }
 }

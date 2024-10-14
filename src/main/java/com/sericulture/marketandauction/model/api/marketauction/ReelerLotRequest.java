@@ -11,4 +11,6 @@ import lombok.*;
 public class ReelerLotRequest extends RequestBody {
 
     private int reelerId;
+
+    private int traderLicenseId;
 }

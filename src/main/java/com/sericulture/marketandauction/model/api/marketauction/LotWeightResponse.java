@@ -38,4 +38,10 @@ public class LotWeightResponse extends ResponseBody {
     private String source;
     private float tareWeight;
     private String lotStatus;
+    private String reelerNumber;
+    private String reelerFruitsId;
+    private String traderLicenseNumber;
+    private String traderName;
+    private String reelerVillage;
+    private int traderLicenseId;
 }

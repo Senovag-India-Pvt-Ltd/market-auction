@@ -1,11 +1,9 @@
 package com.sericulture.marketandauction.model.mapper;
 
-import com.sericulture.marketandauction.model.api.marketauction.FLexTimeRequest;
-import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
-import com.sericulture.marketandauction.model.api.marketauction.ReelerBidRequest;
-import com.sericulture.marketandauction.model.entity.FlexTime;
-import com.sericulture.marketandauction.model.entity.MarketAuction;
-import com.sericulture.marketandauction.model.entity.ReelerAuction;
+import com.sericulture.marketandauction.model.api.cocoon.LotBasePriceFixationRequest;
+import com.sericulture.marketandauction.model.api.cocoon.PupaTestAndCocoonAssessmentRequest;
+import com.sericulture.marketandauction.model.api.marketauction.*;
+import com.sericulture.marketandauction.model.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -87,6 +85,76 @@ public class Mapper {
         log.info("Value of mapper is:",mapper, fLexTimeRequest);
         return (T) mapper.map(fLexTimeRequest, claaz);
     }
+
+    /**
+     * Maps lotGroupage Entity to lotGroupage Response Object
+     * @param lotGroupageEntity
+     * @param <T>
+     */
+    public <T> T lotGroupageEntityToObject(LotGroupage lotGroupageEntity, Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper,lotGroupageEntity);
+        return (T) mapper.map(lotGroupageEntity, claaz);
+    }
+
+
+    /**
+     * Maps lotGroupage Object to lotGroupage  Response Object
+     * @param lotGroupageRequest
+     * @param <T>
+     */
+    public <T> T lotGroupageObjectToEntity(LotGroupageRequest lotGroupageRequest , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, lotGroupageRequest);
+        return (T) mapper.map(lotGroupageRequest, claaz);
+    }
+
+
+    /**
+     * Maps lotGroupage Object to lotGroupage  Response Object
+     * @param lotGroupageRequestEdit
+     * @param <T>
+     */
+    public <T> T editLotGroupageObjectToEntity(LotGroupageRequestEdit lotGroupageRequestEdit , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, lotGroupageRequestEdit);
+        return (T) mapper.map(lotGroupageRequestEdit, claaz);
+
+
+    }
+
+    public void editLotGroupageObjectToEntity(LotGroupageRequestEdit lotGroupageRequestEdit, LotGroupage lotGroupage) {
+        // Assuming you have a mapping logic here to map fields from LotGroupageRequestEdit to LotGroupage
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Mapping lotGroupageRequestEdit to lotGroupage: {}", lotGroupageRequestEdit);
+        mapper.map(lotGroupageRequestEdit, lotGroupage);
+    }
+
+    public <T> T lotBasePriceFixationObjectToEntity(LotBasePriceFixationRequest lotBasePriceFixationRequest , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, lotBasePriceFixationRequest);
+        return (T) mapper.map(lotBasePriceFixationRequest, claaz);
+    }
+
+    public <T> T lotBasePriceFixationEntityToObject(LotBasePriceFixation lotBasePriceFixation , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, lotBasePriceFixation);
+        return (T) mapper.map(lotBasePriceFixation, claaz);
+    }
+
+    public <T> T pupaTestAndCocoonAssessmentObjectToEntity(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, pupaTestAndCocoonAssessmentRequest);
+        return (T) mapper.map(pupaTestAndCocoonAssessmentRequest, claaz);
+    }
+
+    public <T> T pupaTestAndCocoonAssessmentEntityToObject(PupaTestAndCocoonAssessment pupaTestAndCocoonAssessment , Class<T> claaz) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        log.info("Value of mapper is:",mapper, pupaTestAndCocoonAssessment);
+        return (T) mapper.map(pupaTestAndCocoonAssessment, claaz);
+    }
+
+
 
 
 }

@@ -11,4 +11,6 @@ import lombok.*;
 public class ReelerBalanceRequest extends RequestBody {
 
     private int reelerId;
+
+    private int traderLicenseId;
 }
