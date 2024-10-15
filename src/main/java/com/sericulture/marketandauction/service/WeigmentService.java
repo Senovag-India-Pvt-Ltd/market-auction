@@ -249,9 +249,9 @@ public class WeigmentService {
         ResponseWrapper rw = ResponseWrapper.createWrapper(CanContinueToWeighmentResponse.class);
         CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
         LotWeightResponse lotWeightResponse = getLotWeightResponseForSeedMarket(canContinueToWeighmentRequest);
-        if (lotWeightResponse.getLotStatus() != null && !lotWeightResponse.getLotStatus().isEmpty()) {
-            return marketAuctionHelper.retrunIfError(rw,  lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
-        }
+//        if (lotWeightResponse.getLotStatus() != null && !lotWeightResponse.getLotStatus().isEmpty()) {
+//            return marketAuctionHelper.retrunIfError(rw,  lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
+//        }
 //        if (!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())) {
 //            return marketAuctionHelper.retrunIfError(rw, "Lot is accepted. But " + lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
 //            //return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
@@ -309,9 +309,9 @@ public class WeigmentService {
 
             // Removed the check for lot status being accepted
             // Validate that the lot's status is null
-            if (lot.getStatus() != null) {
-                throw new ValidationException(String.format("Weighment not allowed. Lot status is '%s' for lot ID '%s'", lot.getStatus(), lot.getAllottedLotId()));
-            }
+//            if (lot.getStatus() != null) {
+//                throw new ValidationException(String.format("Weighment not allowed. Lot status is '%s' for lot ID '%s'", lot.getStatus(), lot.getAllottedLotId()));
+//            }
 
             // Continue with the weighment process
             float totalWeightOfAllottedLot = 0;
