@@ -18,4 +18,7 @@ public class UnitCounterReportResponse {
     private int bidAmount;
     private double farmerMarketFee;
     private double reelerMarketFee;
+    private String traderLicenseNumber;
+    private String traderName;
+
 }

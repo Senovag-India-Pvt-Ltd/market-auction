@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public class DTROnlineReportRequest extends RequestBody {
     private int reelerId;
+    private int traderLicenseId;
     private LocalDate fromDate;
     private LocalDate toDate;
 }
