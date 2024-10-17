@@ -124,27 +124,99 @@ public class LotGroupageService {
     public List<LotDistributeResponse> getLotDistributeResponseForSeedMarket(LotStatusSeedMarketRequest lotStatusRequest) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         Query nativeQuery = entityManager.createNativeQuery("""
-            select  f.farmer_number, f.fruits_id, f.first_name, f.middle_name, f.last_name,
-            ma.RACE_MASTER_ID, v.VILLAGE_NAME, mm.market_name, rm.race_name, sm.source_name, mm.box_weight, l.status,
-            lg.lot_groupage_id, lg.buyer_id, lg.buyer_type, lg.lot_weight, lg.amount, lg.market_fee, lg.sold_amount,
-            case
-                 when lg.buyer_type = 'Reeler' then r.name
-                 when lg.buyer_type = 'ExternalStakeHolders' then es.name
-                 else null
-            end as buyer_name
-            from FARMER f
-            INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID
-            INNER JOIN lot l ON l.market_auction_id = ma.market_auction_id
-            LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1
-            LEFT JOIN Village v ON fa.Village_ID = v.village_id and f.ACTIVE = 1
-            LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id
-            LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID
-            LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
-            LEFT JOIN lot_groupage lg ON l.lot_id = lg.lot_id
-            LEFT JOIN reeler r ON lg.buyer_id = r.reeler_id and lg.buyer_type = 'Reeler'
-            LEFT JOIN external_unit_registration es ON lg.buyer_id = es.external_unit_registration_id and lg.buyer_type = 'ExternalStakeHolders'
-            where l.allotted_lot_id = ? and l.auction_date = ? and l.market_id = ?
-            and f.ACTIVE = 1 and ma.active = 1""");
+                WITH PrimaryAddress AS (
+                    SELECT
+                     fa.farmer_id,
+                     fa.STATE_ID,
+                     fa.DISTRICT_ID,
+                     fa.TALUK_ID,
+                     fa.HOBLI_ID,
+                     fa.VILLAGE_ID,
+                     ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
+                 FROM
+                     farmer_address fa
+                 WHERE
+                     fa.active = 1
+             )
+             SELECT\s
+                 f.farmer_number,
+                 f.fruits_id,
+                 f.first_name,
+                 f.middle_name,
+                 f.last_name,
+                 ma.RACE_MASTER_ID,
+                 v.VILLAGE_NAME,
+                 mm.market_name,
+                 rm.race_name,
+                 sm.source_name,
+                 mm.box_weight,
+                 l.status,
+                 lg.lot_groupage_id,
+                 lg.buyer_id,
+                 lg.buyer_type,
+                 lg.lot_weight,
+                 lg.amount,
+                 lg.market_fee,
+                 lg.sold_amount,
+                 l.LOT_WEIGHT_AFTER_WEIGHMENT,
+                 ma.dfl_lot_number,
+                 ma.lot_variety,
+                 ma.lot_Parental_Level,
+                 ma.estimated_weight,
+                 lbpf.PRICE_PER_KG,
+                 lbpf.FIXATION_DATE,
+                 ptaca.TEST_DATE,
+                 ptaca.NO_OF_COCOON_TAKEN_FOR_EXAMINATION,
+                 ptaca.NO_OF_DFL_FROM_FC,
+                 ptaca.DISEASE_FREE,
+                 ptaca.DISEASE_TYPE,
+                 ptaca.NO_OF_COCOON_PER_KG,
+                 ptaca.MELT_PERCENTAGE,
+                 ptaca.pupa_cocoon_status,
+                 ptaca.PUPA_TEST_RESULT,
+                 ma.market_auction_date,
+                 l.allotted_lot_id,
+                 CASE
+                     WHEN lg.buyer_type = 'RSP' THEN es.license_number
+                     WHEN lg.buyer_type = 'NSSO' THEN es.address
+                     WHEN lg.buyer_type = 'Govt Grainage' THEN es.address
+                     WHEN lg.buyer_type = 'Reeling' THEN r.name
+                     ELSE NULL
+                 END AS buyer_name
+             FROM
+                 FARMER f
+             INNER JOIN
+                 market_auction ma ON ma.farmer_id = f.FARMER_ID
+             INNER JOIN
+                 lot l ON l.market_auction_id = ma.market_auction_id
+             LEFT JOIN
+                 PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
+             LEFT JOIN
+                 Village v ON pa.VILLAGE_ID = v.village_id AND f.ACTIVE = 1
+             LEFT JOIN
+                 market_master mm ON mm.market_master_id = ma.market_id
+             LEFT JOIN
+                 race_master rm ON rm.race_id = ma.lot_variety
+             LEFT JOIN
+                 source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
+             LEFT JOIN
+                 lot_groupage lg ON l.lot_id = lg.lot_id
+             LEFT JOIN
+                 PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
+             LEFT JOIN LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id AND lbpf.FIXATION_DATE = ma.market_auction_date
+             LEFT JOIN
+                 reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
+             LEFT JOIN
+                 external_unit_registration es ON lg.buyer_id = es.external_unit_registration_id
+                 AND lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage')
+                WHERE
+                    l.allotted_lot_id = ?
+                    AND l.auction_date = ?
+                    AND l.market_id = ?
+                    AND f.ACTIVE = 1
+                    AND ma.active = 1
+                    AND l.status = 'weighmentcompleted';
+                """);
 
         nativeQuery.setParameter(1, lotStatusRequest.getAllottedLotId());
         nativeQuery.setParameter(2, lotStatusRequest.getAuctionDate());
@@ -179,7 +251,23 @@ public class LotGroupageService {
                     .amount(Util.objectToLong(lotWeightDetails[16]))
                     .marketFee(Util.objectToLong(lotWeightDetails[17]))
                     .soldAmount(Util.objectToLong(lotWeightDetails[18]))
-                    .buyerName(Util.objectToString(lotWeightDetails[19]))
+                    .netWeight(Util.objectToString(lotWeightDetails[19]))
+                    .dflLotNumber(Util.objectToString(lotWeightDetails[20]))
+                    .raceMasterId(Util.objectToInteger(lotWeightDetails[21]))
+                    .lotParentLevel(Util.objectToString(lotWeightDetails[22]))
+                    .initialWeighment(Util.objectToLong(lotWeightDetails[23]))
+                    .price(Util.objectToString(lotWeightDetails[24]))
+                    .fixationDate(Util.objectToString(lotWeightDetails[25]))
+                    .testDate(Util.objectToString(lotWeightDetails[26]))
+                    .noOfCocoonTakenForExamination(Util.objectToLong(lotWeightDetails[27]))
+                    .noOfDFLFromFc(Util.objectToLong(lotWeightDetails[28]))
+                    .noOfCocoonPerKg(Util.objectToLong(lotWeightDetails[31]))
+                    .meltPercentage(Util.objectToString(lotWeightDetails[32]))
+                    .pupaCocoonStatus(Util.objectToString(lotWeightDetails[33]))
+                    .noOfCocoonExamined(Util.objectToString(lotWeightDetails[34]))
+                    .marketAuctionDate(Util.objectToString(lotWeightDetails[35]))
+                    .allottedLotId(Util.objectToInteger(lotWeightDetails[36]))
+                    .buyerName(Util.objectToString(lotWeightDetails[37]))
                     .build();
             responses.add(lotDistributeResponse);
         }
