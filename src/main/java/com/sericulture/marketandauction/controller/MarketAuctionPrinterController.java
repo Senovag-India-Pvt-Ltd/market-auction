@@ -22,4 +22,9 @@ public class MarketAuctionPrinterController {
     public ResponseEntity<?> getPrintableDataForLotForSeedCocoon(@RequestBody MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
         return marketAuctionPrinterService.getPrintableDataForLotForSeedCocoon(marketAuctionForPrintRequest);
     }
+
+    @PostMapping("/getPrintableDataForLotForSilk")
+    public ResponseEntity<?> getPrintableDataForLotForSilk(@RequestBody MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+        return marketAuctionPrinterService.getPrintableDataForLotForSilk(marketAuctionForPrintRequest);
+    }
 }

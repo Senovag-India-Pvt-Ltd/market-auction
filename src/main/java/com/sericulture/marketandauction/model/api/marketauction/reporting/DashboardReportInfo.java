@@ -13,6 +13,7 @@ public class DashboardReportInfo {
     private String totalLotsNotBid;
     private String totalBids;
     private String totalReelers;
+    private String totalTraders;
     private String currentAuctionMaxBid;
     private String accecptedLots;
     private String accecptedLotsMaxBid;

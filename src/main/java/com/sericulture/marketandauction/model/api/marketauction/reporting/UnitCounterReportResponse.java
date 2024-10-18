@@ -17,5 +17,9 @@ public class UnitCounterReportResponse {
     private float lotSoldOutAmount;
     private int bidAmount;
     private double farmerMarketFee;
+    private double traderMarketFee;
     private double reelerMarketFee;
+    private String traderLicenseNumber;
+    private String traderName;
+
 }

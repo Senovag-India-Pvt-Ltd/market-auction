@@ -575,6 +575,343 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 //        rw.setContent(unitCounterReportResponses);
 //        return ResponseEntity.ok(rw);
 //    }
+
+
+    private void prepareDTROnlineInfoForBlankReportForSilkType(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
+
+        Long minAmount = Long.MAX_VALUE;
+        Long maxAmount = Long.MIN_VALUE;
+        Float totalLotSoldOutAmount = 0.0f;
+        Float totalWeight = 0.0f;
+        DecimalFormat decimalFormat = new DecimalFormat("#.000"); // Define the format for 3 decimal places
+
+        for (Object[] unit : queryResponse) {
+            DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
+                    .serialNumber(Util.objectToInteger(unit[0]))
+                    .allottedLotId(Util.objectToInteger(unit[1]))
+                    .farmerFirstName(Util.objectToString(unit[2]))
+                    .farmerMiddleName(Util.objectToString(unit[3]))
+                    .farmerLastName(Util.objectToString(unit[4]))
+                    .farmerNumber(Util.objectToString(unit[5]))
+                    .farmerMobileNumber(Util.objectToString(unit[6]))
+                    .weight(Util.objectToFloat(unit[7]))
+                    .bidAmount(Util.objectToInteger(unit[8]))
+//                .lotSoldOutAmount(Util.objectToFloat(unit[9]))
+//                .farmerMarketFee(Util.objectToFloat(unit[10]))
+//                .reelerMarketFee(Util.objectToFloat(unit[11]))
+                    .lotSoldOutAmount(Math.round(Util.objectToFloat(unit[9]) * 100.0f) / 100.0f)
+                    .traderMarketFee(Math.round(Util.objectToFloat(unit[10]) * 100.0f) / 100.0f)
+                    .reelerMarketFee(Math.round(Util.objectToFloat(unit[11]) * 100.0f)/100.0f)
+                    .reelerLicense(Util.objectToString(unit[12]))
+                    .reelerName(Util.objectToString(unit[13]))
+                    .reelerMobile(Util.objectToString(unit[14]))
+                    .reelerAddress(Util.objectToString(unit[15]))
+                    .reelerBankName(Util.objectToString(unit[16]))
+                    .reelerBranchName(Util.objectToString(unit[17]))
+                    .reelerIfscCode(Util.objectToString(unit[18]))
+                    .reelerNumber(Util.objectToString(unit[19]))
+                    .traderFirstName(Util.objectToString(unit[20]))
+                    .traderMiddleName(Util.objectToString(unit[21]))
+                    .traderLastName(Util.objectToString(unit[22]))
+                    .traderFatherName(Util.objectToString(unit[23]))
+                    .traderAddress(Util.objectToString(unit[24]))
+                    .traderSilkType(Util.objectToString(unit[25]))
+                    .traderLicenseFee(Math.round(Util.objectToFloat(unit[26]) * 100.0f) / 100.0f)
+                    .traderMobileNumber(Util.objectToString(unit[27]))
+                    .traderArnNumber(Util.objectToString(unit[28]))
+                    .traderLicenseNumber(Util.objectToString(unit[29]))
+                    .traderStateNameInKannada(Util.objectToString(unit[30]))
+                    .traderDistrictNameInKannada(Util.objectToString(unit[31]))
+                    .traderApplicationNumber(Util.objectToString(unit[32]))
+                    .traderLicenseChallanNumber(Util.objectToString(unit[33]))
+                    .bankName(Util.objectToString(unit[34]))
+                    .branchName(Util.objectToString(unit[35]))
+                    .ifscCode(Util.objectToString(unit[36]))
+                    .accountNumber(Util.objectToString(unit[37]))
+                    .farmerAddress(Util.objectToString(unit[38]))
+                    .auctionDate(((java.sql.Date) unit[39]).toLocalDate())
+                    .farmerTaluk(Util.objectToString(unit[40]))
+                    .farmerVillage(Util.objectToString(unit[41]))
+                    .raceName(Util.objectToString(unit[42]))
+                    .cocoonAge(Util.objectToLong(unit[43]))
+                    .farmerNameKannada(Util.objectToString(unit[44]))
+                    .fatherNameKannada(Util.objectToString(unit[45]))
+                    .talukNameInKannada(Util.objectToString(unit[46]))
+                    .villageNameInKannada(Util.objectToString(unit[47]))
+                    .minAmount(Util.objectToLong(unit[48]))
+                    .maxAmount(Util.objectToLong(unit[49]))
+                    .avgAmount(Math.round(Util.objectToFloat(unit[50])))
+                    .build();
+            // Calculate ReelerAmount and FarmerAmount with two decimal precision
+            dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportUnitDetail.setFarmerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round((dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round((dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderLicenseFee(Math.round((dtrOnlineReportResponse.getTotalTraderLicenseFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalFarmerAmount(Math.round((dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalReelerAmount(Math.round((dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round((dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
+//        dtrOnlineReportUnitDetail.setReelerAmount(Math.round(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()));
+//        dtrOnlineReportUnitDetail.setFarmerAmount(Math.round(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()));
+//        dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()));
+//        dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()));
+//        dtrOnlineReportResponse.setTotalFarmerAmount(Math.round(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()));
+//        dtrOnlineReportResponse.setTotalReelerAmount(Math.round(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()));
+//        dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()));
+            dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
+
+            // Update min and max amounts
+            if (dtrOnlineReportUnitDetail.getMaxAmount() != null) {
+                maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
+            }
+            if (dtrOnlineReportUnitDetail.getMinAmount() != null && dtrOnlineReportUnitDetail.getMinAmount() != 0 ) {
+                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+            }
+
+            // Accumulate total values regardless of min/max amount
+            totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+            totalWeight += dtrOnlineReportUnitDetail.getWeight();
+        }
+
+        // Set the min, max, and avg amount
+        dtrOnlineReportResponse.setMinAmount(minAmount.equals(Long.MAX_VALUE) ? null : minAmount);
+        dtrOnlineReportResponse.setMaxAmount(maxAmount.equals(Long.MIN_VALUE) ? null : maxAmount);
+
+        // Calculate average amount based on totalLotSoldOutAmount and totalWeight
+        if (totalWeight > 0) {
+            dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
+        } else {
+            dtrOnlineReportResponse.setAvgAmount(0.0f);
+        }
+
+        dtrOnlineReportResponse.setTotalLots(queryResponse.size());
+    }
+
+
+    private void prepareDTROnlineInfoSilkType(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
+
+
+        Long minAmount = Long.MAX_VALUE;
+        Long maxAmount = Long.MIN_VALUE;
+        Float totalLotSoldOutAmount = 0.0f;
+        Float totalWeight = 0.0f;
+//        int totalLots = 0;
+
+
+        for (Object[] unit : queryResponse) {
+            DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
+                    .serialNumber(Util.objectToInteger(unit[0]))
+                    .allottedLotId(Util.objectToInteger(unit[1]))
+                    .farmerFirstName(Util.objectToString(unit[2]))
+                    .farmerMiddleName(Util.objectToString(unit[3]))
+                    .farmerLastName(Util.objectToString(unit[4]))
+                    .farmerNumber(Util.objectToString(unit[5]))
+                    .farmerMobileNumber(Util.objectToString(unit[6]))
+                    .weight(Util.objectToFloat(unit[7]))
+                    .bidAmount(Util.objectToInteger(unit[8]))
+//                .lotSoldOutAmount(Util.objectToFloat(unit[9]))
+//                .farmerMarketFee(Util.objectToFloat(unit[10]))
+//                .reelerMarketFee(Util.objectToFloat(unit[11]))
+                    .lotSoldOutAmount(Math.round(Util.objectToFloat(unit[9]) * 100.0f) / 100.0f)
+                    .traderMarketFee(Math.round(Util.objectToFloat(unit[10]) * 100.0f) / 100.0f)
+                    .reelerMarketFee(Math.round(Util.objectToFloat(unit[11]) * 100.0f)/100.0f)
+                    .reelerLicense(Util.objectToString(unit[12]))
+                    .reelerName(Util.objectToString(unit[13]))
+                    .reelerMobile(Util.objectToString(unit[14]))
+                    .reelerAddress(Util.objectToString(unit[15]))
+                    .reelerBankName(Util.objectToString(unit[16]))
+                    .reelerBranchName(Util.objectToString(unit[17]))
+                    .reelerIfscCode(Util.objectToString(unit[18]))
+                    .reelerNumber(Util.objectToString(unit[19]))
+                    .traderFirstName(Util.objectToString(unit[20]))
+                    .traderMiddleName(Util.objectToString(unit[21]))
+                    .traderLastName(Util.objectToString(unit[22]))
+                    .traderFatherName(Util.objectToString(unit[23]))
+                    .traderAddress(Util.objectToString(unit[24]))
+                    .traderSilkType(Util.objectToString(unit[25]))
+                    .traderLicenseFee(Math.round(Util.objectToFloat(unit[26]) * 100.0f) / 100.0f)
+                    .traderMobileNumber(Util.objectToString(unit[27]))
+                    .traderArnNumber(Util.objectToString(unit[28]))
+                    .traderLicenseNumber(Util.objectToString(unit[29]))
+                    .traderStateNameInKannada(Util.objectToString(unit[30]))
+                    .traderDistrictNameInKannada(Util.objectToString(unit[31]))
+                    .traderApplicationNumber(Util.objectToString(unit[32]))
+                    .traderLicenseChallanNumber(Util.objectToString(unit[33]))
+                    .bankName(Util.objectToString(unit[34]))
+                    .branchName(Util.objectToString(unit[35]))
+                    .ifscCode(Util.objectToString(unit[36]))
+                    .accountNumber(Util.objectToString(unit[37]))
+                    .farmerAddress(Util.objectToString(unit[38]))
+                    .auctionDate(((java.sql.Date) unit[39]).toLocalDate())
+                    .farmerTaluk(Util.objectToString(unit[40]))
+                    .farmerVillage(Util.objectToString(unit[41]))
+                    .raceName(Util.objectToString(unit[42]))
+                    .cocoonAge(Util.objectToLong(unit[43]))
+                    .farmerNameKannada(Util.objectToString(unit[44]))
+                    .fatherNameKannada(Util.objectToString(unit[45]))
+                    .talukNameInKannada(Util.objectToString(unit[46]))
+                    .villageNameInKannada(Util.objectToString(unit[47]))
+                    .minAmount(Util.objectToLong(unit[48]))
+                    .maxAmount(Util.objectToLong(unit[49]))
+                    .avgAmount(Math.round(Util.objectToFloat(unit[50])))
+                    .build();
+            dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportUnitDetail.setFarmerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round((dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round((dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderLicenseFee(Math.round((dtrOnlineReportResponse.getTotalTraderLicenseFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalFarmerAmount(Math.round((dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalReelerAmount(Math.round((dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round((dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
+//            dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+//            dtrOnlineReportUnitDetail.setFarmerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee());
+//
+//            dtrOnlineReportResponse.setTotalFarmerMarketFee(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee());
+//            dtrOnlineReportResponse.setTotalReelerMarketFee(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee());
+//            dtrOnlineReportResponse.setTotalFarmerAmount(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount());
+//            dtrOnlineReportResponse.setTotalReelerAmount(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount());
+//            dtrOnlineReportResponse.setTotallotSoldOutAmount(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount());
+//            dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
+//            dtrOnlineReportUnitDetail.setReelerAmount(Math.round(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()));
+//            dtrOnlineReportUnitDetail.setFarmerAmount(Math.round(dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()));
+//            dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round(dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()));
+//            dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round(dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()));
+//            dtrOnlineReportResponse.setTotalFarmerAmount(Math.round(dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()));
+//            dtrOnlineReportResponse.setTotalReelerAmount(Math.round(dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()));
+//            dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round(dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()));
+            dtrOnlineReportResponse.getDtrOnlineReportUnitDetailList().add(dtrOnlineReportUnitDetail);
+
+//            if (dtrOnlineReportUnitDetail.getMinAmount() != null) {
+//                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+//                maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
+//                totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+//                totalWeight += dtrOnlineReportUnitDetail.getWeight();
+////                totalLots++;
+//            }
+//        }
+//
+////        dtrOnlineReportResponse.setTotalLots(totalLots);
+//
+//        if (totalWeight > 0) {
+//            dtrOnlineReportResponse.setMinAmount(minAmount);
+//            dtrOnlineReportResponse.setMaxAmount(maxAmount);
+//            dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
+//        } else {
+//            dtrOnlineReportResponse.setMinAmount(null);
+//            dtrOnlineReportResponse.setMaxAmount(null);
+//            dtrOnlineReportResponse.setAvgAmount(0.0f);
+//        }
+            // Update min and max amounts
+            if (dtrOnlineReportUnitDetail.getMaxAmount() != null) {
+                maxAmount = Math.max(maxAmount, dtrOnlineReportUnitDetail.getMaxAmount());
+            }
+            if (dtrOnlineReportUnitDetail.getMinAmount() != null && dtrOnlineReportUnitDetail.getMinAmount() != 0 ) {
+                minAmount = Math.min(minAmount, dtrOnlineReportUnitDetail.getMinAmount());
+            }
+
+            // Accumulate total values regardless of min/max amount
+            totalLotSoldOutAmount += dtrOnlineReportUnitDetail.getLotSoldOutAmount();
+            totalWeight += dtrOnlineReportUnitDetail.getWeight();
+        }
+
+        // Set the min, max, and avg amount
+        dtrOnlineReportResponse.setMinAmount(minAmount.equals(Long.MAX_VALUE) ? null : minAmount);
+        dtrOnlineReportResponse.setMaxAmount(maxAmount.equals(Long.MIN_VALUE) ? null : maxAmount);
+
+        // Calculate average amount based on totalLotSoldOutAmount and totalWeight
+        if (totalWeight > 0) {
+            dtrOnlineReportResponse.setAvgAmount(totalLotSoldOutAmount / totalWeight);
+        } else {
+            dtrOnlineReportResponse.setAvgAmount(0.0f);
+        }
+
+        dtrOnlineReportResponse.setTotalLots(queryResponse.size());
+    }
+
+
+    public ResponseEntity<?> getDTROnlineReportForSilkType(DTROnlineReportRequest dtrOnlineReportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<Integer> traderLicenseList = null;
+        if (dtrOnlineReportRequest.getTraderLicenseNumber() > 0) {
+            traderLicenseList = List.of(dtrOnlineReportRequest.getTraderLicenseNumber());
+        }
+        List<Object[]> reportPaymentSuccessResponse = lotRepository.
+                getPaymentSuccessLotsSilk(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), traderLicenseList);
+
+        MarketMaster marketMaster = marketMasterRepository.findById(dtrOnlineReportRequest.getMarketId());
+        List<Object[]> reportResponse;
+        if(marketMaster.getPaymentMode().equals("cash")){
+            reportResponse = lotRepository.
+                    getDTROnlineReportForCashSilk(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), traderLicenseList);
+        }else{
+            reportResponse = lotRepository.
+                    getDTROnlineReportSilk(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), traderLicenseList);
+        }
+
+        DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
+        if(reportResponse.size()>0) {
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+        }
+        prepareDTROnlineInfoSilkType(dtrOnlineReportResponse, reportResponse);
+        if(reportPaymentSuccessResponse.size()>0) {
+            dtrOnlineReportResponse.setPaymentSuccessLots(Util.objectToInteger(reportPaymentSuccessResponse.get(0)[0]));
+        }
+
+        // Set totalLots and calculate notTransactedLots
+        int totalLots = dtrOnlineReportResponse.getTotalLots();
+        int paymentSuccessLots = dtrOnlineReportResponse.getPaymentSuccessLots();
+        int notTransactedLots = totalLots - paymentSuccessLots;
+
+        dtrOnlineReportResponse.setTotalLots(totalLots);
+        dtrOnlineReportResponse.setNotTransactedLots(notTransactedLots);
+
+
+
+        rw.setContent(dtrOnlineReportResponse);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getBlankDTROnlineReportForSilkType(DTROnlineReportRequest dtrOnlineReportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<Integer> traderLicenseList = null;
+        if (dtrOnlineReportRequest.getTraderLicenseNumber() > 0) {
+            traderLicenseList = List.of(dtrOnlineReportRequest.getTraderLicenseNumber());
+        }
+        List<Object[]> reportPaymentSuccessResponse = lotRepository.
+                getPaymentSuccessLotsForBlankReportSilk(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), traderLicenseList);
+
+        MarketMaster marketMaster = marketMasterRepository.findById(dtrOnlineReportRequest.getMarketId());
+        List<Object[]> reportResponse;
+        if(marketMaster.getPaymentMode().equals("cash")){
+            reportResponse = lotRepository.
+                    getDTROnlineReportForCashForBlankReportSilk(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), traderLicenseList);
+        }else{
+            reportResponse = lotRepository.
+                    getBlankReportSilk(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), traderLicenseList);
+        }
+
+        DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
+        if(reportResponse.size()>0) {
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+        }
+        prepareDTROnlineInfoForBlankReportForSilkType(dtrOnlineReportResponse, reportResponse);
+        if(reportPaymentSuccessResponse.size()>0) {
+            dtrOnlineReportResponse.setPaymentSuccessLots(Util.objectToInteger(reportPaymentSuccessResponse.get(0)[0]));
+        }
+
+        // Set totalLots and calculate notTransactedLots
+        int totalLots = dtrOnlineReportResponse.getTotalLots();
+        int paymentSuccessLots = dtrOnlineReportResponse.getPaymentSuccessLots();
+        int notTransactedLots = totalLots - paymentSuccessLots;
+
+        dtrOnlineReportResponse.setTotalLots(totalLots);
+        dtrOnlineReportResponse.setNotTransactedLots(notTransactedLots);
+
+        rw.setContent(dtrOnlineReportResponse);
+        return ResponseEntity.ok(rw);
+    }
 public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
     List<UnitCounterReportResponse> unitCounterReportResponses = new ArrayList<>();
     ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -659,6 +996,48 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
         return ResponseEntity.ok(rw);
     }
 
+
+    public ResponseEntity<?> getUnitCounterReportSilkType(ReportRequest reportRequest) {
+        List<UnitCounterReportResponse> unitCounterReportResponses = new ArrayList<>();
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> resultSet;
+
+        // Check if reelerNumber is provided
+        if (reportRequest.getTraderLicenseNumber() == null || reportRequest.getTraderLicenseNumber().isEmpty()) {
+            // Fetch based on other parameters if reelerNumber is not provided
+            resultSet = reelerAuctionRepository.getUnitCounterReportWithoutReelerNumberSilk(
+                    reportRequest.getFromDate(), reportRequest.getToDate(),
+                    reportRequest.getMarketId());
+        } else {
+            // Fetch data for the specific reelerNumber if provided
+            resultSet = reelerAuctionRepository.getUnitCounterReportSilk(
+                    reportRequest.getFromDate(), reportRequest.getToDate(),
+                    reportRequest.getMarketId(), reportRequest.getTraderLicenseNumber());
+        }
+
+        if (Util.isNullOrEmptyList(resultSet)) {
+            marketAuctionHelper.retrunIfError(rw, "No data found");
+            return ResponseEntity.ok(rw);  // Ensure response is returned if no data is found
+        }
+
+        for (Object[] row : resultSet) {
+            UnitCounterReportResponse unitCounterReportResponse = UnitCounterReportResponse.builder()
+                    .allottedLotId(Util.objectToInteger(row[0]))
+                    .lotTransactionDate(Util.objectToString(row[1]))
+                    .weight(Util.objectToFloat(row[2]))
+                    .bidAmount(Util.objectToInteger(row[3]))
+                    .lotSoldOutAmount(Util.objectToFloat(row[4]))
+                    .traderMarketFee(Util.objectToFloat(row[5]))
+                    .reelerMarketFee(Util.objectToFloat(row[6]))
+                    .traderLicenseNumber(Util.objectToString(row[7]))
+                    .traderName(Util.objectToString(row[8])).build();
+            unitCounterReportResponses.add(unitCounterReportResponse);
+        }
+
+        rw.setContent(unitCounterReportResponses);
+        return ResponseEntity.ok(rw);
+    }
 
     public ResponseEntity<?> getPendingLotReport(ReportRequest requestBody) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -1536,6 +1915,137 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
 
     }*/
 
+    public ResponseEntity<?> getForm13ReportByDistrictSilkType(Form13Request requestBody) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> avgResponse = lotRepository.getAvgLotStatusByDistSilk(requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+
+        List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusByDistSilk(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatusByDistSilk(requestBody.getMarketId(), requestBody.getFromDate(),requestBody.getToDate(),requestBody.getDistrictId());
+
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusByDistSilk(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(),requestBody.getDistrictId());
+
+        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusByDistSilk(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId(),requestBody.getRaceId());
+
+        List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
+
+        float totalWeight = 0.0F;
+
+        if(Util.isNullOrEmptyList(totalLotStatusResponse))
+        {
+            throw new ValidationException("No data found");
+        }
+        Form13Response form13Response = new Form13Response();
+        form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[1]));
+        form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
+
+        List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
+        form13Response.setTotalLotStatus(totalLotStatus);
+        totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[2]);
+
+        List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
+        form13Response.setStateWiseLotStatus(stateWiseLotStatus);
+
+        List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
+        form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
+
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroupRaceReport(raceWiseLotStatusResponse, "");
+        form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
+
+        Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");
+        Form13TotalResponse genderWiseTotalValues = calculateTotalValues(genderWiseLotStatus,"Gender Total");
+        Form13TotalResponse raceWiseTotalValues = calculateTotalValues(raceWiseLotStatus,"Race Total");
+
+// Set the total values in the response object
+        form13Response.setTotalStatus(Arrays.asList(stateWiseTotalValues, genderWiseTotalValues, raceWiseTotalValues));
+
+
+        List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
+
+        List<Object[]> lotBetween1to100Response = lotRepository.getLotBreakDownStatusByDistSilk(1, 100,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList1to100 = prepareBreakdown13Report(lotBetween1to100Response, 000, 100, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList1to100);
+
+        List<Object[]> lotBetween101to150Response = lotRepository.getLotBreakDownStatusByDistSilk(101, 150,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList101to150 = prepareBreakdown13Report(lotBetween101to150Response, 101, 150, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList101to150);
+
+        List<Object[]> lotBetween150to200Response = lotRepository.getLotBreakDownStatusByDistSilk(151, 200,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList150to200 = prepareBreakdown13Report(lotBetween150to200Response, 150, 200, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList150to200);
+
+        List<Object[]> lotBetween201to250Response = lotRepository.getLotBreakDownStatusByDistSilk(201, 250,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList201to250 = prepareBreakdown13Report(lotBetween201to250Response, 201, 250, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList201to250);
+
+        List<Object[]> lotBetween250to300Response = lotRepository.getLotBreakDownStatusByDistSilk(251, 300,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList250to300 = prepareBreakdown13Report(lotBetween250to300Response, 250, 300, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList250to300);
+
+        List<Object[]> lotBetween301to350Response = lotRepository.getLotBreakDownStatusByDistSilk(301, 350,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList301to350 = prepareBreakdown13Report(lotBetween301to350Response, 301, 350, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList301to350);
+
+        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), 350, requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
+        lotsFrom0to351.add(breakdownLotStatusList350Above);
+
+        BreakDownLotStatusTotalResponse totalDetails0to351 = calculateTotal0To351Values(lotsFrom0to351,"Total");
+        form13Response.setLotsFrom0to351(lotsFrom0to351);
+
+        form13Response.setLotsFrom0to351Total(Arrays.asList(totalDetails0to351));
+
+        List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
+
+        List<Object[]> lotBetween201to210Response = lotRepository.getLotBreakDownStatusByDistSilk(201, 210,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList201to210 = prepareBreakdown13Report(lotBetween201to210Response, 201, 210, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList201to210);
+
+        List<Object[]> lotBetween211to220Response = lotRepository.getLotBreakDownStatusByDistSilk(211, 220,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList211to220 = prepareBreakdown13Report(lotBetween211to220Response, 211, 220, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList211to220);
+
+        List<Object[]> lotBetween221to230Response = lotRepository.getLotBreakDownStatusByDistSilk(221, 230,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList221to230 = prepareBreakdown13Report(lotBetween221to230Response, 221, 230, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList221to230);
+
+        List<Object[]> lotBetween231to240Response = lotRepository.getLotBreakDownStatusByDistSilk(231, 240,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList231to240 = prepareBreakdown13Report(lotBetween231to240Response, 231, 240, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList231to240);
+
+        List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatusByDistSilk(241, 250,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(),  requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList241to250);
+
+        List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatusByDistSilk(251, 275,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList251to275 = prepareBreakdown13Report(lotBetween251to275Response, 251, 275, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList251to275);
+
+        List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatusByDistSilk(276, 300,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), requestBody.getDistrictId());
+        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList276to300);
+
+        form13Response.setLotsFrom201to300(lotsFrom210to300);
+
+        List<BreakdownLotStatus> averageLots = new ArrayList<>();
+
+        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatusByDistSilk( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[1]), requestBody.getDistrictId());
+        BreakdownLotStatus lotlesserThanAverage = prepareBreakdown13Report(lotlesserThanAverageResponse, 301, 350, totalWeight, "Lots less than average");
+        averageLots.add(lotlesserThanAverage);
+
+        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatusByDistSilk( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[1]), requestBody.getDistrictId());
+        BreakdownLotStatus lotGreaterThanAverage = prepareBreakdown13Report(lotGreaterThanAverageResponse, 301, 350, totalWeight, "Lots more than average");
+        averageLots.add(lotGreaterThanAverage);
+
+        form13Response.setAverageLotStatus(averageLots);
+
+        rw.setContent(form13Response);
+        return ResponseEntity.ok(rw);
+
+    }
+
     public ResponseEntity<?> getDashboardReport(DashboardReportRequest dashboardReportRequest) {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -1622,6 +2132,231 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
         }
         return ResponseEntity.ok(rw);
     }
+
+
+    public ResponseEntity<?> getForm13ReportSilk(Form13Request requestBody) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> avgResponse = lotRepository.getAvgLotStatusSilk(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+
+        List<Object[]> totalLotStatusResponse = lotRepository.getTotalLotStatusSilk(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+
+        List<Object[]> stateWiseLotStatusResponse = lotRepository.getAllStateWiseLotStatusSilk(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+
+        List<Object[]> genderWiseLotStatusResponse = lotRepository.getGenderWiseLotStatusSilk(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+
+        List<Object[]> raceWiseLotStatusResponse = lotRepository.getRaceWiseStatusSilk(requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(),requestBody.getRaceId());
+
+        List<Object[]> marketResponse = lotRepository.getMarketName(requestBody.getMarketId());
+
+        List<Object[]> marketResponses = lotRepository.getRaceName(requestBody.getRaceId());
+
+        float totalWeight = 0.0F;
+
+        if(Util.isNullOrEmptyList(totalLotStatusResponse))
+        {
+            throw new ValidationException("No data found");
+        }
+        Form13Response form13Response = new Form13Response();
+        form13Response.setAverageRate(Util.objectToString(avgResponse.get(0)[1]));
+        form13Response.setMarketNameKannada(Util.objectToString(marketResponse.get(0)[1]));
+//        form13Response.setRaceName(Util.objectToString(marketResponses.get(0)[0]));
+
+        List<GroupLotStatus> totalLotStatus = prepareGroup13TotalDistrictReport(totalLotStatusResponse, "Reeler");
+        form13Response.setTotalLotStatus(totalLotStatus);
+        totalWeight = Util.objectToFloat(totalLotStatusResponse.get(0)[2]);
+
+        List<GroupLotStatus> stateWiseLotStatus = prepareGroupStateReport(stateWiseLotStatusResponse, "");
+        form13Response.setStateWiseLotStatus(stateWiseLotStatus);
+
+        List<GroupLotStatus> genderWiseLotStatus = prepareGroupGenderReport(genderWiseLotStatusResponse, "");
+        form13Response.setGenderWiseLotStatus(genderWiseLotStatus);
+
+        List<GroupLotStatus> raceWiseLotStatus = prepareGroupRaceReport(raceWiseLotStatusResponse, "");
+        form13Response.setRaceWiseLotStatus(raceWiseLotStatus);
+
+        Form13TotalResponse stateWiseTotalValues = calculateTotalValues(stateWiseLotStatus,"State Total");
+        Form13TotalResponse genderWiseTotalValues = calculateTotalValues(genderWiseLotStatus,"Gender Total");
+        Form13TotalResponse raceWiseTotalValues = calculateTotalValues(raceWiseLotStatus,"Race Total");
+
+
+// Set the total values in the response object
+        form13Response.setTotalStatus(Arrays.asList(stateWiseTotalValues, genderWiseTotalValues, raceWiseTotalValues));
+
+
+        List<BreakdownLotStatus> lotsFrom0to351 = new ArrayList<>();
+
+        List<Object[]> lotBetween1to100Response = lotRepository.getLotBreakDownStatusSilk(1, 100,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList1to100 = prepareBreakdown13Report(lotBetween1to100Response, 000, 100, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList1to100);
+
+        List<Object[]> lotBetween101to150Response = lotRepository.getLotBreakDownStatusSilk(101, 150,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList101to150 = prepareBreakdown13Report(lotBetween101to150Response, 101, 150, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList101to150);
+
+        List<Object[]> lotBetween150to200Response = lotRepository.getLotBreakDownStatusSilk(151, 200,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList150to200 = prepareBreakdown13Report(lotBetween150to200Response, 150, 200, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList150to200);
+
+        List<Object[]> lotBetween201to250Response = lotRepository.getLotBreakDownStatusSilk(201, 250,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList201to250 = prepareBreakdown13Report(lotBetween201to250Response, 201, 250, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList201to250);
+
+        List<Object[]> lotBetween250to300Response = lotRepository.getLotBreakDownStatusSilk(251, 300,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList250to300 = prepareBreakdown13Report(lotBetween250to300Response, 250, 300, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList250to300);
+
+        List<Object[]> lotBetween301to350Response = lotRepository.getLotBreakDownStatusSilk(301, 350,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList301to350 = prepareBreakdown13Report(lotBetween301to350Response, 301, 350, totalWeight, "");
+        lotsFrom0to351.add(breakdownLotStatusList301to350);
+
+        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatusSilk( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), 350);
+        BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
+        lotsFrom0to351.add(breakdownLotStatusList350Above);
+
+        BreakDownLotStatusTotalResponse totalDetails0to351 = calculateTotal0To351Values(lotsFrom0to351,"Total");
+        form13Response.setLotsFrom0to351(lotsFrom0to351);
+
+        form13Response.setLotsFrom0to351Total(Arrays.asList(totalDetails0to351));
+
+        List<BreakdownLotStatus> lotsFrom210to300 = new ArrayList<>();
+
+        List<Object[]> lotBetween201to210Response = lotRepository.getLotBreakDownStatusSilk(201, 210,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList201to210 = prepareBreakdown13Report(lotBetween201to210Response, 201, 210, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList201to210);
+
+        List<Object[]> lotBetween211to220Response = lotRepository.getLotBreakDownStatusSilk(211, 220,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList211to220 = prepareBreakdown13Report(lotBetween211to220Response, 211, 220, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList211to220);
+
+        List<Object[]> lotBetween221to230Response = lotRepository.getLotBreakDownStatusSilk(221, 230,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList221to230 = prepareBreakdown13Report(lotBetween221to230Response, 221, 230, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList221to230);
+
+        List<Object[]> lotBetween231to240Response = lotRepository.getLotBreakDownStatusSilk(231, 240,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList231to240 = prepareBreakdown13Report(lotBetween231to240Response, 231, 240, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList231to240);
+
+        List<Object[]> lotBetween241to250Response = lotRepository.getLotBreakDownStatusSilk(241, 250,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList241to250 = prepareBreakdown13Report(lotBetween241to250Response, 241, 250, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList241to250);
+
+        List<Object[]> lotBetween251to275Response = lotRepository.getLotBreakDownStatusSilk(251, 275,requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList251to275 = prepareBreakdown13Report(lotBetween251to275Response, 251, 275, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList251to275);
+
+        List<Object[]> lotBetween276to300Response = lotRepository.getLotBreakDownStatusSilk(276, 300,requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate());
+        BreakdownLotStatus breakdownLotStatusList276to300 = prepareBreakdown13Report(lotBetween276to300Response, 276, 300, totalWeight, "");
+        lotsFrom210to300.add(breakdownLotStatusList276to300);
+
+        form13Response.setLotsFrom201to300(lotsFrom210to300);
+
+        List<BreakdownLotStatus> averageLots = new ArrayList<>();
+
+        List<Object[]> lotlesserThanAverageResponse = lotRepository.getLessLotStatusSilk( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[1]));
+        BreakdownLotStatus lotlesserThanAverage = prepareBreakdown13Report(lotlesserThanAverageResponse, 301, 350, totalWeight, "Lots less than average");
+        averageLots.add(lotlesserThanAverage);
+
+        List<Object[]> lotGreaterThanAverageResponse = lotRepository.getGreaterLotStatusSilk( requestBody.getMarketId(),requestBody.getFromDate(), requestBody.getToDate(), Util.objectToFloat(avgResponse.get(0)[1]));
+        BreakdownLotStatus lotGreaterThanAverage = prepareBreakdown13Report(lotGreaterThanAverageResponse, 301, 350, totalWeight, "Lots more than average");
+        averageLots.add(lotGreaterThanAverage);
+
+        form13Response.setAverageLotStatus(averageLots);
+
+        rw.setContent(form13Response);
+        return ResponseEntity.ok(rw);
+
+    }
+
+
+    public ResponseEntity<?> getDashboardReportSilkType(DashboardReportRequest dashboardReportRequest) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+        String formattedDateTime = now.format(formatter);
+
+        EntityManager entityManager = null;
+        EntityManager entityManager2 = null;
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
+            StoredProcedureQuery procedureQuery = entityManager
+                    .createStoredProcedureQuery("sp_CheckBidStatus");
+
+            procedureQuery.registerStoredProcedureParameter("marketId", Integer.class, ParameterMode.IN);
+
+            entityManager.getTransaction().begin();
+            procedureQuery.setParameter("marketId", dashboardReportRequest.getMarketId());
+            procedureQuery.execute();
+
+            entityManager.getTransaction().commit();
+            List<Object[]> responsesIsAuctionStarted = procedureQuery.getResultList();
+
+            entityManager2 = entityManagerFactory.createEntityManager();
+            StoredProcedureQuery procedureQuery2 = entityManager
+                    .createStoredProcedureQuery("sp_CheckAuctionStatus");
+
+            procedureQuery2.registerStoredProcedureParameter("marketId", Integer.class, ParameterMode.IN);
+
+            entityManager2.getTransaction().begin();
+            procedureQuery2.setParameter("marketId", dashboardReportRequest.getMarketId());
+            procedureQuery2.execute();
+
+            entityManager2.getTransaction().commit();
+            List<Object[]> responsesIsAcceptanceStarted = procedureQuery2.getResultList();
+
+            // List<Object[]> responsesIsAuctionStarted = lotRepository.getIsAuctionStarted(dashboardReportRequest.getMarketId(), formattedDateTime);
+            //List<Object[]> responsesIsAcceptanceStarted = lotRepository.getIsAcceptanceStarted(dashboardReportRequest.getMarketId(), formattedDateTime);
+            List<Object[]> marketNameResponse = lotRepository.getMarketName(dashboardReportRequest.getMarketId());
+            List<Object[]> responses = lotRepository.getDashboardCountSilk(dashboardReportRequest.getMarketId(), dashboardReportRequest.getDashboardReportDate());
+
+            if (Util.isNullOrEmptyList(responses)) {
+                throw new ValidationException("No data found");
+            }
+
+            DashboardReport dashboardReport = new DashboardReport();
+            dashboardReport.setMarketName(Util.objectToString(marketNameResponse.get(0)[0]));
+            dashboardReport.setAuctionStarted(Util.objectToString(responsesIsAuctionStarted.get(0)));
+            dashboardReport.setAcceptanceStarted(Util.objectToString(responsesIsAcceptanceStarted.get(0)));
+
+            List<DashboardReportInfo> dashboardReportInfoList = new ArrayList<>();
+            for (Object[] response : responses) {
+                DashboardReportInfo dashboardReportInfo = DashboardReportInfo.builder()
+                        .raceName(Util.objectToString(response[0]))
+                        .totalLots(Util.objectToString(response[1]))
+                        .totalSoldOutAmount(Util.objectToString(response[13]))
+                        .totalLotsBid(Util.objectToString(response[2]))
+                        .totalBids(Util.objectToString(response[10]))
+                        .totalTraders(Util.objectToString(response[4]))
+                        .accecptedLots(Util.objectToString(response[5]))
+                        .accecptedLotsMaxBid(Util.objectToString(response[6]))
+                        .accectedLotsMinBid(Util.objectToString(response[7]))
+                        .averagRate(Util.objectToString(response[8]))
+                        .weighedLots(Util.objectToString(response[9]))
+                        .currentAuctionMaxAmount(Util.objectToString(response[11]))
+                        .totalLotsNotBid(Util.objectToString(response[12]))
+                        .auctionCount(Util.objectToString(response[14]))
+                        .build();
+
+                dashboardReportInfoList.add(dashboardReportInfo);
+            }
+            dashboardReport.setDashboardReportInfoList(dashboardReportInfoList);
+            rw.setContent(dashboardReport);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (entityManager != null && entityManager.isOpen()) {
+                entityManager.close();
+            }
+            if (entityManager2 != null && entityManager2.isOpen()) {
+                entityManager2.close();
+            }
+        }
+        return ResponseEntity.ok(rw);
+    }
+
 
     public ResponseEntity<?> getMonthlyDistrictReport(MonthlyDistrictRequest dashboardReportRequest) {
 
@@ -1911,6 +2646,69 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
         rw.setContent(dtrInfoResponse);
         return ResponseEntity.ok(rw);
 
+    }
+
+    public ResponseEntity<?> getMonthlyDistrictReportSilkType(MonthlyDistrictRequest dashboardReportRequest) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        try {
+            List<Object[]> marketNameResponse = lotRepository.getMarketName(dashboardReportRequest.getMarketId());
+            List<Object[]> responses = lotRepository.getMonthlyDistrictReportSilk(dashboardReportRequest.getMarketId(), dashboardReportRequest.getStartDate(), dashboardReportRequest.getEndDate());
+            List<Object[]> sumResponses = lotRepository.getSumOfMonthlyDistrictReportSilk(dashboardReportRequest.getMarketId(), dashboardReportRequest.getStartDate(), dashboardReportRequest.getEndDate());
+
+            if (Util.isNullOrEmptyList(responses)) {
+                throw new ValidationException("No data found");
+            }
+
+            MonthlyDistrictReport monthlyDistrictReport = new MonthlyDistrictReport();
+            monthlyDistrictReport.setMarketNameInKannada(Util.objectToString(marketNameResponse.get(0)[1]));
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedDate;
+            Date parsedDate2;
+            parsedDate = inputFormat.parse(String.valueOf(dashboardReportRequest.getStartDate()));
+            parsedDate2 = inputFormat.parse(String.valueOf(dashboardReportRequest.getEndDate()));
+
+            SimpleDateFormat outputFormat1 = new SimpleDateFormat("dd-MM-yyyy");
+            String formattedDateTime1 = outputFormat1.format(parsedDate);
+            String formattedDateTime2 = outputFormat1.format(parsedDate2);
+            monthlyDistrictReport.setStartDate(formattedDateTime1);
+            monthlyDistrictReport.setEndDate(formattedDateTime2);
+
+            List<MonthlyDistrictReportInfo> dashboardReportInfoList = new ArrayList<>();
+            for (Object[] response : responses) {
+                MonthlyDistrictReportInfo dashboardReportInfo = MonthlyDistrictReportInfo.builder()
+                        .serialNumber(Util.objectToString(response[0]))
+                        .districtName(Util.objectToString(response[1]))
+                        .talukName(Util.objectToString(response[2]))
+                        .totalLots(Util.objectToString(response[3]))
+                        .totalWeight(Util.objectToString(response[4]))
+                        .raceName(Util.objectToString(response[5]))
+                        .stateName(Util.objectToString(response[6]))
+                        .build();
+
+                dashboardReportInfoList.add(dashboardReportInfo);
+            }
+            monthlyDistrictReport.setMonthlyDistrictReportInfoList(dashboardReportInfoList);
+
+
+            List<SumOfMonthlyDistrictReportInfo> sumOfMonthlyDistrictReportInfos = new ArrayList<>();
+            for (Object[] response : sumResponses) {
+                SumOfMonthlyDistrictReportInfo dashboardReportInfo = SumOfMonthlyDistrictReportInfo.builder()
+                        .raceName(Util.objectToString(response[0]))
+                        .totalLots(Util.objectToString(response[1]))
+                        .totalWeight(Util.objectToString(response[2]))
+                        .build();
+
+                sumOfMonthlyDistrictReportInfos.add(dashboardReportInfo);
+            }
+            monthlyDistrictReport.setSumOfMonthlyDistrictReportInfoList(sumOfMonthlyDistrictReportInfos);
+
+            rw.setContent(monthlyDistrictReport);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ResponseEntity.ok(rw);
     }
 
     public ResponseEntity<?> getMarketWiseReport(MonthlyReportRequest request) {
