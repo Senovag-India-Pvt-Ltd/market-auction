@@ -30,6 +30,7 @@ public class DTROnlineReportUnitDetail {
 //    private double reelerMarketFee;
     private float farmerMarketFee;
     private float reelerMarketFee;
+    private float traderMarketFee;
     private String reelerLicense;
     private String reelerName;
     private String reelerMobile;
@@ -44,10 +45,14 @@ public class DTROnlineReportUnitDetail {
     private String traderFatherName;
     private String traderAddress;
     private String traderSilkType;
-    private Long traderMarketMasterId;
+    private float traderLicenseFee;
     private String traderMobileNumber;
     private String traderArnNumber;
     private String traderLicenseNumber;
+    private String traderStateNameInKannada;
+    private String traderDistrictNameInKannada;
+    private String traderApplicationNumber;
+    private String traderLicenseChallanNumber;
     private String bankName;
     private String branchName;
     private String ifscCode;

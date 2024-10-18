@@ -17,4 +17,9 @@ public class MarketAuctionPrinterController {
     public ResponseEntity<?> getPrintableDataForLot(@RequestBody MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
         return marketAuctionPrinterService.getPrintableDataForLot(marketAuctionForPrintRequest);
     }
+
+    @PostMapping("/getPrintableDataForLotForSilk")
+    public ResponseEntity<?> getPrintableDataForLotForSilk(@RequestBody MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+        return marketAuctionPrinterService.getPrintableDataForLotForSilk(marketAuctionForPrintRequest);
+    }
 }

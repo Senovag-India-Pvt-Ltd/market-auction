@@ -93,9 +93,16 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PRINT_REPORT_ACCEPTED_LOT_ID)
     public Object[][] getAcceptedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
 
+
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PRINT_REPORT_ACCEPTED_LOT_ID_SILK)
+    public Object[][] getAcceptedLotDetailsForSilk(LocalDate paymentDate,int marketId,int allottedLotId);
     
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PRINT_REPORT_NEWLY_CREATED_LOT_ID)
     public Object[][] getNewlyCreatedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
+
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PRINT_REPORT_NEWLY_CREATED_LOT_ID_SILK)
+    public Object[][] getNewlyCreatedLotDetailsForSilk(LocalDate paymentDate,int marketId,int allottedLotId);
 
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.AUCTION_DATE_LIST_BY_LOT_STATUS)
@@ -108,7 +115,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public List<Object[]> getDTROnlineReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY_SILK)
-    public List<Object[]> getDTROnlineReportSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseIdList);
+    public List<Object[]> getDTROnlineReportSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY)
     public List<Object[]> getDTROnlineReportForBlankReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
@@ -117,20 +124,20 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public List<Object[]> getBlankReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BLANK_REPORT_SILK)
-    public List<Object[]> getBlankReportSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseIdList);
+    public List<Object[]> getBlankReportSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseList);
 
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY_FOR_CASH)
     public List<Object[]> getDTROnlineReportForCash(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY_FOR_CASH_SILK)
-    public List<Object[]> getDTROnlineReportForCashSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseIdList);
+    public List<Object[]> getDTROnlineReportForCashSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY_FOR_CASH_BLANK_REPORT)
     public List<Object[]> getDTROnlineReportForCashForBlankReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.DTR_ONLINE_REPORT_QUERY_FOR_CASH_BLANK_REPORT_SILK)
-    public List<Object[]> getDTROnlineReportForCashForBlankReportSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseIdList);
+    public List<Object[]> getDTROnlineReportForCashForBlankReportSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseList);
 
 
     @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PENDING_REPORT_ACCEPTED_LOTS)
@@ -185,13 +192,13 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public List<Object[]> getPaymentSuccessLots(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PAYMENT_SUCCESS_LOTS_SILK)
-    public List<Object[]> getPaymentSuccessLotsSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseIdList);
+    public List<Object[]> getPaymentSuccessLotsSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PAYMENT_SUCCESS_LOTS_FOR_BLANK_REPORT)
     public List<Object[]> getPaymentSuccessLotsForBlankReport(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> reelerIdList);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PAYMENT_SUCCESS_LOTS_FOR_BLANK_REPORT_SILK)
-    public List<Object[]> getPaymentSuccessLotsForBlankReportSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseIdList);
+    public List<Object[]> getPaymentSuccessLotsForBlankReportSilk(int marketId, LocalDate fromDate,LocalDate toDate,List<Integer> traderLicenseList);
 
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.REELER_PENDING_REPORT)
