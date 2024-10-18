@@ -48,4 +48,10 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name="auctionDate", example = "1")
     LocalDate auctionDate;
 
+    @Schema(name="dflLotNumber", example = "1")
+    Long dflLotNumber;
+
+    @Schema(name="averageYield", example = "1")
+    Float averageYield;
+
 }

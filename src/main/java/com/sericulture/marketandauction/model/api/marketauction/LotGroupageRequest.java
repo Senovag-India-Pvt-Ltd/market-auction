@@ -26,6 +26,12 @@ public class LotGroupageRequest extends RequestBody {
     @Schema(name="amount", example = "1")
     Long amount;
 
+    @Schema(name="dflLotNumber", example = "1")
+    Long dflLotNumber;
+
+    @Schema(name="averageYield", example = "1")
+    Float averageYield;
+
 //    @Schema(name="marketFee", example = "1")
 //    Long marketFee;
 

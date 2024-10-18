@@ -79,4 +79,20 @@ public class LotDistributeResponse extends ResponseBody {
     @Temporal(TemporalType.DATE)
     @Column(name = "AUCTION_DATE")
     private LocalDate auctionDate;
+    private String netWeight;
+    private String price;
+    private String fixationDate;
+    private String testDate;
+    private Long noOfCocoonTakenForExamination;
+    private Long noOfDFLFromFc;
+    private Long noOfCocoonPerKg;
+    private String noOfCocoonExamined;
+    private String pupaCocoonStatus;
+    private String marketAuctionDate;
+    private String meltPercentage;
+    private String dflLotNumber;
+    private String lotParentLevel;
+    private Long initialWeighment;
+    private String averageYield;
+    private String noOfDFLs;
 }
