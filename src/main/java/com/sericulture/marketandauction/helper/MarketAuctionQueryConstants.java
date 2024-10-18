@@ -409,7 +409,7 @@ public class MarketAuctionQueryConstants {
              LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID 
              WHERE l.auction_date =:paymentDate and l.market_id =:marketId and l.status is NULL""";
 
-    public static final String NEWLY_CREATED_LOTS_SEED = SELECT_FIELDS_PENDING_REPORT_BASE + """
+    public static final String NEWLY_CREATED_LOTS_SEED = SELECT_FIELDS_PENDING_REPORT_BASE_SEED + """
              l.created_date,
              f.fruits_id
              from  
@@ -539,7 +539,7 @@ public class MarketAuctionQueryConstants {
             
             raa.CREATED_DATE,
             r.reeling_license_number, r.name,
-            r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
+            r.address,eur.name,eur.address,eur.license_number,eur.external_unit_number,eur.organisation_name,l.LOT_WEIGHT_AFTER_WEIGHMENT,
             l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
             raa.AMOUNT,rvcb.CURRENT_BALANCE,r.father_name,r.mobile_number,r.reeler_number,
             l.BID_ACCEPTED_BY, f.fruits_id, gm.godown_name
@@ -549,6 +549,7 @@ public class MarketAuctionQueryConstants {
             INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
             INNER JOIN REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID
             INNER JOIN reeler r ON r.reeler_id =raa.REELER_ID
+            INNER JOIN external_unit_registration eur ON eur.external_unit_registration_id =eur.external_unit_registration_id   
             LEFT JOIN reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
             LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
             LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 

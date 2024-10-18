@@ -142,7 +142,7 @@ public class MarketAuctionPrinterService {
         boolean foundAcceptedLot = false;
         if (lotDetails != null && lotDetails.length > 0) {
             foundAcceptedLot = true;
-            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][33]);
+            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][38]);
 
         } else {
             lotDetails = lotRepository.getNewlyCreatedLotDetailsSeedCocoon(marketAuctionForPrintRequest.getAuctionDate(), marketAuctionForPrintRequest.getMarketId(), marketAuctionForPrintRequest.getAllottedLotId());
@@ -160,16 +160,21 @@ public class MarketAuctionPrinterService {
                     marketAuctionForPrintResponse.setReelerLicense(Util.objectToString(response[25]));
                     marketAuctionForPrintResponse.setReelerName(Util.objectToString(response[26]));
                     marketAuctionForPrintResponse.setReelerAddress(Util.objectToString(response[27]));
-                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[28]));
-                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[29]));
-                    marketAuctionForPrintResponse.setFarmerMarketFee(Util.objectToFloat(response[30]));
-                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[31]));
-                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[32]));
+                    marketAuctionForPrintResponse.setExternalUnitName(Util.objectToString(response[28]));
+                    marketAuctionForPrintResponse.setExternalUnitAddress(Util.objectToString(response[29]));
+                    marketAuctionForPrintResponse.setExternalUnitLicenseNumber(Util.objectToString(response[30]));
+                    marketAuctionForPrintResponse.setExternalUnitNumber(Util.objectToString(response[31]));
+                    marketAuctionForPrintResponse.setExternalUnitOrganisationName(Util.objectToString(response[32]));
+                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[33]));
+                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[34]));
+                    marketAuctionForPrintResponse.setFarmerMarketFee(Util.objectToFloat(response[35]));
+                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[36]));
+                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[37]));
                     marketAuctionForPrintResponse.setReelerCurrentBalance(reelerCurrentBalance);
-                    marketAuctionForPrintResponse.setReelerNameKannada(Util.objectToString(response[34]));
-                    marketAuctionForPrintResponse.setReelerMobileNumber(Util.objectToString(response[35]));
-                    marketAuctionForPrintResponse.setFruitsId(Util.objectToString(response[38]));
-                    marketAuctionForPrintResponse.setReelerNumber(Util.objectToString(response[36]));
+                    marketAuctionForPrintResponse.setReelerNameKannada(Util.objectToString(response[39]));
+                    marketAuctionForPrintResponse.setReelerMobileNumber(Util.objectToString(response[40]));
+                    marketAuctionForPrintResponse.setFruitsId(Util.objectToString(response[43]));
+                    marketAuctionForPrintResponse.setReelerNumber(Util.objectToString(response[41]));
                     marketAuctionForPrintResponse.setFarmerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() - marketAuctionForPrintResponse.getFarmerMarketFee());
                     marketAuctionForPrintResponse.setReelerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() + marketAuctionForPrintResponse.getReelerMarketFee());
 
