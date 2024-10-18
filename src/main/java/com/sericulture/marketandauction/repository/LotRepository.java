@@ -94,8 +94,8 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
     public Object[][] getAcceptedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
 
 
-//    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PRINT_REPORT_ACCEPTED_LOT_ID_SILK)
-//    public Object[][] getAcceptedLotDetailsForSilk(LocalDate paymentDate,int marketId,int allottedLotId);
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PRINT_REPORT_ACCEPTED_LOT_ID_SILK)
+    public Object[][] getAcceptedLotDetailsForSilk(LocalDate paymentDate,int marketId,int allottedLotId);
     
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.PRINT_REPORT_NEWLY_CREATED_LOT_ID)
     public Object[][] getNewlyCreatedLotDetails(LocalDate paymentDate,int marketId,int allottedLotId);
