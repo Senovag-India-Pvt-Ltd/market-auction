@@ -56,7 +56,7 @@ public class LotGroupage extends BaseEntity implements Serializable {
     private LocalDate auctionDate;
 
     @Column(name = "average_yield")
-    private Long averageYield;
+    private Float averageYield;
 
     @Column(name = "no_of_dfls")
     private Long dflLotNumber;

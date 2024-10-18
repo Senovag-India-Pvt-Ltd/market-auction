@@ -53,7 +53,7 @@ public class LotGroupageResponse extends ResponseBody {
     Long dflLotNumber;
 
     @Schema(name="averageYield", example = "1")
-    Long averageYield;
+    Float averageYield;
 
     @Schema(name = "error", example = "true")
     Boolean error;

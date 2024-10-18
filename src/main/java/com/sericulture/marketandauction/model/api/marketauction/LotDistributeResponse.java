@@ -93,4 +93,6 @@ public class LotDistributeResponse extends ResponseBody {
     private String dflLotNumber;
     private String lotParentLevel;
     private Long initialWeighment;
+    private String averageYield;
+    private String noOfDFLs;
 }

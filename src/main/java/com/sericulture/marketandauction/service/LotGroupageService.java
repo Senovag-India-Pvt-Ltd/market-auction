@@ -176,6 +176,8 @@ public class LotGroupageService {
                  ptaca.PUPA_TEST_RESULT,
                  ma.market_auction_date,
                  l.allotted_lot_id,
+                 lg.average_yield,
+                 lg.no_of_dfls,
                  CASE
                      WHEN lg.buyer_type = 'RSP' THEN es.license_number
                      WHEN lg.buyer_type = 'NSSO' THEN es.address
@@ -252,7 +254,7 @@ public class LotGroupageService {
                     .marketFee(Util.objectToLong(lotWeightDetails[17]))
                     .soldAmount(Util.objectToLong(lotWeightDetails[18]))
                     .netWeight(Util.objectToString(lotWeightDetails[19]))
-                    .dflLotNumber(Util.objectToString(lotWeightDetails[20]))
+                    .noOfDFLs(Util.objectToString(lotWeightDetails[20]))
                     .raceMasterId(Util.objectToInteger(lotWeightDetails[21]))
                     .lotParentLevel(Util.objectToString(lotWeightDetails[22]))
                     .initialWeighment(Util.objectToLong(lotWeightDetails[23]))
@@ -267,7 +269,9 @@ public class LotGroupageService {
                     .noOfCocoonExamined(Util.objectToString(lotWeightDetails[34]))
                     .marketAuctionDate(Util.objectToString(lotWeightDetails[35]))
                     .allottedLotId(Util.objectToInteger(lotWeightDetails[36]))
-                    .buyerName(Util.objectToString(lotWeightDetails[37]))
+                    .averageYield(Util.objectToString(lotWeightDetails[37]))
+                    .dflLotNumber(Util.objectToString(lotWeightDetails[38]))
+                    .buyerName(Util.objectToString(lotWeightDetails[39]))
                     .build();
             responses.add(lotDistributeResponse);
         }

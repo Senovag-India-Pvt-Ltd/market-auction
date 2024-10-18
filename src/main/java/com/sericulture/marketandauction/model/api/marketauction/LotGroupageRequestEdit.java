@@ -52,6 +52,6 @@ public class LotGroupageRequestEdit extends RequestBody {
     Long dflLotNumber;
 
     @Schema(name="averageYield", example = "1")
-    Long averageYield;
+    Float averageYield;
 
 }
