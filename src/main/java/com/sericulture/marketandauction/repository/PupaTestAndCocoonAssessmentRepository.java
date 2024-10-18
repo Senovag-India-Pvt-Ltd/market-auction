@@ -159,6 +159,8 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
         village v ON pa.VILLAGE_ID = v.VILLAGE_ID AND v.active = 1
         Inner JOIN
         market_auction ma ON ma.farmer_id = f.farmer_id
+        INNER JOIN
+        lot l ON l.market_auction_id = ma.market_auction_id
         LEFT JOIN race_master rm ON rm.race_id = ma.lot_variety AND rm.active = 1
         LEFT JOIN
         PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id and ptaca.ACTIVE = 1
@@ -166,6 +168,7 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
          WHERE
         ma.market_id = :marketId
         AND ptaca.pupa_cocoon_status = 'assessment'
+        AND l.status NOT IN ('weighmentcompleted');
     """)
     public List<Object[]> getFinalWeighmentList(int marketId);
 }

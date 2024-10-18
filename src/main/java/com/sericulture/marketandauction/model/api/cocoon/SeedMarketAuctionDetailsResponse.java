@@ -49,4 +49,5 @@ public class SeedMarketAuctionDetailsResponse {
     private String meltPercentage;
     private String noOfCocoonsExamined;
     private String marketAuctionDate;
+    private String fitnessCertificatePath;
 }

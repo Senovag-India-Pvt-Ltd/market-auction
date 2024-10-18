@@ -309,9 +309,19 @@ public class WeigmentService {
 
             // Removed the check for lot status being accepted
             // Validate that the lot's status is null
-//            if (lot.getStatus() != null) {
+//            if (lot.getStatus() == null) {
 //                throw new ValidationException(String.format("Weighment not allowed. Lot status is '%s' for lot ID '%s'", lot.getStatus(), lot.getAllottedLotId()));
 //            }
+
+            // Add validation: Don't allow weighment if the weighment has already been completed for the same lot
+            if (lot.getStatus() != null && LotStatus.WEIGHMENTCOMPLETED.getLabel().equals(lot.getStatus())) {
+                throw new ValidationException(String.format(
+                        "Weighment already completed for Market ID '%s', Lot ID '%s', and Auction Date '%s'",
+                        completeLotWeighmentRequest.getMarketId(),
+                        completeLotWeighmentRequest.getAllottedLotId(),
+                        auctionDate
+                ));
+            }
 
             // Continue with the weighment process
             float totalWeightOfAllottedLot = 0;
