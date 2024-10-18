@@ -392,6 +392,67 @@ public class LotGroupageService {
         return lotGroupageResponse;
     }
 
+//    @Transactional
+//    public LotGroupageResponse editLotGroupage(LotGroupageDetailsRequestEdit lotGroupageDetailsRequestEdit) {
+//        LotGroupageResponse lotGroupageResponse = new LotGroupageResponse();
+//
+//        // Check if lotGroupageRequestEditList is null or empty
+//        if (lotGroupageDetailsRequestEdit.getLotGroupageRequestEditList() == null || lotGroupageDetailsRequestEdit.getLotGroupageRequestEditList().isEmpty()) {
+//            lotGroupageResponse.setError(true);
+//            lotGroupageResponse.setError_description("Lot groupage edit requests are null or empty.");
+//            return lotGroupageResponse;
+//        }
+//
+//        for (LotGroupageRequestEdit lotGroupageRequestEdit : lotGroupageDetailsRequestEdit.getLotGroupageRequestEditList()) {
+//            Optional<LotGroupage> optionalLotGroupage = lotGroupageRepository.findByLotGroupageIdAndActiveIn(lotGroupageRequestEdit.getLotGroupageId(), Set.of(true, false));
+//
+//            if (!optionalLotGroupage.isPresent()) {
+//                lotGroupageResponse.setError(true);
+//                lotGroupageResponse.setError_description("Lot groupage with ID " + lotGroupageRequestEdit.getLotGroupageId() + " not found.");
+//                return lotGroupageResponse;
+//            }
+//
+//            LotGroupage lotGroupage = optionalLotGroupage.get();
+//
+//            // Fetch market auction details and update lotGroupage
+//            List<Object[]> marketAuctionDetails = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(lotGroupageRequestEdit.getAllottedLotId().intValue(), lotGroupageRequestEdit.getAuctionDate());
+//            for (Object[] arr : marketAuctionDetails) {
+//                lotGroupage.setMarketAuctionId(((BigDecimal) arr[0]).toBigIntegerExact());
+//                lotGroupage.setId(((BigDecimal) arr[1]).toBigIntegerExact());
+//            }
+//
+//            // Update lotGroupage based on lotGroupageRequestEdit using the mapper method
+//            mapper.editLotGroupageObjectToEntity(lotGroupageRequestEdit, lotGroupage); // Assuming mapper directly modifies lotGroupage
+//
+//            // Update market fee based on buyer type
+//            if (lotGroupageRequestEdit.getBuyerType() != null) {
+//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount());
+//                BigDecimal marketFee = BigDecimal.ZERO;
+//
+//                switch (lotGroupageRequestEdit.getBuyerType()) {
+//                    case "ExternalStakeHolders":
+//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+//                        break;
+//                    case "Reeler":
+//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+//                        break;
+//                    default:
+//                        // Handle unknown buyer types if necessary
+//                        break;
+//                }
+//
+//                lotGroupage.setMarketFee(marketFee.longValue());
+//            }
+//
+//            // Save updated lotGroupage
+//            lotGroupage = lotGroupageRepository.save(lotGroupage);
+//            lotGroupageResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+//            lotGroupageResponse.setError(false);
+//        }
+//
+//        return lotGroupageResponse;
+//    }
+
 
     //    private LotDistributeResponse getLotDistributeResponseForSeedMarket(LotStatusSeedMarketRequest lotStatusRequest) {
 //        EntityManager entityManager = entityManagerFactory.createEntityManager();
