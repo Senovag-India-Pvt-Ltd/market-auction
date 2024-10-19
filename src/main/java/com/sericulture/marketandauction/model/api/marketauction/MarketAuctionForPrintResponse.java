@@ -34,6 +34,7 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private float lotWeight;
     private double farmerMarketFee;
     private double reelerMarketFee;
+    private double traderMarketFee;
     private float lotSoldOutAmount;
     private float bidAmount;
     private double reelerCurrentBalance;
@@ -59,10 +60,36 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String reelerNameKannada;
     private double farmerAmount;
     private double reelerAmount;
+    private double traderAmount;
     private List<Integer> smallBinList;
     private List<Integer> bigBinList;
     private String loginName;
     private String fruitsId;
     private String fatherNameKan;
+    private String traderFirstName;
+    private String traderMiddleName;
+    private String traderLastName;
+    private String traderFatherName;
+    private String traderAddress;
+    private String traderSilkType;
+    private float traderLicenseFee;
+    private String traderMobileNumber;
+    private String traderArnNumber;
+    private String traderLicenseNumber;
+    private String traderStateNameInKannada;
+    private String traderDistrictNameInKannada;
+    private String traderApplicationNumber;
+    private String traderLicenseChallanNumber;
+    private String reelerMobile;
+    private String reelerBankName;
+    private String reelerBranchName;
+    private String reelerAccountNumber;
+    private String reelerIfscCode;
+    private String reelerFatherName;
+    private String sadodLotNumber;
+    private String godownName;
+
+
+
 
 }
