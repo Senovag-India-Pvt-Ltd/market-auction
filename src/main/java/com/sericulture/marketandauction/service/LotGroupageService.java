@@ -293,7 +293,6 @@ public class LotGroupageService {
                  l.allotted_lot_id,
                  lg.average_yield,
                  lg.no_of_dfls,
-                 lg.no_of_dfls,
                  lg.invoice_number,
                  CASE
                      WHEN lg.buyer_type = 'RSP' THEN es.license_number
@@ -389,7 +388,7 @@ public class LotGroupageService {
                     .averageYield(Util.objectToString(lotWeightDetails[37]))
                     .dflLotNumber(Util.objectToString(lotWeightDetails[38]))
                     .invoiceNumber(Util.objectToString(lotWeightDetails[39]))
-                    .buyerName(Util.objectToString(lotWeightDetails[39]))
+                    .buyerName(Util.objectToString(lotWeightDetails[40]))
                     .build();
             responses.add(lotDistributeResponse);
         }

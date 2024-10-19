@@ -57,4 +57,7 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name="invoiceNumber", example = "1")
     String invoiceNumber;
 
+    @Schema(name="lotParentLevel", example = "1")
+    String lotParentLevel;
+
 }

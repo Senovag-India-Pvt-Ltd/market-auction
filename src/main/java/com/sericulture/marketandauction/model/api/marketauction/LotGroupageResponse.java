@@ -58,6 +58,9 @@ public class LotGroupageResponse extends ResponseBody {
     @Schema(name="invoiceNumber", example = "1")
     String invoiceNumber;
 
+    @Schema(name="lotParentLevel", example = "1")
+    String lotParentLevel;
+
     @Schema(name = "error", example = "true")
     Boolean error;
 
