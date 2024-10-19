@@ -47,6 +47,11 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private BigDecimal marketAuctionId;
     private String marketNameKannada;
     private String farmerNameKannada;
+    private String externalUnitName;
+    private String externalUnitAddress;
+    private String externalUnitLicenseNumber;
+    private String externalUnitNumber;
+    private String externalUnitOrganisationName;
     private Date auctionDateWithTime;
     private String farmerMobileNumber;
     private String reelerMobileNumber;
