@@ -258,8 +258,11 @@ public class CocoonMarketService {
         List<Object[]> chowkiDetails = pupaTestAndCocoonAssessmentRepository.getPupaAndCocoonAssessmentByMarket(marketId);
         List<SeedMarketAuctionDetailsResponse> responses = new ArrayList<>();
 
+        int serialNumber = 1;
+
         for (Object[] arr : chowkiDetails) {
             SeedMarketAuctionDetailsResponse response = SeedMarketAuctionDetailsResponse.builder()
+                    .serialNumber(serialNumber)
                     .farmerId(Util.objectToLong(arr[0]))
                     .firstName(Util.objectToString(arr[1]))
                     .middleName(Util.objectToString(arr[2]))
@@ -273,18 +276,20 @@ public class CocoonMarketService {
                     .talukName(Util.objectToString(arr[10]))
                     .hobliName(Util.objectToString(arr[11]))
                     .villageName(Util.objectToString(arr[12]))
-                    .dflsSource(Util.objectToString(arr[13]))
-                    .numbersOfDfls(Util.objectToString(arr[14]))
+                    .numbersOfDfls(Util.objectToString(arr[13]))
+                    .raceOfDfls(Util.objectToLong(arr[14]))
                     .lotNumberRsp(Util.objectToString(arr[15]))
                     .stateName(Util.objectToString(arr[16]))
-                    .raceOfDfls(Util.objectToLong(arr[17]))
-                    .raceName(Util.objectToString(arr[18]))
-                    .initialWeighment(Util.objectToLong(arr[19]))
-                    .marketAuctionId(Util.objectToLong(arr[20]))
+                    .raceName(Util.objectToString(arr[17]))
+                    .initialWeighment(Util.objectToLong(arr[18]))
+                    .marketAuctionId(Util.objectToLong(arr[19]))
+                    .marketAuctionDate(Util.objectToString(arr[20]))
 //                    .fitnessCertificatePath(Util.objectToString(arr[21]))
                     .build();
 
             responses.add(response);
+
+            serialNumber++;
         }
 
         return responses;

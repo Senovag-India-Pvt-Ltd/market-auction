@@ -50,6 +50,10 @@ public class LotGroupageRequest extends RequestBody {
     @Schema(name="auctionDate", example = "1")
     LocalDate auctionDate;
 
+    @Schema(name="invoiceNumber", example = "1")
+    String invoiceNumber;
+
+
 
 
 }

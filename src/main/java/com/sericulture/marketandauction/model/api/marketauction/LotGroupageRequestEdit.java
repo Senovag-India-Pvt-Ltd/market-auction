@@ -54,4 +54,7 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name="averageYield", example = "1")
     Float averageYield;
 
+    @Schema(name="invoiceNumber", example = "1")
+    String invoiceNumber;
+
 }

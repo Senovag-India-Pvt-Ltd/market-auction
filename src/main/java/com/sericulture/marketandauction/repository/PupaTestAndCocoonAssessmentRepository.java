@@ -58,14 +58,14 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
         t.TALUK_NAME,
         h.hobli_name,
         v.village_name,
-        sadod.rate_per100dfls_price,
-        sadod.number_of_dfls_disposed,
-        sadod.lot_number,
+        ma.dfl_lot_number,
+        ma.lot_variety,
+        ma.lot_Parental_Level,
         s.state_name,
-        sadod.race_id,
         rm.race_name,
         ma.estimated_weight,
-        ma.market_auction_id
+        ma.market_auction_id,
+        ma.market_auction_date
                 FROM
         farmer f
         LEFT JOIN
@@ -81,11 +81,9 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
         LEFT JOIN
         village v ON pa.VILLAGE_ID = v.VILLAGE_ID AND v.active = 1
         Inner JOIN
-        sale_and_disposal_of_dfls sadod ON sadod.fruits_id = f.fruits_id
-        LEFT JOIN
-        race_master rm ON rm.race_id = sadod.race_id AND rm.active = 1
-        Inner JOIN
         market_auction ma ON ma.farmer_id = f.farmer_id
+        LEFT JOIN
+        race_master rm ON rm.race_id = ma.lot_variety AND rm.active = 1
         LEFT JOIN
             PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id
     WHERE
@@ -162,9 +160,9 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
         INNER JOIN
         lot l ON l.market_auction_id = ma.market_auction_id
         LEFT JOIN race_master rm ON rm.race_id = ma.lot_variety AND rm.active = 1
-        LEFT JOIN
+        INNER JOIN
         PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id and ptaca.ACTIVE = 1
-        LEFT  JOIN LOT_BASE_PRICE_FIXATION lbpf On lbpf.MARKET_ID = ma.MARKET_ID and lbpf.ACTIVE = 1
+        INNER JOIN LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id AND lbpf.FIXATION_DATE = ma.market_auction_date AND lbpf.active = 1
          WHERE
         ma.market_id = :marketId
         AND ptaca.pupa_cocoon_status = 'assessment'

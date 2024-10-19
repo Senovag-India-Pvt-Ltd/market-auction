@@ -55,6 +55,9 @@ public class LotGroupageResponse extends ResponseBody {
     @Schema(name="averageYield", example = "1")
     Float averageYield;
 
+    @Schema(name="invoiceNumber", example = "1")
+    String invoiceNumber;
+
     @Schema(name = "error", example = "true")
     Boolean error;
 
