@@ -810,13 +810,11 @@ ORDER BY
 
 
     private static final String SELECT_FIELDS_PENDING_REPORT_BASE_SILK = """
-            select  f.farmer_number,f.first_name ,f.middle_name,
-             f.last_name,fa.address_text,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
-             fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
-             l.allotted_lot_id,l.auction_date,ma.estimated_weight,
-             mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
-             l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
-             f.name_kan,f.mobile_number,ma.market_auction_id,f.father_name_kan,""";
+            select r.reeling_license_number, r.name,r.address,r.reeler_name_kannada,
+            r.mobile_number,r.reeler_number,r.bank_name,r.bank_account_number,r.branch_name,l.allotted_lot_id,l.auction_date,
+            ma.estimated_weight, mm.market_name,rm.race_name,sm.source_name,mm.box_weight,l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
+            r.ifsc_code,ma.market_auction_id,r.father_name,""";
+
     public static final String NEWLY_CREATED_LOTS = SELECT_FIELDS_PENDING_REPORT_BASE + """
              l.created_date,
              f.fruits_id
@@ -841,7 +839,8 @@ ORDER BY
              FARMER f
              INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
              INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
-             and l.auction_date = ma.market_auction_date  
+             and l.auction_date = ma.market_auction_date
+             --Inner JOIN sale_and_disposal_of_dfls sadod ON sadod.fruits_id = f.fruits_id    
              LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1  
              LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
              LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID  
@@ -877,6 +876,119 @@ ORDER BY
              mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
              l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
              f.name_kan,f.mobile_number,ma.market_auction_id,v.VILLAGE_NAME,""";
+
+
+//    public static final String PRINT_REPORT_NEWLY_CREATED_LOT_ID_SEED_NEW = """
+//            SELECT f.farmer_number,
+//           f.first_name,
+//           f.middle_name,
+//           f.last_name,
+//          fa.address_text,
+//          t.TALUK_NAME_IN_KANNADA,
+//          v.VILLAGE_NAME_IN_KANNADA,
+//          fba.farmer_bank_ifsc_code,
+//          fba.farmer_bank_account_number,
+//          l.allotted_lot_id,
+//          l.auction_date,
+//          ma.estimated_weight,
+//          mm.market_name,
+//         rm.race_name,
+//         sm.source_name,
+//         mm.box_weight,
+//         l.lot_id,
+//         mm.SERIAL_NUMBER_PREFIX,
+//         l.status,
+//         mm.market_name_in_kannada,
+//         f.name_kan,
+//          f.mobile_number,
+//          ma.market_auction_id,
+//          f.father_name_kan,
+//          l.LOT_WEIGHT_AFTER_WEIGHMENT,
+//          ma.lot_Parental_Level ,
+//          l.MARKET_FEE_REELER,
+//          l.MARKET_FEE_FARMER,
+//          l.LOT_SOLD_OUT_AMOUNT,
+//          f.fruits_id,
+//           gm.godown_name,
+//           l.BID_ACCEPTED_BY,
+//
+//            FROM
+//            FARMER f
+//            INNER JOIN
+//            market_auction ma ON ma.farmer_id = f.FARMER_ID
+//           INNER JOIN
+//           lot l ON l.market_auction_id = ma.market_auction_id
+//            LEFT JOIN
+//            farmer_address fa ON f.FARMER_ID = fa.FARMER_ID AND fa.default_address = 1
+//             LEFT JOIN
+//             VILLAGE v ON fa.Village_ID = v.village_id
+//             LEFT JOIN
+//             farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID
+//             LEFT JOIN
+//             TALUK t ON t.TALUK_ID = fa.TALUK_ID
+//             LEFT JOIN
+//             market_master mm ON mm.market_master_id = ma.market_id
+//             LEFT JOIN
+//             godown_master gm ON gm.godown_master_id = ma.godown_id
+//             LEFT JOIN
+//             race_master rm ON rm.race_id = ma.lot_variety
+//             LEFT JOIN
+//             source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
+//             WHERE
+//             l.auction_date =:auctionDate
+//             and l.market_id =:marketId
+//             l.allotted_lot_id =:allottedLotId""";
+
+
+    public static final String PRINT_REPORT_NEWLY_CREATED_LOT_ID_SEED_NEW = """
+        SELECT f.farmer_number,
+               f.first_name,
+               f.middle_name,
+               f.last_name,
+               fa.address_text,
+               t.TALUK_NAME_IN_KANNADA,
+               v.VILLAGE_NAME_IN_KANNADA,
+               fba.farmer_bank_ifsc_code,
+               fba.farmer_bank_account_number,
+               l.allotted_lot_id,
+               l.auction_date,
+               ma.estimated_weight,
+               mm.market_name,
+               rm.race_name,
+               sm.source_name,
+               mm.box_weight,
+               l.lot_id,
+               mm.SERIAL_NUMBER_PREFIX,
+               l.status,
+               mm.market_name_in_kannada,
+               f.name_kan,
+               f.mobile_number,
+               ma.market_auction_id,
+               f.father_name_kan,
+               l.LOT_WEIGHT_AFTER_WEIGHMENT,
+               ma.lot_Parental_Level,
+               l.MARKET_FEE_REELER,
+               l.MARKET_FEE_FARMER,
+               l.LOT_SOLD_OUT_AMOUNT,
+               f.fruits_id,
+               gm.godown_name,
+               l.BID_ACCEPTED_BY
+        FROM FARMER f
+        INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID
+        INNER JOIN lot l ON l.market_auction_id = ma.market_auction_id
+        LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID AND fa.default_address = 1
+        LEFT JOIN VILLAGE v ON fa.Village_ID = v.village_id
+        LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID
+        LEFT JOIN TALUK t ON t.TALUK_ID = fa.TALUK_ID
+        LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id
+        LEFT JOIN godown_master gm ON gm.godown_master_id = ma.godown_id
+        LEFT JOIN race_master rm ON rm.race_id = ma.lot_variety
+        LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
+        WHERE l.auction_date = :auctionDate
+          AND l.market_id = :marketId
+          AND l.allotted_lot_id = :allottedLotId
+""";
+
 
     public static final String NEWLY_CREATED_LOTS_NULL_FOR_PENDING_REPORT = SELECT_FIELDS_PENDING_REPORT_FOR_NULL_BASE + """
              gm.godown_name
@@ -965,9 +1077,9 @@ ORDER BY
 
     public static final String ACCEPTED_LOTS_SEED = SELECT_FIELDS_PENDING_REPORT_BASE_SEED + """
             
-            raa.CREATED_DATE,
+            raa.CREATED_DATE,m
             r.reeling_license_number, r.name,
-            r.address,eur.name,eur.address,eur.license_number,eur.external_unit_number,eur.organisation_name,l.LOT_WEIGHT_AFTER_WEIGHMENT,
+            r.address,eur.name,eur.address,eur.license_number,eur.external_unit_number,eur.organisation_name,l.LOT_WEIGHT_AFTER_WEIGHMENT,sadod.lot_number,
             l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
             raa.AMOUNT,rvcb.CURRENT_BALANCE,r.father_name,r.mobile_number,r.reeler_number,
             l.BID_ACCEPTED_BY, f.fruits_id, gm.godown_name
@@ -977,7 +1089,8 @@ ORDER BY
             INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
             INNER JOIN REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID
             INNER JOIN reeler r ON r.reeler_id =raa.REELER_ID
-            INNER JOIN external_unit_registration eur ON eur.external_unit_registration_id =eur.external_unit_registration_id   
+            INNER JOIN external_unit_registration eur ON eur.external_unit_registration_id =eur.external_unit_registration_id
+            LEFT JOIN sale_and_disposal_of_dfls sadod ON sadod.fruits_id = f.fruits_id   
             LEFT JOIN reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
             LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
             LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 
@@ -986,30 +1099,26 @@ ORDER BY
             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
             LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id  
             LEFT JOIN godown_master gm ON gm.godown_master_id = ma.godown_id  
-            LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
+            LEFT JOIN race_master rm ON rm.race_id = sadod.RACE_ID  
             LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID  
             WHERE l.auction_date =:paymentDate and l.market_id =:marketId
             """;
 
     public static final String ACCEPTED_LOTS_SILK = SELECT_FIELDS_PENDING_REPORT_BASE_SILK + """
             raa.CREATED_DATE,
-            r.reeling_license_number, r.name,
-            r.address,l.LOT_WEIGHT_AFTER_WEIGHMENT,
-            l.MARKET_FEE_REELER,l.MARKET_FEE_FARMER,l.LOT_SOLD_OUT_AMOUNT,
-            raa.AMOUNT,rvcb.CURRENT_BALANCE,r.father_name,r.mobile_number,r.reeler_number,
-            l.BID_ACCEPTED_BY, f.fruits_id, gm.godown_name
+            tl.first_name AS trader_first_name,tl.last_name AS trader_last_name,tl.father_name AS trader_father_name, tl.address AS trader_address,
+            tl.silk_type, tl.license_fee, tl.mobile_number, tl.arn_number, tl.trader_license_number,tl.application_number, tl.license_challan_number,
+            l.LOT_WEIGHT_AFTER_WEIGHMENT,l.MARKET_FEE_REELER,l.MARKET_FEE_TRADER,l.LOT_SOLD_OUT_AMOUNT,
+            raa.AMOUNT,l.BID_ACCEPTED_BY, r.fruits_id, gm.godown_name
             from
-            FARMER f
-            INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID
+            REELER r
+            INNER JOIN market_auction ma ON ma.reeler_id = r.REELER_ID
             INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id
             INNER JOIN REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID
-            INNER JOIN reeler r ON r.reeler_id =raa.REELER_ID
-            LEFT JOIN reeler_virtual_bank_account rvba ON rvba.reeler_id =r.reeler_id and rvba.market_master_id = ma.market_id
-            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number= rvba.virtual_account_number
-            LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1
-            LEFT JOIN  Village v ON   fa.Village_ID = v.village_id
-            LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID
-            LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+            INNER JOIN trader_license tl ON tl.trader_license_id =raa.TRADER_LICENSE_ID
+            LEFT JOIN reeler r2 ON r2.reeler_id = r.REELER_ID
+            LEFT JOIN  Village v ON   r.Village_ID = v.village_id
+            LEFT JOIN TALUK t on t.TALUK_ID = r.TALUK_ID
             LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id
             LEFT JOIN godown_master gm ON gm.godown_master_id = ma.godown_id
             LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID
@@ -1017,27 +1126,17 @@ ORDER BY
             WHERE l.auction_date =:paymentDate and l.market_id =:marketId
             """;
 
-    private static final String FIELDS_PENDING_REPORT_BASE_SILK_TYPE = """
-            select  f.farmer_number,f.first_name ,f.middle_name,
-             f.last_name,fa.address_text,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
-             fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,
-             l.allotted_lot_id,l.auction_date,ma.estimated_weight,
-             mm.market_name,rm.race_name,sm.source_name,mm.box_weight,
-             l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
-             f.name_kan,f.mobile_number,ma.market_auction_id,f.father_name_kan,""";
-
-    public static final String NEWLY_CREATED_LOTS_SILK = FIELDS_PENDING_REPORT_BASE_SILK_TYPE + """
+    public static final String NEWLY_CREATED_LOTS_SILK = SELECT_FIELDS_PENDING_REPORT_BASE_SILK + """
              l.created_date,
-             f.fruits_id
+             r.fruits_id
              from  
-             FARMER f
-             INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID  
+             REELER r
+             INNER JOIN market_auction ma ON ma.reeler_id = r.REELER_ID  
              INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id  
-             and l.auction_date = ma.market_auction_date  
-             LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1  
-             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  
-             LEFT JOIN farmer_bank_account fba ON fba.FARMER_ID = f.FARMER_ID  
-             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+             and l.auction_date = ma.market_auction_date
+             LEFT JOIN reeler r2 ON r2.reeler_id = r.REELER_ID 
+             LEFT JOIN  Village v ON   r.Village_ID = v.village_id
+             LEFT JOIN TALUK t on t.TALUK_ID = r.TALUK_ID
              LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id  
              LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
              LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID 
@@ -1051,12 +1150,12 @@ ORDER BY
     public static final String ACTIVE_FILTERS_NEWLY_CREATED_SEED = " and f.ACTIVE =1 and ma.active = 1";
 
 
-    public static final String ACTIVE_FILTERS_NEWLY_CREATED_SILK = " and f.ACTIVE =1 and ma.active = 1";
+    public static final String ACTIVE_FILTERS_NEWLY_CREATED_SILK = " and r.ACTIVE =1 and ma.active = 1";
 
 
     public static final String ACTIVE_FILTERS_ACCEPTED_CREATED = " and r.active =1";
 
-    public static final String ACTIVE_FILTERS_ACCEPTED_CREATED_SILK = " and r.active =1";
+    public static final String ACTIVE_FILTERS_ACCEPTED_CREATED_SILK = " and tl.active =1";
 
 
     public static final String ACTIVE_FILTERS_ACCEPTED_CREATED_SEED = " and r.active =1";
