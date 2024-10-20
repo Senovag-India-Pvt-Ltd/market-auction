@@ -61,5 +61,11 @@ public class LotGroupage extends BaseEntity implements Serializable {
     @Column(name = "no_of_dfls")
     private Long dflLotNumber;
 
+    @Column(name = "invoice_number")
+    private String invoiceNumber;
+
+    @Column(name = "lot_parental_level")
+    private String lotParentLevel;
+
 
 }
