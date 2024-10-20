@@ -990,6 +990,93 @@ ORDER BY
 """;
 
 
+    public static final String PRINT_REPORT_NEWLY_CREATED_LOT_ID_SEED_NEW_TRIPLET= """
+        SELECT
+        f.farmer_number,
+        f.first_name,
+        f.middle_name,
+        f.last_name,
+        fa.address_text,
+        t.TALUK_NAME_IN_KANNADA,
+        v.VILLAGE_NAME_IN_KANNADA,
+        fba.farmer_bank_ifsc_code,
+        fba.farmer_bank_account_number,
+        l.allotted_lot_id,
+        l.auction_date,
+        ma.estimated_weight,
+        mm.market_name,
+        rm.race_name,
+        sm.source_name,
+        mm.box_weight,
+        l.lot_id,
+        mm.SERIAL_NUMBER_PREFIX,
+        l.status,
+        mm.market_name_in_kannada,
+        f.name_kan,
+        f.mobile_number,
+        ma.market_auction_id,
+        f.father_name_kan,
+       l.LOT_WEIGHT_AFTER_WEIGHMENT,
+       ma.lot_Parental_Level,
+       l.MARKET_FEE_REELER,
+      l.MARKET_FEE_FARMER,
+       l.LOT_SOLD_OUT_AMOUNT,
+       f.fruits_id,
+       gm.godown_name,
+       lg.lot_groupage_id,
+       lg.buyer_id,
+       lg.buyer_type,
+       lg.lot_weight,
+       lg.amount,
+       lg.market_fee,
+       lg.sold_amount,
+       lg.average_yield,
+       lg.no_of_dfls,
+       lg.invoice_number,
+       lg.lot_Parental_Level,
+       lg.auction_date,
+       CASE
+       WHEN lg.buyer_type = 'RSP' THEN es.license_number
+       WHEN lg.buyer_type IN ('NSSO', 'Govt Grainage') THEN es.address
+       WHEN lg.buyer_type = 'Reeling' THEN r.name
+       ELSE NULL
+       END AS buyer_name,
+       l.BID_ACCEPTED_BY
+       FROM
+       FARMER f
+       INNER JOIN market_auction ma
+       ON ma.farmer_id = f.FARMER_ID
+       INNER JOIN lot l
+        ON l.market_auction_id = ma.market_auction_id
+        LEFT JOIN farmer_address fa
+        ON f.FARMER_ID = fa.FARMER_ID AND fa.default_address = 1
+        LEFT JOIN VILLAGE v
+                                                                                        ON fa.Village_ID = v.village_id
+                                                                                    LEFT JOIN farmer_bank_account fba
+                                                                                        ON fba.FARMER_ID = f.FARMER_ID
+                                                                                    LEFT JOIN TALUK t
+                                                                                        ON t.TALUK_ID = fa.TALUK_ID
+                                                                                    LEFT JOIN lot_groupage lg
+                                                                                        ON l.lot_id = lg.lot_id
+                                                                                    LEFT JOIN reeler r
+                                                                                        ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
+                                                                                    LEFT JOIN external_unit_registration es
+                                                                                        ON lg.buyer_id = es.external_unit_registration_id
+                                                                                        AND lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage')
+                                                                                    LEFT JOIN market_master mm
+                                                                                        ON mm.market_master_id = ma.market_id
+                                                                                    LEFT JOIN godown_master gm
+                                                                                        ON gm.godown_master_id = ma.godown_id
+                                                                                    LEFT JOIN race_master rm
+                                                                                        ON rm.race_id = ma.lot_variety
+                                                                                    LEFT JOIN source_master sm
+                                                                                        ON sm.source_id = ma.SOURCE_MASTER_ID
+        WHERE l.auction_date = :auctionDate
+          AND l.market_id = :marketId
+          AND l.allotted_lot_id = :allottedLotId
+""";
+
+
     public static final String NEWLY_CREATED_LOTS_NULL_FOR_PENDING_REPORT = SELECT_FIELDS_PENDING_REPORT_FOR_NULL_BASE + """
              gm.godown_name
              from  
