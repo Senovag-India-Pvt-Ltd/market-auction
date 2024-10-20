@@ -7,6 +7,8 @@ public enum USERTYPE {
 
     REELER(2),
 
+    TRADER(3),
+
     MO(0);
 
     private int type ;

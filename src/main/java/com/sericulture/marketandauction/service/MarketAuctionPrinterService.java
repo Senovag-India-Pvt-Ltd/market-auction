@@ -129,4 +129,225 @@ public class MarketAuctionPrinterService {
         marketAuctionForPrintResponse.setLoginName(token.getUsername());
         return marketAuctionForPrintResponse;
     }
+
+
+
+
+
+    public ResponseEntity<?> getPrintableDataForLotForSeedCocoon(MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketAuctionForPrintRequest);
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionForPrintResponse.class);
+        MarketAuctionForPrintResponse marketAuctionForPrintResponse = null;
+
+        // Fetch lot details using the provided request parameters
+        Object[][] lotDetails = lotRepository.getNewlyCreatedLotDetailsSeedCocoons(
+                marketAuctionForPrintRequest.getAuctionDate(),
+                marketAuctionForPrintRequest.getMarketId(),
+                marketAuctionForPrintRequest.getAllottedLotId()
+        );
+
+        if (lotDetails != null && lotDetails.length > 0) {
+            for (Object[] response : lotDetails) {
+                // Check if lot status is cancelled
+                if (LotStatus.CANCELLED.getLabel().equals(Util.objectToString(response[18]))) {
+                    return marketAuctionHelper.retrunIfError(rw, "Lot is cancelled and hence cannot be printed");
+                }
+
+                BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
+                marketAuctionForPrintResponse = prepareResponseForLotBaseResponseSeedCocoon(token, response, lotId);
+
+                // Fetch lot weight details and set in the response
+                List<Float> lotWeightList = lotWeightDetailRepository.findAllByLotId(lotId);
+                if (!Util.isNullOrEmptyList(lotWeightList)) {
+                    marketAuctionForPrintResponse.setLotWeightDetail(lotWeightList);
+                }
+            }
+        } else {
+            return marketAuctionHelper.retrunIfError(rw, "No Lot found for given request");
+        }
+
+        rw.setContent(marketAuctionForPrintResponse);
+        return ResponseEntity.ok(rw);
+    }
+
+
+public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon(
+        JwtPayloadData token, Object[] response, BigInteger lotId) {
+
+    float lotSoldOutAmount = Util.objectToFloat(response[28]);
+    float farmerMarketFee = Util.objectToFloat(response[27]);
+    float reelerMarketFee = Util.objectToFloat(response[26]);
+
+    // Calculate farmerAmount and reelerAmount
+    float farmerAmount = lotSoldOutAmount - farmerMarketFee;
+    float reelerAmount = lotSoldOutAmount + reelerMarketFee;
+
+    return MarketAuctionForPrintResponse.builder()
+            .farmerNumber(Util.objectToString(response[0]))
+            .farmerFirstName(Util.objectToString(response[1]))
+            .farmerMiddleName(Util.objectToString(response[2]))
+            .farmerLastName(Util.objectToString(response[3]))
+            .farmerAddress(Util.objectToString(response[4]))
+            .farmerTaluk(Util.objectToString(response[5]))
+            .farmerVillage(Util.objectToString(response[6]))
+            .ifscCode(Util.objectToString(response[7]))
+            .accountNumber(Util.objectToString(response[8]))
+            .allottedLotId(Integer.parseInt(String.valueOf(response[9])))
+            .auctionDate(Util.objectToString(response[10]))
+            .farmerEstimatedWeight(Integer.parseInt(String.valueOf(response[11])))
+            .marketName(Util.objectToString(response[12]))
+            .race(Util.objectToString(response[13]))
+            .source(Util.objectToString(response[14]))
+            .tareWeight(Util.objectToFloat(response[15]))  // Corrected parentheses
+            .serialNumber(Util.objectToString(response[17]) + lotId)
+            .marketNameKannada(Util.objectToString(response[19]))
+            .farmerNameKannada(Util.objectToString(response[20]))
+            .farmerMobileNumber(Util.objectToString(response[21]))
+            .marketAuctionId((BigDecimal) response[22])
+            .fatherNameKan(Util.objectToString(response[23]))
+            .lotWeight(Util.objectToFloat(response[24]))
+            .sadodLotNumber(Util.objectToString(response[25]))
+            .reelerMarketFee(reelerMarketFee)
+            .farmerMarketFee(farmerMarketFee)
+            .lotSoldOutAmount(lotSoldOutAmount)
+            .fruitsId(Util.objectToString(response[29]))
+            .godownName(Util.objectToString(response[30])) // Updated index for godown_name
+            .loginName(token.getUsername())
+            .farmerAmount(farmerAmount)  // Added farmerAmount
+            .reelerAmount(reelerAmount)  // Added reelerAmount
+            .build();
+}
+
+
+
+    public ResponseEntity<?> getPrintableDataForLotForSilk(MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketAuctionForPrintRequest);
+
+//        ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionForPrintResponse.class);
+//        MarketAuctionForPrintResponse marketAuctionForPrintResponse = null;
+//        Object[][] lotDetails = lotRepository.getAcceptedLotDetailsForSilk(marketAuctionForPrintRequest.getAuctionDate(), marketAuctionForPrintRequest.getMarketId(), marketAuctionForPrintRequest.getAllottedLotId());
+//        float reelerCurrentBalance = 0;
+//        boolean foundAcceptedLot = false;
+//        if (lotDetails != null && lotDetails.length > 0) {
+//            foundAcceptedLot = true;
+//            reelerCurrentBalance = Util.objectToFloat(lotDetails[0][41]);
+//
+//        } else {
+//            lotDetails = lotRepository.getNewlyCreatedLotDetailsForSilk(marketAuctionForPrintRequest.getAuctionDate(), marketAuctionForPrintRequest.getMarketId(), marketAuctionForPrintRequest.getAllottedLotId());
+//        }
+//        if (foundAcceptedLot || (lotDetails != null && lotDetails.length > 0)) {
+//            for (Object[] response : lotDetails) {
+//                if(LotStatus.CANCELLED.getLabel().equals(Util.objectToString(response[18]))){
+//                    return marketAuctionHelper.retrunIfError(rw,"Lot is cancelled and hence cannot be printed");
+//                }
+//                BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
+//                marketAuctionForPrintResponse = prepareResponseForLotBaseResponseForSilk(token, response, lotId);
+        ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionForPrintResponse.class);
+        MarketAuctionForPrintResponse marketAuctionForPrintResponse = null;
+
+// Fetch accepted lot details
+        Object[][] lotDetails = lotRepository.getAcceptedLotDetailsForSilk(
+                marketAuctionForPrintRequest.getAuctionDate(),
+                marketAuctionForPrintRequest.getMarketId(),
+                marketAuctionForPrintRequest.getAllottedLotId()
+        );
+
+        boolean foundAcceptedLot = lotDetails != null && lotDetails.length > 0;
+
+        if (!foundAcceptedLot) {
+            // Fetch newly created lot details if no accepted lot was found
+            lotDetails = lotRepository.getNewlyCreatedLotDetailsForSilk(
+                    marketAuctionForPrintRequest.getAuctionDate(),
+                    marketAuctionForPrintRequest.getMarketId(),
+                    marketAuctionForPrintRequest.getAllottedLotId()
+            );
+        }
+
+        if (foundAcceptedLot || (lotDetails != null && lotDetails.length > 0)) {
+            // Iterate over lot details
+            for (Object[] response : lotDetails) {
+                // Check if the lot is cancelled
+                if (LotStatus.CANCELLED.getLabel().equals(Util.objectToString(response[18]))) {
+                    return marketAuctionHelper.retrunIfError(rw, "Lot is cancelled and hence cannot be printed");
+                }
+
+                // Prepare the response for the given lot
+                BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
+                marketAuctionForPrintResponse = prepareResponseForLotBaseResponseForSilk(token, response, lotId);
+
+
+        if (foundAcceptedLot) {
+                    marketAuctionForPrintResponse.setAuctionDateWithTime((Date)(response[23]));
+                    marketAuctionForPrintResponse.setTraderFirstName(Util.objectToString(response[24]));
+                    marketAuctionForPrintResponse.setTraderLastName(Util.objectToString(response[25]));
+                    marketAuctionForPrintResponse.setTraderFatherName(Util.objectToString(response[26]));
+                    marketAuctionForPrintResponse.setTraderAddress(Util.objectToString(response[27]));
+                    marketAuctionForPrintResponse.setTraderSilkType(Util.objectToString(response[28]));
+                    marketAuctionForPrintResponse.setTraderLicenseFee(Util.objectToFloat(response[29]));
+                    marketAuctionForPrintResponse.setTraderMobileNumber(Util.objectToString(response[30]));
+                    marketAuctionForPrintResponse.setTraderArnNumber(Util.objectToString(response[31]));
+                    marketAuctionForPrintResponse.setTraderLicenseNumber(Util.objectToString(response[32]));
+                    marketAuctionForPrintResponse.setTraderApplicationNumber(Util.objectToString(response[33]));
+                    marketAuctionForPrintResponse.setTraderLicenseChallanNumber(Util.objectToString(response[34]));
+                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[35]));
+                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[36]));
+                    marketAuctionForPrintResponse.setTraderMarketFee(Util.objectToFloat(response[37]));
+                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[38]));
+                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[39]));
+                    marketAuctionForPrintResponse.setFruitsId(Util.objectToString(response[41]));
+                    marketAuctionForPrintResponse.setTraderAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() - marketAuctionForPrintResponse.getTraderMarketFee());
+                    marketAuctionForPrintResponse.setReelerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() + marketAuctionForPrintResponse.getReelerMarketFee());
+
+
+
+                    List<Float> lotWeightList = lotWeightDetailRepository.findAllByLotId(lotId);
+                    if(!Util.isNullOrEmptyList(lotWeightList))
+                        marketAuctionForPrintResponse.setLotWeightDetail(lotWeightList);
+
+                }
+            }
+        } else {
+            return marketAuctionHelper.retrunIfError(rw, "No Lot found for given request ");
+        }
+        rw.setContent(marketAuctionForPrintResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseForSilk(JwtPayloadData token, Object[] response, BigInteger lotId) {
+        MarketAuctionForPrintResponse marketAuctionForPrintResponse;
+        marketAuctionForPrintResponse = MarketAuctionForPrintResponse.builder().
+                reelerLicense(Util.objectToString(response[0]))
+                .reelerName(Util.objectToString(response[1]))
+                .reelerAddress(Util.objectToString(response[2]))
+                .reelerNameKannada(Util.objectToString(response[3]))
+                .reelerMobileNumber(Util.objectToString(response[4]))
+                .reelerNumber(Util.objectToString(response[5]))
+                .reelerBankName(Util.objectToString(response[6]))
+                .reelerAccountNumber(Util.objectToString(response[7]))
+                .reelerBranchName(Util.objectToString(response[8]))
+                .allottedLotId(Integer.parseInt(String.valueOf(response[9])))
+                .auctionDate(Util.objectToString(response[10]))
+                .farmerEstimatedWeight(Integer.parseInt(String.valueOf(response[11])))
+                .marketName(Util.objectToString(response[12]))
+                .race(Util.objectToString(response[13]))
+                .source(Util.objectToString(response[14]))
+                .tareWeight(Util.objectToFloat(response[15]))
+                .serialNumber(Util.objectToString(response[17])+ lotId)
+                .marketNameKannada(Util.objectToString(response[19]))
+                .reelerIfscCode(Util.objectToString(response[20]))
+
+                .marketAuctionId((BigDecimal) response[21])
+                .reelerFatherName(Util.objectToString(response[22]))
+                .auctionDateWithTime((Date)(response[23]))
+                .fruitsId(Util.objectToString(response[24]))
+                .build();
+        marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
+        marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));
+        marketAuctionForPrintResponse.setLoginName(token.getUsername());
+        return marketAuctionForPrintResponse;
+    }
 }

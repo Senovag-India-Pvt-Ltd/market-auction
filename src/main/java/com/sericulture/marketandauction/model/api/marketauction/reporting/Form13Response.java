@@ -16,6 +16,7 @@ import java.util.List;
 public class Form13Response extends ResponseBody {
     private String averageRate;
     private String marketNameKannada;
+    private String raceName;
     List<BreakdownLotStatus> lotsFrom0to351;
     List<BreakdownLotStatus> lotsFrom201to300;
     List<BreakdownLotStatus> averageLotStatus;

@@ -17,4 +17,14 @@ public class MarketAuctionPrinterController {
     public ResponseEntity<?> getPrintableDataForLot(@RequestBody MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
         return marketAuctionPrinterService.getPrintableDataForLot(marketAuctionForPrintRequest);
     }
+
+    @PostMapping("/getPrintableDataForLotForSeedCocoon")
+    public ResponseEntity<?> getPrintableDataForLotForSeedCocoon(@RequestBody MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+        return marketAuctionPrinterService.getPrintableDataForLotForSeedCocoon(marketAuctionForPrintRequest);
+    }
+
+    @PostMapping("/getPrintableDataForLotForSilk")
+    public ResponseEntity<?> getPrintableDataForLotForSilk(@RequestBody MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+        return marketAuctionPrinterService.getPrintableDataForLotForSilk(marketAuctionForPrintRequest);
+    }
 }

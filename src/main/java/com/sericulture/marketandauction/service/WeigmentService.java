@@ -234,4 +234,178 @@ public class WeigmentService {
         }
         return ResponseEntity.ok(rw);
     }
+
+    public ResponseEntity<?> getWeigmentByLotAndMarketAndAuctionDateForSeedMarket(LotStatusSeedMarketRequest lotStatusRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(LotWeightResponse.class);
+        LotWeightResponse lotWeightResponse = getLotWeightResponseForSeedMarket(lotStatusRequest);
+        rw.setContent(lotWeightResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
+    public ResponseEntity<?> canContinueToWeighmentProcessForSeedMarket(CanContinueToWeighmentForSeedMarketRequest canContinueToWeighmentRequest) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        ResponseWrapper rw = ResponseWrapper.createWrapper(CanContinueToWeighmentResponse.class);
+        CanContinueToWeighmentResponse canContinueToWeighmentResponse = new CanContinueToWeighmentResponse();
+        LotWeightResponse lotWeightResponse = getLotWeightResponseForSeedMarket(canContinueToWeighmentRequest);
+//        if (lotWeightResponse.getLotStatus() != null && !lotWeightResponse.getLotStatus().isEmpty()) {
+//            return marketAuctionHelper.retrunIfError(rw,  lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
+//        }
+//        if (!lotWeightResponse.getLotStatus().equals(LotStatus.ACCEPTED.getLabel())) {
+//            return marketAuctionHelper.retrunIfError(rw, "Lot is accepted. But " + lotWeightResponse.getLotStatus() + " for lot " + canContinueToWeighmentRequest.getAllottedLotId());
+//            //return marketAuctionHelper.retrunIfError(rw, "expected Lot status is accepted but found: " + lotWeightResponse.getLotStatus() + " for the allottedLotId: " + canContinueToWeighmentRequest.getAllottedLotId());
+//        }
+//        if (util.isNullOrEmptyOrBlank(lotWeightResponse.getReelerVirtualAccountNumber())) {
+//            if (entityManager.isOpen()) {
+//                entityManager.close();
+//            }
+//            return marketAuctionHelper.retrunIfError(rw, "No Reeler Virtual Account found for Reeler " + lotWeightResponse.getReelerId());
+//        }
+        CrateMaster crateMaster = crateMasterRepository.findByMarketIdAndGodownIdAndRaceMasterId(canContinueToWeighmentRequest.getMarketId(), canContinueToWeighmentRequest.getGodownId(), lotWeightResponse.getRaceMasterId());
+        int totalCrateCapacityWeight = canContinueToWeighmentRequest.getNoOfCrates() * crateMaster.getApproxWeightPerCrate();
+//        double lotSoldOutAmount = totalCrateCapacityWeight * lotWeightResponse.getBidAmount();
+//        Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(canContinueToWeighmentRequest.getMarketId());
+//        double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
+//        double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
+//        double amountDebitedFromReeler = Util.round(lotSoldOutAmount + reelerMarketFee, 2);
+//        double hasEnoughMoney = lotWeightResponse.getReelerCurrentAvailableBalance() - amountDebitedFromReeler;
+        canContinueToWeighmentResponse.setWeight(totalCrateCapacityWeight);
+        rw.setContent(canContinueToWeighmentResponse);
+
+//        if (hasEnoughMoney < 0) {
+//            if (entityManager.isOpen()) {
+//                entityManager.close();
+//            }
+//            return marketAuctionHelper.retrunIfError(rw, "Reeler current balance is not enough and he need " + Math.abs(hasEnoughMoney) + " more money");
+//        }
+
+        return ResponseEntity.ok(rw);
+    }
+
+
+
+    public ResponseEntity<?> completeLotWeighmentForSeedMarket(CompleteLotWeighmentRequest completeLotWeighmentRequest) {
+        log.info("completeLotWeighMent received request: " + completeLotWeighmentRequest);
+        EntityManager entityManager = null;
+        ResponseWrapper rw = ResponseWrapper.createWrapper(CompleteLotWeighmentResponse.class);
+        try {
+            JwtPayloadData token = marketAuctionHelper.getAuthToken(completeLotWeighmentRequest);
+            entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            CompleteLotWeighmentResponse completeLotWeighmentResponse = new CompleteLotWeighmentResponse();
+
+            // Check if auctionDate is null, if so, use the current date
+            LocalDate auctionDate = completeLotWeighmentRequest.getAuctionDate();
+            if (auctionDate == null) {
+                auctionDate = Util.getISTLocalDate();
+            }
+            Lot lot = lotRepository.findByMarketIdAndAllottedLotIdAndAuctionDate(
+                    completeLotWeighmentRequest.getMarketId(),
+                    completeLotWeighmentRequest.getAllottedLotId(),
+//                    Util.getISTLocalDate()
+                    auctionDate
+            );
+
+            // Removed the check for lot status being accepted
+            // Validate that the lot's status is null
+//            if (lot.getStatus() == null) {
+//                throw new ValidationException(String.format("Weighment not allowed. Lot status is '%s' for lot ID '%s'", lot.getStatus(), lot.getAllottedLotId()));
+//            }
+
+            // Add validation: Don't allow weighment if the weighment has already been completed for the same lot
+            if (lot.getStatus() != null && LotStatus.WEIGHMENTCOMPLETED.getLabel().equals(lot.getStatus())) {
+                throw new ValidationException(String.format(
+                        "Weighment already completed for Market ID '%s', Lot ID '%s', and Auction Date '%s'",
+                        completeLotWeighmentRequest.getMarketId(),
+                        completeLotWeighmentRequest.getAllottedLotId(),
+                        auctionDate
+                ));
+            }
+
+            // Continue with the weighment process
+            float totalWeightOfAllottedLot = 0;
+            for (Weighment weight : completeLotWeighmentRequest.getWeighmentList()) {
+                LotWeightDetail lotWeightDetail = new LotWeightDetail(lot.getId(), weight.getCrateNumber(), weight.getGrossWeight(), weight.getNetWeight());
+                entityManager.persist(lotWeightDetail);
+                totalWeightOfAllottedLot += weight.getNetWeight();
+            }
+
+            // Calculate lot sold out amount
+//            LotWeightResponse lotWeightResponse = getLotWeightResponse(completeLotWeighmentRequest);
+//            double lotSoldOutAmount = totalWeightOfAllottedLot * lotWeightResponse.getBidAmount();
+
+            // Set lot details without changing the status to any specific value
+            lot.setWeighmentCompletedBy(token.getUsername());
+            lot.setStatus(LotStatus.WEIGHMENTCOMPLETED.getLabel());
+            lot.setLotWeightAfterWeighment(totalWeightOfAllottedLot);
+//            lot.setLotSoldOutAmount(lotSoldOutAmount);
+            entityManager.merge(lot);
+
+            completeLotWeighmentResponse.setAllottedLotId(completeLotWeighmentRequest.getAllottedLotId());
+            rw.setContent(completeLotWeighmentResponse);
+            entityManager.getTransaction().commit();
+        } catch (Exception ex) {
+            if (ex instanceof ValidationException) {
+                throw ex;
+            }
+            log.info("completeLotWeighMent Error while processing for request: " + completeLotWeighmentRequest + " error: " + ex);
+            return marketAuctionHelper.retrunIfError(rw, "error while processing completeLotWeighMent: " + ex);
+        } finally {
+            if (entityManager != null && entityManager.isOpen()) {
+                entityManager.close();
+            }
+        }
+        return ResponseEntity.ok(rw);
+    }
+
+    private LotWeightResponse getLotWeightResponseForSeedMarket(LotStatusSeedMarketRequest lotStatusRequest) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        if(lotStatusRequest.getAuctionDate() == null){
+            lotStatusRequest.setAuctionDate(Util.getISTLocalDate());
+        }
+        Query nativeQuery = entityManager.createNativeQuery("""
+                select  f.farmer_number,f.fruits_id,f.first_name ,f.middle_name,f.last_name,
+                ma.RACE_MASTER_ID,v.VILLAGE_NAME,mm.market_name,rm.race_name,sm.source_name,mm.box_weight,l.status
+                from
+                FARMER f
+                INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID
+                INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id
+                LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1
+                LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  and f.ACTIVE = 1
+                LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id
+                LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID
+                LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
+                where l.allotted_lot_id = ? and l.auction_date = ? and l.market_id = ?
+                and f.ACTIVE =1 and ma.active = 1  """);
+
+        nativeQuery.setParameter(1, lotStatusRequest.getAllottedLotId());
+//        nativeQuery.setParameter(2, Util.getISTLocalDate());
+        nativeQuery.setParameter(2, lotStatusRequest.getAuctionDate());
+        nativeQuery.setParameter(3, lotStatusRequest.getMarketId());
+
+        Object[] lotWeightDetails = null;
+        try {
+            lotWeightDetails = (Object[]) nativeQuery.getSingleResult();
+            entityManager.close();
+        }catch (NoResultException ex){
+            entityManager.close();
+            throw new ValidationException(String.format("No data found for the given lot %s, Please check whether it is accepted or not",lotStatusRequest.getAllottedLotId()));
+        }
+        LotWeightResponse lotWeightResponse = LotWeightResponse.builder().
+                farmerNumber(Util.objectToString(lotWeightDetails[0]))
+                .farmerFruitsId(Util.objectToString(lotWeightDetails[1]))
+                .farmerFirstName(Util.objectToString(lotWeightDetails[2]))
+                .farmerMiddleName(Util.objectToString(lotWeightDetails[3]))
+                .farmerLastName(Util.objectToString(lotWeightDetails[4]))
+                .raceMasterId(Util.objectToInteger(lotWeightDetails[5]))
+                .farmerVillage(Util.objectToString(lotWeightDetails[6]))
+                .marketName(Util.objectToString(lotWeightDetails[7]))
+                .race(Util.objectToString(lotWeightDetails[8]))
+                .source(Util.objectToString(lotWeightDetails[9]))
+                .tareWeight(Util.objectToFloat(lotWeightDetails[10]))
+                .lotStatus(Util.objectToString(lotWeightDetails[11]))
+                .build();
+        return lotWeightResponse;
+    }
 }

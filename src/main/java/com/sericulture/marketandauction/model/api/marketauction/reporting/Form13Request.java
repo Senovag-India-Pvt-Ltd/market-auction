@@ -14,4 +14,6 @@ public class Form13Request extends ReportRequest{
     private LocalDate fromDate;
     private LocalDate toDate;
     private Long districtId;
+    private int raceId;
+
 }

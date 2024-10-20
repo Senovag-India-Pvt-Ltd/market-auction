@@ -152,6 +152,14 @@ public class MarketAuctionHelper {
         return jwtPayloadData;
     }
 
+    public JwtPayloadData getTraderAuthToken(RequestBody requestBody) {
+        JwtPayloadData jwtPayloadData = Util.getTokenValues();
+        if (jwtPayloadData.getMarketId() != requestBody.getMarketId() || jwtPayloadData.getUserType()!= USERTYPE.TRADER.getType()) {
+            throw new ValidationException(String.format("expected market or usertype is wrong expected market is: %s but found: %s and expected user type is: %s but found %s for the user %s",  jwtPayloadData.getMarketId(),requestBody.getMarketId(),USERTYPE.REELER.getType(),jwtPayloadData.getUserType(), jwtPayloadData.getUsername()));
+        }
+        return jwtPayloadData;
+    }
+
     public int checkCurrentAuction(int marketMasterId) {
         MarketMaster marketMaster = marketMasterRepository.findById(marketMasterId);
 

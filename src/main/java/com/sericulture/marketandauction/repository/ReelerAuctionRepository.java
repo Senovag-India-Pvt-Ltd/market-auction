@@ -40,6 +40,29 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
             l.auction_date =:auctionDate and l.market_id =:marketId and l.allotted_lot_id =:lotId""")
     public Object[][] getLotBidDetailResponse(int lotId, LocalDate auctionDate, int marketId);
 
+    @Query(nativeQuery = true , value = """
+            SELECT
+                r.name,
+                r.reeler_number,
+                v.Village_Name,
+                l.LOT_APPROX_WEIGHT_BEFORE_WEIGHMENT,
+                l.status,
+                l.BID_ACCEPTED_BY
+            FROM
+                REELER r
+            INNER JOIN
+                market_auction ma ON ma.reeler_id = r.REELER_ID
+            INNER JOIN
+                lot l ON l.market_auction_id = ma.market_auction_id
+                AND l.auction_date = ma.market_auction_date
+            LEFT JOIN
+                Village v ON r.Village_ID = v.village_id
+            WHERE
+                l.auction_date = :auctionDate
+                AND l.market_id = :marketId
+                AND l.allotted_lot_id = :lotId""")
+    public Object[][] getLotBidReelerDetailResponseOfSilkMarket(int lotId, LocalDate auctionDate, int marketId);
+
     public ReelerAuction findById(BigInteger id);
 
     @Query(nativeQuery = true, value = "SELECT r.name ,r.fruits_id  from REELER_AUCTION ra, reeler r  where ra.REELER_ID = r.reeler_id and ra.active = 1 and REELER_AUCTION_ID =:reelerAuctionId")
@@ -47,6 +70,9 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
 
     @Query(nativeQuery = true, value = "SELECT r.name ,r.fruits_id,r.reeling_license_number  from REELER_AUCTION ra, reeler r  where ra.REELER_ID = r.reeler_id and ra.active = 1 and REELER_AUCTION_ID =:reelerAuctionId")
     public Object[][] getReelerDetailsForHighestBidWithReelingNumber(BigInteger reelerAuctionId);
+
+    @Query(nativeQuery = true, value = "SELECT tl.first_name, tl.trader_license_number FROM REELER_AUCTION ra LEFT JOIN trader_license tl ON ra.trader_license_id = tl.trader_license_id WHERE ra.active = 1 AND ra.REELER_AUCTION_ID = :reelerAuctionId")
+    public Object[][] getTraderDetailsForHighestBidWithTradingNumber(BigInteger reelerAuctionId);
 
     @Query("SELECT DISTINCT allottedLotId  from ReelerAuction ra  where ra.auctionDate =:today and ra.marketId =:marketId and ra.reelerId  =:reelerId")
     public List<Integer> findByAuctionDateAndMarketIdAndReelerId(LocalDate today,int marketId,int reelerId);
@@ -80,6 +106,8 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
 
 
     public long deleteByIdAndMarketIdAndAllottedLotIdAndReelerId(BigInteger id,int marketId,int allottedLotId,BigInteger reelerId);
+
+    public long deleteByIdAndMarketIdAndAllottedLotIdAndTraderLicenseId(BigInteger id,int marketId,int allottedLotId,BigInteger traderLicenseId);
 
     @Query(nativeQuery = true,value = """
             SELECT virtual_account_number  from reeler_virtual_bank_account rvba WHERE reeler_id = :reelerId and market_master_id = :marketId""")
@@ -115,6 +143,19 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERY)
     public List<Object[]> getUnitCounterReportWithoutReelerNumber(LocalDate fromDate,LocalDate toDate,int marketId);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.UNIT_COUNTER_REPORT_SILK)
+    public List<Object[]> getUnitCounterReportSilk(LocalDate fromDate,LocalDate toDate,int marketId,String traderLicenseNumber);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERY_SILK)
+    public List<Object[]> getUnitCounterReportWithoutReelerNumberSilk(LocalDate fromDate,LocalDate toDate,int marketId);
+
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.REELER_MF_REPORT)
+    public List<Object[]> getReelerMFReport(LocalDate fromDate,LocalDate toDate,int marketId,String reelerLicenseNumber);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.REELER_MF_REPORT_WITHOUT_REELER_QUERY)
+    public List<Object[]> getReelerMFReportWithoutReelerNumber(LocalDate fromDate,LocalDate toDate,int marketId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.BIDDING_REPORT_QUERY_LOT)
     public List<Object[]> getBiddingReport(int marketId, LocalDate auctionDate,int lotId);

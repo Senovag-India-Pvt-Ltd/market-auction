@@ -49,4 +49,12 @@ public class MarketAuction extends BaseEntity implements Serializable {
     private int numberOfBigBin;
     @Column(name = "REASON_FOR_CANCELLATION")
     private int reasonForCancellation;
+    @Column(name = "dfl_lot_number")
+    private String dflLotNumber;
+    @Column(name = "lot_variety")
+    private String lotVariety;
+    @Column(name = "lot_parental_level")
+    private String lotParentalLevel;
+    @Column(name = "reeler_id")
+    private int reelerId;
 }

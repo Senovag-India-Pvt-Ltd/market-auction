@@ -44,15 +44,34 @@ public class MarketAuctionReportController {
     public ResponseEntity<?> getDTROnlineReport(@RequestBody DTROnlineReportRequest dtrOnlineReportRequest){
         return marketAuctionReportService.getDTROnlineReport(dtrOnlineReportRequest);
     }
+    @PostMapping("/getDTROnlineReportForSilkType")
+    public ResponseEntity<?> getDTROnlineReportForSilkType(@RequestBody DTROnlineReportRequest dtrOnlineReportRequest){
+        return marketAuctionReportService.getDTROnlineReportForSilkType(dtrOnlineReportRequest);
+    }
 
     @PostMapping("/getBlankDTROnlineReport")
     public ResponseEntity<?> getBlankDTROnlineReport(@RequestBody DTROnlineReportRequest dtrOnlineReportRequest){
         return marketAuctionReportService.getBlankDTROnlineReport(dtrOnlineReportRequest);
     }
 
+    @PostMapping("/getBlankDTROnlineReportForSilkType")
+    public ResponseEntity<?> getBlankDTROnlineReportForSilkType(@RequestBody DTROnlineReportRequest dtrOnlineReportRequest){
+        return marketAuctionReportService.getBlankDTROnlineReportForSilkType(dtrOnlineReportRequest);
+    }
+
     @PostMapping("/getUnitCounterReport")
     public ResponseEntity<?> getUnitCounterReport(@RequestBody ReportRequest reportRequest){
         return marketAuctionReportService.getUnitCounterReport(reportRequest);
+    }
+
+    @PostMapping("/getUnitCounterReportSilkType")
+    public ResponseEntity<?> getUnitCounterReportSilkType(@RequestBody ReportRequest reportRequest){
+        return marketAuctionReportService.getUnitCounterReportSilkType(reportRequest);
+    }
+
+    @PostMapping("/getReelerMFReport")
+    public ResponseEntity<?> getReelerMFReport(@RequestBody ReportRequest reportRequest){
+        return marketAuctionReportService.getReelerMFReport(reportRequest);
     }
 
     @PostMapping("/getPendingLotReport")
@@ -79,10 +98,19 @@ public class MarketAuctionReportController {
     public ResponseEntity<?> getForm13Report(@RequestBody Form13Request requestBody){
         return marketAuctionReportService.getForm13Report(requestBody);
     }
+    @PostMapping("/getForm13ReportSilk")
+    public ResponseEntity<?> getForm13ReportSilk(@RequestBody Form13Request requestBody){
+        return marketAuctionReportService.getForm13ReportSilk(requestBody);
+    }
+
 
     @PostMapping("/getForm13ReportByDist")
     public ResponseEntity<?> getForm13ReportByDist(@RequestBody Form13Request requestBody){
         return marketAuctionReportService.getForm13ReportByDistrict(requestBody);
+    }
+    @PostMapping("/getForm13ReportByDistrictSilkType")
+    public ResponseEntity<?> getForm13ReportByDistrictSilkType(@RequestBody Form13Request requestBody){
+        return marketAuctionReportService.getForm13ReportByDistrictSilkType(requestBody);
     }
 
     @PostMapping("/averageReportForYearsReport")
@@ -128,10 +156,20 @@ public class MarketAuctionReportController {
     public ResponseEntity<?> getDashboardReport(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getDashboardReport(reportRequest);
     }
+    @PostMapping("/getDashboardReportSilkType")
+    public ResponseEntity<?> getDashboardReportSilkType(@RequestBody DashboardReportRequest reportRequest){
+        return marketAuctionReportService.getDashboardReportSilkType(reportRequest);
+    }
+
 
     @PostMapping("/getMonthlyDistrictReport")
     public ResponseEntity<?> getMonthlyDistrictReport(@RequestBody MonthlyDistrictRequest reportRequest){
         return marketAuctionReportService.getMonthlyDistrictReport(reportRequest);
+    }
+
+    @PostMapping("/getMonthlyDistrictReportSilkType")
+    public ResponseEntity<?> getMonthlyDistrictReportSilkType(@RequestBody MonthlyDistrictRequest reportRequest){
+        return marketAuctionReportService.getMonthlyDistrictReportSilkType(reportRequest);
     }
 
     @PostMapping("/getReelerTxnReport")
