@@ -72,11 +72,6 @@ public class MarketAuctionQueryConstants {
     SELECT
         ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,
         l.allotted_lot_id,
-        f.first_name,
-        f.middle_name,
-        f.last_name,
-        f.farmer_number,
-        f.mobile_number,
         l.LOT_WEIGHT_AFTER_WEIGHMENT,
         raa.AMOUNT,
         l.LOT_SOLD_OUT_AMOUNT,
@@ -105,19 +100,12 @@ public class MarketAuctionQueryConstants {
         tl.district_id,
         tl.application_number,
         tl.license_challan_number,
-        fba.farmer_bank_name,
-        fba.farmer_bank_branch_name,
-        fba.farmer_bank_ifsc_code,
-        fba.farmer_bank_account_number,
         mm.market_name_in_kannada,
-        fa.address_text,
         l.auction_date,
         v.VILLAGE_NAME,
         t.TALUK_NAME,
         rm.race_name,
         mm.cocoon_age,
-        f.name_kan,
-        f.father_name_kan,
         t.TALUK_NAME_IN_KANNADA,
         v.VILLAGE_NAME_IN_KANNADA,
         MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
@@ -146,7 +134,7 @@ public class MarketAuctionQueryConstants {
             INNER JOIN dbo.market_auction ma ON ma.reeler_id = r.REELER_ID
             INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
             INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date 
-            LEFT JOIN dbo.reeler r ON r.reeler_id = r.REELER_ID
+            LEFT JOIN dbo.reeler r2 ON r2.reeler_id = r.REELER_ID
             INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id 
             """;
 
@@ -255,8 +243,6 @@ public class MarketAuctionQueryConstants {
                                   SELECT
                                       ROW_NUMBER() OVER (ORDER BY l.lot_id ASC) AS row_id,
                                       l.allotted_lot_id,
-                                      f.first_name, f.middle_name, f.last_name,
-                                      f.farmer_number, f.mobile_number,
                                       l.LOT_WEIGHT_AFTER_WEIGHMENT,
                                       COALESCE(raa.AMOUNT, 0) AS amount,
                                       l.LOT_SOLD_OUT_AMOUNT, l.MARKET_FEE_TRADER, l.MARKET_FEE_REELER,
@@ -266,10 +252,9 @@ public class MarketAuctionQueryConstants {
                                       tl.father_name AS trader_father_name, tl.address AS trader_address,
                                       tl.silk_type, tl.license_fee, tl.mobile_number, tl.arn_number, tl.trader_license_number,
                                       tl.state_id, tl.district_id, tl.application_number, tl.license_challan_number,
-                                      fba.farmer_bank_name, fba.farmer_bank_branch_name, fba.farmer_bank_ifsc_code, fba.farmer_bank_account_number,
-                                      mm.market_name_in_kannada, fa.address_text, l.auction_date,\s
+                                      mm.market_name_in_kannada, l.auction_date,\s
                                       v.VILLAGE_NAME, t.TALUK_NAME, rm.race_name, mm.cocoon_age,
-                                      f.name_kan, f.father_name_kan, t.TALUK_NAME_IN_KANNADA, v.VILLAGE_NAME_IN_KANNADA,
+                                       t.TALUK_NAME_IN_KANNADA, v.VILLAGE_NAME_IN_KANNADA,
                                       MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
                                       MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
                                       AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -277,8 +262,9 @@ public class MarketAuctionQueryConstants {
                                   INNER JOIN dbo.market_auction ma ON ma.reeler_id = r.REELER_ID
                                   LEFT JOIN dbo.lot l ON l.market_auction_id = ma.market_auction_id AND l.auction_date = ma.market_auction_date
                                   LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
-                                  LEFT JOIN Village v ON r.Village_ID = v.village_id
-                                  LEFT JOIN TALUK t ON r.TALUK_ID = t.TALUK_ID
+                                  LEFT JOIN dbo.reeler r ON r.reeler_id = raa.REELER_ID
+                                 LEFT JOIN  Village v ON   r.Village_ID = v.village_id  
+                                 LEFT JOIN TALUK t on t.TALUK_ID = r.TALUK_ID
                                   INNER JOIN dbo.market_master mm ON mm.market_master_id = ma.market_id
                                   LEFT JOIN dbo.trader_license tl ON tl.trader_license_id = raa.trader_license_id
                                   LEFT JOIN dbo.race_master rm ON rm.race_id = ma.RACE_MASTER_ID
@@ -348,10 +334,10 @@ public class MarketAuctionQueryConstants {
              ORDER by l.lot_id""";
 
     public static final String DTR_ONLINE_REPORT_QUERY_FOR_CASH_SILK = """
-            select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
-             f.mobile_number,l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_TRADER,l.MARKET_FEE_REELER,
+            select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,
+             l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_TRADER,l.MARKET_FEE_REELER,
              r.reeling_license_number,r.name,r.mobile_number,r.address,r.bank_name,r.bank_account_number,r.branch_name,r.ifsc_code,r.reeler_number,tl.first_name,tl.middle_name,tl.last_name,tl.father_name,tl.address,tl.silk_type,tl.license_fee,tl.mobile_number,tl.arn_number,tl.trader_license_number,tl.state_id,tl.district_id,tl.application_number,tl.license_challan_number,
-             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME,rm.race_name,mm.cocoon_age,f.name_kan,f.father_name_kan,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
+            mm.market_name_in_kannada,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME,rm.race_name,mm.cocoon_age,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
              MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
              MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
              AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -360,8 +346,8 @@ public class MarketAuctionQueryConstants {
              INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
              INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
              LEFT JOIN dbo.reeler r2 ON r2.reeler_id = r.REELER_ID 
-             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id
-             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+             LEFT JOIN  Village v ON   r.Village_ID = v.village_id
+             LEFT JOIN TALUK t on t.TALUK_ID = r.TALUK_ID
              LEFT JOIN dbo.race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
              INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id
              INNER JOIN dbo.trader_license tl ON tl.trader_license_id =raa.trader_license_id
@@ -443,11 +429,6 @@ public class MarketAuctionQueryConstants {
              ROW_NUMBER() OVER (ORDER BY l.lot_id ASC) AS row_id,
              -- ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
               l.allotted_lot_id,
-              f.first_name AS farmer_first_name,
-              f.middle_name AS farmer_middle_name,
-              f.last_name AS farmer_last_name,
-              f.farmer_number,
-              f.mobile_number AS farmer_mobile_number,
               l.LOT_WEIGHT_AFTER_WEIGHMENT,
               COALESCE(raa.AMOUNT, 0) AS amount,
               l.LOT_SOLD_OUT_AMOUNT,
@@ -476,19 +457,12 @@ public class MarketAuctionQueryConstants {
               tl.district_id,
               tl.application_number,
               tl.license_challan_number,
-              fba.farmer_bank_name,
-              fba.farmer_bank_branch_name,
-              fba.farmer_bank_ifsc_code,
-              fba.farmer_bank_account_number,
               mm.market_name_in_kannada,
-              fa.address_text AS farmer_address_text,
               l.auction_date,
               v.VILLAGE_NAME,
               t.TALUK_NAME,
               rm.race_name,
               mm.cocoon_age,
-              f.name_kan AS farmer_name_kan,
-              f.father_name_kan AS farmer_father_name_kan,
               t.TALUK_NAME_IN_KANNADA,
               v.VILLAGE_NAME_IN_KANNADA,
                 MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
