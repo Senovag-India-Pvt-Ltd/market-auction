@@ -50,4 +50,5 @@ public class SeedMarketAuctionDetailsResponse {
     private String noOfCocoonsExamined;
     private String marketAuctionDate;
     private String fitnessCertificatePath;
+    private Long allottedLotId;
 }

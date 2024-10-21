@@ -341,6 +341,7 @@ public class CocoonMarketService {
                     .pupaCocoonStatus(Util.objectToString(arr[29]))
                     .noOfCocoonsExamined(Util.objectToString(arr[30]))
                     .marketAuctionDate(Util.objectToString(arr[31]))
+                    .allottedLotId(Util.objectToLong(arr[32]))
 //                    .fitnessCertificatePath(Util.objectToString(arr[32]))
                     .build();
 
