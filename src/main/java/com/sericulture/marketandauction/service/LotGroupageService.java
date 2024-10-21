@@ -240,102 +240,115 @@ public class LotGroupageService {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         Query nativeQuery = entityManager.createNativeQuery("""
                 WITH PrimaryAddress AS (
-                    SELECT
-                     fa.farmer_id,
-                     fa.STATE_ID,
-                     fa.DISTRICT_ID,
-                     fa.TALUK_ID,
-                     fa.HOBLI_ID,
-                     fa.VILLAGE_ID,
-                     ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
-                 FROM
-                     farmer_address fa
-                 WHERE
-                     fa.active = 1
-             )
-             SELECT\s
-                 f.farmer_number,
-                 f.fruits_id,
-                 f.first_name,
-                 f.middle_name,
-                 f.last_name,
-                 ma.RACE_MASTER_ID,
-                 v.VILLAGE_NAME,
-                 mm.market_name,
-                 rm.race_name,
-                 sm.source_name,
-                 mm.box_weight,
-                 l.status,
-                 lg.lot_groupage_id,
-                 lg.buyer_id,
-                 lg.buyer_type,
-                 lg.lot_weight,
-                 lg.amount,
-                 lg.market_fee,
-                 lg.sold_amount,
-                 l.LOT_WEIGHT_AFTER_WEIGHMENT,
-                 ma.dfl_lot_number,
-                 ma.lot_variety,
-                 ma.lot_Parental_Level,
-                 ma.estimated_weight,
-                 lbpf.PRICE_PER_KG,
-                 lbpf.FIXATION_DATE,
-                 ptaca.TEST_DATE,
-                 ptaca.NO_OF_COCOON_TAKEN_FOR_EXAMINATION,
-                 ptaca.NO_OF_DFL_FROM_FC,
-                 ptaca.DISEASE_FREE,
-                 ptaca.DISEASE_TYPE,
-                 ptaca.NO_OF_COCOON_PER_KG,
-                 ptaca.MELT_PERCENTAGE,
-                 ptaca.pupa_cocoon_status,
-                 ptaca.PUPA_TEST_RESULT,
-                 ma.market_auction_date,
-                 l.allotted_lot_id,
-                 lg.average_yield,
-                 lg.no_of_dfls,
-                 lg.invoice_number,
-                 l.LOT_WEIGHT_AFTER_WEIGHMENT / ma.dfl_lot_number AS averageYield,
-                 CASE
-                     WHEN lg.buyer_type = 'RSP' THEN es.license_number
-                     WHEN lg.buyer_type = 'NSSO' THEN es.address
-                     WHEN lg.buyer_type = 'Govt Grainage' THEN es.address
-                     WHEN lg.buyer_type = 'Reeling' THEN r.name
-                     ELSE NULL
-                 END AS buyer_name
-             FROM
-                 FARMER f
-             INNER JOIN
-                 market_auction ma ON ma.farmer_id = f.FARMER_ID
-             INNER JOIN
-                 lot l ON l.market_auction_id = ma.market_auction_id
-             LEFT JOIN
-                 PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
-             LEFT JOIN
-                 Village v ON pa.VILLAGE_ID = v.village_id AND f.ACTIVE = 1
-             LEFT JOIN
-                 market_master mm ON mm.market_master_id = ma.market_id
-             LEFT JOIN
-                 race_master rm ON rm.race_id = ma.lot_variety
-             LEFT JOIN
-                 source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
-             LEFT JOIN
-                 lot_groupage lg ON l.lot_id = lg.lot_id
-             LEFT JOIN
-                 PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
-             LEFT JOIN LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id AND lbpf.FIXATION_DATE = ma.market_auction_date
-             LEFT JOIN
-                 reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
-             LEFT JOIN
-                 external_unit_registration es ON lg.buyer_id = es.external_unit_registration_id
-                 AND lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage')
+                SELECT
+                    fa.farmer_id,
+                    fa.STATE_ID,
+                    fa.DISTRICT_ID,
+                    fa.TALUK_ID,
+                    fa.HOBLI_ID,
+                    fa.VILLAGE_ID,
+                    ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
+                FROM
+                    farmer_address fa
                 WHERE
-                    l.allotted_lot_id = ?
-                    AND l.auction_date = ?
-                    AND l.market_id = ?
-                    AND f.ACTIVE = 1
-                    AND ma.active = 1
-                    AND l.status = 'weighmentcompleted';
-                """);
+                    fa.active = 1
+            )
+            SELECT
+                f.farmer_number,
+                f.fruits_id,
+                f.first_name,
+                f.middle_name,
+                f.last_name,
+                ma.RACE_MASTER_ID,
+                v.VILLAGE_NAME,
+                mm.market_name,
+                rm.race_name,
+                sm.source_name,
+                mm.box_weight,
+                l.status,
+                lg.lot_groupage_id,
+                lg.buyer_id,
+                lg.buyer_type,
+                lg.lot_weight,
+                lg.amount,
+                lg.market_fee,
+                lg.sold_amount,
+                CASE
+                    WHEN lg.lot_groupage_id IS NOT NULL THEN lg.remaining_cocoon
+                    ELSE l.LOT_WEIGHT_AFTER_WEIGHMENT
+                END AS weight_to_show,
+                ma.dfl_lot_number,
+                ma.lot_variety,
+                ma.lot_Parental_Level,
+                ma.estimated_weight,
+                lbpf.PRICE_PER_KG,
+                lbpf.FIXATION_DATE,
+                ptaca.TEST_DATE,
+                ptaca.NO_OF_COCOON_TAKEN_FOR_EXAMINATION,
+                ptaca.NO_OF_DFL_FROM_FC,
+                ptaca.DISEASE_FREE,
+                ptaca.DISEASE_TYPE,
+                ptaca.NO_OF_COCOON_PER_KG,
+                ptaca.MELT_PERCENTAGE,
+                ptaca.pupa_cocoon_status,
+                ptaca.PUPA_TEST_RESULT,
+                ma.market_auction_date,
+                l.allotted_lot_id,
+                lg.average_yield,
+                lg.no_of_dfls,
+                lg.invoice_number,
+                (l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / ma.dfl_lot_number AS calculatedAverageYield,
+                lg.remaining_cocoon,
+                (SELECT COALESCE(SUM(lg_inner.lot_weight), 0)
+                  FROM lot_groupage lg_inner
+                  INNER JOIN lot l_inner ON lg_inner.lot_id = l_inner.lot_id
+                  WHERE lg_inner.allotted_lot_id = l.allotted_lot_id
+                    AND l_inner.auction_date = l.auction_date -- Use the outer query's auction date
+                    AND lg_inner.lot_weight > 0
+                 ) AS soldCocoonInKgs,
+                 l.LOT_WEIGHT_AFTER_WEIGHMENT,
+                CASE
+                    WHEN lg.buyer_type = 'RSP' THEN es.license_number
+                    WHEN lg.buyer_type = 'NSSO' THEN es.address
+                    WHEN lg.buyer_type = 'Govt Grainage' THEN es.address
+                    WHEN lg.buyer_type = 'Reeling' THEN r.name
+                    ELSE NULL
+                END AS buyer_name
+            FROM
+                FARMER f
+            INNER JOIN
+                market_auction ma ON ma.farmer_id = f.FARMER_ID
+            INNER JOIN
+                lot l ON l.market_auction_id = ma.market_auction_id
+            LEFT JOIN
+                PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
+            LEFT JOIN
+                Village v ON pa.VILLAGE_ID = v.village_id AND f.ACTIVE = 1
+            LEFT JOIN
+                market_master mm ON mm.market_master_id = ma.market_id
+            LEFT JOIN
+                race_master rm ON rm.race_id = ma.lot_variety
+            LEFT JOIN
+                source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
+            LEFT JOIN
+                lot_groupage lg ON l.lot_id = lg.lot_id
+            LEFT JOIN
+                PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
+            LEFT JOIN LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id
+                 AND lbpf.FIXATION_DATE = CAST(GETDATE() AS DATE)
+            LEFT JOIN
+                reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
+            LEFT JOIN
+                external_unit_registration es ON lg.buyer_id = es.external_unit_registration_id
+                AND lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage')
+            WHERE
+                l.allotted_lot_id = ?
+                AND l.auction_date = ?
+                AND l.market_id = ?
+                AND f.ACTIVE = 1
+                AND ma.active = 1
+                AND l.status = 'weighmentcompleted';
+            """);
 
         nativeQuery.setParameter(1, lotStatusRequest.getAllottedLotId());
         nativeQuery.setParameter(2, lotStatusRequest.getAuctionDate());
@@ -366,7 +379,7 @@ public class LotGroupageService {
                     .lotGroupageId(Util.objectToLong(lotWeightDetails[12]))
                     .buyerId(Util.objectToLong(lotWeightDetails[13]))
                     .buyerType(Util.objectToString(lotWeightDetails[14]))
-                    .lotWeight(Util.objectToLong(lotWeightDetails[15]))
+                    .lotWeight(Util.objectToFloat(lotWeightDetails[15]))
                     .amount(Util.objectToLong(lotWeightDetails[16]))
                     .marketFee(Util.objectToLong(lotWeightDetails[17]))
                     .soldAmount(Util.objectToLong(lotWeightDetails[18]))
@@ -390,7 +403,10 @@ public class LotGroupageService {
                     .dflLotNumber(Util.objectToString(lotWeightDetails[38]))
                     .invoiceNumber(Util.objectToString(lotWeightDetails[39]))
                     .calculatedAverageYield(Util.objectToString(lotWeightDetails[40]))
-                    .buyerName(Util.objectToString(lotWeightDetails[41]))
+                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[41]))
+                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[42]))
+                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[43]))
+                    .buyerName(Util.objectToString(lotWeightDetails[44]))
                     .build();
             responses.add(lotDistributeResponse);
         }
@@ -410,15 +426,29 @@ public class LotGroupageService {
         }
 
         for (LotGroupageRequestEdit lotGroupageRequestEdit : lotGroupageDetailsRequestEdit.getLotGroupageRequestEditList()) {
-            Optional<LotGroupage> optionalLotGroupage = lotGroupageRepository.findByLotGroupageIdAndActiveIn(lotGroupageRequestEdit.getLotGroupageId(), Set.of(true, false));
+            LotGroupage lotGroupage;
 
-            if (!optionalLotGroupage.isPresent()) {
-                lotGroupageResponse.setError(true);
-                lotGroupageResponse.setError_description("Lot groupage with ID " + lotGroupageRequestEdit.getLotGroupageId() + " not found.");
-                return lotGroupageResponse;
+            // Check for lotGroupageId and fetch existing lotGroupage if present
+            if (lotGroupageRequestEdit.getLotGroupageId() != null) {
+                Optional<LotGroupage> optionalLotGroupage = lotGroupageRepository.findByLotGroupageIdAndActiveIn(lotGroupageRequestEdit.getLotGroupageId(), Set.of(true, false));
+                if (!optionalLotGroupage.isPresent()) {
+                    lotGroupageResponse.setError(true);
+                    lotGroupageResponse.setError_description("Lot groupage with ID " + lotGroupageRequestEdit.getLotGroupageId() + " not found.");
+                    return lotGroupageResponse;
+                }
+                lotGroupage = optionalLotGroupage.get();
+            } else {
+                // Create a new LotGroupage if no ID is provided
+                lotGroupage = new LotGroupage(); // Assuming LotGroupage has a no-argument constructor
+
+                // Generate invoice number for the new LotGroupage
+                String nextSeq = lotGroupageRepository.getNextValInvoiceSequence().toString();
+                if (nextSeq.length() == 1)
+                    nextSeq = "0" + nextSeq;
+
+                String invoiceNumber = "INV/LOTALLOT/" + nextSeq;
+                lotGroupage.setInvoiceNumber(invoiceNumber);
             }
-
-            LotGroupage lotGroupage = optionalLotGroupage.get();
 
             // Fetch market auction details and update lotGroupage
             List<Object[]> marketAuctionDetails = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(lotGroupageRequestEdit.getAllottedLotId().intValue(), lotGroupageRequestEdit.getAuctionDate());
@@ -452,7 +482,7 @@ public class LotGroupageService {
                 lotGroupage.setMarketFee(marketFee.longValue());
             }
 
-            // Save updated lotGroupage
+            // Save updated or new lotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);
             lotGroupageResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
             lotGroupageResponse.setError(false);

@@ -31,7 +31,7 @@ public class LotGroupage extends BaseEntity implements Serializable {
     private Long buyerId;
 
     @Column(name = "LOT_WEIGHT")
-    private Long lotWeight;
+    private Float lotWeight;
 
     @Column(name = "AMOUNT")
     private Long amount;
@@ -66,6 +66,9 @@ public class LotGroupage extends BaseEntity implements Serializable {
 
     @Column(name = "lot_parental_level")
     private String lotParentLevel;
+
+    @Column(name = "remaining_cocoon")
+    private Float remainingCocoonWeight;
 
 
 }

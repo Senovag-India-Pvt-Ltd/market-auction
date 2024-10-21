@@ -21,7 +21,7 @@ public class LotGroupageRequest extends RequestBody {
     Long buyerId;
 
     @Schema(name="lotWeight", example = "1")
-    Long lotWeight;
+    Float lotWeight;
 
     @Schema(name="amount", example = "1")
     Long amount;
@@ -55,6 +55,9 @@ public class LotGroupageRequest extends RequestBody {
 
     @Schema(name="lotParentLevel", example = "1")
     String lotParentLevel;
+
+    @Schema(name="remainingCocoonWeight", example = "1")
+    Float remainingCocoonWeight;
 
 
 
