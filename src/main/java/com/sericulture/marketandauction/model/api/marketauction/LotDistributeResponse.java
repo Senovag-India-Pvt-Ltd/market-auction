@@ -96,4 +96,5 @@ public class LotDistributeResponse extends ResponseBody {
     private String averageYield;
     private String noOfDFLs;
     private String invoiceNumber;
+    private String calculatedAverageYield;
 }
