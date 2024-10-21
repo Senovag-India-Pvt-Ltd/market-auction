@@ -183,10 +183,14 @@ public class SilkMarketWeigmentService {
             }
             double lotSoldOutAmount = totalWeightOfAllottedLot * lotWeightResponse.getBidAmount();
             Object[][] marketBrokarage = marketMasterRepository.getBrokarageInPercentageForMarket(lot.getMarketId());
-            double traderBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
-            double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][2]));
-            double reelerMarketFee = (lotSoldOutAmount * traderBrokarage) / 100;
-            double farmerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
+            double reelerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][1]));
+            double farmerBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][2]));
+            double traderBrokarage = Double.valueOf(String.valueOf(marketBrokarage[0][3]));
+
+
+            double reelerMarketFee = (lotSoldOutAmount * reelerBrokarage) / 100;
+            double farmerMarketFee = (lotSoldOutAmount * farmerBrokarage) / 100;
+            double traderMarketFee = (lotSoldOutAmount * traderBrokarage) / 100;
             double amountDebitedFromReeler = Math.round(lotSoldOutAmount + reelerMarketFee);
             if(paymentMode==null || paymentMode.equals(PAYMENTMODE.ONLINE.getLabel())){
                 ReelerVidDebitTxn reelerVidDebitTxn = new ReelerVidDebitTxn(lot.getAllottedLotId(), lot.getMarketId(), Util.getISTLocalDate(), lotWeightResponse.getReelerId(), lotWeightResponse.getReelerVirtualAccountNumber(), amountDebitedFromReeler);
@@ -198,6 +202,7 @@ public class SilkMarketWeigmentService {
             lot.setLotSoldOutAmount(lotSoldOutAmount);
             lot.setMarketFeeReeler(reelerMarketFee);
             lot.setMarketFeeFarmer(farmerMarketFee);
+            lot.setMarketFeeTrader(traderMarketFee);
             entityManager.merge(lot);
             completeLotWeighmentResponse.setAllottedLotId(completeLotWeighmentRequest.getAllottedLotId());
             completeLotWeighmentResponse.setTotalAmountDebited(amountDebitedFromReeler);
