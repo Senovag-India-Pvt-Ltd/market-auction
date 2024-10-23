@@ -73,5 +73,7 @@ public class DTROnlineReportUnitDetail {
     private float avgAmount;
     private String reelerVillage;
     private String reelerTaluk;
+    private float traderAmount;
+
 
 }

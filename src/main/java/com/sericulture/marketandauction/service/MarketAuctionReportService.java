@@ -620,7 +620,6 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                     .traderDistrictNameInKannada(Util.objectToString(unit[27]))
                     .traderApplicationNumber(Util.objectToString(unit[28]))
                     .traderLicenseChallanNumber(Util.objectToString(unit[29]))
-                    .marketNameInKannada(Util.objectToString(unit[30]))
                     .auctionDate(((java.sql.Date) unit[31]).toLocalDate())
                     .reelerVillage(Util.objectToString(unit[32]))
                     .reelerTaluk(Util.objectToString(unit[33]))
@@ -635,11 +634,15 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
             // Calculate ReelerAmount and FarmerAmount with two decimal precision
             dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportUnitDetail.setFarmerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportUnitDetail.setTraderAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getTraderMarketFee()) * 100.0f) / 100.0f);
+
             dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round((dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round((dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
-            dtrOnlineReportResponse.setTotalTraderLicenseFee(Math.round((dtrOnlineReportResponse.getTotalTraderLicenseFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderMarketFee(Math.round((dtrOnlineReportResponse.getTotalTraderMarketFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalFarmerAmount(Math.round((dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalReelerAmount(Math.round((dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderAmount(Math.round((dtrOnlineReportResponse.getTotalTraderAmount() + dtrOnlineReportUnitDetail.getTraderAmount()) * 100.0f) / 100.0f);
+
             dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round((dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
 //        dtrOnlineReportUnitDetail.setReelerAmount(Math.round(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()));
@@ -724,7 +727,6 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                     .traderDistrictNameInKannada(Util.objectToString(unit[27]))
                     .traderApplicationNumber(Util.objectToString(unit[28]))
                     .traderLicenseChallanNumber(Util.objectToString(unit[29]))
-                    .marketNameInKannada(Util.objectToString(unit[30]))
                     .auctionDate(((java.sql.Date) unit[31]).toLocalDate())
                     .reelerVillage(Util.objectToString(unit[32]))
                     .reelerTaluk(Util.objectToString(unit[33]))
@@ -738,11 +740,15 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
                     .build();
             dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportUnitDetail.setFarmerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportUnitDetail.setTraderAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getTraderMarketFee()) * 100.0f) / 100.0f);
+
             dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round((dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round((dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
-            dtrOnlineReportResponse.setTotalTraderLicenseFee(Math.round((dtrOnlineReportResponse.getTotalTraderLicenseFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderMarketFee(Math.round((dtrOnlineReportResponse.getTotalTraderMarketFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalFarmerAmount(Math.round((dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalReelerAmount(Math.round((dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderAmount(Math.round((dtrOnlineReportResponse.getTotalTraderAmount() + dtrOnlineReportUnitDetail.getTraderAmount()) * 100.0f) / 100.0f);
+
             dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round((dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
 //            dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
@@ -832,7 +838,7 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
         if(reportResponse.size()>0) {
-            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[30]));
         }
         prepareDTROnlineInfoSilkType(dtrOnlineReportResponse, reportResponse);
         if(reportPaymentSuccessResponse.size()>0) {
@@ -874,7 +880,7 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
         if(reportResponse.size()>0) {
-            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[30]));
         }
         prepareDTROnlineInfoForBlankReportForSilkType(dtrOnlineReportResponse, reportResponse);
         if(reportPaymentSuccessResponse.size()>0) {
