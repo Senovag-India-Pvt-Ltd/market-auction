@@ -39,6 +39,7 @@ public class DTROnlineReportUnitDetail {
     private String reelerBranchName;
     private String reelerIfscCode;
     private String reelerNumber;
+    private String reelerBankAccountNumber;
     private String traderFirstName;
     private String traderMiddleName;
     private String traderLastName;
@@ -66,8 +67,13 @@ public class DTROnlineReportUnitDetail {
     private String fatherNameKannada;
     private String talukNameInKannada;
     private String villageNameInKannada;
+    private String marketNameInKannada;
     private Long maxAmount;
     private Long minAmount;
     private float avgAmount;
+    private String reelerVillage;
+    private String reelerTaluk;
+    private float traderAmount;
+
 
 }

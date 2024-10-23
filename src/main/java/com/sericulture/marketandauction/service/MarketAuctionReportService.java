@@ -589,67 +589,60 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
             DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
                     .serialNumber(Util.objectToInteger(unit[0]))
                     .allottedLotId(Util.objectToInteger(unit[1]))
-                    .farmerFirstName(Util.objectToString(unit[2]))
-                    .farmerMiddleName(Util.objectToString(unit[3]))
-                    .farmerLastName(Util.objectToString(unit[4]))
-                    .farmerNumber(Util.objectToString(unit[5]))
-                    .farmerMobileNumber(Util.objectToString(unit[6]))
-                    .weight(Util.objectToFloat(unit[7]))
-                    .bidAmount(Util.objectToInteger(unit[8]))
+                    .weight(Util.objectToFloat(unit[2]))
+                    .bidAmount(Util.objectToInteger(unit[3]))
 //                .lotSoldOutAmount(Util.objectToFloat(unit[9]))
 //                .farmerMarketFee(Util.objectToFloat(unit[10]))
 //                .reelerMarketFee(Util.objectToFloat(unit[11]))
-                    .lotSoldOutAmount(Math.round(Util.objectToFloat(unit[9]) * 100.0f) / 100.0f)
-                    .traderMarketFee(Math.round(Util.objectToFloat(unit[10]) * 100.0f) / 100.0f)
-                    .reelerMarketFee(Math.round(Util.objectToFloat(unit[11]) * 100.0f)/100.0f)
-                    .reelerLicense(Util.objectToString(unit[12]))
-                    .reelerName(Util.objectToString(unit[13]))
-                    .reelerMobile(Util.objectToString(unit[14]))
-                    .reelerAddress(Util.objectToString(unit[15]))
-                    .reelerBankName(Util.objectToString(unit[16]))
-                    .reelerBranchName(Util.objectToString(unit[17]))
-                    .reelerIfscCode(Util.objectToString(unit[18]))
-                    .reelerNumber(Util.objectToString(unit[19]))
-                    .traderFirstName(Util.objectToString(unit[20]))
-                    .traderMiddleName(Util.objectToString(unit[21]))
-                    .traderLastName(Util.objectToString(unit[22]))
-                    .traderFatherName(Util.objectToString(unit[23]))
-                    .traderAddress(Util.objectToString(unit[24]))
-                    .traderSilkType(Util.objectToString(unit[25]))
-                    .traderLicenseFee(Math.round(Util.objectToFloat(unit[26]) * 100.0f) / 100.0f)
-                    .traderMobileNumber(Util.objectToString(unit[27]))
-                    .traderArnNumber(Util.objectToString(unit[28]))
-                    .traderLicenseNumber(Util.objectToString(unit[29]))
-                    .traderStateNameInKannada(Util.objectToString(unit[30]))
-                    .traderDistrictNameInKannada(Util.objectToString(unit[31]))
-                    .traderApplicationNumber(Util.objectToString(unit[32]))
-                    .traderLicenseChallanNumber(Util.objectToString(unit[33]))
-                    .bankName(Util.objectToString(unit[34]))
-                    .branchName(Util.objectToString(unit[35]))
-                    .ifscCode(Util.objectToString(unit[36]))
-                    .accountNumber(Util.objectToString(unit[37]))
-                    .farmerAddress(Util.objectToString(unit[38]))
-                    .auctionDate(((java.sql.Date) unit[39]).toLocalDate())
-                    .farmerTaluk(Util.objectToString(unit[40]))
-                    .farmerVillage(Util.objectToString(unit[41]))
-                    .raceName(Util.objectToString(unit[42]))
-                    .cocoonAge(Util.objectToLong(unit[43]))
-                    .farmerNameKannada(Util.objectToString(unit[44]))
-                    .fatherNameKannada(Util.objectToString(unit[45]))
-                    .talukNameInKannada(Util.objectToString(unit[46]))
-                    .villageNameInKannada(Util.objectToString(unit[47]))
-                    .minAmount(Util.objectToLong(unit[48]))
-                    .maxAmount(Util.objectToLong(unit[49]))
-                    .avgAmount(Math.round(Util.objectToFloat(unit[50])))
+                    .lotSoldOutAmount(Math.round(Util.objectToFloat(unit[4]) * 100.0f) / 100.0f)
+                    .traderMarketFee(Math.round(Util.objectToFloat(unit[5]) * 100.0f) / 100.0f)
+                    .reelerMarketFee(Math.round(Util.objectToFloat(unit[6]) * 100.0f)/100.0f)
+                    .reelerLicense(Util.objectToString(unit[7]))
+                    .reelerName(Util.objectToString(unit[8]))
+                    .reelerMobile(Util.objectToString(unit[9]))
+                    .reelerAddress(Util.objectToString(unit[10]))
+                    .reelerBankName(Util.objectToString(unit[11]))
+                    .reelerBankAccountNumber(Util.objectToString(unit[12]))
+                    .reelerBranchName(Util.objectToString(unit[13]))
+                    .reelerIfscCode(Util.objectToString(unit[14]))
+                    .reelerNumber(Util.objectToString(unit[15]))
+                    .traderFirstName(Util.objectToString(unit[16]))
+                    .traderMiddleName(Util.objectToString(unit[17]))
+                    .traderLastName(Util.objectToString(unit[18]))
+                    .traderFatherName(Util.objectToString(unit[19]))
+                    .traderAddress(Util.objectToString(unit[20]))
+                    .traderSilkType(Util.objectToString(unit[21]))
+                    .traderLicenseFee(Math.round(Util.objectToFloat(unit[22]) * 100.0f) / 100.0f)
+                    .traderMobileNumber(Util.objectToString(unit[23]))
+                    .traderArnNumber(Util.objectToString(unit[24]))
+                    .traderLicenseNumber(Util.objectToString(unit[25]))
+                    .traderStateNameInKannada(Util.objectToString(unit[26]))
+                    .traderDistrictNameInKannada(Util.objectToString(unit[27]))
+                    .traderApplicationNumber(Util.objectToString(unit[28]))
+                    .traderLicenseChallanNumber(Util.objectToString(unit[29]))
+                    .auctionDate(((java.sql.Date) unit[31]).toLocalDate())
+                    .reelerVillage(Util.objectToString(unit[32]))
+                    .reelerTaluk(Util.objectToString(unit[33]))
+                    .raceName(Util.objectToString(unit[34]))
+                    .cocoonAge(Util.objectToLong(unit[35]))
+                    .talukNameInKannada(Util.objectToString(unit[36]))
+                    .villageNameInKannada(Util.objectToString(unit[37]))
+                    .maxAmount(Util.objectToLong(unit[38]))
+                    .minAmount(Util.objectToLong(unit[39]))
+                    .avgAmount(Math.round(Util.objectToFloat(unit[40])))
                     .build();
             // Calculate ReelerAmount and FarmerAmount with two decimal precision
             dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportUnitDetail.setFarmerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportUnitDetail.setTraderAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getTraderMarketFee()) * 100.0f) / 100.0f);
+
             dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round((dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round((dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
-            dtrOnlineReportResponse.setTotalTraderLicenseFee(Math.round((dtrOnlineReportResponse.getTotalTraderLicenseFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderMarketFee(Math.round((dtrOnlineReportResponse.getTotalTraderMarketFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalFarmerAmount(Math.round((dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalReelerAmount(Math.round((dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderAmount(Math.round((dtrOnlineReportResponse.getTotalTraderAmount() + dtrOnlineReportUnitDetail.getTraderAmount()) * 100.0f) / 100.0f);
+
             dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round((dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
 //        dtrOnlineReportUnitDetail.setReelerAmount(Math.round(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()));
@@ -703,66 +696,59 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
             DTROnlineReportUnitDetail dtrOnlineReportUnitDetail = DTROnlineReportUnitDetail.builder()
                     .serialNumber(Util.objectToInteger(unit[0]))
                     .allottedLotId(Util.objectToInteger(unit[1]))
-                    .farmerFirstName(Util.objectToString(unit[2]))
-                    .farmerMiddleName(Util.objectToString(unit[3]))
-                    .farmerLastName(Util.objectToString(unit[4]))
-                    .farmerNumber(Util.objectToString(unit[5]))
-                    .farmerMobileNumber(Util.objectToString(unit[6]))
-                    .weight(Util.objectToFloat(unit[7]))
-                    .bidAmount(Util.objectToInteger(unit[8]))
+                    .weight(Util.objectToFloat(unit[2]))
+                    .bidAmount(Util.objectToInteger(unit[3]))
 //                .lotSoldOutAmount(Util.objectToFloat(unit[9]))
 //                .farmerMarketFee(Util.objectToFloat(unit[10]))
 //                .reelerMarketFee(Util.objectToFloat(unit[11]))
-                    .lotSoldOutAmount(Math.round(Util.objectToFloat(unit[9]) * 100.0f) / 100.0f)
-                    .traderMarketFee(Math.round(Util.objectToFloat(unit[10]) * 100.0f) / 100.0f)
-                    .reelerMarketFee(Math.round(Util.objectToFloat(unit[11]) * 100.0f)/100.0f)
-                    .reelerLicense(Util.objectToString(unit[12]))
-                    .reelerName(Util.objectToString(unit[13]))
-                    .reelerMobile(Util.objectToString(unit[14]))
-                    .reelerAddress(Util.objectToString(unit[15]))
-                    .reelerBankName(Util.objectToString(unit[16]))
-                    .reelerBranchName(Util.objectToString(unit[17]))
-                    .reelerIfscCode(Util.objectToString(unit[18]))
-                    .reelerNumber(Util.objectToString(unit[19]))
-                    .traderFirstName(Util.objectToString(unit[20]))
-                    .traderMiddleName(Util.objectToString(unit[21]))
-                    .traderLastName(Util.objectToString(unit[22]))
-                    .traderFatherName(Util.objectToString(unit[23]))
-                    .traderAddress(Util.objectToString(unit[24]))
-                    .traderSilkType(Util.objectToString(unit[25]))
-                    .traderLicenseFee(Math.round(Util.objectToFloat(unit[26]) * 100.0f) / 100.0f)
-                    .traderMobileNumber(Util.objectToString(unit[27]))
-                    .traderArnNumber(Util.objectToString(unit[28]))
-                    .traderLicenseNumber(Util.objectToString(unit[29]))
-                    .traderStateNameInKannada(Util.objectToString(unit[30]))
-                    .traderDistrictNameInKannada(Util.objectToString(unit[31]))
-                    .traderApplicationNumber(Util.objectToString(unit[32]))
-                    .traderLicenseChallanNumber(Util.objectToString(unit[33]))
-                    .bankName(Util.objectToString(unit[34]))
-                    .branchName(Util.objectToString(unit[35]))
-                    .ifscCode(Util.objectToString(unit[36]))
-                    .accountNumber(Util.objectToString(unit[37]))
-                    .farmerAddress(Util.objectToString(unit[38]))
-                    .auctionDate(((java.sql.Date) unit[39]).toLocalDate())
-                    .farmerTaluk(Util.objectToString(unit[40]))
-                    .farmerVillage(Util.objectToString(unit[41]))
-                    .raceName(Util.objectToString(unit[42]))
-                    .cocoonAge(Util.objectToLong(unit[43]))
-                    .farmerNameKannada(Util.objectToString(unit[44]))
-                    .fatherNameKannada(Util.objectToString(unit[45]))
-                    .talukNameInKannada(Util.objectToString(unit[46]))
-                    .villageNameInKannada(Util.objectToString(unit[47]))
-                    .minAmount(Util.objectToLong(unit[48]))
-                    .maxAmount(Util.objectToLong(unit[49]))
-                    .avgAmount(Math.round(Util.objectToFloat(unit[50])))
+                    .lotSoldOutAmount(Math.round(Util.objectToFloat(unit[4]) * 100.0f) / 100.0f)
+                    .traderMarketFee(Math.round(Util.objectToFloat(unit[5]) * 100.0f) / 100.0f)
+                    .reelerMarketFee(Math.round(Util.objectToFloat(unit[6]) * 100.0f)/100.0f)
+                    .reelerLicense(Util.objectToString(unit[7]))
+                    .reelerName(Util.objectToString(unit[8]))
+                    .reelerMobile(Util.objectToString(unit[9]))
+                    .reelerAddress(Util.objectToString(unit[10]))
+                    .reelerBankName(Util.objectToString(unit[11]))
+                    .reelerBankAccountNumber(Util.objectToString(unit[12]))
+                    .reelerBranchName(Util.objectToString(unit[13]))
+                    .reelerIfscCode(Util.objectToString(unit[14]))
+                    .reelerNumber(Util.objectToString(unit[15]))
+                    .traderFirstName(Util.objectToString(unit[16]))
+                    .traderMiddleName(Util.objectToString(unit[17]))
+                    .traderLastName(Util.objectToString(unit[18]))
+                    .traderFatherName(Util.objectToString(unit[19]))
+                    .traderAddress(Util.objectToString(unit[20]))
+                    .traderSilkType(Util.objectToString(unit[21]))
+                    .traderLicenseFee(Math.round(Util.objectToFloat(unit[22]) * 100.0f) / 100.0f)
+                    .traderMobileNumber(Util.objectToString(unit[23]))
+                    .traderArnNumber(Util.objectToString(unit[24]))
+                    .traderLicenseNumber(Util.objectToString(unit[25]))
+                    .traderStateNameInKannada(Util.objectToString(unit[26]))
+                    .traderDistrictNameInKannada(Util.objectToString(unit[27]))
+                    .traderApplicationNumber(Util.objectToString(unit[28]))
+                    .traderLicenseChallanNumber(Util.objectToString(unit[29]))
+                    .auctionDate(((java.sql.Date) unit[31]).toLocalDate())
+                    .reelerVillage(Util.objectToString(unit[32]))
+                    .reelerTaluk(Util.objectToString(unit[33]))
+                    .raceName(Util.objectToString(unit[34]))
+                    .cocoonAge(Util.objectToLong(unit[35]))
+                    .talukNameInKannada(Util.objectToString(unit[36]))
+                    .villageNameInKannada(Util.objectToString(unit[37]))
+                    .maxAmount(Util.objectToLong(unit[38]))
+                    .minAmount(Util.objectToLong(unit[39]))
+                    .avgAmount(Math.round(Util.objectToFloat(unit[40])))
                     .build();
             dtrOnlineReportUnitDetail.setReelerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportUnitDetail.setFarmerAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportUnitDetail.setTraderAmount(Math.round((dtrOnlineReportUnitDetail.getLotSoldOutAmount() - dtrOnlineReportUnitDetail.getTraderMarketFee()) * 100.0f) / 100.0f);
+
             dtrOnlineReportResponse.setTotalFarmerMarketFee(Math.round((dtrOnlineReportResponse.getTotalFarmerMarketFee() + dtrOnlineReportUnitDetail.getFarmerMarketFee()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalReelerMarketFee(Math.round((dtrOnlineReportResponse.getTotalReelerMarketFee() + dtrOnlineReportUnitDetail.getReelerMarketFee()) * 100.0f) / 100.0f);
-            dtrOnlineReportResponse.setTotalTraderLicenseFee(Math.round((dtrOnlineReportResponse.getTotalTraderLicenseFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderMarketFee(Math.round((dtrOnlineReportResponse.getTotalTraderMarketFee() + dtrOnlineReportUnitDetail.getTraderLicenseFee()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalFarmerAmount(Math.round((dtrOnlineReportResponse.getTotalFarmerAmount() + dtrOnlineReportUnitDetail.getFarmerAmount()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalReelerAmount(Math.round((dtrOnlineReportResponse.getTotalReelerAmount() + dtrOnlineReportUnitDetail.getReelerAmount()) * 100.0f) / 100.0f);
+            dtrOnlineReportResponse.setTotalTraderAmount(Math.round((dtrOnlineReportResponse.getTotalTraderAmount() + dtrOnlineReportUnitDetail.getTraderAmount()) * 100.0f) / 100.0f);
+
             dtrOnlineReportResponse.setTotallotSoldOutAmount(Math.round((dtrOnlineReportResponse.getTotallotSoldOutAmount() + dtrOnlineReportUnitDetail.getLotSoldOutAmount()) * 100.0f) / 100.0f);
             dtrOnlineReportResponse.setTotalWeight(dtrOnlineReportResponse.getTotalWeight() + dtrOnlineReportUnitDetail.getWeight());
 //            dtrOnlineReportUnitDetail.setReelerAmount(dtrOnlineReportUnitDetail.getLotSoldOutAmount() + dtrOnlineReportUnitDetail.getReelerMarketFee());
@@ -852,7 +838,7 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
         if(reportResponse.size()>0) {
-            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[30]));
         }
         prepareDTROnlineInfoSilkType(dtrOnlineReportResponse, reportResponse);
         if(reportPaymentSuccessResponse.size()>0) {
@@ -894,7 +880,7 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
 
         DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
         if(reportResponse.size()>0) {
-            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[19]));
+            dtrOnlineReportResponse.setMarketNameKannada(Util.objectToString(reportResponse.get(0)[30]));
         }
         prepareDTROnlineInfoForBlankReportForSilkType(dtrOnlineReportResponse, reportResponse);
         if(reportPaymentSuccessResponse.size()>0) {

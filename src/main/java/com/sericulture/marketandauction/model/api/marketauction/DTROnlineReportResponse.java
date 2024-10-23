@@ -22,7 +22,8 @@ public class DTROnlineReportResponse extends ResponseBody {
 //    private double totalFarmerMarketFee;
     private float totalFarmerAmount;
     private float totalReelerAmount;
-    private float totalTraderLicenseFee;
+    private float totalTraderAmount;
+    private float totalTraderMarketFee;
     private float totalReelerMarketFee;
     private float totalFarmerMarketFee;
     private int totalBidAmount;

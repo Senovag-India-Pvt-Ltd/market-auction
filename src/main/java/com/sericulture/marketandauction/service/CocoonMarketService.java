@@ -284,6 +284,7 @@ public class CocoonMarketService {
                     .initialWeighment(Util.objectToLong(arr[18]))
                     .marketAuctionId(Util.objectToLong(arr[19]))
                     .marketAuctionDate(Util.objectToString(arr[20]))
+                    .allottedLotId(Util.objectToLong(arr[21]))
 //                    .fitnessCertificatePath(Util.objectToString(arr[21]))
                     .build();
 
@@ -341,6 +342,7 @@ public class CocoonMarketService {
                     .pupaCocoonStatus(Util.objectToString(arr[29]))
                     .noOfCocoonsExamined(Util.objectToString(arr[30]))
                     .marketAuctionDate(Util.objectToString(arr[31]))
+                    .allottedLotId(Util.objectToLong(arr[32]))
 //                    .fitnessCertificatePath(Util.objectToString(arr[32]))
                     .build();
 

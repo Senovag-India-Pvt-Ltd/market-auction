@@ -72,11 +72,6 @@ public class MarketAuctionQueryConstants {
     SELECT
         ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,
         l.allotted_lot_id,
-        f.first_name,
-        f.middle_name,
-        f.last_name,
-        f.farmer_number,
-        f.mobile_number,
         l.LOT_WEIGHT_AFTER_WEIGHMENT,
         raa.AMOUNT,
         l.LOT_SOLD_OUT_AMOUNT,
@@ -105,19 +100,12 @@ public class MarketAuctionQueryConstants {
         tl.district_id,
         tl.application_number,
         tl.license_challan_number,
-        fba.farmer_bank_name,
-        fba.farmer_bank_branch_name,
-        fba.farmer_bank_ifsc_code,
-        fba.farmer_bank_account_number,
         mm.market_name_in_kannada,
-        fa.address_text,
         l.auction_date,
         v.VILLAGE_NAME,
         t.TALUK_NAME,
         rm.race_name,
         mm.cocoon_age,
-        f.name_kan,
-        f.father_name_kan,
         t.TALUK_NAME_IN_KANNADA,
         v.VILLAGE_NAME_IN_KANNADA,
         MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
@@ -146,7 +134,7 @@ public class MarketAuctionQueryConstants {
             INNER JOIN dbo.market_auction ma ON ma.reeler_id = r.REELER_ID
             INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
             INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date 
-            LEFT JOIN dbo.reeler r ON r.reeler_id = r.REELER_ID
+            LEFT JOIN dbo.reeler r2 ON r2.reeler_id = r.REELER_ID
             INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id 
             """;
 
@@ -255,8 +243,6 @@ public class MarketAuctionQueryConstants {
                                   SELECT
                                       ROW_NUMBER() OVER (ORDER BY l.lot_id ASC) AS row_id,
                                       l.allotted_lot_id,
-                                      f.first_name, f.middle_name, f.last_name,
-                                      f.farmer_number, f.mobile_number,
                                       l.LOT_WEIGHT_AFTER_WEIGHMENT,
                                       COALESCE(raa.AMOUNT, 0) AS amount,
                                       l.LOT_SOLD_OUT_AMOUNT, l.MARKET_FEE_TRADER, l.MARKET_FEE_REELER,
@@ -266,10 +252,9 @@ public class MarketAuctionQueryConstants {
                                       tl.father_name AS trader_father_name, tl.address AS trader_address,
                                       tl.silk_type, tl.license_fee, tl.mobile_number, tl.arn_number, tl.trader_license_number,
                                       tl.state_id, tl.district_id, tl.application_number, tl.license_challan_number,
-                                      fba.farmer_bank_name, fba.farmer_bank_branch_name, fba.farmer_bank_ifsc_code, fba.farmer_bank_account_number,
-                                      mm.market_name_in_kannada, fa.address_text, l.auction_date,\s
+                                      mm.market_name_in_kannada, l.auction_date,\s
                                       v.VILLAGE_NAME, t.TALUK_NAME, rm.race_name, mm.cocoon_age,
-                                      f.name_kan, f.father_name_kan, t.TALUK_NAME_IN_KANNADA, v.VILLAGE_NAME_IN_KANNADA,
+                                       t.TALUK_NAME_IN_KANNADA, v.VILLAGE_NAME_IN_KANNADA,
                                       MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
                                       MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
                                       AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -277,8 +262,9 @@ public class MarketAuctionQueryConstants {
                                   INNER JOIN dbo.market_auction ma ON ma.reeler_id = r.REELER_ID
                                   LEFT JOIN dbo.lot l ON l.market_auction_id = ma.market_auction_id AND l.auction_date = ma.market_auction_date
                                   LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
-                                  LEFT JOIN Village v ON r.Village_ID = v.village_id
-                                  LEFT JOIN TALUK t ON r.TALUK_ID = t.TALUK_ID
+                                  LEFT JOIN dbo.reeler r ON r.reeler_id = raa.REELER_ID
+                                 LEFT JOIN  Village v ON   r.Village_ID = v.village_id  
+                                 LEFT JOIN TALUK t on t.TALUK_ID = r.TALUK_ID
                                   INNER JOIN dbo.market_master mm ON mm.market_master_id = ma.market_id
                                   LEFT JOIN dbo.trader_license tl ON tl.trader_license_id = raa.trader_license_id
                                   LEFT JOIN dbo.race_master rm ON rm.race_id = ma.RACE_MASTER_ID
@@ -348,10 +334,10 @@ public class MarketAuctionQueryConstants {
              ORDER by l.lot_id""";
 
     public static final String DTR_ONLINE_REPORT_QUERY_FOR_CASH_SILK = """
-            select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,f.first_name,f.middle_name,f.last_name,f.farmer_number,
-             f.mobile_number,l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_TRADER,l.MARKET_FEE_REELER,
+            select  ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id,l.allotted_lot_id ,
+             l.LOT_WEIGHT_AFTER_WEIGHMENT,raa.AMOUNT,l.LOT_SOLD_OUT_AMOUNT ,l.MARKET_FEE_TRADER,l.MARKET_FEE_REELER,
              r.reeling_license_number,r.name,r.mobile_number,r.address,r.bank_name,r.bank_account_number,r.branch_name,r.ifsc_code,r.reeler_number,tl.first_name,tl.middle_name,tl.last_name,tl.father_name,tl.address,tl.silk_type,tl.license_fee,tl.mobile_number,tl.arn_number,tl.trader_license_number,tl.state_id,tl.district_id,tl.application_number,tl.license_challan_number,
-             fba.farmer_bank_name,fba.farmer_bank_branch_name ,fba.farmer_bank_ifsc_code ,fba.farmer_bank_account_number,mm.market_name_in_kannada,fa.address_text,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME,rm.race_name,mm.cocoon_age,f.name_kan,f.father_name_kan,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
+            mm.market_name_in_kannada,l.auction_date,v.VILLAGE_NAME,t.TALUK_NAME,rm.race_name,mm.cocoon_age,t.TALUK_NAME_IN_KANNADA,v.VILLAGE_NAME_IN_KANNADA,
              MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
              MIN(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS min_amount,
              AVG(CASE WHEN l.LOT_WEIGHT_AFTER_WEIGHMENT <> 0 THEN l.LOT_SOLD_OUT_AMOUNT / l.LOT_WEIGHT_AFTER_WEIGHMENT ELSE NULL END) OVER (PARTITION BY l.lot_id) AS avg_amount
@@ -360,8 +346,8 @@ public class MarketAuctionQueryConstants {
              INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
              INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date
              LEFT JOIN dbo.reeler r2 ON r2.reeler_id = r.REELER_ID 
-             LEFT JOIN  Village v ON   fa.Village_ID = v.village_id
-             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+             LEFT JOIN  Village v ON   r.Village_ID = v.village_id
+             LEFT JOIN TALUK t on t.TALUK_ID = r.TALUK_ID
              LEFT JOIN dbo.race_master rm ON rm.race_id = ma.RACE_MASTER_ID  
              INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id
              INNER JOIN dbo.trader_license tl ON tl.trader_license_id =raa.trader_license_id
@@ -443,11 +429,6 @@ public class MarketAuctionQueryConstants {
              ROW_NUMBER() OVER (ORDER BY l.lot_id ASC) AS row_id,
              -- ROW_NUMBER() OVER (PARTITION BY l.allotted_lot_id ORDER BY CASE WHEN raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL THEN 1 ELSE 2 END) AS rank,
               l.allotted_lot_id,
-              f.first_name AS farmer_first_name,
-              f.middle_name AS farmer_middle_name,
-              f.last_name AS farmer_last_name,
-              f.farmer_number,
-              f.mobile_number AS farmer_mobile_number,
               l.LOT_WEIGHT_AFTER_WEIGHMENT,
               COALESCE(raa.AMOUNT, 0) AS amount,
               l.LOT_SOLD_OUT_AMOUNT,
@@ -476,19 +457,12 @@ public class MarketAuctionQueryConstants {
               tl.district_id,
               tl.application_number,
               tl.license_challan_number,
-              fba.farmer_bank_name,
-              fba.farmer_bank_branch_name,
-              fba.farmer_bank_ifsc_code,
-              fba.farmer_bank_account_number,
               mm.market_name_in_kannada,
-              fa.address_text AS farmer_address_text,
               l.auction_date,
               v.VILLAGE_NAME,
               t.TALUK_NAME,
               rm.race_name,
               mm.cocoon_age,
-              f.name_kan AS farmer_name_kan,
-              f.father_name_kan AS farmer_father_name_kan,
               t.TALUK_NAME_IN_KANNADA,
               v.VILLAGE_NAME_IN_KANNADA,
                 MAX(raa.AMOUNT) OVER (PARTITION BY l.lot_id) AS max_amount,
@@ -620,18 +594,56 @@ public class MarketAuctionQueryConstants {
     public static final String REELER_MF_REPORT_WITHOUT_REELER_QUERY = REELER_MF_REPORT_WITHOUT_REELER_QUERYS;
 
 
+//    public static final String UNIT_COUNTER_REPORT_QUERY = """
+//    SELECT
+//    COUNT(l.LOT_ID) AS total_lots,
+//    l.auction_date,
+//    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+//    raa.AMOUNT,
+//    SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+//    SUM(l.MARKET_FEE_FARMER) AS total_market_fee_farmer,
+//    SUM(l.MARKET_FEE_REELER) AS total_market_fee_reeler,
+//    r.reeling_license_number,
+//    r.name
+//    FROM
+//    dbo.market_auction ma
+//    INNER JOIN dbo.lot l
+//    ON l.market_auction_id = ma.market_auction_id
+//    AND l.auction_date = ma.market_auction_date
+//    INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
+//    ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+//    AND raa.STATUS = 'accepted'
+//    AND raa.AUCTION_DATE = l.auction_date
+//    INNER JOIN dbo.reeler r
+//    ON r.reeler_id = raa.REELER_ID
+//    INNER JOIN dbo.market_master mm
+//    ON mm.market_master_id = ma.market_id
+//    WHERE
+//    l.auction_date BETWEEN :fromDate and :toDate
+//    and l.market_id =:marketId
+//    and r.reeling_license_number =:reelerLicenseNumber
+//    AND (raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL))
+//    GROUP BY
+//    l.auction_date,
+//    r.reeling_license_number,
+//    r.name,
+//    raa.AMOUNT
+//    ORDER BY
+//    l.auction_date,
+//    r.reeling_license_number""";
+
     public static final String UNIT_COUNTER_REPORT_QUERY = """
     SELECT
-    COUNT(l.LOT_ID) AS total_lots,
+    SUM(COUNT(l.LOT_ID)) OVER (PARTITION BY l.auction_date, r.reeling_license_number) AS total_lots, -- Sum the total lots
     l.auction_date,
     SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-    raa.AMOUNT,
+    SUM(raa.AMOUNT) AS total_accepted_amount,  -- Sum the amount to avoid multiple rows
     SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
     SUM(l.MARKET_FEE_FARMER) AS total_market_fee_farmer,
     SUM(l.MARKET_FEE_REELER) AS total_market_fee_reeler,
     r.reeling_license_number,
     r.name
-    FROM
+            FROM
     dbo.market_auction ma
     INNER JOIN dbo.lot l
     ON l.market_auction_id = ma.market_auction_id
@@ -644,76 +656,161 @@ public class MarketAuctionQueryConstants {
     ON r.reeler_id = raa.REELER_ID
     INNER JOIN dbo.market_master mm
     ON mm.market_master_id = ma.market_id
-    WHERE
-    l.auction_date BETWEEN :fromDate and :toDate
-    and l.market_id =:marketId
-    and r.reeling_license_number =:reelerLicenseNumber
-    AND (raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL))
+            WHERE
+    l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.market_id = :marketId
+    AND r.reeling_license_number = :reelerLicenseNumber
+    AND (
+                    raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL
+                    OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL
+                    AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL)
+    )
     GROUP BY
     l.auction_date,
     r.reeling_license_number,
-    r.name,
-    raa.AMOUNT
+    r.name
     ORDER BY
     l.auction_date,
     r.reeling_license_number""";
 
+
+//    public static final String UNIT_COUNTER_REPORT_QUERY_SILK = """
+//            SELECT
+//                COUNT(l.LOT_ID) AS total_lots,
+//                l.auction_date,
+//                SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))) AS total_weight,
+//                raa.AMOUNT,
+//                SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))) AS total_amount,
+//                SUM(CAST(l.MARKET_FEE_TRADER AS DECIMAL(18, 2))) AS total_market_fee_trader,
+//                SUM(CAST(l.MARKET_FEE_REELER AS DECIMAL(18, 2))) AS total_market_fee_reeler,
+//                tl.trader_license_number,
+//                tl.first_name
+//            FROM
+//                dbo.market_auction ma
+//            INNER JOIN dbo.lot l
+//                ON l.market_auction_id = ma.market_auction_id
+//                AND l.auction_date = ma.market_auction_date
+//            INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
+//                ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+//                AND raa.STATUS = 'accepted'
+//                AND raa.AUCTION_DATE = l.auction_date
+//            INNER JOIN dbo.trader_license tl
+//                ON tl.trader_license_id = raa.trader_license_id
+//            INNER JOIN dbo.market_master mm
+//                ON mm.market_master_id = ma.market_id
+//            WHERE
+//                l.auction_date BETWEEN :fromDate AND :toDate
+//                and l.market_id =:marketId
+//               and tl.trader_license_number =:traderLicenseNumber
+//
+//                AND (
+//                    raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL\s
+//                    OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL)
+//                )
+//            GROUP BY
+//                l.auction_date,
+//                tl.first_name,
+//                tl.trader_license_number,
+//                raa.AMOUNT
+//            ORDER BY
+//                l.auction_date,
+//                tl.trader_license_number""";
 
     public static final String UNIT_COUNTER_REPORT_QUERY_SILK = """
-            SELECT
-                COUNT(l.LOT_ID) AS total_lots,
-                l.auction_date,
-                SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))) AS total_weight,
-                raa.AMOUNT,
-                SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))) AS total_amount,
-                SUM(CAST(l.MARKET_FEE_TRADER AS DECIMAL(18, 2))) AS total_market_fee_trader,
-                SUM(CAST(l.MARKET_FEE_REELER AS DECIMAL(18, 2))) AS total_market_fee_reeler,
-                tl.trader_license_number,
-                tl.first_name
-            FROM
-                dbo.market_auction ma
-            INNER JOIN dbo.lot l
-                ON l.market_auction_id = ma.market_auction_id
-                AND l.auction_date = ma.market_auction_date
-            INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
-                ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
-                AND raa.STATUS = 'accepted'
-                AND raa.AUCTION_DATE = l.auction_date
-            INNER JOIN dbo.trader_license tl
-                ON tl.trader_license_id = raa.trader_license_id
-            INNER JOIN dbo.market_master mm
-                ON mm.market_master_id = ma.market_id
-            WHERE
-                l.auction_date BETWEEN :fromDate AND :toDate
-                and l.market_id =:marketId
-               and tl.trader_license_number =:traderLicenseNumber
+        SELECT
+                                        SUM(COUNT(l.LOT_ID)) OVER (PARTITION BY l.auction_date, tl.trader_license_number) AS total_lots,
+                                        l.auction_date,
+                                        SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))) AS total_weight,
+                                        SUM(raa.AMOUNT) AS total_accepted_amount,
+                                        SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))) AS total_amount,
+                                        SUM(CAST(l.MARKET_FEE_TRADER AS DECIMAL(18, 2))) AS total_market_fee_trader,
+                                        SUM(CAST(l.MARKET_FEE_REELER AS DECIMAL(18, 2))) AS total_market_fee_reeler,
+                                        tl.trader_license_number,
+                                        tl.first_name
+                                    FROM
+                                        dbo.market_auction ma
+                                    INNER JOIN dbo.lot l
+                                        ON l.market_auction_id = ma.market_auction_id
+                                        AND l.auction_date = ma.market_auction_date
+                                    INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
+                                        ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+                                        AND raa.STATUS = 'accepted'
+                                        AND raa.AUCTION_DATE = l.auction_date
+                                    INNER JOIN dbo.trader_license tl
+                                        ON tl.trader_license_id = raa.trader_license_id
+                                    INNER JOIN dbo.market_master mm
+                                        ON mm.market_master_id = ma.market_id
+                                    WHERE
+                                        l.auction_date BETWEEN :fromDate AND :toDate
+                                        AND l.market_id =:marketId
+                                        and tl.trader_license_number =:traderLicenseNumber
+                                        AND (
+                                            raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL
+                                            OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL
+                                                AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL)
+                                        )
+                                    GROUP BY
+                                        l.auction_date,
+                                        tl.first_name,
+                                        tl.trader_license_number
+                                        ORDER BY
+                                        l.auction_date,
+                                        tl.trader_license_number""";
 
-                AND (
-                    raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL\s
-                    OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL)
-                )
-            GROUP BY
-                l.auction_date,
-                tl.first_name,
-                tl.trader_license_number,
-                raa.AMOUNT
-            ORDER BY
-                l.auction_date,
-                tl.trader_license_number""";
 
 
-    public static final String UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERYS = """
-    SELECT
-    COUNT(l.LOT_ID) AS total_lots,
+
+
+//    public static final String UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERYS = """
+//    SELECT
+//    COUNT(l.LOT_ID) AS total_lots,
+//    l.auction_date,
+//    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
+//    raa.AMOUNT,
+//    SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
+//    SUM(l.MARKET_FEE_FARMER) AS total_market_fee_farmer,
+//    SUM(l.MARKET_FEE_REELER) AS total_market_fee_reeler,
+//    r.reeling_license_number,
+//    r.name
+//    FROM
+//    dbo.market_auction ma
+//    INNER JOIN dbo.lot l
+//    ON l.market_auction_id = ma.market_auction_id
+//    AND l.auction_date = ma.market_auction_date
+//    INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
+//    ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+//    AND raa.STATUS = 'accepted'
+//    AND raa.AUCTION_DATE = l.auction_date
+//    INNER JOIN dbo.reeler r
+//    ON r.reeler_id = raa.REELER_ID
+//    INNER JOIN dbo.market_master mm
+//    ON mm.market_master_id = ma.market_id
+//    WHERE
+//    l.auction_date BETWEEN :fromDate and :toDate
+//    and l.market_id =:marketId
+//    AND (raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL))
+//    GROUP BY
+//    l.auction_date,
+//    r.reeling_license_number,
+//    r.name,
+//    raa.AMOUNT
+//    ORDER BY
+//    l.auction_date,
+//    r.reeling_license_number""";
+
+
+        public static final String UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERYS = """
+  SELECT
+    SUM(COUNT(l.LOT_ID)) OVER (PARTITION BY l.auction_date, r.reeling_license_number) AS total_lots, -- Sum the total lots
     l.auction_date,
     SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-    raa.AMOUNT,
+    SUM(raa.AMOUNT) AS total_accepted_amount,  -- Sum the amount to avoid multiple rows
     SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
     SUM(l.MARKET_FEE_FARMER) AS total_market_fee_farmer,
     SUM(l.MARKET_FEE_REELER) AS total_market_fee_reeler,
     r.reeling_license_number,
     r.name
-    FROM
+            FROM
     dbo.market_auction ma
     INNER JOIN dbo.lot l
     ON l.market_auction_id = ma.market_auction_id
@@ -726,59 +823,104 @@ public class MarketAuctionQueryConstants {
     ON r.reeler_id = raa.REELER_ID
     INNER JOIN dbo.market_master mm
     ON mm.market_master_id = ma.market_id
-    WHERE
-    l.auction_date BETWEEN :fromDate and :toDate
-    and l.market_id =:marketId
-    AND (raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL))
+            WHERE
+    l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.market_id = :marketId
+    AND (
+                    raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL
+                    OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL
+                    AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL)
+    )
     GROUP BY
     l.auction_date,
     r.reeling_license_number,
-    r.name,
-    raa.AMOUNT
+    r.name
     ORDER BY
     l.auction_date,
     r.reeling_license_number""";
+
+
+
+//    public static final String UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERYS_SILK = """
+//            SELECT
+//    COUNT(l.LOT_ID) AS total_lots,
+//    l.auction_date,
+//    SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))) AS total_weight,
+//    raa.AMOUNT,
+//    SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))) AS total_amount,
+//    SUM(CAST(l.MARKET_FEE_TRADER AS DECIMAL(18, 2))) AS total_market_fee_trader,
+//    SUM(CAST(l.MARKET_FEE_REELER AS DECIMAL(18, 2))) AS total_market_fee_reeler,
+//    tl.trader_license_number,
+//    tl.first_name
+//FROM
+//    dbo.market_auction ma
+//INNER JOIN dbo.lot l
+//    ON l.market_auction_id = ma.market_auction_id
+//    AND l.auction_date = ma.market_auction_date
+//INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
+//    ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+//    AND raa.STATUS = 'accepted'
+//    AND raa.AUCTION_DATE = l.auction_date
+//INNER JOIN dbo.trader_license tl
+//    ON tl.trader_license_id = raa.trader_license_id
+//INNER JOIN dbo.market_master mm
+//    ON mm.market_master_id = ma.market_id
+//WHERE
+//     l.auction_date BETWEEN :fromDate AND :toDate
+//     and l.market_id =:marketId
+//    AND (
+//        raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL
+//        OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL)
+//    )
+//GROUP BY
+//    l.auction_date,
+//    tl.first_name,
+//    tl.trader_license_number,
+//    raa.AMOUNT
+//ORDER BY
+//    l.auction_date,
+//    tl.trader_license_number""";
 
 
     public static final String UNIT_COUNTER_REPORT_WITHOUT_REELER_QUERYS_SILK = """
-            SELECT
-    COUNT(l.LOT_ID) AS total_lots,
-    l.auction_date,
-    SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))) AS total_weight,
-    raa.AMOUNT,
-    SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))) AS total_amount,
-    SUM(CAST(l.MARKET_FEE_TRADER AS DECIMAL(18, 2))) AS total_market_fee_trader,
-    SUM(CAST(l.MARKET_FEE_REELER AS DECIMAL(18, 2))) AS total_market_fee_reeler,
-    tl.trader_license_number,
-    tl.first_name
-FROM
-    dbo.market_auction ma
-INNER JOIN dbo.lot l
-    ON l.market_auction_id = ma.market_auction_id
-    AND l.auction_date = ma.market_auction_date
-INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
-    ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
-    AND raa.STATUS = 'accepted'
-    AND raa.AUCTION_DATE = l.auction_date
-INNER JOIN dbo.trader_license tl
-    ON tl.trader_license_id = raa.trader_license_id
-INNER JOIN dbo.market_master mm
-    ON mm.market_master_id = ma.market_id
-WHERE
-     l.auction_date BETWEEN :fromDate AND :toDate
-     and l.market_id =:marketId
-    AND (
-        raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL 
-        OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL)
-    )
-GROUP BY
-    l.auction_date,
-    tl.first_name,
-    tl.trader_license_number,
-    raa.AMOUNT
-ORDER BY
-    l.auction_date,
-    tl.trader_license_number""";
+                                       SELECT
+                                        SUM(COUNT(l.LOT_ID)) OVER (PARTITION BY l.auction_date, tl.trader_license_number) AS total_lots,
+                                        l.auction_date,
+                                        SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))) AS total_weight,
+                                        SUM(raa.AMOUNT) AS total_accepted_amount,
+                                        SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))) AS total_amount,
+                                        SUM(CAST(l.MARKET_FEE_TRADER AS DECIMAL(18, 2))) AS total_market_fee_trader,
+                                        SUM(CAST(l.MARKET_FEE_REELER AS DECIMAL(18, 2))) AS total_market_fee_reeler,
+                                        tl.trader_license_number,
+                                        tl.first_name
+                                    FROM
+                                        dbo.market_auction ma
+                                    INNER JOIN dbo.lot l
+                                        ON l.market_auction_id = ma.market_auction_id
+                                        AND l.auction_date = ma.market_auction_date
+                                    INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa
+                                        ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+                                        AND raa.STATUS = 'accepted'
+                                        AND raa.AUCTION_DATE = l.auction_date
+                                    INNER JOIN dbo.trader_license tl
+                                        ON tl.trader_license_id = raa.trader_license_id
+                                    INNER JOIN dbo.market_master mm
+                                        ON mm.market_master_id = ma.market_id
+                                    WHERE
+                                        l.auction_date BETWEEN :fromDate AND :toDate
+                                        AND l.market_id =:marketId
+                                        AND (
+                                            raa.REELER_AUCTION_ACCEPTED_ID IS NOT NULL
+                                            OR (raa.REELER_AUCTION_ACCEPTED_ID IS NULL
+                                                AND l.LOT_WEIGHT_AFTER_WEIGHMENT IS NOT NULL)
+                                        )
+                                    GROUP BY
+                                        l.auction_date,
+                                        tl.first_name,
+                                        tl.trader_license_number
+                                        ORDER BY
+                                        l.auction_date,
+                                        tl.trader_license_number""";
 
     private static final String WHERE_CLAUSE_AUCTION_DATE_LIST = """
                  where l.status =:lotStatus
@@ -984,6 +1126,93 @@ ORDER BY
         LEFT JOIN godown_master gm ON gm.godown_master_id = ma.godown_id
         LEFT JOIN race_master rm ON rm.race_id = ma.lot_variety
         LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
+        WHERE l.auction_date = :auctionDate
+          AND l.market_id = :marketId
+          AND l.allotted_lot_id = :allottedLotId
+""";
+
+
+    public static final String PRINT_REPORT_NEWLY_CREATED_LOT_ID_SEED_NEW_TRIPLET= """
+        SELECT
+        f.farmer_number,
+        f.first_name,
+        f.middle_name,
+        f.last_name,
+        fa.address_text,
+        t.TALUK_NAME_IN_KANNADA,
+        v.VILLAGE_NAME_IN_KANNADA,
+        fba.farmer_bank_ifsc_code,
+        fba.farmer_bank_account_number,
+        l.allotted_lot_id,
+        l.auction_date,
+        ma.estimated_weight,
+        mm.market_name,
+        rm.race_name,
+        sm.source_name,
+        mm.box_weight,
+        l.lot_id,
+        mm.SERIAL_NUMBER_PREFIX,
+        l.status,
+        mm.market_name_in_kannada,
+        f.name_kan,
+        f.mobile_number,
+        ma.market_auction_id,
+        f.father_name_kan,
+       l.LOT_WEIGHT_AFTER_WEIGHMENT,
+       ma.lot_Parental_Level,
+       l.MARKET_FEE_REELER,
+      l.MARKET_FEE_FARMER,
+       l.LOT_SOLD_OUT_AMOUNT,
+       f.fruits_id,
+       gm.godown_name,
+       lg.lot_groupage_id,
+       lg.buyer_id,
+       lg.buyer_type,
+       lg.lot_weight,
+       lg.amount,
+       lg.market_fee,
+       lg.sold_amount,
+       lg.average_yield,
+       lg.no_of_dfls,
+       lg.invoice_number,
+       lg.lot_Parental_Level,
+       lg.auction_date,
+       CASE
+       WHEN lg.buyer_type = 'RSP' THEN es.license_number
+       WHEN lg.buyer_type IN ('NSSO', 'Govt Grainage') THEN es.address
+       WHEN lg.buyer_type = 'Reeling' THEN r.name
+       ELSE NULL
+       END AS buyer_name,
+       l.BID_ACCEPTED_BY
+       FROM
+       FARMER f
+       INNER JOIN market_auction ma
+       ON ma.farmer_id = f.FARMER_ID
+       INNER JOIN lot l
+        ON l.market_auction_id = ma.market_auction_id
+        LEFT JOIN farmer_address fa
+        ON f.FARMER_ID = fa.FARMER_ID AND fa.default_address = 1
+        LEFT JOIN VILLAGE v
+                                                                                        ON fa.Village_ID = v.village_id
+                                                                                    LEFT JOIN farmer_bank_account fba
+                                                                                        ON fba.FARMER_ID = f.FARMER_ID
+                                                                                    LEFT JOIN TALUK t
+                                                                                        ON t.TALUK_ID = fa.TALUK_ID
+                                                                                    LEFT JOIN lot_groupage lg
+                                                                                        ON l.lot_id = lg.lot_id
+                                                                                    LEFT JOIN reeler r
+                                                                                        ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
+                                                                                    LEFT JOIN external_unit_registration es
+                                                                                        ON lg.buyer_id = es.external_unit_registration_id
+                                                                                        AND lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage')
+                                                                                    LEFT JOIN market_master mm
+                                                                                        ON mm.market_master_id = ma.market_id
+                                                                                    LEFT JOIN godown_master gm
+                                                                                        ON gm.godown_master_id = ma.godown_id
+                                                                                    LEFT JOIN race_master rm
+                                                                                        ON rm.race_id = ma.lot_variety
+                                                                                    LEFT JOIN source_master sm
+                                                                                        ON sm.source_id = ma.SOURCE_MASTER_ID
         WHERE l.auction_date = :auctionDate
           AND l.market_id = :marketId
           AND l.allotted_lot_id = :allottedLotId

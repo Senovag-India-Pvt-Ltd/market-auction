@@ -2,6 +2,7 @@ package com.sericulture.marketandauction.model.api.marketauction;
 
 import com.sericulture.marketandauction.model.api.RequestBody;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.*;
 
 import java.math.BigInteger;
@@ -24,7 +25,7 @@ public class LotGroupageRequestEdit extends RequestBody {
     Long buyerId;
 
     @Schema(name="lotWeight", example = "1")
-    Long lotWeight;
+    Float lotWeight;
 
     @Schema(name="amount", example = "1")
     Long amount;
@@ -59,5 +60,8 @@ public class LotGroupageRequestEdit extends RequestBody {
 
     @Schema(name="lotParentLevel", example = "1")
     String lotParentLevel;
+
+    @Schema(name="remainingCocoonWeight", example = "1")
+    Float remainingCocoonWeight;
 
 }
