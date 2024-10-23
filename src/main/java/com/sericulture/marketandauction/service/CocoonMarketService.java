@@ -284,6 +284,7 @@ public class CocoonMarketService {
                     .initialWeighment(Util.objectToLong(arr[18]))
                     .marketAuctionId(Util.objectToLong(arr[19]))
                     .marketAuctionDate(Util.objectToString(arr[20]))
+                    .allottedLotId(Util.objectToLong(arr[21]))
 //                    .fitnessCertificatePath(Util.objectToString(arr[21]))
                     .build();
 

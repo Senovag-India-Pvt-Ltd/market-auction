@@ -65,7 +65,8 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
             rm.race_name,
             ma.estimated_weight,
             ma.market_auction_id,
-            ma.market_auction_date
+            ma.market_auction_date,
+            l.allotted_lot_id
         FROM
             farmer f
         LEFT JOIN
@@ -82,6 +83,8 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
             village v ON pa.VILLAGE_ID = v.VILLAGE_ID AND v.active = 1
         INNER JOIN
             market_auction ma ON ma.farmer_id = f.farmer_id
+        INNER JOIN
+        lot l ON l.market_auction_id = ma.market_auction_id
         LEFT JOIN
             race_master rm ON rm.race_id = ma.lot_variety AND rm.active = 1
         LEFT JOIN

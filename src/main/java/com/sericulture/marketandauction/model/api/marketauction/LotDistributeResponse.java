@@ -47,7 +47,7 @@ public class LotDistributeResponse extends ResponseBody {
     private Long buyerId;
 
     @Column(name = "LOT_WEIGHT")
-    private Long lotWeight;
+    private Float lotWeight;
 
     @Column(name = "AMOUNT")
     private Long amount;
@@ -96,4 +96,8 @@ public class LotDistributeResponse extends ResponseBody {
     private String averageYield;
     private String noOfDFLs;
     private String invoiceNumber;
+    private String calculatedAverageYield;
+    private String remainingCocoonWeight;
+    private String soldCocoonInKgs;
+    private String lotWeightAfterWeighment;
 }
