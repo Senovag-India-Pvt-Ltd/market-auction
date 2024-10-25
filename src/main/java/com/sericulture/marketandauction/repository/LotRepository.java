@@ -54,7 +54,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
             LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID  = f.FARMER_ID 
             INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id 
             LEFT JOIN dbo.market_type_master mtm ON mtm.market_type_master_id = mm.market_master_id 
-             where l.status ='weighmentcompleted' 
+             where l.status in ('weighmentcompleted','paymentfailed') 
              and l.market_id =:marketId 
             ORDER by l.lot_id""")
     public Page<Object[]> getAllWeighmentCompletedTxnByMarket(final Pageable pageable, int marketId);
