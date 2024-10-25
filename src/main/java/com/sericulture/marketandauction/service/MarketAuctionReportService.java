@@ -1974,7 +1974,7 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
         BreakdownLotStatus breakdownLotStatusList301to350 = prepareBreakdown13Report(lotBetween301to350Response, 301, 350, totalWeight, "");
         lotsFrom0to351.add(breakdownLotStatusList301to350);
 
-        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatusByDist( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), 350, requestBody.getDistrictId());
+        List<Object[]> lotGreaterThan350Response = lotRepository.getGreaterLotStatusByDistSilk( requestBody.getMarketId(), requestBody.getFromDate(), requestBody.getToDate(), 350, requestBody.getDistrictId());
         BreakdownLotStatus breakdownLotStatusList350Above = prepareBreakdown13Report(lotGreaterThan350Response, 301, 350, totalWeight, "Lots Above Rs.351");
         lotsFrom0to351.add(breakdownLotStatusList350Above);
 
