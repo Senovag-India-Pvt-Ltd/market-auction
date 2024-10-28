@@ -280,24 +280,24 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
 
 
         if (foundAcceptedLot) {
-                    marketAuctionForPrintResponse.setAuctionDateWithTime((Date)(response[23]));
-                    marketAuctionForPrintResponse.setTraderFirstName(Util.objectToString(response[24]));
-                    marketAuctionForPrintResponse.setTraderLastName(Util.objectToString(response[25]));
-                    marketAuctionForPrintResponse.setTraderFatherName(Util.objectToString(response[26]));
-                    marketAuctionForPrintResponse.setTraderAddress(Util.objectToString(response[27]));
-                    marketAuctionForPrintResponse.setTraderSilkType(Util.objectToString(response[28]));
-                    marketAuctionForPrintResponse.setTraderLicenseFee(Util.objectToFloat(response[29]));
-                    marketAuctionForPrintResponse.setTraderMobileNumber(Util.objectToString(response[30]));
-                    marketAuctionForPrintResponse.setTraderArnNumber(Util.objectToString(response[31]));
-                    marketAuctionForPrintResponse.setTraderLicenseNumber(Util.objectToString(response[32]));
-                    marketAuctionForPrintResponse.setTraderApplicationNumber(Util.objectToString(response[33]));
-                    marketAuctionForPrintResponse.setTraderLicenseChallanNumber(Util.objectToString(response[34]));
-                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[35]));
-                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[36]));
-                    marketAuctionForPrintResponse.setTraderMarketFee(Util.objectToFloat(response[37]));
-                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[38]));
-                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[39]));
-                    marketAuctionForPrintResponse.setFruitsId(Util.objectToString(response[41]));
+                    marketAuctionForPrintResponse.setAuctionDateWithTime((Date)(response[28]));
+                    marketAuctionForPrintResponse.setTraderFirstName(Util.objectToString(response[29]));
+                    marketAuctionForPrintResponse.setTraderLastName(Util.objectToString(response[30]));
+                    marketAuctionForPrintResponse.setTraderFatherName(Util.objectToString(response[31]));
+                    marketAuctionForPrintResponse.setTraderAddress(Util.objectToString(response[32]));
+                    marketAuctionForPrintResponse.setTraderSilkType(Util.objectToString(response[33]));
+                    marketAuctionForPrintResponse.setTraderLicenseFee(Util.objectToFloat(response[34]));
+                    marketAuctionForPrintResponse.setTraderMobileNumber(Util.objectToString(response[35]));
+                    marketAuctionForPrintResponse.setTraderArnNumber(Util.objectToString(response[36]));
+                    marketAuctionForPrintResponse.setTraderLicenseNumber(Util.objectToString(response[37]));
+                    marketAuctionForPrintResponse.setTraderApplicationNumber(Util.objectToString(response[38]));
+                    marketAuctionForPrintResponse.setTraderLicenseChallanNumber(Util.objectToString(response[39]));
+                    marketAuctionForPrintResponse.setLotWeight(Util.objectToFloat(response[40]));
+                    marketAuctionForPrintResponse.setReelerMarketFee(Util.objectToFloat(response[41]));
+                    marketAuctionForPrintResponse.setTraderMarketFee(Util.objectToFloat(response[42]));
+                    marketAuctionForPrintResponse.setLotSoldOutAmount(Util.objectToFloat(response[43]));
+                    marketAuctionForPrintResponse.setBidAmount(Util.objectToFloat(response[44]));
+                    marketAuctionForPrintResponse.setFruitsId(Util.objectToString(response[46]));
                     marketAuctionForPrintResponse.setTraderAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() - marketAuctionForPrintResponse.getTraderMarketFee());
                     marketAuctionForPrintResponse.setReelerAmount(marketAuctionForPrintResponse.getLotSoldOutAmount() + marketAuctionForPrintResponse.getReelerMarketFee());
 
@@ -342,8 +342,14 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
 
                 .marketAuctionId((BigDecimal) response[21])
                 .reelerFatherName(Util.objectToString(response[22]))
-                .auctionDateWithTime((Date)(response[23]))
-                .fruitsId(Util.objectToString(response[24]))
+                .unitDetails(Util.objectToString(response[23]))
+                .noOfBags(Util.objectToString(response[24]))
+                .formNo(Util.objectToString(response[25]))
+                .silkQuality(Util.objectToString(response[26]))
+                .silkType(Util.objectToString(response[27]))
+
+                .auctionDateWithTime((Date)(response[28]))
+                .fruitsId(Util.objectToString(response[29]))
                 .build();
         marketAuctionForPrintResponse.setSmallBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"small"));
         marketAuctionForPrintResponse.setBigBinList(binRepository.findAllByMarketAuctionIdAndType(marketAuctionForPrintResponse.getMarketAuctionId().toBigInteger(),"big"));

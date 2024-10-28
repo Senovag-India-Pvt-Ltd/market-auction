@@ -955,7 +955,7 @@ public class MarketAuctionQueryConstants {
             select r.reeling_license_number, r.name,r.address,r.reeler_name_kannada,
             r.mobile_number,r.reeler_number,r.bank_name,r.bank_account_number,r.branch_name,l.allotted_lot_id,l.auction_date,
             ma.estimated_weight, mm.market_name,rm.race_name,sm.source_name,mm.box_weight,l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
-            r.ifsc_code,ma.market_auction_id,r.father_name,""";
+            r.ifsc_code,ma.market_auction_id,r.father_name,ma.unit_details,ma.no_of_bags,ma.form_no,ma.silk_quality,ma.silk_type,""";
 
     public static final String NEWLY_CREATED_LOTS = SELECT_FIELDS_PENDING_REPORT_BASE + """
              l.created_date,
