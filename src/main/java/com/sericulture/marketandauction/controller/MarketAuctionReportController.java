@@ -94,6 +94,11 @@ public class MarketAuctionReportController {
         return marketAuctionReportService.getReelerReportForMobileApp(requestBody);
     }
 
+    @PostMapping("/getSeedMarketReelerReportForApp")
+    public ResponseEntity<?> getSeedMarketReelerReportForApp(@RequestBody ReelerReportForAppRequest requestBody){
+        return marketAuctionReportService.getSeedMarketReelerReportForMobileApp(requestBody);
+    }
+
     @PostMapping("/getForm13Report")
     public ResponseEntity<?> getForm13Report(@RequestBody Form13Request requestBody){
         return marketAuctionReportService.getForm13Report(requestBody);

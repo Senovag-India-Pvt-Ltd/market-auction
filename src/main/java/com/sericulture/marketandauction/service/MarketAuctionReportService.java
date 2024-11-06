@@ -1275,6 +1275,60 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
 
     }
 
+    public ResponseEntity<?> getSeedMarketReelerReportForMobileApp(ReelerReportForAppRequest requestBody) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> responses = lotRepository.getReelerReportForApp(requestBody.getReelerId(),requestBody.getMarketId(), requestBody.getAuctionDate());
+
+        List<Object[]> responsesBalance = lotRepository.getReelerCurrentBalance(requestBody.getReelerId());
+
+        List<Object[]> responsesAppxPurchase = lotRepository.getReelerPurchaseAmount(requestBody.getReelerId(), requestBody.getMarketId(), requestBody.getAuctionDate());
+
+//        List<Object[]> responsesAmountDeposited = lotRepository.getReelerDepositedAmount(requestBody.getReelerId(), requestBody.getAuctionDate());
+
+
+        if(Util.isNullOrEmptyList(responses))
+        {
+            throw new ValidationException("No data found");
+        }
+        ReelerReportResponse reelerReportResponse = new ReelerReportResponse();
+        if(responsesBalance.size()>0){
+            if(responsesBalance.get(0) != null) {
+                reelerReportResponse.setReelerCurrentBalance(Util.objectToFloat(responsesBalance.get(0)[0]));
+            }
+        }
+        if(responsesAppxPurchase.size()>0){
+            if(responsesAppxPurchase.get(0) != null) {
+                reelerReportResponse.setApproximatePurchase(Util.objectToFloat(responsesAppxPurchase.get(0)[0]));
+            }
+        }
+//        if(responsesAmountDeposited.size()>0){
+//            if(responsesAmountDeposited.get(0) != null) {
+//                reelerReportResponse.setTotalAmountDeposited(Util.objectToFloat(responsesAmountDeposited.get(0)[0]));
+//            }
+//        }
+        List<ReelerReport> reelerReportList = new ArrayList<>();
+        int i=1;
+        for(Object[] response:responses){
+
+            ReelerReport reelerReport = ReelerReport.builder()
+                    .serialNumber(i)
+                    .allottedLotId(Util.objectToInteger(response[0]))
+                    .bidAmount(Util.objectToFloat(response[1]))
+                    .weight(Util.objectToFloat(response[2]))
+                    .amount(Util.objectToFloat(response[3]))
+                    .marketFee(Util.objectToFloat(response[4]))
+                    .build();
+            reelerReportList.add(reelerReport);
+            i= i+1;
+        }
+        reelerReportResponse.setReelerReportList(reelerReportList);
+        rw.setContent(reelerReportResponse);
+        return ResponseEntity.ok(rw);
+
+    }
+
     public ResponseEntity<?> getForm13Report(Form13Request requestBody) {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);

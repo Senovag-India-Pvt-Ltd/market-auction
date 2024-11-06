@@ -9,6 +9,8 @@ public enum USERTYPE {
 
     TRADER(3),
 
+    SEEDREELER(4),
+
     MO(0);
 
     private int type ;
