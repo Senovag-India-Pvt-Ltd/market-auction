@@ -173,8 +173,8 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
         LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id AND lbpf.FIXATION_DATE = ma.market_auction_date AND lbpf.active = 1
     WHERE
         ma.market_id = :marketId
-        AND l.status = 'assessment'
-        AND l.status NOT IN ('weighmentcompleted,accepted')
+        AND ptaca.pupa_cocoon_status = 'assessment'
+        AND l.status NOT IN ('weighmentcompleted','accepted')
     ORDER BY
         ptaca.created_date DESC;
     """)
