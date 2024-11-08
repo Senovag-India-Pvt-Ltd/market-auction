@@ -101,6 +101,11 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String lgLotParentLevel;
     private String lgAuctionDate;
     private String lgBuyerName;
+    private String unitDetails;
+    private String noOfBags;
+    private String formNo;
+    private String silkQuality;
+    private String silkType;
 
 
 

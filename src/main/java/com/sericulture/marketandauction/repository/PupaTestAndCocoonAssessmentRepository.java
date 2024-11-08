@@ -174,7 +174,7 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
     WHERE
         ma.market_id = :marketId
         AND ptaca.pupa_cocoon_status = 'assessment'
-        AND l.status NOT IN ('weighmentcompleted')
+        AND l.status NOT IN ('weighmentcompleted','accepted')
     ORDER BY
         ptaca.created_date DESC;
     """)

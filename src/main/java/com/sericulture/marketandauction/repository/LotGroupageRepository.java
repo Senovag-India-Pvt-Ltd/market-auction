@@ -31,4 +31,20 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
 
     @Query(value = "SELECT next value for dbo.INVOICE_SEQ", nativeQuery = true)
     public BigDecimal getNextValInvoiceSequence();
+
+//    @Query("SELECT lg.buyerType FROM lot_groupage lg WHERE lg.allottedLotId = :allottedLotId")
+//    String findBuyerTypeByAllottedLotId(Integer allottedLotId);
+
+    @Query(value = "SELECT DISTINCT lg.buyer_type FROM lot_groupage lg " +
+            "JOIN lot l ON lg.allotted_lot_id = l.allotted_lot_id " +
+            "WHERE lg.allotted_lot_id = :allottedLotId " +
+            "AND lg.auction_date = :auctionDate " +
+            "AND l.market_id = :marketId " +
+            "AND lg.buyer_type = 'Reeling'",
+            nativeQuery = true)
+    String findBuyerTypeByAllottedLotIdAndAuctionDateAndMarketId(
+            @Param("allottedLotId") Integer allottedLotId,
+            @Param("auctionDate") LocalDate auctionDate,
+            @Param("marketId") Integer marketId);
+
 }

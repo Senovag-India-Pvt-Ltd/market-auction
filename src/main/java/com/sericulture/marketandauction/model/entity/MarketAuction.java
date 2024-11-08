@@ -57,4 +57,20 @@ public class MarketAuction extends BaseEntity implements Serializable {
     private String lotParentalLevel;
     @Column(name = "reeler_id")
     private int reelerId;
+
+    @Column(name = "form_no")
+    private String form17JNo;
+
+    @Column(name = "silk_quality")
+    private String qualityOfSilkYarn;
+
+    @Column(name = "silk_type")
+    private String silkType;
+
+    @Column(name = "unit_details")
+    private String unitDetails;
+
+    @Column(name = "no_of_bags")
+    private Long noOfBags;
+
 }

@@ -55,6 +55,12 @@ public class MarketAuctionRequest extends RequestBody {
     private String lotVariety;
     private String lotParentalLevel;
 
+    private String form17JNo;
+    private String qualityOfSilkYarn;
+    private String silkType;
+    private String unitDetails;
+    private Long noOfBags;
+
 
     @Override
     public List<ValidationMessage> validate(){

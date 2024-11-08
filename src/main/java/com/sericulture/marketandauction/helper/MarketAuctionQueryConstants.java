@@ -955,7 +955,7 @@ public class MarketAuctionQueryConstants {
             select r.reeling_license_number, r.name,r.address,r.reeler_name_kannada,
             r.mobile_number,r.reeler_number,r.bank_name,r.bank_account_number,r.branch_name,l.allotted_lot_id,l.auction_date,
             ma.estimated_weight, mm.market_name,rm.race_name,sm.source_name,mm.box_weight,l.lot_id,mm.SERIAL_NUMBER_PREFIX,l.status,mm.market_name_in_kannada,
-            r.ifsc_code,ma.market_auction_id,r.father_name,""";
+            r.ifsc_code,ma.market_auction_id,r.father_name,ma.unit_details,ma.no_of_bags,ma.form_no,ma.silk_quality,ma.silk_type,""";
 
     public static final String NEWLY_CREATED_LOTS = SELECT_FIELDS_PENDING_REPORT_BASE + """
              l.created_date,
@@ -1982,14 +1982,14 @@ public static final String break_down_of_lot_amount = """
                     COUNT(l.lot_id) AS total_lot_count
                     FROM lot l
                     left join market_auction ma on ma.market_auction_id = l.market_auction_id
-                    left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+                    left join reeler r on ma.reeler_id = r.REELER_ID
                     LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
                     WHERE rejected_by IS NULL
                     AND raa.amount BETWEEN :fromAmount AND :toAmount
                     AND l.market_id = :marketId
                     AND l.auction_date BETWEEN :fromDate AND :toDate
                     AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-                      AND fa.district_id = :districtId
+                    AND (COALESCE(:districtId, 0) = 0 OR r.district_id = :districtId)
                     GROUP BY l.market_id ;""";
 //    public static final String avg_of_lot_amount = """
 //            SELECT auction_date,
@@ -2073,12 +2073,12 @@ public static final String avg_of_lot_amount_by_dist = """
                    END AS avg_amount
             FROM lot l
             left join market_auction ma on ma.market_auction_id = l.market_auction_id
-            left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+            left join reeler r on ma.reeler_id = r.REELER_ID
             WHERE rejected_by IS NULL
               AND l.market_id = :marketId
               AND l.auction_date BETWEEN :fromDate AND :toDate
-              AND fa.district_id = :districtId
-              AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
+            AND (COALESCE(:districtId, 0) = 0 OR r.district_id = :districtId)
+            AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
             GROUP BY l.market_id ;""";
 
     public static final String greater_than_lot_amount = """
@@ -2140,13 +2140,13 @@ public static final String avg_of_lot_amount_by_dist = """
                    COUNT(l.lot_id) AS total_lot_count
             FROM lot l
              left join market_auction ma on ma.market_auction_id = l.market_auction_id
-             left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+             left join reeler r on ma.reeler_id = r.REELER_ID
              LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
             WHERE l.rejected_by IS NULL
               AND raa.amount > :amount
               AND l.market_id = :marketId
               AND l.auction_date BETWEEN :fromDate AND :toDate
-              AND fa.district_id = :districtId
+             AND (COALESCE(:districtId, 0) = 0 OR r.district_id = :districtId)
               AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
             GROUP BY l.market_id
              ;""";
@@ -2210,13 +2210,13 @@ public static final String avg_of_lot_amount_by_dist = """
                    COUNT(l.lot_id) AS total_lot_count
             FROM lot l
              left join market_auction ma on ma.market_auction_id = l.market_auction_id
-             left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
+             left join reeler r on ma.reeler_id = r.REELER_ID
              LEFT JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
             WHERE l.rejected_by IS NULL
               AND raa.amount < :amount
               AND l.market_id = :marketId
               AND l.auction_date BETWEEN :fromDate AND :toDate
-              AND fa.district_id = :districtId
+              AND (COALESCE(:districtId, 0) = 0 OR r.district_id = :districtId)
               AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
             GROUP BY l.market_id
              ;""";
@@ -2249,28 +2249,40 @@ public static final String avg_of_lot_amount_by_dist = """
 
     public static final String total_lot_status_silk = """
             SELECT
-                   l.market_id,
-                  \s
-                   COUNT(l.LOT_ID) AS total_lots,
-                   SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-                   SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
-                   MIN(raa.AMOUNT) AS min_amount,
-                   MAX(raa.AMOUNT) AS max_amount,
-                   CASE\s
-                     WHEN SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) <> 0\s
-                     THEN SUM(l.LOT_SOLD_OUT_AMOUNT) / SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT)\s
-                     ELSE 0\s
-                     END AS avg_amount,
-                   SUM(l.MARKET_FEE_REELER) as reeler_mf,
-                   SUM(l.MARKET_FEE_FARMER) as farmer_mf
-          FROM lot l
-          JOIN\s
-               REELER_AUCTION_ACCEPTED raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID and raa.AUCTION_DATE = l.auction_date
-          WHERE l.rejected_by IS NULL
-          AND l.market_id = :marketId
-          AND l.auction_date BETWEEN :fromDate AND :toDate
-          AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-          GROUP BY l.market_id ;""";
+    l.market_id,
+    COUNT(l.LOT_ID) AS total_lots,
+    SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)) AS total_weight,
+    SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)) AS total_amount,
+    MIN(TRY_CAST(raa.AMOUNT AS FLOAT)) AS min_amount,
+    MAX(TRY_CAST(raa.AMOUNT AS FLOAT)) AS max_amount,
+    CASE
+        WHEN SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)) <> 0
+        THEN SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)) / 
+             SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT))
+        ELSE 0
+    END AS avg_amount,
+    SUM(TRY_CAST(l.MARKET_FEE_REELER AS FLOAT)) AS reeler_mf,
+    SUM(TRY_CAST(l.MARKET_FEE_TRADER AS FLOAT)) AS trader_mf
+FROM 
+    lot l
+JOIN 
+    REELER_AUCTION_ACCEPTED raa 
+    ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID 
+    AND raa.AUCTION_DATE = l.auction_date
+WHERE 
+    l.rejected_by IS NULL
+    AND l.market_id = :marketId
+    AND l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.status IN (
+        'weighmentcompleted', 
+        'readyforpayment', 
+        'paymentsuccess', 
+        'paymentfailed', 
+        'paymentprocessing'
+    )
+GROUP BY 
+    l.market_id;""";
+
 
     public static final String state_wise_lot_status = """
         SELECT
@@ -2354,51 +2366,53 @@ public static final String avg_of_lot_amount_by_dist = """
 
     public static final String all_state_wise_lot_status_silk = """
             SELECT
-             s.STATE_NAME,
-             COALESCE(fa.state_id, 0) AS state_id,
-             \s
-             COUNT(l.LOT_ID) AS total_lots,
-             COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) AS total_weight,
-             COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) AS total_amount,
-             COALESCE(MIN(raa.AMOUNT), 0) AS min_amount,
-             COALESCE(MAX(raa.AMOUNT), 0) AS max_amount,
-              CASE\s
-                WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0\s
-                THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)\s
-                ELSE 0\s
-                END AS avg_amount,
-             COALESCE(SUM(l.MARKET_FEE_REELER), 0) AS reeler_mf,
-             COALESCE(SUM(l.MARKET_FEE_FARMER), 0) AS farmer_mf
-            FROM
-                state s
-            LEFT JOIN (
-                SELECT DISTINCT reeler_id, state_id
-                FROM farmer_address
-            ) fa ON s.STATE_ID = fa.state_id
-            LEFT JOIN market_auction ma ON fa.farmer_id = ma.farmer_id
-            LEFT JOIN farmer f ON fa.farmer_id = f.farmer_id
-            LEFT JOIN reeler r ON fa.reeler_id = r.reeler_id
-            LEFT JOIN lot l ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
-                AND l.rejected_by IS NULL
-                AND l.market_id = :marketId
-                AND l.auction_date BETWEEN :fromDate AND :toDate
-                AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-                    LEFT JOIN REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID\s
-                            AND raa.AUCTION_DATE = l.auction_date
-            --LEFT JOIN reeler r ON r.reeler_id = raa.REELER_ID AND r.active = 1
-            LEFT JOIN trader_license tl ON tl.trader_license_id = raa.trader_license_ID AND tl.active = 1
-            WHERE
-                s.ACTIVE = 1
-                AND s.STATE_NAME IN ('Karnataka', 'Andhra Pradesh', 'Telangana', 'Maharashtra', 'Tamil Nadu')
-                    GROUP BY
-                      s.STATE_NAME, fa.state_id
-                  ORDER BY
-                      CASE s.STATE_NAME
-                          WHEN 'Karnataka' THEN 1
-                          ELSE 2
-                      END,
-                      s.STATE_NAME;
-            """;
+                                                                                s.STATE_NAME,
+                                                                                COALESCE(r.state_id, 0) AS state_id,
+                                                                                COUNT(l.LOT_ID) AS total_lots,
+                                                                                COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0) AS total_weight,
+                                                                                COALESCE(SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)), 0) AS total_amount,
+                                                                                COALESCE(MIN(TRY_CAST(raa.AMOUNT AS FLOAT)), 0) AS min_amount,
+                                                                                COALESCE(MAX(TRY_CAST(raa.AMOUNT AS FLOAT)), 0) AS max_amount,
+                                                                                CASE
+                                                                                    WHEN COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0) <> 0
+                                                                                    THEN COALESCE(SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)), 0) /
+                                                                                         COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0)
+                                                                                    ELSE 0
+                                                                                END AS avg_amount,
+                                                                                COALESCE(SUM(TRY_CAST(l.MARKET_FEE_REELER AS FLOAT)), 0) AS reeler_mf,
+                                                                                COALESCE(SUM(TRY_CAST(l.MARKET_FEE_TRADER AS FLOAT)), 0) AS trader_mf
+                                                                            FROM
+                                                                                state s
+                                                                            LEFT JOIN (
+                                                                                SELECT DISTINCT reeler_id, state_id
+                                                                                FROM reeler
+                                                                            ) r ON s.STATE_ID = r.state_id
+                                                                            LEFT JOIN market_auction ma ON r.reeler_id = ma.reeler_id
+                                                                            LEFT JOIN reeler r1 ON r1.reeler_id = r.reeler_id -- Fixed alias conflict
+                                                                            LEFT JOIN lot l ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
+                                                                                AND l.rejected_by IS NULL
+                                                                                AND l.market_id = :marketId
+                                                                                AND l.auction_date BETWEEN :fromDate AND :toDate
+                                                                                AND l.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing')
+                                                                            LEFT JOIN REELER_AUCTION_ACCEPTED raa\s
+                                                                                ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+                                                                                AND raa.AUCTION_DATE = l.auction_date
+                                                                            LEFT JOIN trader_license tl\s
+                                                                                ON tl.trader_license_id = raa.TRADER_LICENSE_ID\s
+                                                                                AND r1.active = 1
+                                                                            WHERE
+                                                                                s.ACTIVE = 1
+                                                                                AND s.STATE_NAME IN ('Karnataka', 'Andhra Pradesh', 'Telangana', 'Maharashtra', 'Tamil Nadu')
+                                                                            GROUP BY
+                                                                                s.STATE_NAME, r.state_id
+                                                                            ORDER BY
+                                                                                CASE s.STATE_NAME
+                                                                                    WHEN 'Karnataka' THEN 1
+                                                                                    ELSE 2
+                                                                                END,
+                                                                                s.STATE_NAME;
+                        """;
+
 
     public static final String gender_wise_lot_status = """
         SELECT
@@ -2435,130 +2449,43 @@ public static final String avg_of_lot_amount_by_dist = """
     """;
 
     public static final String gender_wise_lot_status_silk = """
-        SELECT
-        CASE WHEN f.GENDER_ID = 1 THEN 'Male'
-             WHEN f.GENDER_ID = 2 THEN 'Female'
-             ELSE 'Unknown'
-        END AS Gender,
-        COUNT(l.LOT_ID) AS total_lots,
-        COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) AS total_weight,
-        COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) AS total_amount,
-        COALESCE(MIN(raa.AMOUNT), 0) AS min_amount,
-        COALESCE(MAX(raa.AMOUNT), 0) AS max_amount,
-        CASE\s
-                WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0\s
-                THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)\s
-                ELSE 0\s
-                END AS avg_amount,
-        COALESCE(SUM(l.MARKET_FEE_REELER), 0) AS reeler_mf,
-        COALESCE(SUM(l.MARKET_FEE_FARMER), 0) AS farmer_mf
-    FROM
-        farmer f
-    LEFT JOIN market_auction ma ON f.farmer_id = ma.farmer_id
-    LEFT JOIN lot l ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
-        AND l.rejected_by IS NULL
-        AND l.market_id = :marketId
-        AND l.auction_date BETWEEN :fromDate AND :toDate
-        AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-    LEFT JOIN reeler_auction_accepted raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-        AND raa.AUCTION_DATE = l.auction_date
-    WHERE
-        f.GENDER_ID IN (1, 2)
-    GROUP BY
-    f.GENDER_ID;
-    """;
+      SELECT
+    CASE 
+        WHEN r.GENDER = 1 THEN 'Male'
+        WHEN r.GENDER = 2 THEN 'Female'
+        ELSE 'Unknown'
+    END AS Gender,
+    COUNT(l.LOT_ID) AS total_lots,
+    COALESCE(SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))), 0) AS total_weight,
+    COALESCE(SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))), 0) AS total_amount,
+    COALESCE(MIN(CAST(raa.AMOUNT AS DECIMAL(18, 2))), 0) AS min_amount,
+    COALESCE(MAX(CAST(raa.AMOUNT AS DECIMAL(18, 2))), 0) AS max_amount,
+    CASE
+        WHEN COALESCE(SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))), 0) <> 0 
+        THEN COALESCE(SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))), 0) / 
+             COALESCE(SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))), 0)
+        ELSE 0
+    END AS avg_amount,
+    COALESCE(SUM(CAST(l.MARKET_FEE_REELER AS DECIMAL(18, 2))), 0) AS reeler_mf,
+    COALESCE(SUM(CAST(l.MARKET_FEE_TRADER AS DECIMAL(18, 2))), 0) AS trader_mf
+FROM
+    reeler r
+LEFT JOIN market_auction ma 
+    ON r.reeler_id = ma.reeler_id
+LEFT JOIN lot l 
+    ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
+    AND l.rejected_by IS NULL
+    AND l.market_id = :marketId
+    AND l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing')
+LEFT JOIN reeler_auction_accepted raa 
+    ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
+    AND raa.AUCTION_DATE = l.auction_date
+WHERE
+    r.GENDER IN (1, 2)
+GROUP BY
+    r.GENDER;""";
 
-    //public static final String race_wise_lot_status = """
-//            SELECT\s
-//                l.auction_date,
-//                l.market_id,
-//                COUNT(l.LOT_ID) AS total_lots,
-//                SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-//                SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
-//                MIN(raa.AMOUNT) AS min_amount,
-//                MAX(raa.AMOUNT) AS max_amount,
-//                SUM(l.LOT_SOLD_OUT_AMOUNT) / SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS avg_amount,
-//                SUM(l.MARKET_FEE_REELER) AS reeler_mf,
-//                SUM(l.MARKET_FEE_FARMER) AS farmer_mf,
-//                rm.race_id,
-//                rm.race_name
-//            FROM\s
-//                lot l
-//                JOIN
-//                REELER_AUCTION_ACCEPTED raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID and raa.AUCTION_DATE = l.auction_date
-//                JOIN market_auction ma on ma.market_auction_date = l.auction_date and ma.market_auction_id = l.market_auction_id
-//                JOIN race_master rm on ma.RACE_MASTER_ID = rm.race_id and rm.active = 1
-//
-//            WHERE\s
-//                l.rejected_by IS NULL
-//                AND l.active = 1
-//                AND l.market_id = :marketId
-//                AND l.auction_date = :auctionDate
-//            GROUP BY\s
-//                l.auction_date, l.market_id,rm.race_id,rm.race_name ;""";
-//    public static final String race_wise_lot_status = """
-//            SELECT
-//            rm.race_name,
-//            rmm.race_id,
-//            COUNT(l.LOT_ID) AS total_lots,
-//            SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-//            SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
-//            MIN(raa.AMOUNT) AS min_amount,
-//            MAX(raa.AMOUNT) AS max_amount,
-//            CASE\s
-//            WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0\s
-//            THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)\s
-//            ELSE 0\s
-//            END AS avg_amount,
-//            SUM(l.MARKET_FEE_REELER) AS reeler_mf,
-//            SUM(l.MARKET_FEE_FARMER) AS farmer_mf
-//            FROM race_market_master rmm
-//            LEFT JOIN race_master rm ON rm.race_id = rmm.race_id
-//            LEFT JOIN market_auction ma ON ma.RACE_MASTER_ID = rm.race_id AND ma.market_auction_date = :auctionDate
-//            LEFT JOIN lot l ON l.auction_date = ma.market_auction_date
-//            AND l.market_auction_id = ma.market_auction_id
-//            AND l.active = 1
-//            AND l.rejected_by IS NULL
-//            LEFT JOIN REELER_AUCTION_ACCEPTED raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-//             AND raa.STATUS ='accepted'
-//            AND raa.AUCTION_DATE = l.auction_date
-//                    WHERE
-//            rmm.market_master_id = :marketId
-//            AND rm.active = 1
-//            GROUP BY
-//            rm.race_name,
-//            rmm.race_id;
-//            """;
-//    public static final String race_wise_lot_status = """
-//    SELECT
-//    rm.race_name,
-//    rm.race_id,
-//    COUNT(l.LOT_ID) AS total_lots,
-//    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-//    SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
-//    MIN(raa.AMOUNT) AS min_amount,
-//    MAX(raa.AMOUNT) AS max_amount,
-//    CASE
-//    WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0
-//    THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)
-//    ELSE 0
-//    END AS avg_amount,
-//    SUM(l.MARKET_FEE_REELER) AS reeler_mf,
-//    SUM(l.MARKET_FEE_FARMER) AS farmer_mf
-//    FROM
-//    lot l
-//    JOIN market_auction ma on ma.market_auction_date = l.auction_date and ma.market_auction_id = l.market_auction_id
-//    JOIN race_master rm on ma.RACE_MASTER_ID = rm.race_id and rm.active = 1
-//    JOIN REELER_AUCTION_ACCEPTED raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-//    AND raa.STATUS ='accepted'
-//    AND raa.AUCTION_DATE = l.auction_date
-//    WHERE
-//    l.rejected_by IS NULL
-//    AND l.active = 1
-//    AND l.market_id = :marketId
-//    AND l.auction_date = :auctionDate
-//    GROUP BY
-//    rm.race_name,rm.race_id;""";
     public static final String race_wise_lot_status = """
     SELECT
     rm.race_id,
@@ -2624,68 +2551,92 @@ public static final String avg_of_lot_amount_by_dist = """
     rm.race_name,
     rm.race_id,
     COUNT(l.LOT_ID) AS total_lots,
-    SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-    SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
-    MIN(raa.AMOUNT) AS min_amount,
-    MAX(raa.AMOUNT) AS max_amount,
+    SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)) AS total_weight,
+    SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)) AS total_amount,
+    MIN(TRY_CAST(raa.AMOUNT AS FLOAT)) AS min_amount,
+    MAX(TRY_CAST(raa.AMOUNT AS FLOAT)) AS max_amount,
     CASE
-    WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0
-    THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)
-    ELSE 0
+        WHEN COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0) <> 0
+        THEN COALESCE(SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)), 0) /
+             COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0)
+        ELSE 0
     END AS avg_amount,
-    SUM(l.MARKET_FEE_REELER) AS reeler_mf,
-    SUM(l.MARKET_FEE_FARMER) AS farmer_mf
-    FROM race_master rm
-    LEFT JOIN market_auction ma ON ma.RACE_MASTER_ID = rm.race_id
-    LEFT JOIN lot l ON l.market_auction_id = ma.market_auction_id
+    SUM(TRY_CAST(l.MARKET_FEE_REELER AS FLOAT)) AS reeler_mf,
+    SUM(TRY_CAST(l.MARKET_FEE_TRADER AS FLOAT)) AS trader_mf
+FROM
+    race_master rm
+LEFT JOIN market_auction ma 
+    ON ma.RACE_MASTER_ID = rm.race_id
+LEFT JOIN lot l 
+    ON l.market_auction_id = ma.market_auction_id
     AND l.active = 1
     AND l.rejected_by IS NULL
-    LEFT JOIN REELER_AUCTION_ACCEPTED raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-
-            WHERE
+LEFT JOIN REELER_AUCTION_ACCEPTED raa 
+    ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
+WHERE
     l.market_id = :marketId
     AND l.auction_date BETWEEN :fromDate AND :toDate
-    AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
+    AND l.status IN (
+        'weighmentcompleted', 
+        'readyforpayment', 
+        'paymentsuccess', 
+        'paymentfailed', 
+        'paymentprocessing'
+    )
     AND rm.active = 1
     AND (COALESCE(:raceId, 0) = 0 OR rm.race_id = :raceId)
-    GROUP BY
+GROUP BY
     rm.race_name,
     rm.race_id;""";
 
+
+
     public static final String race_market_wise_lot_status_dist_silk = """
             SELECT
-            rm.race_name,
-            rm.race_id,
-            COUNT(l.LOT_ID) AS total_lots,
-            SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-            SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
-            MIN(raa.AMOUNT) AS min_amount,
-            MAX(raa.AMOUNT) AS max_amount,
-            CASE
-            WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0
-            THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)
-            ELSE 0
-            END AS avg_amount,
-            SUM(l.MARKET_FEE_REELER) AS reeler_mf,
-            SUM(l.MARKET_FEE_FARMER) AS farmer_mf
-            FROM race_master rm
-            LEFT JOIN market_auction ma ON ma.RACE_MASTER_ID = rm.race_id
-            LEFT JOIN lot l ON l.market_auction_id = ma.market_auction_id
-            AND l.active = 1
-            AND l.rejected_by IS NULL
-            LEFT JOIN REELER_AUCTION_ACCEPTED raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-            LEFT JOIN farmer_address fa ON fa.FARMER_ID = ma.farmer_id
-                    WHERE
-            l.market_id = :marketId
-            AND l.auction_date BETWEEN :fromDate AND :toDate
-            AND fa.district_id = :districtId
-            AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-            --AND rm.active = 1 AND rm.race_id = :raceId
-            AND rm.active = 1
-            AND (COALESCE(:raceId, 0) = 0 OR rm.race_id = :raceId)                                                              
-            GROUP BY
-            rm.race_name,
-            rm.race_id;""";
+                           rm.race_name,
+                           rm.race_id,
+                           COUNT(l.LOT_ID) AS total_lots,
+                           COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0) AS total_weight,
+                           COALESCE(SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)), 0) AS total_amount,
+                           COALESCE(MIN(TRY_CAST(raa.AMOUNT AS FLOAT)), 0) AS min_amount,
+                           COALESCE(MAX(TRY_CAST(raa.AMOUNT AS FLOAT)), 0) AS max_amount,
+                           CASE
+                               WHEN COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0) <> 0
+                               THEN COALESCE(SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)), 0) /
+                                    COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0)
+                               ELSE 0
+                           END AS avg_amount,
+                           COALESCE(SUM(TRY_CAST(l.MARKET_FEE_REELER AS FLOAT)), 0) AS reeler_mf,
+                           COALESCE(SUM(TRY_CAST(l.MARKET_FEE_TRADER AS FLOAT)), 0) AS trader_mf
+                       FROM
+                           race_master rm
+                       LEFT JOIN market_auction ma\s
+                           ON ma.RACE_MASTER_ID = rm.race_id
+                       LEFT JOIN lot l\s
+                           ON l.market_auction_id = ma.market_auction_id
+                           AND l.active = 1
+                           AND l.rejected_by IS NULL
+                       LEFT JOIN REELER_AUCTION_ACCEPTED raa\s
+                           ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
+                       LEFT JOIN reeler r\s
+                           ON r.REELER_ID = ma.reeler_id
+                       WHERE
+                           l.market_id = :marketId
+                           AND l.auction_date BETWEEN :fromDate AND :toDate
+                           AND (COALESCE(:districtId, 0) = 0 OR r.district_id = :districtId)
+                           AND l.status IN (
+                               'weighmentcompleted',\s
+                               'readyforpayment',\s
+                               'paymentsuccess',\s
+                               'paymentfailed',\s
+                               'paymentprocessing'
+                           )
+                           AND rm.active = 1
+                           AND (COALESCE(:raceId, 0) = 0 OR rm.race_id = :raceId)
+                       GROUP BY
+                           rm.race_name,
+                           rm.race_id;
+                       """;
 
     public static final String total_lot_status_by_dist = """
     SELECT
@@ -2713,26 +2664,44 @@ public static final String avg_of_lot_amount_by_dist = """
 
     public static final String total_lot_status_by_dist_silk = """
     SELECT
-           l.market_id,
-           COUNT(l.LOT_ID) AS total_lots,
-           SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight,
-           SUM(l.LOT_SOLD_OUT_AMOUNT) AS total_amount,
-           MIN(raa.AMOUNT) AS min_amount,
-            MAX(raa.AMOUNT) AS max_amount,
-            SUM(l.LOT_SOLD_OUT_AMOUNT) / SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS avg_amount,
-           SUM(l.MARKET_FEE_REELER) AS reeler_mf,
-           SUM(l.MARKET_FEE_FARMER) AS farmer_mf
-            FROM lot l
-            LEFT JOIN REELER_AUCTION_ACCEPTED raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-            AND raa.AUCTION_DATE = l.auction_date
-            left join market_auction ma on ma.market_auction_id = l.market_auction_id
-            left join farmer_address fa on ma.farmer_id = fa.FARMER_ID
-        WHERE rejected_by IS NULL
-          AND l.market_id = :marketId
-          AND l.auction_date BETWEEN :fromDate AND :toDate
-       AND fa.district_id = :districtId
-       AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-        GROUP BY l.market_id ;""";
+    l.market_id,
+    COUNT(l.LOT_ID) AS total_lots,
+    SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)) AS total_weight,
+    SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)) AS total_amount,
+    MIN(TRY_CAST(raa.AMOUNT AS FLOAT)) AS min_amount,
+    MAX(TRY_CAST(raa.AMOUNT AS FLOAT)) AS max_amount,
+    CASE
+        WHEN SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)) <> 0
+        THEN SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)) /
+             SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT))
+        ELSE 0
+    END AS avg_amount,
+    SUM(TRY_CAST(l.MARKET_FEE_REELER AS FLOAT)) AS reeler_mf,
+    SUM(TRY_CAST(l.MARKET_FEE_TRADER AS FLOAT)) AS trader_mf
+FROM
+    lot l
+LEFT JOIN REELER_AUCTION_ACCEPTED raa 
+    ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
+    AND raa.AUCTION_DATE = l.auction_date
+LEFT JOIN market_auction ma 
+    ON ma.market_auction_id = l.market_auction_id
+LEFT JOIN reeler r 
+    ON ma.reeler_id = r.reeler_id
+WHERE
+    l.rejected_by IS NULL
+    AND l.market_id = :marketId
+    AND l.auction_date BETWEEN :fromDate AND :toDate
+    AND (COALESCE(:districtId, 0) = 0 OR r.district_id = :districtId)
+    AND l.status IN (
+        'weighmentcompleted', 
+        'readyforpayment', 
+        'paymentsuccess', 
+        'paymentfailed', 
+        'paymentprocessing'
+    )
+GROUP BY
+    l.market_id;""";
+
 
     public static final String all_state_wise_lot_status_by_dist = """
     SELECT
@@ -2781,50 +2750,63 @@ public static final String avg_of_lot_amount_by_dist = """
 
     public static final String all_state_wise_lot_status_by_dist_silk = """
     SELECT
-        s.STATE_NAME,
-        COALESCE(fa.state_id, 0) AS state_id,
-        COUNT(l.LOT_ID) AS total_lots,
-        COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) AS total_weight,
-        COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) AS total_amount,
-        COALESCE(MIN(raa.AMOUNT), 0) AS min_amount,
-        COALESCE(MAX(raa.AMOUNT), 0) AS max_amount,
-        CASE
-            WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0
-            THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)
-            ELSE 0
-        END AS avg_amount,
-        COALESCE(SUM(l.MARKET_FEE_REELER), 0) AS reeler_mf,
-        COALESCE(SUM(l.MARKET_FEE_FARMER), 0) AS farmer_mf
-    FROM
-        state s
-    LEFT JOIN (
-        SELECT DISTINCT trader_license_id, state_id, district_id
-        FROM farmer_address
-    ) fa ON s.STATE_ID = fa.state_id AND fa.district_id = :districtId
-    LEFT JOIN market_auction ma ON fa.farmer_id = ma.farmer_id
-    LEFT JOIN farmer f ON fa.farmer_id = f.farmer_id
-        LEFT JOIN reeler r ON r.reeler_id = raa.reeler_id
-    LEFT JOIN lot l ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
-        AND l.rejected_by IS NULL
-        AND l.market_id = :marketId
-        AND l.auction_date BETWEEN :fromDate AND :toDate
-        AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-    LEFT JOIN REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
-        AND raa.AUCTION_DATE = l.auction_date
-    --LEFT JOIN reeler r ON r.reeler_id = raa.REELER_ID AND r.active = 1
-    LEFT JOIN trader_license tl ON tl.trader_license_id = raa.trader_license_ID AND tl.active = 1
-    WHERE
-        s.ACTIVE = 1
-        AND s.STATE_NAME IN ('Karnataka', 'Andhra Pradesh', 'Telangana', 'Maharashtra', 'Tamil Nadu')
-    GROUP BY
-        s.STATE_NAME, fa.state_id
-    ORDER BY
-        CASE s.STATE_NAME
-            WHEN 'Karnataka' THEN 1
-            ELSE 2
-        END,
-        s.STATE_NAME;
-""";
+    s.STATE_NAME,
+    COALESCE(r.state_id, 0) AS state_id,
+    COUNT(l.LOT_ID) AS total_lots,
+    COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0) AS total_weight,
+    COALESCE(SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)), 0) AS total_amount,
+    COALESCE(MIN(TRY_CAST(raa.AMOUNT AS FLOAT)), 0) AS min_amount,
+    COALESCE(MAX(TRY_CAST(raa.AMOUNT AS FLOAT)), 0) AS max_amount,
+    CASE
+        WHEN COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0) <> 0
+        THEN COALESCE(SUM(TRY_CAST(l.LOT_SOLD_OUT_AMOUNT AS FLOAT)), 0) / 
+             COALESCE(SUM(TRY_CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS FLOAT)), 0)
+        ELSE 0
+    END AS avg_amount,
+    COALESCE(SUM(TRY_CAST(l.MARKET_FEE_REELER AS FLOAT)), 0) AS reeler_mf,
+    COALESCE(SUM(TRY_CAST(l.MARKET_FEE_TRADER AS FLOAT)), 0) AS trader_mf
+FROM
+    state s
+LEFT JOIN (
+    SELECT DISTINCT reeler_id,state_id, district_id 
+    FROM reeler
+) r ON s.STATE_ID = r.state_id 
+AND (COALESCE(:districtId, 0) = 0 OR r.district_id = :districtId)
+LEFT JOIN market_auction ma ON r.reeler_id = ma.reeler_id
+    LEFT JOIN reeler r2 ON r.reeler_id = r2.reeler_id
+
+LEFT JOIN lot l 
+    ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
+    AND l.rejected_by IS NULL
+    AND l.market_id = :marketId
+    AND l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.status IN (
+        'weighmentcompleted', 
+        'readyforpayment', 
+        'paymentsuccess', 
+        'paymentfailed', 
+        'paymentprocessing'
+    )
+LEFT JOIN REELER_AUCTION_ACCEPTED raa 
+    ON raa.REELER_AUCTION_ACCEPTED_ID = l.REELER_AUCTION_ACCEPTED_ID
+    AND raa.AUCTION_DATE = l.auction_date
+LEFT JOIN trader_license tl 
+    ON tl.trader_license_id = raa.trader_license_id 
+    AND tl.active = 1
+WHERE
+    s.ACTIVE = 1
+    AND s.STATE_NAME IN (
+        'Karnataka', 'Andhra Pradesh', 
+        'Telangana', 'Maharashtra', 'Tamil Nadu'
+    )
+GROUP BY
+    s.STATE_NAME, r.state_id
+ORDER BY
+    CASE s.STATE_NAME
+        WHEN 'Karnataka' THEN 1
+        ELSE 2
+    END,
+    s.STATE_NAME;""";
 
 
     public static final String race_wise_lot_status_dist = """
@@ -2936,40 +2918,43 @@ public static final String avg_of_lot_amount_by_dist = """
     """;
 
     public static final String gender_wise_lot_status_by_dist_silk = """
-        SELECT
-        CASE WHEN f.GENDER_ID = 1 THEN 'Male'
-             WHEN f.GENDER_ID = 2 THEN 'Female'
-             ELSE 'Unknown'
-        END AS Gender,
-        COUNT(l.LOT_ID) AS total_lots,
-        COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) AS total_weight,
-        COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) AS total_amount,
-        COALESCE(MIN(raa.AMOUNT), 0) AS min_amount,
-        COALESCE(MAX(raa.AMOUNT), 0) AS max_amount,
-        CASE\s
-                WHEN COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0) <> 0\s
-                THEN COALESCE(SUM(l.LOT_SOLD_OUT_AMOUNT), 0) / COALESCE(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT), 0)\s
-                ELSE 0\s
-                END AS avg_amount,
-        COALESCE(SUM(l.MARKET_FEE_REELER), 0) AS reeler_mf,
-        COALESCE(SUM(l.MARKET_FEE_FARMER), 0) AS farmer_mf
-    FROM
-        farmer f
-    LEFT JOIN farmer_address fa ON f.farmer_id = fa.farmer_id
-    LEFT JOIN market_auction ma ON f.farmer_id = ma.farmer_id
-    LEFT JOIN lot l ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
-        AND l.rejected_by IS NULL
-        AND l.market_id = :marketId
-        AND l.auction_date BETWEEN :fromDate AND :toDate
-        AND fa.DISTRICT_ID = :districtId
-        AND l.status in ('weighmentcompleted','readyforpayment','paymentsuccess','paymentfailed','paymentprocessing')
-    LEFT JOIN reeler_auction_accepted raa ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
-        AND raa.AUCTION_DATE = l.auction_date
-    WHERE
-        f.GENDER_ID IN (1, 2)
-    GROUP BY
-    f.GENDER_ID;
-    """;
+         SELECT
+    CASE 
+        WHEN r.GENDER = 1 THEN 'Male'
+        WHEN r.GENDER = 2 THEN 'Female'
+        ELSE 'Unknown'
+    END AS Gender,
+    COUNT(l.LOT_ID) AS total_lots,
+    COALESCE(SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))), 0) AS total_weight,
+    COALESCE(SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))), 0) AS total_amount,
+    COALESCE(MIN(CAST(raa.AMOUNT AS DECIMAL(18, 2))), 0) AS min_amount,
+    COALESCE(MAX(CAST(raa.AMOUNT AS DECIMAL(18, 2))), 0) AS max_amount,
+    CASE
+        WHEN COALESCE(SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))), 0) <> 0 
+        THEN COALESCE(SUM(CAST(l.LOT_SOLD_OUT_AMOUNT AS DECIMAL(18, 2))), 0) / 
+             COALESCE(SUM(CAST(l.LOT_WEIGHT_AFTER_WEIGHMENT AS DECIMAL(18, 2))), 0)
+        ELSE 0
+    END AS avg_amount,
+    COALESCE(SUM(CAST(l.MARKET_FEE_REELER AS DECIMAL(18, 2))), 0) AS reeler_mf,
+    COALESCE(SUM(CAST(l.MARKET_FEE_TRADER AS DECIMAL(18, 2))), 0) AS trader_mf
+FROM
+    reeler r
+LEFT JOIN market_auction ma 
+    ON r.reeler_id = ma.reeler_id
+LEFT JOIN lot l 
+    ON ma.MARKET_AUCTION_ID = l.MARKET_AUCTION_ID
+    AND l.rejected_by IS NULL
+    AND l.market_id = :marketId
+    AND l.auction_date BETWEEN :fromDate AND :toDate
+    AND (COALESCE(:districtId, 0) = 0 OR r.district_id = :districtId)
+    AND l.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing')
+LEFT JOIN reeler_auction_accepted raa 
+    ON l.REELER_AUCTION_ACCEPTED_ID = raa.REELER_AUCTION_ACCEPTED_ID
+    AND raa.AUCTION_DATE = l.auction_date
+WHERE
+    r.GENDER IN (1, 2)
+GROUP BY
+    r.GENDER;""";
 
     public static final String reeler_report_for__app = """
             select l.allotted_lot_id,ra.AMOUNT, l.LOT_WEIGHT_AFTER_WEIGHMENT,l.LOT_SOLD_OUT_AMOUNT, l.MARKET_FEE_REELER

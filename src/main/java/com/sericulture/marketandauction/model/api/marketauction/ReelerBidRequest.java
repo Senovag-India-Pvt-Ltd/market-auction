@@ -24,4 +24,7 @@ public class ReelerBidRequest extends LotStatusRequest {
     @Schema(name = "amount", example = "1", required = true)
     private int amount;
 
+    @Schema(name = "auctionDate", example = "1", required = true)
+    private LocalDate auctionDate;
+
 }
