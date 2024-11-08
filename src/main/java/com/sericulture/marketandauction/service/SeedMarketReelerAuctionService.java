@@ -615,14 +615,14 @@ public class SeedMarketReelerAuctionService {
             entityManager = entityManagerFactory.createEntityManager();
             StoredProcedureQuery procedureQuery = entityManager
                     .createStoredProcedureQuery("GET_SEED_AUCTION_DETAILS_1");
-            procedureQuery.registerStoredProcedureParameter("auctionDate", LocalDate.class, ParameterMode.IN);
+            procedureQuery.registerStoredProcedureParameter("today", LocalDate.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("marketId", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("reelerId", Integer.class, ParameterMode.IN);
             procedureQuery.registerStoredProcedureParameter("Error", String.class, ParameterMode.OUT);
             procedureQuery.registerStoredProcedureParameter("Success", Integer.class, ParameterMode.OUT);
 
             entityManager.getTransaction().begin();
-            procedureQuery.setParameter("auctionDate", reelerLotRequest.getAuctionDate());
+            procedureQuery.setParameter("today", reelerLotRequest.getAuctionDate());
             procedureQuery.setParameter("marketId",  reelerLotRequest.getMarketId());
             procedureQuery.setParameter("reelerId", reelerLotRequest.getReelerId());
             procedureQuery.execute();
