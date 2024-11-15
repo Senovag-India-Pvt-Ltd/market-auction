@@ -175,8 +175,12 @@ public class LotGroupageService {
             lotGroupage.setInvoiceNumber(invoiceNumber);
 
             // Calculate and set market fee based on buyer type
+//            if (lotGroupageRequest.getBuyerType() != null) {
+//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequest.getSoldAmount());
             if (lotGroupageRequest.getBuyerType() != null) {
-                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequest.getSoldAmount());
+                BigDecimal soldAmount = (lotGroupageRequest.getSoldAmount() != null)
+                        ? BigDecimal.valueOf(lotGroupageRequest.getSoldAmount())
+                        : BigDecimal.ZERO; // default to zero if soldAmount is null
                 BigDecimal marketFee = BigDecimal.ZERO;
 
                 switch (lotGroupageRequest.getBuyerType()) {
@@ -186,7 +190,12 @@ public class LotGroupageService {
                         marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
                         break;
                     case "Reeling":
-                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                        // For Reeling, you can either skip the fee calculation or handle it differently
+                        if (soldAmount != null) {
+                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                        } else {
+                            marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
+                        }
                         break;
                     default:
                         break;
@@ -557,8 +566,12 @@ public class LotGroupageService {
             lotGroupage.setInvoiceNumber(currentInvoiceNumber);
 
             // Update market fee based on buyer type
+//            if (lotGroupageRequestEdit.getBuyerType() != null) {
+//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount());
             if (lotGroupageRequestEdit.getBuyerType() != null) {
-                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount());
+                BigDecimal soldAmount = (lotGroupageRequestEdit.getSoldAmount() != null)
+                        ? BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount())
+                        : BigDecimal.ZERO; // default to zero if soldAmount is null
                 BigDecimal marketFee = BigDecimal.ZERO;
 
                 switch (lotGroupageRequestEdit.getBuyerType()) {
@@ -567,8 +580,16 @@ public class LotGroupageService {
                     case "Govt Grainage":
                         marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
                         break;
+//                    case "Reeling":
+//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+//                        break;
                     case "Reeling":
-                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                        // For Reeling, you can either skip the fee calculation or handle it differently
+                        if (soldAmount != null) {
+                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                        } else {
+                            marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
+                        }
                         break;
                     default:
                         break;
