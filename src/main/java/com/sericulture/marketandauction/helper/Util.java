@@ -107,6 +107,10 @@ public final class Util {
         return jwtPayloadData.getUsername();
     }
 
+    public static Long getUserMasterId(JwtPayloadData jwtPayloadData) {
+        return jwtPayloadData.getUserMasterId();
+    }
+
     public static <T> T castObjectToTypeValue(Object value, Class<T> clazz) {
         return value == null ? null : clazz.cast(value);
     }
