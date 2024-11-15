@@ -298,7 +298,7 @@ public class LotGroupageService {
                   FROM lot_groupage lg_inner
                   INNER JOIN lot l_inner ON lg_inner.lot_id = l_inner.lot_id
                   WHERE lg_inner.allotted_lot_id = l.allotted_lot_id
-                    AND l_inner.auction_date = l.auction_date -- Use the outer query's auction date
+                    AND l_inner.auction_date = l.auction_date
                     AND lg_inner.lot_weight > 0
                  ) AS soldCocoonInKgs,
                  l.LOT_WEIGHT_AFTER_WEIGHMENT,
