@@ -156,6 +156,9 @@ public class LotGroupageService {
             LotGroupageRequest lotGroupageRequest = lotGroupageDetailsRequest.getLotGroupageRequests().get(i);
             LotGroupage lotGroupage = mapper.lotGroupageObjectToEntity(lotGroupageRequest, LotGroupage.class);
 
+            // Retrieve and set the userMasterId from the JWT token
+            lotGroupage.setUserMasterId(Util.getUserMasterId(Util.getTokenValues()));
+
             List<Object[]> list = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(
                     lotGroupageRequest.getAllottedLotId().intValue(), lotGroupageRequest.getAuctionDate());
             for (Object[] arr : list) {
@@ -172,8 +175,12 @@ public class LotGroupageService {
             lotGroupage.setInvoiceNumber(invoiceNumber);
 
             // Calculate and set market fee based on buyer type
+//            if (lotGroupageRequest.getBuyerType() != null) {
+//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequest.getSoldAmount());
             if (lotGroupageRequest.getBuyerType() != null) {
-                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequest.getSoldAmount());
+                BigDecimal soldAmount = (lotGroupageRequest.getSoldAmount() != null)
+                        ? BigDecimal.valueOf(lotGroupageRequest.getSoldAmount())
+                        : BigDecimal.ZERO; // default to zero if soldAmount is null
                 BigDecimal marketFee = BigDecimal.ZERO;
 
                 switch (lotGroupageRequest.getBuyerType()) {
@@ -183,7 +190,12 @@ public class LotGroupageService {
                         marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
                         break;
                     case "Reeling":
-                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                        // For Reeling, you can either skip the fee calculation or handle it differently
+                        if (soldAmount != null) {
+                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                        } else {
+                            marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
+                        }
                         break;
                     default:
                         break;
@@ -286,14 +298,14 @@ public class LotGroupageService {
                   FROM lot_groupage lg_inner
                   INNER JOIN lot l_inner ON lg_inner.lot_id = l_inner.lot_id
                   WHERE lg_inner.allotted_lot_id = l.allotted_lot_id
-                    AND l_inner.auction_date = l.auction_date -- Use the outer query's auction date
+                    AND l_inner.auction_date = l.auction_date
                     AND lg_inner.lot_weight > 0
                  ) AS soldCocoonInKgs,
                  l.LOT_WEIGHT_AFTER_WEIGHMENT,
                 CASE
                     WHEN lg.buyer_type = 'RSP' THEN es.license_number
                     WHEN lg.buyer_type = 'NSSO' THEN es.address
-                    WHEN lg.buyer_type = 'Govt Grainage' THEN es.address
+                    WHEN lg.buyer_type = 'Govt Grainage' THEN gm.grainage_master_name
                     WHEN lg.buyer_type = 'Reeling' THEN r.name
                     ELSE NULL
                 END AS buyer_name
@@ -321,9 +333,11 @@ public class LotGroupageService {
                  AND lbpf.FIXATION_DATE = CAST(GETDATE() AS DATE)
             LEFT JOIN
                 reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
-            LEFT JOIN
-                external_unit_registration es ON lg.buyer_id = es.external_unit_registration_id
-                AND lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage')
+                LEFT JOIN
+             external_unit_registration es ON lg.external_unit_id = es.external_unit_registration_id
+             AND lg.buyer_type IN ('RSP', 'NSSO')
+           LEFT JOIN
+             grainage_master gm ON lg.external_unit_id = gm.grainage_master_id AND lg.buyer_type = 'Govt Grainage'
             WHERE
                 l.allotted_lot_id = ?
                 AND l.auction_date = ?
@@ -521,6 +535,12 @@ public class LotGroupageService {
                 lotGroupage.setInvoiceNumber(invoiceNumber);
             }
 
+// Preserve existing externalUnitId
+            Long existingExternalUnitId = lotGroupage.getExternalUnitId();
+
+            // Set the userMasterId from JWT token
+            lotGroupage.setUserMasterId(Util.getUserMasterId(Util.getTokenValues()));
+
             // Save the current invoice number (if it exists) to avoid overwriting
             String currentInvoiceNumber = lotGroupage.getInvoiceNumber();
 
@@ -534,12 +554,24 @@ public class LotGroupageService {
             // Update lotGroupage based on lotGroupageRequestEdit using the mapper method
             mapper.editLotGroupageObjectToEntity(lotGroupageRequestEdit, lotGroupage);
 
+            // Restore externalUnitId if it was previously set
+            if (existingExternalUnitId != null) {
+                lotGroupage.setExternalUnitId(existingExternalUnitId);
+            }
+            // Set the userMasterId from JWT token
+            lotGroupage.setUserMasterId(Util.getUserMasterId(Util.getTokenValues()));
+
+//            lotGroupage.setExternalUnitId(externalUnitId);
             // Restore the invoice number to ensure it's not overwritten
             lotGroupage.setInvoiceNumber(currentInvoiceNumber);
 
             // Update market fee based on buyer type
+//            if (lotGroupageRequestEdit.getBuyerType() != null) {
+//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount());
             if (lotGroupageRequestEdit.getBuyerType() != null) {
-                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount());
+                BigDecimal soldAmount = (lotGroupageRequestEdit.getSoldAmount() != null)
+                        ? BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount())
+                        : BigDecimal.ZERO; // default to zero if soldAmount is null
                 BigDecimal marketFee = BigDecimal.ZERO;
 
                 switch (lotGroupageRequestEdit.getBuyerType()) {
@@ -548,8 +580,16 @@ public class LotGroupageService {
                     case "Govt Grainage":
                         marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
                         break;
+//                    case "Reeling":
+//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+//                        break;
                     case "Reeling":
-                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                        // For Reeling, you can either skip the fee calculation or handle it differently
+                        if (soldAmount != null) {
+                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                        } else {
+                            marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
+                        }
                         break;
                     default:
                         break;

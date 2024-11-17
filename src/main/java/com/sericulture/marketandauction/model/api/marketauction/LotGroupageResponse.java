@@ -64,6 +64,12 @@ public class LotGroupageResponse extends ResponseBody {
     @Schema(name="remainingCocoonWeight", example = "1")
     Float remainingCocoonWeight;
 
+    @Schema(name="userMasterId", example = "1")
+    Long userMasterId;
+
+    @Schema(name="externalUnitId", example = "1")
+    Long externalUnitId;
+
     @Schema(name = "error", example = "true")
     Boolean error;
 

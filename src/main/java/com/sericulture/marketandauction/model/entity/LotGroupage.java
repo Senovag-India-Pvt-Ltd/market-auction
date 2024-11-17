@@ -70,5 +70,11 @@ public class LotGroupage extends BaseEntity implements Serializable {
     @Column(name = "remaining_cocoon")
     private Float remainingCocoonWeight;
 
+    @Column(name = "user_master_id")
+    private Long userMasterId;
+
+    @Column(name = "external_unit_id")
+    private Long externalUnitId;
+
 
 }
