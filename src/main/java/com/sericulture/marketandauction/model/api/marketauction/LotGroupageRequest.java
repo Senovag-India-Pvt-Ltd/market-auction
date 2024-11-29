@@ -59,7 +59,11 @@ public class LotGroupageRequest extends RequestBody {
     @Schema(name="remainingCocoonWeight", example = "1")
     Float remainingCocoonWeight;
 
+    @Schema(name="userMasterId", example = "1")
+    Long userMasterId;
 
+    @Schema(name="externalUnitId", example = "1")
+    Long externalUnitId;
 
 
 }

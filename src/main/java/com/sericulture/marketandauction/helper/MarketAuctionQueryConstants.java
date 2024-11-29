@@ -129,6 +129,19 @@ public class MarketAuctionQueryConstants {
             INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id 
             """;
 
+    private static final String LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER_WITH_VILLAGE_TALUK = """
+             FARMER f
+            INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID 
+            INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date 
+            INNER JOIN dbo.REELER_AUCTION_ACCEPTED raa ON raa.REELER_AUCTION_ACCEPTED_ID  = l.REELER_AUCTION_ACCEPTED_ID and raa.STATUS ='accepted' and raa.AUCTION_DATE =l.auction_date 
+            LEFT JOIN dbo.farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1 
+            LEFT JOIN  dbo.farmer_bank_account fba  ON   fba.FARMER_ID = f.FARMER_ID 
+            INNER JOIN dbo.market_master mm on mm.market_master_id = ma.market_id 
+            LEFT JOIN  Village v ON   fa.Village_ID = v.village_id
+             LEFT JOIN TALUK t on t.TALUK_ID = fa.TALUK_ID
+             LEFT JOIN dbo.race_master rm ON rm.race_id = ma.RACE_MASTER_ID
+            """;
+
     private static final String LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER_SILK = """
             REELER r
             INNER JOIN dbo.market_auction ma ON ma.reeler_id = r.REELER_ID
@@ -301,7 +314,7 @@ public class MarketAuctionQueryConstants {
 
     public static final String FARMER_TXN_REPORT_CASH = SELECT_FIELDS_FARMER_TXN +SPACE+FROM+SPACE+ LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER + SPACE+ FARMER_TXN_SPECIFIC_TABLES + SPACE + WHERE_CLAUSE_FARMER_TXN_CASH;
 
-    public static final String DTR_ONLINE_REPORT_QUERY = SELECT_FIELDS_DTR_ONLINE_REPORT + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ WHERE_CLAUSE_DTR_ONLINE;
+    public static final String DTR_ONLINE_REPORT_QUERY = SELECT_FIELDS_DTR_ONLINE_REPORT + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER_WITH_VILLAGE_TALUK +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER+ WHERE_CLAUSE_DTR_ONLINE;
 
     public static final String DTR_ONLINE_REPORT_QUERY_SILK = SELECT_FIELDS_DTR_ONLINE_REPORT_SILK  + FROM + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_REELER_SILK  +LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_TRADER_SILK + WHERE_CLAUSE_DTR_ONLINE_SILK_TYPE ;
 
