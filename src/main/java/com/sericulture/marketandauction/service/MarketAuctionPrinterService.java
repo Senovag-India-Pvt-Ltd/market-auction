@@ -331,7 +331,7 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
                 .reelerBranchName(Util.objectToString(response[8]))
                 .allottedLotId(Integer.parseInt(String.valueOf(response[9])))
                 .auctionDate(Util.objectToString(response[10]))
-                .farmerEstimatedWeight(Integer.parseInt(String.valueOf(response[11])))
+                .approximateEstimatedWeight(Integer.parseInt(String.valueOf(response[11])))
                 .marketName(Util.objectToString(response[12]))
                 .race(Util.objectToString(response[13]))
                 .source(Util.objectToString(response[14]))
