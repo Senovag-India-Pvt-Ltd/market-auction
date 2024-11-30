@@ -113,6 +113,16 @@ public class ReelerAuctionController {
         return reelerAuctionService.getReelerBalance(reelerBalanceRequest);
     }
 
+    @PostMapping("/getReelerCurrentBalance")
+    public ResponseEntity<?> getReelerCurrentBalance(@RequestBody ReelerCurrentBalanceRequest reelerCurrentBalanceRequest){
+        return reelerAuctionService.getReelerCurrentBalance(reelerCurrentBalanceRequest);
+    }
+
+    @PostMapping("/getReelerTransaction")
+    public ResponseEntity<?> getReelerTransaction(@RequestBody ReelerTransactionRequest reelerTransactionRequest){
+        return reelerAuctionService.getReelerTransaction(reelerTransactionRequest);
+    }
+
 
 
 }

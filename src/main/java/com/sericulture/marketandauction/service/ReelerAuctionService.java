@@ -33,6 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -623,6 +624,67 @@ public class ReelerAuctionService {
                 .minimumMarketBalance(Util.objectToFloat(reelerBalanceRespObject[0][3]))
                 .build();
         rw.setContent(reelerBalanceResponse);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getReelerCurrentBalance(ReelerCurrentBalanceRequest reelerCurrentBalanceRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(ReelerCurrentBalanceResponse.class);
+
+        Object[][] reelerBalanceRespObject = reelerAuctionRepository.getReelerCurrentBalance(reelerCurrentBalanceRequest.getReelerLicenceNumber(),reelerCurrentBalanceRequest.getMobileNumber(), reelerCurrentBalanceRequest.getMarketId());
+
+        if (reelerBalanceRespObject == null || reelerBalanceRespObject.length == 0) {
+            marketAuctionHelper.retrunIfError(rw, "Reeler data not found for the reelerId and market" + reelerCurrentBalanceRequest.getReelerLicenceNumber() + " market: " + reelerCurrentBalanceRequest.getMarketId());
+        }
+
+        List<ReelerCurrentBalanceResponse> reelerCurrentBalanceResponses = new ArrayList<>();
+        for (Object[] balanceData : reelerBalanceRespObject) {
+            ReelerCurrentBalanceResponse reelerCurrentBalanceResponse = ReelerCurrentBalanceResponse.builder()
+                    .slNo(Util.objectToString(balanceData[0]))
+                    .reelerId(Util.objectToInteger(balanceData[1]))
+                    .reelerLicenseNumber(Util.objectToString(balanceData[2]))
+                    .name(Util.objectToString(balanceData[3]))
+                    .reelerVirtualAccount(Util.objectToString(balanceData[4]))
+                    .mobileNumber(Util.objectToString(balanceData[5]))
+                    .balance(Util.objectToFloat(balanceData[6]))
+                    .updatedDate(Util.objectToDate(balanceData[7]))
+                    .total(Util.objectToString(balanceData[8]))
+                    .build();
+            reelerCurrentBalanceResponses.add(reelerCurrentBalanceResponse);
+        }
+        rw.setContent(reelerCurrentBalanceResponses);
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getReelerTransaction(ReelerTransactionRequest reelerTransactionRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(ReelerTransactionResponse.class);
+
+        Object[][] reelerTransactionRespObject = reelerAuctionRepository.getReelerTransaction(reelerTransactionRequest.getReelerLicenceNumber(),reelerTransactionRequest.getMobileNumber(), reelerTransactionRequest.getMarketId(),reelerTransactionRequest.getTransactionDate());
+
+        if (reelerTransactionRespObject == null || reelerTransactionRespObject.length == 0) {
+            marketAuctionHelper.retrunIfError(rw, "Reeler data not found for the reelerId and market" + reelerTransactionRequest.getReelerLicenceNumber() + " market: " + reelerTransactionRequest.getMarketId());
+        }
+
+        List<ReelerTransactionResponse> reelerTransactionResponses = new ArrayList<>();
+        for (Object[] transactionData : reelerTransactionRespObject) {
+            ReelerTransactionResponse reelerCurrentBalanceResponse = ReelerTransactionResponse.builder()
+                    .slNo(Util.objectToString(transactionData[0]))
+                    .reelerId(Util.objectToInteger(transactionData[1]))
+                    .reelerLicenseNumber(Util.objectToString(transactionData[2]))
+                    .name(Util.objectToString(transactionData[3]))
+                    .reelerVirtualAccount(Util.objectToString(transactionData[4]))
+                    .mobileNumber(Util.objectToString(transactionData[5]))
+                    .remitterAccount(Util.objectToString(transactionData[6]))
+                    .remitterBank(Util.objectToString(transactionData[7]))
+                    .sqNo(Util.objectToString(transactionData[8]))
+                    .refNo(Util.objectToString(transactionData[9]))
+                    .amount(Util.objectToFloat(transactionData[10]))
+                    .updatedDateTime(Util.objectToDateTime(transactionData[11]))
+                    .postingDate(Util.objectToDate(transactionData[12]))
+                    .total(Util.objectToString(transactionData[13]))
+                    .build();
+            reelerTransactionResponses.add(reelerCurrentBalanceResponse);
+        }
+        rw.setContent(reelerTransactionResponses);
         return ResponseEntity.ok(rw);
     }
 
