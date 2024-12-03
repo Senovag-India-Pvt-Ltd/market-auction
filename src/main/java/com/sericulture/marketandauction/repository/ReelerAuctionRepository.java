@@ -2,6 +2,7 @@ package com.sericulture.marketandauction.repository;
 
 import com.sericulture.marketandauction.helper.MarketAuctionQueryConstants;
 import com.sericulture.marketandauction.model.api.marketauction.ReelerBalanceResponse;
+import com.sericulture.marketandauction.model.api.marketauction.ReelerReport;
 import com.sericulture.marketandauction.model.entity.ReelerAuction;
 import com.sericulture.marketandauction.model.entity.ReelerAuctionAccepted;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
@@ -126,8 +127,36 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
             market_master mm
             on mm.market_master_id = rvba.market_master_id
             WHERE
-            r.reeler_id = :reelerId and rvba.market_master_id = :marketId""")
+            r.reeler_id = :reelerId and rvba.market_master_id = :marketId and rvba.active = 1 """)
     public Object[][] getReelerBalance(int reelerId,int marketId);
+
+    @Query(nativeQuery = true, value = """
+        SELECT ROW_NUMBER() OVER (ORDER BY r.reeler_id) AS serial_number, r.reeler_id, r.reeling_license_number, r.name, rvba.virtual_account_number, r.mobile_number,
+        rvcb.CURRENT_BALANCE, rvcb.MODIFIED_DATE,SUM(rvcb.CURRENT_BALANCE) OVER () AS total
+        FROM reeler r
+        LEFT JOIN reeler_virtual_bank_account rvba ON rvba.reeler_id = r.reeler_id
+        LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number = rvba.virtual_account_number
+        LEFT JOIN market_master mm ON mm.market_master_id = rvba.market_master_id
+        WHERE ((:reelingLicenseNumber IS NULL OR :reelingLicenseNumber = '') OR r.reeling_license_number = :reelingLicenseNumber)
+        AND ((:mobileNumber IS NULL OR :mobileNumber = '') OR r.mobile_number = :mobileNumber)
+        AND rvba.market_master_id = :marketId AND rvba.active = 1
+        """)
+        public Object[][] getReelerCurrentBalance(String reelingLicenseNumber, String mobileNumber, int marketId);
+
+
+    @Query(nativeQuery = true, value = """
+         SELECT ROW_NUMBER() OVER (ORDER BY r.reeler_id) AS serial_number, r.reeler_id, r.reeling_license_number, r.name, rvba.virtual_account_number, r.mobile_number,
+         rvct.REMITTER_ACCOUNT, rvct.REMITTER_BANK, rvct.ALERT_SEQUENCE_NO, rvct.USER_REFERENCE_NUMBER,
+         rvct.AMOUNT, rvct.MODIFIED_DATE, rvct.VALUE_DATE,SUM(rvct.AMOUNT) OVER () AS total
+         FROM reeler r
+         LEFT JOIN reeler_virtual_bank_account rvba ON rvba.reeler_id = r.reeler_id
+         LEFT JOIN REELER_VID_CREDIT_TXN rvct ON rvct.VIRTUAL_ACCOUNT = rvba.virtual_account_number
+         LEFT JOIN market_master mm ON mm.market_master_id = rvba.market_master_id
+         WHERE ((:reelingLicenseNumber IS NULL OR :reelingLicenseNumber = '') OR r.reeling_license_number = :reelingLicenseNumber)
+        AND ((:mobileNumber IS NULL OR :mobileNumber = '') OR r.mobile_number = :mobileNumber) 
+         AND rvba.market_master_id = :marketId AND rvba.active = 1 AND CONVERT(date, rvct.TRANSACTION_DATE) = :transactionDate
+        """)
+    public Object[][] getReelerTransaction(String reelingLicenseNumber,String mobileNumber, int marketId , LocalDate transactionDate);
 
     @Query(nativeQuery = true, value = MarketAuctionQueryConstants.getAllHighestBids)
     public Object[][] getHighestBidAmountForAllLotList(LocalDate today,int marketId,List<Integer> lotList);

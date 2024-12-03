@@ -106,6 +106,8 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String formNo;
     private String silkQuality;
     private String silkType;
+    private int approximateEstimatedWeight;
+
 
 
 
