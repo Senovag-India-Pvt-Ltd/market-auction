@@ -437,8 +437,10 @@ private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlin
             reportResponse = lotRepository.
                     getDTROnlineReportForCashForBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
         }else{
-            reportResponse = lotRepository.
-                    getBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+//            reportResponse = lotRepository.
+//                    getBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
+              reportResponse = lotRepository.
+                    getDTROnlineReportForCashForBlankReport(dtrOnlineReportRequest.getMarketId(), dtrOnlineReportRequest.getFromDate(), dtrOnlineReportRequest.getToDate(), reelerIdList);
         }
 
         DTROnlineReportResponse dtrOnlineReportResponse = new DTROnlineReportResponse();
@@ -1227,12 +1229,20 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
 
         List<Object[]> responses = lotRepository.getReelerReportForApp(requestBody.getReelerId(),requestBody.getMarketId(), requestBody.getAuctionDate());
 
-        List<Object[]> responsesBalance = lotRepository.getReelerCurrentBalance(requestBody.getReelerId());
+        List<Object[]> responseReelerVirtualNo = lotRepository.getReelerVirtualAccount(requestBody.getReelerId(),requestBody.getMarketId());
+
+        List<Object[]> responsesBalance;
+        List<Object[]> responsesAmountDeposited;
+
+        if(Util.isNullOrEmptyList(responseReelerVirtualNo))
+        {
+            throw new ValidationException("Reeler Virtual Account Not Present");
+        }else{
+            responsesBalance = lotRepository.getReelerCurrentBalance(responseReelerVirtualNo.get(0)[0].toString());
+            responsesAmountDeposited = lotRepository.getReelerDepositedAmount(responseReelerVirtualNo.get(0)[0].toString(), requestBody.getAuctionDate());
+        }
 
         List<Object[]> responsesAppxPurchase = lotRepository.getReelerPurchaseAmount(requestBody.getReelerId(), requestBody.getMarketId(), requestBody.getAuctionDate());
-
-        List<Object[]> responsesAmountDeposited = lotRepository.getReelerDepositedAmount(requestBody.getReelerId(), requestBody.getAuctionDate());
-
 
         if(Util.isNullOrEmptyList(responses))
         {
@@ -1281,8 +1291,17 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
 
         List<Object[]> responses = lotRepository.getReelerReportForApp(requestBody.getReelerId(),requestBody.getMarketId(), requestBody.getAuctionDate());
 
-        List<Object[]> responsesBalance = lotRepository.getReelerCurrentBalance(requestBody.getReelerId());
+//        List<Object[]> responsesBalance = lotRepository.getReelerCurrentBalance(requestBody.getReelerId());
+        List<Object[]> responseReelerVirtualNo = lotRepository.getReelerVirtualAccount(requestBody.getReelerId(),requestBody.getMarketId());
 
+        List<Object[]> responsesBalance;
+
+        if(Util.isNullOrEmptyList(responseReelerVirtualNo))
+        {
+            throw new ValidationException("Reeler Virtual Account Not Present");
+        }else{
+            responsesBalance = lotRepository.getReelerCurrentBalance(Arrays.toString(responseReelerVirtualNo.get(0)));
+        }
         List<Object[]> responsesAppxPurchase = lotRepository.getReelerPurchaseAmount(requestBody.getReelerId(), requestBody.getMarketId(), requestBody.getAuctionDate());
 
 //        List<Object[]> responsesAmountDeposited = lotRepository.getReelerDepositedAmount(requestBody.getReelerId(), requestBody.getAuctionDate());

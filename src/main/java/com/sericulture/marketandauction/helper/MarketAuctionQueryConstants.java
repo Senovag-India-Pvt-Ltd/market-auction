@@ -2976,12 +2976,17 @@ GROUP BY
                where l.auction_date = :auctionDate and l.market_id = :marketId and ra.REELER_ID = :reelerId ;""";
 
     public static final String reeler_current_balance = """
-            select current_balance from REELER_VID_CURRENT_BALANCE where reeler_id = :reelerId ;""";
+            SELECT current_balance
+            FROM REELER_VID_CURRENT_BALANCE
+            WHERE UPPER(reeler_virtual_account_number) = UPPER(:virtualNumber);""";
+
+    public static final String reeler_virtual_account = """
+            select virtual_account_number from reeler_virtual_bank_account rvba  where reeler_id = :reelerId and market_master_id = :marketId and active = 1 ;""";
 
     public static final String reeler_deposited_amount = """
             SELECT SUM(amount) as total_amount_deposited FROM REELER_VID_CREDIT_TXN ct
             JOIN REELER_VID_CURRENT_BALANCE cb ON cb.reeler_virtual_account_number = ct.VIRTUAL_ACCOUNT
-            WHERE cb.REELER_ID = :reelerId AND CAST(ct.TRANSACTION_DATE AS DATE) = :auctionDate ;""";
+            WHERE cb.reeler_virtual_account_number = :virtualNumber AND CAST(ct.TRANSACTION_DATE AS DATE) = :auctionDate ;""";
 
     public static final String reeler_purchase_amount = """
             SELECT SUM(amount) as total_purchase from REELER_AUCTION

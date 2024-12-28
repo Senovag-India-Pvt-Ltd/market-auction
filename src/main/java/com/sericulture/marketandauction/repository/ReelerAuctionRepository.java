@@ -139,7 +139,7 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
         LEFT JOIN market_master mm ON mm.market_master_id = rvba.market_master_id
         WHERE ((:reelingLicenseNumber IS NULL OR :reelingLicenseNumber = '') OR r.reeling_license_number = :reelingLicenseNumber)
         AND ((:mobileNumber IS NULL OR :mobileNumber = '') OR r.mobile_number = :mobileNumber)
-        AND rvba.market_master_id = :marketId AND rvba.active = 1
+        AND rvba.market_master_id = :marketId AND rvba.active = 1 order by rvcb.CURRENT_BALANCE desc
         """)
         public Object[][] getReelerCurrentBalance(String reelingLicenseNumber, String mobileNumber, int marketId);
 
@@ -154,7 +154,7 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
          LEFT JOIN market_master mm ON mm.market_master_id = rvba.market_master_id
          WHERE ((:reelingLicenseNumber IS NULL OR :reelingLicenseNumber = '') OR r.reeling_license_number = :reelingLicenseNumber)
         AND ((:mobileNumber IS NULL OR :mobileNumber = '') OR r.mobile_number = :mobileNumber) 
-         AND rvba.market_master_id = :marketId AND rvba.active = 1 AND CONVERT(date, rvct.TRANSACTION_DATE) = :transactionDate
+         AND rvba.market_master_id = :marketId AND rvba.active = 1 AND CONVERT(date, rvct.TRANSACTION_DATE) = :transactionDate order by  rvct.MODIFIED_DATE desc
         """)
     public Object[][] getReelerTransaction(String reelingLicenseNumber,String mobileNumber, int marketId , LocalDate transactionDate);
 

@@ -329,10 +329,13 @@ public Object[][] getNewlyCreatedLotDetailsSeedCocoons(LocalDate auctionDate, in
     public List<Object[]> getReelerReportForApp(int reelerId, int marketId, LocalDate auctionDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_current_balance)
-    public List<Object[]> getReelerCurrentBalance(int reelerId);
+    public List<Object[]> getReelerCurrentBalance(String virtualNumber);
+
+    @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_virtual_account)
+    public List<Object[]> getReelerVirtualAccount(int reelerId,int marketId);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_deposited_amount)
-    public List<Object[]> getReelerDepositedAmount(int reelerId, LocalDate auctionDate);
+    public List<Object[]> getReelerDepositedAmount(String virtualNumber, LocalDate auctionDate);
 
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_purchase_amount)
     public List<Object[]> getReelerPurchaseAmount(int reelerId, int marketId, LocalDate auctionDate);
