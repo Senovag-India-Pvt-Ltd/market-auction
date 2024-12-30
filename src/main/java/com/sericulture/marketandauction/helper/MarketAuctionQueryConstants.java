@@ -1621,7 +1621,7 @@ public static final String DASHBOARD_COUNT = """
         MAX(CASE WHEN ra.status IN ('accepted', 'weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS max_sold_out_amount_accepted,
         MIN(CASE WHEN ra.status IN ('accepted', 'weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS min_sold_out_amount_accepted,
         AVG(CASE WHEN ra.status IN ('accepted', 'weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN ra.amount END) AS average_sold_out_amount_accepted,
-        COUNT(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') THEN lot.lot_id END) AS total_lots_after_weighment,
+        COUNT(CASE WHEN lot.status IN ('weighmentcompleted', 'readyforpayment', 'paymentsuccess', 'paymentfailed', 'paymentprocessing') and ra.STATUS in ('accepted') THEN lot.lot_id END) AS total_lots_after_weighment,
         COUNT(ra.REELER_AUCTION_ID) AS total_bid_count,
         MAX(ra.amount) AS current_auction_max_amount,
         COUNT(CASE WHEN ra.REELER_AUCTION_ID IS NULL THEN 1 END) AS total_not_bid,
