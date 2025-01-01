@@ -25,4 +25,5 @@ public class DashboardReportInfo {
     private String currentAuctionMaxAmount;
     private String totalNotBid;
     private String auctionCount;
+    private String totalWeight;
 }

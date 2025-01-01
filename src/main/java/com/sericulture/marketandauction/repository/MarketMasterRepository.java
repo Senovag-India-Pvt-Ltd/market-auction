@@ -20,4 +20,8 @@ public interface MarketMasterRepository extends PagingAndSortingRepository<Marke
             where mm.market_type_master_id  = mtm.market_type_master_id \s
             and mm.market_master_id =:marketId""")
     public Object[][] getBrokarageInPercentageForMarket(int marketId);
+
+    @Query(nativeQuery = true,value = """
+            select market_master_id from market_master mm where active = 1 and market_type_master_id = 13 and is_test is null or is_test = 0 """)
+    public List<Integer> getListOfMarketIds();
 }

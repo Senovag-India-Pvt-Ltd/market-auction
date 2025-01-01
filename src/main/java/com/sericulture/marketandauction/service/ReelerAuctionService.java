@@ -688,6 +688,31 @@ public class ReelerAuctionService {
         return ResponseEntity.ok(rw);
     }
 
+    public ResponseEntity<?> getReelerCreditDetailsAllMarket(ReelerTransactionRequest reelerTransactionRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(ReelerTransactionResponse.class);
+
+        List<Object[]> reelerCreditDetailsAllMarket = reelerAuctionRepository.getReelerCreditDetailsAllMarket(reelerTransactionRequest.getTransactionDate());
+
+//        if (reelerCreditDetailsAllMarket == null || reelerCreditDetailsAllMarket.length == 0) {
+//            marketAuctionHelper.retrunIfError(rw, "Reeler data not found for the reelerId and market" + reelerTransactionRequest.getReelerLicenceNumber() + " market: " + reelerTransactionRequest.getMarketId());
+//        }
+
+        List<ReelerCreditResponse> reelerTransactionResponses = new ArrayList<>();
+        for (Object[] transactionData : reelerCreditDetailsAllMarket) {
+            ReelerCreditResponse reelerCreditResponse = ReelerCreditResponse.builder()
+                    .totalDepositedAmount(Util.objectToString(transactionData[0]))
+                    .depositCount(Util.objectToString(transactionData[1]))
+                    .totalReelersCount(Util.objectToString(transactionData[2]))
+                    .marketName(Util.objectToString(transactionData[3]))
+                    .totalOfAllMarketDepositedAmount(Util.objectToString(transactionData[5]))
+                    .postDate(Util.objectToString(reelerTransactionRequest.getTransactionDate()))
+                    .build();
+            reelerTransactionResponses.add(reelerCreditResponse);
+        }
+        rw.setContent(reelerTransactionResponses);
+        return ResponseEntity.ok(rw);
+    }
+
    /* public int checkCurrentAuction(int marketMasterId) {
         MarketMaster marketMaster = marketMasterRepository.findById(marketMasterId);
 

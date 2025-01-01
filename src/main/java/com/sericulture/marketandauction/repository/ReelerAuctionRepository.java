@@ -202,4 +202,39 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
     @Query(nativeQuery = true,value = MarketAuctionQueryConstants.reeler_auction_status)
     public List<Object[]> getReelerAuctionStatus(BigInteger reelerAuctionId);
 
+    @Query(nativeQuery = true,value = """
+            SELECT
+                SUM(rvct.AMOUNT) AS total_Amount,
+                COUNT(rvct.REELER_VID_CREDIT_TXN_ID) AS deposit_count,
+                COUNT(DISTINCT rvba.reeler_id) AS reeler_count,
+                mm2.market_name,
+                mm2.market_master_id,
+                (SELECT SUM(rvct_inner.AMOUNT)
+                 FROM REELER_VID_CREDIT_TXN rvct_inner
+                 LEFT JOIN reeler_virtual_bank_account rvba_inner ON rvct_inner.VIRTUAL_ACCOUNT = rvba_inner.virtual_account_number
+                 WHERE rvba_inner.market_master_id IN (
+                     SELECT market_master_id
+                     FROM market_master mm
+                     WHERE active = 1
+                       AND market_type_master_id = 13
+                       AND (is_test IS NULL OR is_test = 0)
+                 )
+                 AND CAST(rvct_inner.TRANSACTION_DATE AS DATE) = :today
+                ) AS total_sum_of_all_markets
+            FROM REELER_VID_CREDIT_TXN rvct
+            LEFT JOIN reeler_virtual_bank_account rvba ON rvct.VIRTUAL_ACCOUNT = rvba.virtual_account_number
+            LEFT JOIN market_master mm2 ON rvba.market_master_id = mm2.market_master_id
+            WHERE rvba.market_master_id IN (
+                SELECT market_master_id
+                FROM market_master mm
+                WHERE active = 1
+                  AND market_type_master_id = 13
+                  AND (is_test IS NULL OR is_test = 0)
+            )
+            AND CAST(rvct.TRANSACTION_DATE AS DATE) = :today
+            GROUP BY rvba.market_master_id, mm2.market_name, mm2.market_master_id
+            ORDER BY total_Amount DESC;
+            """)
+    public List<Object[]> getReelerCreditDetailsAllMarket(LocalDate today);
+
 }

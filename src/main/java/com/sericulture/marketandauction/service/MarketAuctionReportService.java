@@ -18,7 +18,6 @@ import com.sericulture.marketandauction.model.api.marketauction.reporting.Market
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MarketWiseReport.DivisionWiseReport;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MonthlyReport.*;
 import com.sericulture.marketandauction.model.api.marketauction.reporting.VahivaatuReport.*;
-import com.sericulture.marketandauction.model.entity.Bin;
 import com.sericulture.marketandauction.model.entity.ExceptionalTime;
 import com.sericulture.marketandauction.model.entity.MarketMaster;
 import com.sericulture.marketandauction.model.exceptions.MessageLabelType;
@@ -26,8 +25,6 @@ import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.exceptions.ValidationMessage;
 import com.sericulture.marketandauction.repository.*;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +42,6 @@ import java.time.LocalTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -2105,6 +2101,26 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
 
     }
 
+    public ResponseEntity<?> getDashboardReportAllMarket(){
+        DashboardReportRequest dashboardReportRequest = new DashboardReportRequest();
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<Integer> marketIds = marketMasterRepository.getListOfMarketIds();
+        List<Object> dashboardReportInfoList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate formattedDate = now.toLocalDate();
+    if(!marketIds.isEmpty()){
+        for(int marketId : marketIds){
+            dashboardReportRequest.setMarketId(marketId);
+            dashboardReportRequest.setDashboardReportDate(formattedDate);
+            ResponseEntity<?> response = getDashboardReport(dashboardReportRequest);
+            log.info(String.valueOf(response.getBody()));
+            dashboardReportInfoList.add(response.getBody());
+        }
+        rw.setContent(dashboardReportInfoList);
+      }
+        return ResponseEntity.ok(rw);
+    }
+
     public ResponseEntity<?> getDashboardReport(DashboardReportRequest dashboardReportRequest) {
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
@@ -2147,9 +2163,9 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
             List<Object[]> marketNameResponse = lotRepository.getMarketName(dashboardReportRequest.getMarketId());
             List<Object[]> responses = lotRepository.getDashboardCount(dashboardReportRequest.getMarketId(), dashboardReportRequest.getDashboardReportDate());
 
-            if (Util.isNullOrEmptyList(responses)) {
-                throw new ValidationException("No data found");
-            }
+//            if (Util.isNullOrEmptyList(responses)) {
+//                throw new ValidationException("No data found");
+//            }
 
             DashboardReport dashboardReport = new DashboardReport();
             dashboardReport.setMarketName(Util.objectToString(marketNameResponse.get(0)[0]));
@@ -2173,6 +2189,7 @@ public ResponseEntity<?> getUnitCounterReport(ReportRequest reportRequest) {
                         .currentAuctionMaxAmount(Util.objectToString(response[11]))
                         .totalLotsNotBid(Util.objectToString(response[12]))
                         .auctionCount(Util.objectToString(response[14]))
+                        .totalWeight(Util.objectToString(response[15]))
                         .build();
 
                 dashboardReportInfoList.add(dashboardReportInfo);

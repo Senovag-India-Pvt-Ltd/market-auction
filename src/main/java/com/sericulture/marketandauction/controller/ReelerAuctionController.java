@@ -123,6 +123,11 @@ public class ReelerAuctionController {
         return reelerAuctionService.getReelerTransaction(reelerTransactionRequest);
     }
 
+    @PostMapping("/getReelerCreditDetailsAllMarket")
+    public ResponseEntity<?> getReelerCreditDetailsAllMarket(@RequestBody ReelerTransactionRequest reelerTransactionRequest){
+        return reelerAuctionService.getReelerCreditDetailsAllMarket(reelerTransactionRequest);
+    }
+
 
 
 }

@@ -161,6 +161,12 @@ public class MarketAuctionReportController {
     public ResponseEntity<?> getDashboardReport(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getDashboardReport(reportRequest);
     }
+
+    @PostMapping("/getDashboardReportAllMarket")
+    public ResponseEntity<?> getDashboardReportAllMarket(){
+        return marketAuctionReportService.getDashboardReportAllMarket();
+    }
+
     @PostMapping("/getDashboardReportSilkType")
     public ResponseEntity<?> getDashboardReportSilkType(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getDashboardReportSilkType(reportRequest);

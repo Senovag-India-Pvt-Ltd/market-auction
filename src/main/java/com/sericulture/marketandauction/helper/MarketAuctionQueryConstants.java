@@ -1626,7 +1626,8 @@ public static final String DASHBOARD_COUNT = """
         MAX(ra.amount) AS current_auction_max_amount,
         COUNT(CASE WHEN ra.REELER_AUCTION_ID IS NULL THEN 1 END) AS total_not_bid,
         lots_summary.total_sold_out_amount_status,
-        COALESCE(auction_count.auction_count, 0) AS auction_count
+        COALESCE(auction_count.auction_count, 0) AS auction_count,
+        SUM(DISTINCT lot.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight
     FROM 
         market_auction ma
     LEFT JOIN 
