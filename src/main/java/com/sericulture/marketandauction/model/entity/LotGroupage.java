@@ -76,5 +76,8 @@ public class LotGroupage extends BaseEntity implements Serializable {
     @Column(name = "external_unit_id")
     private Long externalUnitId;
 
+    @Column(name = "fruits_id")
+    private String fruitsId;
+
 
 }

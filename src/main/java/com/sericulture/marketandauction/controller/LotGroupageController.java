@@ -5,10 +5,7 @@ import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.service.LotGroupageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/lotGroupage")
@@ -40,5 +37,13 @@ public class LotGroupageController {
         rw.setContent(lotGroupageService.editLotGroupage(lotGroupageDetailsRequestEdit));
         return ResponseEntity.ok(rw);
 
+    }
+
+    @PostMapping("/getLotDistributeResponseForInvoiceForSeedMarket")
+    public ResponseEntity<?> getLotDistributeResponseForInvoiceForSeedMarket(@RequestBody LotStatusSeedMarketRequest lotStatusSeedMarketRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(LotGroupageResponse.class);
+
+        rw.setContent (lotGroupageService.getLotDistributeResponseForInvoiceForSeedMarket(lotStatusSeedMarketRequest));
+        return ResponseEntity.ok(rw);
     }
 }

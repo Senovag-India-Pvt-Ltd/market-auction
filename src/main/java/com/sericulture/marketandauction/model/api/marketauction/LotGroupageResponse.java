@@ -70,6 +70,9 @@ public class LotGroupageResponse extends ResponseBody {
     @Schema(name="externalUnitId", example = "1")
     Long externalUnitId;
 
+    @Schema(name="fruitsId", example = "1")
+    String fruitsId;
+
     @Schema(name = "error", example = "true")
     Boolean error;
 

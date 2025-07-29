@@ -19,4 +19,10 @@ public class LotStatusSeedMarketRequest extends RequestBody {
 
     @Schema(name = "auctionDate", example = "1")
     private LocalDate auctionDate;
+
+    @Schema(name = "fromDate", example = "1")
+    private LocalDate fromDate;
+
+    @Schema(name = "toDate", example = "1")
+    private LocalDate toDate;
 }
