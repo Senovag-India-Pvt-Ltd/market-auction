@@ -67,6 +67,9 @@ public class LotDistributeResponse extends ResponseBody {
     @Column(name = "buyerName")
     private String buyerName;
 
+    @Column(name = "rspAddress")
+    private String rspAddress;
+
     @Column(name = "ALLOTTED_LOT_ID")
     private int allottedLotId;
 
@@ -100,4 +103,6 @@ public class LotDistributeResponse extends ResponseBody {
     private String remainingCocoonWeight;
     private String soldCocoonInKgs;
     private String lotWeightAfterWeighment;
+    private int serialNumber;
+    private String farmerFullName;
 }

@@ -689,66 +689,134 @@ public class LotGroupageService {
 //    }
 
     public List<LotDistributeResponse> getLotDistributeResponseForInvoiceForSeedMarket(LotStatusSeedMarketRequest lotStatusRequest) {
-        List<Object[]> lotWeightDetailsList = lotGroupageRepository.getLotDistributeDetailsForInvoiceAndReceipt(
+        List<Object[]> lotWeightDetailsList = lotGroupageRepository.getLotDistributeDetailsForInvoice(
 //                lotStatusRequest.getAllottedLotId(),
                 lotStatusRequest.getFromDate(),
                 lotStatusRequest.getToDate(),
-                lotStatusRequest.getMarketId()
+                lotStatusRequest.getMarketId(),
+                lotStatusRequest.getGrainageMasterId()
         );
 
 
         List<LotDistributeResponse> responses = new ArrayList<>();
+        int serial = 1; // Initialize counter
+
         for (Object[] lotWeightDetails : lotWeightDetailsList) {
             LotDistributeResponse lotDistributeResponse = LotDistributeResponse.builder()
+                    .serialNumber(serial++) // Set serial number from counter
                     .farmerNumber(Util.objectToString(lotWeightDetails[0]))
                     .farmerFruitsId(Util.objectToString(lotWeightDetails[1]))
-                    .farmerFirstName(Util.objectToString(lotWeightDetails[2]))
-                    .farmerMiddleName(Util.objectToString(lotWeightDetails[3]))
-                    .farmerLastName(Util.objectToString(lotWeightDetails[4]))
-                    .raceMasterId(Util.objectToInteger(lotWeightDetails[5]))
-                    .farmerVillage(Util.objectToString(lotWeightDetails[6]))
-                    .marketName(Util.objectToString(lotWeightDetails[7]))
-                    .race(Util.objectToString(lotWeightDetails[8]))
-                    .source(Util.objectToString(lotWeightDetails[9]))
-                    .tareWeight(Util.objectToFloat(lotWeightDetails[10]))
-                    .lotStatus(Util.objectToString(lotWeightDetails[11]))
-                    .lotGroupageId(Util.objectToLong(lotWeightDetails[12]))
-                    .buyerId(Util.objectToLong(lotWeightDetails[13]))
-                    .buyerType(Util.objectToString(lotWeightDetails[14]))
-                    .lotWeight(Util.objectToFloat(lotWeightDetails[15]))
-                    .amount(Util.objectToLong(lotWeightDetails[16]))
-                    .marketFee(Util.objectToLong(lotWeightDetails[17]))
-                    .soldAmount(Util.objectToLong(lotWeightDetails[18]))
-                    .netWeight(Util.objectToString(lotWeightDetails[19]))
-                    .noOfDFLs(Util.objectToString(lotWeightDetails[20]))
-                    .raceMasterId(Util.objectToInteger(lotWeightDetails[21]))
-                    .lotParentLevel(Util.objectToString(lotWeightDetails[22]))
-                    .initialWeighment(Util.objectToLong(lotWeightDetails[23]))
-                    .price(Util.objectToString(lotWeightDetails[24]))
-                    .fixationDate(Util.objectToString(lotWeightDetails[25]))
-                    .testDate(Util.objectToString(lotWeightDetails[26]))
-                    .noOfCocoonTakenForExamination(Util.objectToLong(lotWeightDetails[27]))
-                    .noOfDFLFromFc(Util.objectToLong(lotWeightDetails[28]))
-                    .noOfCocoonPerKg(Util.objectToLong(lotWeightDetails[31]))
-                    .meltPercentage(Util.objectToString(lotWeightDetails[32]))
-                    .pupaCocoonStatus(Util.objectToString(lotWeightDetails[33]))
-                    .noOfCocoonExamined(Util.objectToString(lotWeightDetails[34]))
-                    .marketAuctionDate(Util.objectToString(lotWeightDetails[35]))
-                    .allottedLotId(Util.objectToInteger(lotWeightDetails[36]))
-                    .averageYield(Util.objectToString(lotWeightDetails[37]))
-                    .dflLotNumber(Util.objectToString(lotWeightDetails[38]))
-                    .invoiceNumber(Util.objectToString(lotWeightDetails[39]))
-                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[40]))
-                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[41]))
-                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[42]))
-                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[43]))
-                    .buyerName(Util.objectToString(lotWeightDetails[44]))
+                    .farmerFullName(Util.objectToString(lotWeightDetails[2]))
+                    .raceMasterId(Util.objectToInteger(lotWeightDetails[3]))
+                    .farmerVillage(Util.objectToString(lotWeightDetails[4]))
+                    .marketName(Util.objectToString(lotWeightDetails[5]))
+                    .race(Util.objectToString(lotWeightDetails[6]))
+                    .source(Util.objectToString(lotWeightDetails[7]))
+                    .tareWeight(Util.objectToFloat(lotWeightDetails[8]))
+                    .lotStatus(Util.objectToString(lotWeightDetails[9]))
+                    .lotGroupageId(Util.objectToLong(lotWeightDetails[10]))
+                    .buyerId(Util.objectToLong(lotWeightDetails[11]))
+                    .buyerType(Util.objectToString(lotWeightDetails[12]))
+                    .lotWeight(Util.objectToFloat(lotWeightDetails[13]))
+                    .amount(Util.objectToLong(lotWeightDetails[14]))
+                    .marketFee(Util.objectToLong(lotWeightDetails[15]))
+                    .soldAmount(Util.objectToLong(lotWeightDetails[16]))
+                    .netWeight(Util.objectToString(lotWeightDetails[17]))
+                    .dflLotNumber(Util.objectToString(lotWeightDetails[18]))
+                    .raceMasterId(Util.objectToInteger(lotWeightDetails[19]))
+                    .lotParentLevel(Util.objectToString(lotWeightDetails[20]))
+                    .initialWeighment(Util.objectToLong(lotWeightDetails[21]))
+                    .price(Util.objectToString(lotWeightDetails[22]))
+                    .fixationDate(Util.objectToString(lotWeightDetails[23]))
+                    .testDate(Util.objectToString(lotWeightDetails[24]))
+                    .noOfCocoonTakenForExamination(Util.objectToLong(lotWeightDetails[25]))
+                    .noOfDFLFromFc(Util.objectToLong(lotWeightDetails[26]))
+                    .noOfCocoonPerKg(Util.objectToLong(lotWeightDetails[29]))
+                    .meltPercentage(Util.objectToString(lotWeightDetails[30]))
+                    .pupaCocoonStatus(Util.objectToString(lotWeightDetails[31]))
+                    .noOfCocoonExamined(Util.objectToString(lotWeightDetails[32]))
+                    .marketAuctionDate(Util.objectToString(lotWeightDetails[33]))
+                    .allottedLotId(Util.objectToInteger(lotWeightDetails[34]))
+                    .averageYield(Util.objectToString(lotWeightDetails[35]))
+                    .dflLotNumber(Util.objectToString(lotWeightDetails[36]))
+                    .invoiceNumber(Util.objectToString(lotWeightDetails[37]))
+                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[38]))
+                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[39]))
+                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[40]))
+                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[41]))
+                    .buyerName(Util.objectToString(lotWeightDetails[42]))
                     .build();
+
             responses.add(lotDistributeResponse);
         }
 
         return responses;
     }
 
+    public List<LotDistributeResponse> getLotDistributeDetailsForPermitRSP(LotStatusSeedMarketRequest lotStatusRequest) {
+        List<Object[]> lotWeightDetailsList = lotGroupageRepository.getLotDistributeDetailsForPermitRSP(
+//                lotStatusRequest.getAllottedLotId(),
+                lotStatusRequest.getFromDate(),
+                lotStatusRequest.getToDate(),
+                lotStatusRequest.getMarketId(),
+                lotStatusRequest.getExternalUnitRegistrationId()
+        );
+
+
+        List<LotDistributeResponse> responses = new ArrayList<>();
+        int serial = 1; // Initialize counter
+
+        for (Object[] lotWeightDetails : lotWeightDetailsList) {
+            LotDistributeResponse lotDistributeResponse = LotDistributeResponse.builder()
+                    .serialNumber(serial++) // Set serial number from counter
+                    .farmerNumber(Util.objectToString(lotWeightDetails[0]))
+                    .farmerFruitsId(Util.objectToString(lotWeightDetails[1]))
+                    .farmerFullName(Util.objectToString(lotWeightDetails[2]))
+                    .raceMasterId(Util.objectToInteger(lotWeightDetails[3]))
+                    .farmerVillage(Util.objectToString(lotWeightDetails[4]))
+                    .marketName(Util.objectToString(lotWeightDetails[5]))
+                    .race(Util.objectToString(lotWeightDetails[6]))
+                    .source(Util.objectToString(lotWeightDetails[7]))
+                    .tareWeight(Util.objectToFloat(lotWeightDetails[8]))
+                    .lotStatus(Util.objectToString(lotWeightDetails[9]))
+                    .lotGroupageId(Util.objectToLong(lotWeightDetails[10]))
+                    .buyerId(Util.objectToLong(lotWeightDetails[11]))
+                    .buyerType(Util.objectToString(lotWeightDetails[12]))
+                    .lotWeight(Util.objectToFloat(lotWeightDetails[13]))
+                    .amount(Util.objectToLong(lotWeightDetails[14]))
+                    .marketFee(Util.objectToLong(lotWeightDetails[15]))
+                    .soldAmount(Util.objectToLong(lotWeightDetails[16]))
+                    .netWeight(Util.objectToString(lotWeightDetails[17]))
+                    .dflLotNumber(Util.objectToString(lotWeightDetails[18]))
+                    .raceMasterId(Util.objectToInteger(lotWeightDetails[19]))
+                    .lotParentLevel(Util.objectToString(lotWeightDetails[20]))
+                    .initialWeighment(Util.objectToLong(lotWeightDetails[21]))
+                    .price(Util.objectToString(lotWeightDetails[22]))
+                    .fixationDate(Util.objectToString(lotWeightDetails[23]))
+                    .testDate(Util.objectToString(lotWeightDetails[24]))
+                    .noOfCocoonTakenForExamination(Util.objectToLong(lotWeightDetails[25]))
+                    .noOfDFLFromFc(Util.objectToLong(lotWeightDetails[26]))
+                    .noOfCocoonPerKg(Util.objectToLong(lotWeightDetails[29]))
+                    .meltPercentage(Util.objectToString(lotWeightDetails[30]))
+                    .pupaCocoonStatus(Util.objectToString(lotWeightDetails[31]))
+                    .noOfCocoonExamined(Util.objectToString(lotWeightDetails[32]))
+                    .marketAuctionDate(Util.objectToString(lotWeightDetails[33]))
+                    .allottedLotId(Util.objectToInteger(lotWeightDetails[34]))
+                    .averageYield(Util.objectToString(lotWeightDetails[35]))
+                    .dflLotNumber(Util.objectToString(lotWeightDetails[36]))
+                    .invoiceNumber(Util.objectToString(lotWeightDetails[37]))
+                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[38]))
+                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[39]))
+                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[40]))
+                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[41]))
+                    .buyerName(Util.objectToString(lotWeightDetails[42]))
+                    .rspAddress(Util.objectToString(lotWeightDetails[43]))
+                    .build();
+
+            responses.add(lotDistributeResponse);
+        }
+
+        return responses;
+    }
 
 }

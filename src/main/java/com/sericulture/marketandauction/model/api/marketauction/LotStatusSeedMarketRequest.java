@@ -25,4 +25,10 @@ public class LotStatusSeedMarketRequest extends RequestBody {
 
     @Schema(name = "toDate", example = "1")
     private LocalDate toDate;
+
+    @Schema(name = "grainageMasterId", example = "1")
+    private Long grainageMasterId;
+
+    @Schema(name = "externalUnitRegistrationId", example = "1")
+    private Long externalUnitRegistrationId;
 }

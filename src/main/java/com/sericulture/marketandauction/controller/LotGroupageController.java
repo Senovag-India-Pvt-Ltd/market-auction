@@ -46,4 +46,12 @@ public class LotGroupageController {
         rw.setContent (lotGroupageService.getLotDistributeResponseForInvoiceForSeedMarket(lotStatusSeedMarketRequest));
         return ResponseEntity.ok(rw);
     }
+
+    @PostMapping("/getLotDistributeDetailsForPermitRSP")
+    public ResponseEntity<?> getLotDistributeDetailsForPermitRSP(@RequestBody LotStatusSeedMarketRequest lotStatusSeedMarketRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(LotGroupageResponse.class);
+
+        rw.setContent (lotGroupageService.getLotDistributeDetailsForPermitRSP(lotStatusSeedMarketRequest));
+        return ResponseEntity.ok(rw);
+    }
 }
