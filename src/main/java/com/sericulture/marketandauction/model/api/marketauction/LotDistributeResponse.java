@@ -50,13 +50,13 @@ public class LotDistributeResponse extends ResponseBody {
     private Float lotWeight;
 
     @Column(name = "AMOUNT")
-    private Long amount;
+    private Float amount;
 
     @Column(name = "MARKET_FEE")
-    private Long marketFee;
+    private Float marketFee;
 
     @Column(name = "SOLD_AMOUNT")
-    private Long soldAmount;
+    private Float soldAmount;
 
 //    @Column(name = "reelerName")
 //    private String reelerName;

@@ -292,4 +292,134 @@ List<Object[]> getLotDistributeDetailsForInvoice(
             @Param("marketId") Integer marketId,
             @Param("externalUnitRegistrationId") Long externalUnitRegistrationId);
 
+    @Query(nativeQuery = true, value = """
+            WITH PrimaryAddress AS (
+            SELECT
+                fa.farmer_id,
+                fa.STATE_ID,
+                fa.DISTRICT_ID,
+                fa.TALUK_ID,
+                fa.HOBLI_ID,
+                fa.VILLAGE_ID,
+                fa.address_text,
+                ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
+            FROM
+                farmer_address fa
+            WHERE
+                fa.active = 1
+        ),
+        MainQuery AS (
+            SELECT
+                f.farmer_number,
+                f.fruits_id,
+                (ISNULL(f.first_name, '') + ' ' + ISNULL(f.middle_name, '') + ' ' + ISNULL(f.last_name, '') + ' - ' + ISNULL(pa.address_text, '')) AS farmer_full_name,
+                v.VILLAGE_NAME,
+                mm.market_name,
+                rm.race_name,
+                sm.source_name,
+                SUM(mm.box_weight) AS total_box_weight,
+                l.status,
+                SUM(lg.lot_weight) AS total_lot_weight,
+                SUM(CAST(ISNULL(lg.amount, 0) AS FLOAT)) AS total_amount,
+                SUM(CAST(ISNULL(lg.market_fee, 0) AS FLOAT)) AS total_market_fee,
+                SUM(CAST(ISNULL(lg.sold_amount, 0) AS FLOAT)) AS total_sold_amount,
+                MAX(CAST(ma.dfl_lot_number AS FLOAT)) AS dfl_lot_number,
+                ma.lot_variety,
+                ma.lot_Parental_Level,
+                ma.estimated_weight,
+                lbpf.PRICE_PER_KG,
+                lbpf.FIXATION_DATE,
+                ptaca.TEST_DATE,
+                ptaca.NO_OF_COCOON_TAKEN_FOR_EXAMINATION,
+                ptaca.NO_OF_DFL_FROM_FC,
+                ptaca.NO_OF_COCOON_PER_KG,
+                ptaca.pupa_cocoon_status,
+                ptaca.PUPA_TEST_RESULT,
+                ma.market_auction_date,
+                l.allotted_lot_id,
+                lg.average_yield,
+                STRING_AGG(lg.invoice_number, ', ') AS invoice_numbers,
+                (CAST(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) * 100 AS FLOAT) / NULLIF(SUM(CAST(ma.dfl_lot_number AS FLOAT)), 0)) AS total_calculatedAverageYield,
+                SUM(CAST(ISNULL(lg.remaining_cocoon, 0) AS FLOAT)) AS total_remaining_cocoon,
+                (
+                    SELECT COALESCE(SUM(lg_inner.lot_weight), 0)
+                    FROM lot_groupage lg_inner
+                    INNER JOIN lot l_inner ON lg_inner.lot_id = l_inner.lot_id
+                    WHERE lg_inner.allotted_lot_id = :allottedLotId
+                      AND l_inner.auction_date = :auctionDate
+                      AND lg_inner.lot_weight > 0
+                ) AS total_soldCocoonInKgs,
+                l.LOT_WEIGHT_AFTER_WEIGHMENT
+            FROM
+                FARMER f
+            INNER JOIN
+                market_auction ma ON ma.farmer_id = f.FARMER_ID
+            INNER JOIN
+                lot l ON l.market_auction_id = ma.market_auction_id
+            LEFT JOIN
+                PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
+            LEFT JOIN
+                Village v ON pa.VILLAGE_ID = v.village_id AND f.ACTIVE = 1
+            LEFT JOIN
+                market_master mm ON mm.market_master_id = ma.market_id
+            LEFT JOIN
+                race_master rm ON rm.race_id = ma.lot_variety
+            LEFT JOIN
+                source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
+            LEFT JOIN
+                lot_groupage lg ON l.lot_id = lg.lot_id
+            LEFT JOIN
+                PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
+            LEFT JOIN
+                LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id
+                     AND lbpf.FIXATION_DATE = CAST(GETDATE() AS DATE)
+            LEFT JOIN
+                reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
+            LEFT JOIN
+                external_unit_registration es ON lg.external_unit_id = es.external_unit_registration_id
+                 AND lg.buyer_type IN ('RSP', 'NSSO')
+            LEFT JOIN
+                grainage_master gm ON lg.external_unit_id = gm.grainage_master_id AND lg.buyer_type = 'Govt Grainage'
+            WHERE
+                l.auction_date = :auctionDate
+                AND l.market_id = :marketId
+                AND l.allotted_lot_id = :allottedLotId
+                AND f.ACTIVE = 1
+                AND ma.active = 1
+                AND l.status = 'weighmentcompleted'
+            GROUP BY
+                f.farmer_number,
+                f.fruits_id,
+                f.first_name,
+                f.middle_name,
+                f.last_name,
+                pa.address_text,
+                v.VILLAGE_NAME,
+                mm.market_name,
+                rm.race_name,
+                sm.source_name,
+                l.status,
+                ma.lot_variety,
+                ma.lot_Parental_Level,
+                ma.estimated_weight,
+                lbpf.PRICE_PER_KG,
+                lbpf.FIXATION_DATE,
+                ptaca.TEST_DATE,
+                ptaca.NO_OF_COCOON_TAKEN_FOR_EXAMINATION,
+                ptaca.NO_OF_DFL_FROM_FC,
+                ptaca.NO_OF_COCOON_PER_KG,
+                ptaca.pupa_cocoon_status,
+                ptaca.PUPA_TEST_RESULT,
+                ma.market_auction_date,
+                l.allotted_lot_id,
+                lg.average_yield,
+                l.LOT_WEIGHT_AFTER_WEIGHMENT
+        )
+        SELECT * FROM MainQuery;
+    """)
+    List<Object[]> getLotDistributeDetailsForMarketReceiptAndCashReceipt(
+            @Param("auctionDate") LocalDate auctionDate,
+            @Param("marketId") Integer marketId,
+            @Param("allottedLotId") Integer allottedLotId);
+
 }
