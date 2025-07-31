@@ -158,7 +158,6 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
             WHERE
                 l.auction_date BETWEEN :fromDate AND :toDate
                 AND l.market_id = :marketId
-                AND l.market_id = :marketId
                 AND lg.buyer_type = 'Govt Grainage'
                 AND gm.grainage_master_id = :grainageMasterId
                 AND f.ACTIVE = 1
@@ -279,7 +278,7 @@ List<Object[]> getLotDistributeDetailsForInvoice(
             WHERE
                 l.auction_date BETWEEN :fromDate AND :toDate
                 AND l.market_id = :marketId
-                AND lg.buyer_type ='RSP'
+                AND lg.buyer_type IN ('RSP', 'NSSO')
                 AND es.external_unit_registration_id = :externalUnitRegistrationId
                 AND f.ACTIVE = 1
                 AND ma.active = 1

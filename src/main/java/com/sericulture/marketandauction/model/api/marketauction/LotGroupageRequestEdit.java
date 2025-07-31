@@ -70,4 +70,7 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name="externalUnitId", example = "1")
     Long externalUnitId;
 
+    @Schema(name = "fruitsId", example = "Reeler")
+    String fruitsId;
+
 }
