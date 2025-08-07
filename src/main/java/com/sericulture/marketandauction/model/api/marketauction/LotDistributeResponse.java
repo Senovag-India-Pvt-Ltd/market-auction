@@ -24,6 +24,8 @@ public class LotDistributeResponse extends ResponseBody {
     private String farmerFirstName;
     private String farmerMiddleName;
     private String farmerLastName;
+    private String fatherNameKan;
+
     //    private float bidAmount;
     @JsonIgnore
     private int raceMasterId;
