@@ -26,8 +26,10 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
             "FROM market_auction ma " +
             "LEFT JOIN lot l ON ma.market_auction_id = l.market_auction_id " +
             "WHERE l.allotted_lot_id = :allottedLotId " +
-            "AND ma.market_auction_date = :marketAuctionDate")
-    public List<Object[]> getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(int allottedLotId, LocalDate marketAuctionDate);
+            "AND ma.market_auction_date = :marketAuctionDate" +
+            "AND l.market_id = :marketId"
+    )
+    public List<Object[]> getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(int allottedLotId, LocalDate marketAuctionDate,int marketId);
 
     @Query(value = "SELECT next value for dbo.INVOICE_SEQ", nativeQuery = true)
     public BigDecimal getNextValInvoiceSequence();

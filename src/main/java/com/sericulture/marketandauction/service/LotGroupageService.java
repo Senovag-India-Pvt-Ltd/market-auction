@@ -165,7 +165,7 @@ public class LotGroupageService {
             lotGroupage.setUserMasterId(Util.getUserMasterId(Util.getTokenValues()));
 
             List<Object[]> list = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(
-                    lotGroupageRequest.getAllottedLotId().intValue(), lotGroupageRequest.getAuctionDate());
+                    lotGroupageRequest.getAllottedLotId().intValue(), lotGroupageRequest.getAuctionDate(), lotGroupageRequest.getMarketId());
             for (Object[] arr : list) {
                 lotGroupage.setMarketAuctionId(((BigDecimal) arr[0]).toBigIntegerExact());
                 lotGroupage.setId(((BigDecimal) arr[1]).toBigIntegerExact());
@@ -559,7 +559,7 @@ public class LotGroupageService {
             String currentInvoiceNumber = lotGroupage.getInvoiceNumber();
 
             // Fetch market auction details and update lotGroupage
-            List<Object[]> marketAuctionDetails = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(lotGroupageRequestEdit.getAllottedLotId().intValue(), lotGroupageRequestEdit.getAuctionDate());
+            List<Object[]> marketAuctionDetails = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(lotGroupageRequestEdit.getAllottedLotId().intValue(), lotGroupageRequestEdit.getAuctionDate(),lotGroupageRequestEdit.getMarketId());
             for (Object[] arr : marketAuctionDetails) {
                 lotGroupage.setMarketAuctionId(((BigDecimal) arr[0]).toBigIntegerExact());
                 lotGroupage.setId(((BigDecimal) arr[1]).toBigIntegerExact());
