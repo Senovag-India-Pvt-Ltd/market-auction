@@ -109,4 +109,5 @@ public class LotDistributeResponse extends ResponseBody {
     private int serialNumber;
     private String farmerFullName;
     private Float totalNumber;
+    private String licenseNo;
 }

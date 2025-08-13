@@ -817,6 +817,8 @@ public class LotGroupageService {
                     .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[42]))
                     .buyerName(Util.objectToString(lotWeightDetails[43]))
                     .rspAddress(Util.objectToString(lotWeightDetails[44]))
+                    .licenseNo(Util.objectToString(lotWeightDetails[45]))
+
                     .build();
 
             responses.add(lotDistributeResponse);

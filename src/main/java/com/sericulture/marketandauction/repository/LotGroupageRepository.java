@@ -251,7 +251,8 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 ) AS soldCocoonInKgs,
                 l.LOT_WEIGHT_AFTER_WEIGHMENT,
                 (ISNULL(es.name, '') + ' - ' + ISNULL(es.license_number, '')) AS buyer_name,
-                es.address
+                es.address,
+                es.license_number
             FROM
                 FARMER f
             INNER JOIN
