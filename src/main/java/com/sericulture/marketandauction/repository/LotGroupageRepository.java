@@ -224,6 +224,11 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 ptaca.DISEASE_FREE,
                 ptaca.DISEASE_TYPE,
                 ptaca.NO_OF_COCOON_PER_KG,
+                CASE
+                WHEN lg.lot_weight IS NOT NULL AND ptaca.NO_OF_COCOON_PER_KG IS NOT NULL
+                THEN lg.lot_weight * ptaca.NO_OF_COCOON_PER_KG
+                ELSE NULL
+                END AS total_number,
                 ptaca.MELT_PERCENTAGE,
                 ptaca.pupa_cocoon_status,
                 ptaca.PUPA_TEST_RESULT,

@@ -42,6 +42,17 @@ public final class Util {
         return object == null ? "" : String.valueOf(object);
     }
 
+
+    public static Float formatToTwoDecimalPlaces(Object value) {
+        if (value == null) return null;
+        try {
+            return new BigDecimal(value.toString())
+                    .setScale(2, RoundingMode.HALF_UP)
+                    .floatValue();
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
     public static LocalDate objectToDate(Object date) {
         if (date == null) {
             return null;

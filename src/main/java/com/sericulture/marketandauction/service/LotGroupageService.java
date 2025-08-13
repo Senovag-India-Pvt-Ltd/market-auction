@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Service
@@ -782,10 +783,13 @@ public class LotGroupageService {
                     .lotGroupageId(Util.objectToLong(lotWeightDetails[10]))
                     .buyerId(Util.objectToLong(lotWeightDetails[11]))
                     .buyerType(Util.objectToString(lotWeightDetails[12]))
-                    .lotWeight(Util.objectToFloat(lotWeightDetails[13]))
-                    .amount(Util.objectToFloat(lotWeightDetails[14]))
+//                    .lotWeight(Util.objectToFloat(lotWeightDetails[13]))
+                    .lotWeight(Util.formatToTwoDecimalPlaces(lotWeightDetails[13]))
+//                    .amount(Util.objectToFloat(lotWeightDetails[14]))
+                    .amount(Util.formatToTwoDecimalPlaces(lotWeightDetails[14]))
                     .marketFee(Util.objectToFloat(lotWeightDetails[15]))
-                    .soldAmount(Util.objectToFloat(lotWeightDetails[16]))
+//                    .soldAmount(Util.objectToFloat(lotWeightDetails[16]))
+                    .soldAmount(Util.formatToTwoDecimalPlaces(lotWeightDetails[16]))
                     .netWeight(Util.objectToString(lotWeightDetails[17]))
                     .dflLotNumber(Util.objectToString(lotWeightDetails[18]))
                     .raceMasterId(Util.objectToInteger(lotWeightDetails[19]))
@@ -797,20 +801,22 @@ public class LotGroupageService {
                     .noOfCocoonTakenForExamination(Util.objectToLong(lotWeightDetails[25]))
                     .noOfDFLFromFc(Util.objectToLong(lotWeightDetails[26]))
                     .noOfCocoonPerKg(Util.objectToLong(lotWeightDetails[29]))
-                    .meltPercentage(Util.objectToString(lotWeightDetails[30]))
-                    .pupaCocoonStatus(Util.objectToString(lotWeightDetails[31]))
-                    .noOfCocoonExamined(Util.objectToString(lotWeightDetails[32]))
-                    .marketAuctionDate(Util.objectToString(lotWeightDetails[33]))
-                    .allottedLotId(Util.objectToInteger(lotWeightDetails[34]))
-                    .averageYield(Util.objectToString(lotWeightDetails[35]))
-                    .dflLotNumber(Util.objectToString(lotWeightDetails[36]))
-                    .invoiceNumber(Util.objectToString(lotWeightDetails[37]))
-                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[38]))
-                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[39]))
-                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[40]))
-                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[41]))
-                    .buyerName(Util.objectToString(lotWeightDetails[42]))
-                    .rspAddress(Util.objectToString(lotWeightDetails[43]))
+//                    .totalNumber(Util.objectToFloat(lotWeightDetails[30]))
+                    .totalNumber(Util.formatToTwoDecimalPlaces(lotWeightDetails[30]))
+                    .meltPercentage(Util.objectToString(lotWeightDetails[31]))
+                    .pupaCocoonStatus(Util.objectToString(lotWeightDetails[32]))
+                    .noOfCocoonExamined(Util.objectToString(lotWeightDetails[33]))
+                    .marketAuctionDate(Util.objectToString(lotWeightDetails[34]))
+                    .allottedLotId(Util.objectToInteger(lotWeightDetails[35]))
+                    .averageYield(Util.objectToString(lotWeightDetails[36]))
+                    .dflLotNumber(Util.objectToString(lotWeightDetails[37]))
+                    .invoiceNumber(Util.objectToString(lotWeightDetails[38]))
+                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[39]))
+                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[40]))
+                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[41]))
+                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[42]))
+                    .buyerName(Util.objectToString(lotWeightDetails[43]))
+                    .rspAddress(Util.objectToString(lotWeightDetails[44]))
                     .build();
 
             responses.add(lotDistributeResponse);

@@ -91,6 +91,7 @@ public class LotDistributeResponse extends ResponseBody {
     private Long noOfCocoonTakenForExamination;
     private Long noOfDFLFromFc;
     private Long noOfCocoonPerKg;
+    private Long totalCocoonCount;
     private String noOfCocoonExamined;
     private String pupaCocoonStatus;
     private String marketAuctionDate;
@@ -107,4 +108,5 @@ public class LotDistributeResponse extends ResponseBody {
     private String lotWeightAfterWeighment;
     private int serialNumber;
     private String farmerFullName;
+    private Float totalNumber;
 }
