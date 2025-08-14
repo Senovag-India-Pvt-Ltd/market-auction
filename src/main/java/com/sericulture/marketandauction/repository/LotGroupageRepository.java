@@ -207,6 +207,8 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 lg.buyer_id,
                 lg.buyer_type,
                 lg.lot_weight,
+                SUM(CAST(ISNULL(lg.sold_amount, 0) AS FLOAT)) OVER (PARTITION BY lg.lot_groupage_id) AS total_sold_amount,
+                SUM(CAST(ISNULL(lg.lot_weight, 0) AS FLOAT)) OVER (PARTITION BY lg.lot_groupage_id) AS total_lot_weight,
                 lg.amount,
                 lg.market_fee,
                 lg.sold_amount,
@@ -329,7 +331,7 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 SUM(mm.box_weight) AS total_box_weight,
                 l.status,
                 SUM(lg.lot_weight) AS total_lot_weight,
-                SUM(CAST(ISNULL(lg.amount, 0) AS FLOAT)) AS total_amount,
+                lg.amount,
                 SUM(CAST(ISNULL(lg.market_fee, 0) AS FLOAT)) AS total_market_fee,
                 SUM(CAST(ISNULL(lg.sold_amount, 0) AS FLOAT)) AS total_sold_amount,
                 MAX(CAST(ma.dfl_lot_number AS FLOAT)) AS dfl_lot_number,
@@ -423,7 +425,8 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 ma.market_auction_date,
                 l.allotted_lot_id,
                 lg.average_yield,
-                l.LOT_WEIGHT_AFTER_WEIGHMENT
+                l.LOT_WEIGHT_AFTER_WEIGHMENT,
+                lg.amount
         )
         SELECT * FROM MainQuery;
     """)
