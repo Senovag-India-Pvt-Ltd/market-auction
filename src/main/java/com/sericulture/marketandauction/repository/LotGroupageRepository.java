@@ -114,6 +114,8 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                 lg.average_yield,
                 ma.dfl_lot_number AS no_of_dfls,
                 lg.invoice_number,
+                fc.expected_marker_date,
+                fc.spun_date,
                 (l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / NULLIF(ma.dfl_lot_number, 0) AS calculatedAverageYield,
                 lg.remaining_cocoon,
                 (
@@ -150,6 +152,14 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                 source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
             LEFT JOIN
                 lot_groupage lg ON l.lot_id = lg.lot_id
+            LEFT JOIN (
+            SELECT
+            fc.fruits_id,
+            MAX(fc.expected_marker_date) AS expected_marker_date,
+            MAX(fc.spun_date) AS spun_date
+            FROM fitness_certificate fc
+              GROUP BY fc.fruits_id
+              ) fc ON fc.fruits_id = f.fruits_id
             LEFT JOIN
                 PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
             LEFT JOIN
@@ -173,11 +183,11 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
         )
         SELECT * FROM MainQuery
     """)
-List<Object[]> getLotDistributeDetailsForInvoice(
-                                       @Param("fromDate") LocalDate fromDate,
-                                       @Param("toDate") LocalDate toDate,
-                                       @Param("marketId") Integer marketId,
-                                       @Param("grainageMasterId") Long grainageMasterId);
+    List<Object[]> getLotDistributeDetailsForInvoice(
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("marketId") Integer marketId,
+            @Param("grainageMasterId") Long grainageMasterId);
 
     @Query(nativeQuery = true, value = """
             WITH PrimaryAddress AS (
@@ -246,6 +256,8 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 lg.average_yield,
                 ma.dfl_lot_number AS no_of_dfls,
                 lg.invoice_number,
+                fc.expected_marker_date,
+                fc.spun_date,
                 (l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / NULLIF(ma.dfl_lot_number, 0) AS calculatedAverageYield,
                 lg.remaining_cocoon,
                 (
@@ -278,6 +290,14 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
             LEFT JOIN
                 lot_groupage lg ON l.lot_id = lg.lot_id
+            LEFT JOIN (
+            SELECT
+            fc.fruits_id,
+            MAX(fc.expected_marker_date) AS expected_marker_date,
+            MAX(fc.spun_date) AS spun_date
+            FROM fitness_certificate fc
+              GROUP BY fc.fruits_id
+              ) fc ON fc.fruits_id = f.fruits_id
             LEFT JOIN
                 PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
             LEFT JOIN
@@ -355,8 +375,8 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 l.allotted_lot_id,
                 lg.average_yield,
                 STRING_AGG(lg.invoice_number, ', ') AS invoice_numbers,
-                fc.spun_date,
                 fc.expected_marker_date,
+                fc.spun_date,
                 MAX(
                 CASE
                 WHEN lg.buyer_type = 'RSP' THEN es.license_number
@@ -398,8 +418,14 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
             LEFT JOIN
                 lot_groupage lg ON l.lot_id = lg.lot_id
-            LEFT JOIN
-                fitness_certificate fc ON fc.farmer_id = f.farmer_id AND fc.fruits_id = f.fruits_id
+            LEFT JOIN (
+            SELECT
+            fc.fruits_id,
+            MAX(fc.expected_marker_date) AS expected_marker_date,
+            MAX(fc.spun_date) AS spun_date
+            FROM fitness_certificate fc
+              GROUP BY fc.fruits_id
+              ) fc ON fc.fruits_id = f.fruits_id
             LEFT JOIN
                 PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
             LEFT JOIN
@@ -449,8 +475,8 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 l.LOT_WEIGHT_AFTER_WEIGHMENT,
                 lg.amount,
                 lg.market_fee,
-                fc.spun_date,
                 fc.expected_marker_date,
+                fc.spun_date,
                 lg.buyer_type,          
                 lg.buyer_id,            
                 lg.lot_groupage_id
