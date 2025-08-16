@@ -742,11 +742,13 @@ public class LotGroupageService {
                     .averageYield(Util.objectToString(lotWeightDetails[36]))
                     .dflLotNumber(Util.objectToString(lotWeightDetails[37]))
                     .invoiceNumber(Util.objectToString(lotWeightDetails[38]))
-                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[39]))
-                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[40]))
-                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[41]))
-                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[42]))
-                    .buyerName(Util.objectToString(lotWeightDetails[43]))
+                    .spunFromDate(Util.objectToString(lotWeightDetails[39]))
+                    .spunToDate(Util.objectToString(lotWeightDetails[40]))
+                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[41]))
+                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[42]))
+                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[43]))
+                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[44]))
+                    .buyerName(Util.objectToString(lotWeightDetails[45]))
                     .build();
 
             responses.add(lotDistributeResponse);
@@ -810,13 +812,17 @@ public class LotGroupageService {
                     .averageYield(Util.objectToString(lotWeightDetails[38]))
                     .dflLotNumber(Util.objectToString(lotWeightDetails[39]))
                     .invoiceNumber(Util.objectToString(lotWeightDetails[40]))
-                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[41]))
-                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[42]))
-                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[43]))
-                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[44]))
-                    .buyerName(Util.objectToString(lotWeightDetails[45]))
-                    .rspAddress(Util.objectToString(lotWeightDetails[46]))
-                    .licenseNo(Util.objectToString(lotWeightDetails[47]))
+
+                    .spunFromDate(Util.objectToString(lotWeightDetails[41]))
+                    .spunToDate(Util.objectToString(lotWeightDetails[42]))
+
+                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[43]))
+                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[44]))
+                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[45]))
+                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[46]))
+                    .buyerName(Util.objectToString(lotWeightDetails[47]))
+                    .rspAddress(Util.objectToString(lotWeightDetails[48]))
+                    .licenseNo(Util.objectToString(lotWeightDetails[49]))
 
                     .build();
 
