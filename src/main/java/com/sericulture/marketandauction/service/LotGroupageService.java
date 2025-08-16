@@ -871,10 +871,13 @@ public class LotGroupageService {
                     .allottedLotId(Util.objectToInteger(lotWeightDetails[27]))
                     .averageYield(Util.objectToString(lotWeightDetails[28]))
                     .invoiceNumber(Util.objectToString(lotWeightDetails[29]))
-                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[30]))
-                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[31]))
-                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[32]))
-                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[33]))
+                    .spunFromDate(Util.objectToString(lotWeightDetails[30]))
+                    .spunToDate(Util.objectToString(lotWeightDetails[31]))
+                    .buyerName(Util.objectToString(lotWeightDetails[32]))
+                    .calculatedAverageYield(Util.objectToString(lotWeightDetails[33]))
+                    .remainingCocoonWeight(Util.objectToString(lotWeightDetails[34]))
+                    .soldCocoonInKgs(Util.objectToString(lotWeightDetails[35]))
+                    .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[36]))
                     .build();
 
             responses.add(lotDistributeResponse);

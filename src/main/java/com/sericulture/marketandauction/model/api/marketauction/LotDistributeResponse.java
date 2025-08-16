@@ -112,4 +112,8 @@ public class LotDistributeResponse extends ResponseBody {
     private Float totalLotWeight;
     private Float totalSoldOutAmount;
     private String licenseNo;
+    private String spunFromDate;
+    private String spunToDate;
+
+
 }

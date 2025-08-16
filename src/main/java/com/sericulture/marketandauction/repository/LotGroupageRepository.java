@@ -337,7 +337,7 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 l.status,
                 SUM(lg.lot_weight) AS total_lot_weight,
                 lg.amount,
-                SUM(CAST(ISNULL(lg.market_fee, 0) AS FLOAT)) AS total_market_fee,
+                lg.market_fee,
                 SUM(CAST(ISNULL(lg.sold_amount, 0) AS FLOAT)) AS total_sold_amount,
                 MAX(CAST(ma.dfl_lot_number AS FLOAT)) AS dfl_lot_number,
                 ma.lot_variety,
@@ -355,6 +355,20 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 l.allotted_lot_id,
                 lg.average_yield,
                 STRING_AGG(lg.invoice_number, ', ') AS invoice_numbers,
+                fc.spun_date,
+                fc.expected_marker_date,
+                MAX(
+                CASE
+                WHEN lg.buyer_type = 'RSP' THEN es.license_number
+                WHEN lg.buyer_type = 'NSSO' THEN es.address
+                WHEN lg.buyer_type = 'Govt Grainage' THEN gm.grainage_master_name
+                WHEN lg.buyer_type = 'Reeling' THEN r.name
+                    ELSE NULL
+                        END
+                ) AS buyer_name,
+                lg.lot_groupage_id,
+                lg.buyer_id,
+                lg.buyer_type,
                 (CAST(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) * 100 AS FLOAT) / NULLIF(SUM(CAST(ma.dfl_lot_number AS FLOAT)), 0)) AS total_calculatedAverageYield,
                 SUM(CAST(ISNULL(lg.remaining_cocoon, 0) AS FLOAT)) AS total_remaining_cocoon,
                 (
@@ -384,6 +398,8 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
             LEFT JOIN
                 lot_groupage lg ON l.lot_id = lg.lot_id
+            LEFT JOIN
+                fitness_certificate fc ON fc.farmer_id = f.farmer_id AND fc.fruits_id = f.fruits_id
             LEFT JOIN
                 PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
             LEFT JOIN
@@ -431,7 +447,13 @@ List<Object[]> getLotDistributeDetailsForInvoice(
                 l.allotted_lot_id,
                 lg.average_yield,
                 l.LOT_WEIGHT_AFTER_WEIGHMENT,
-                lg.amount
+                lg.amount,
+                lg.market_fee,
+                fc.spun_date,
+                fc.expected_marker_date,
+                lg.buyer_type,          
+                lg.buyer_id,            
+                lg.lot_groupage_id
         )
         SELECT * FROM MainQuery;
     """)
