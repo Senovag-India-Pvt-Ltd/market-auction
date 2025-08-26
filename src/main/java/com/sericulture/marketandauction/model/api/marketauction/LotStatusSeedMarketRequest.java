@@ -31,4 +31,7 @@ public class LotStatusSeedMarketRequest extends RequestBody {
 
     @Schema(name = "externalUnitRegistrationId", example = "1")
     private Long externalUnitRegistrationId;
+
+    @Schema(name = "fruitsId", example = "1")
+    private String fruitsId;
 }

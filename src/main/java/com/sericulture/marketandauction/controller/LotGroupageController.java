@@ -62,4 +62,20 @@ public class LotGroupageController {
         rw.setContent (lotGroupageService.getLotDistributeDetailsForMarketReceiptAndCashReceipt(lotStatusSeedMarketRequest));
         return ResponseEntity.ok(rw);
     }
+
+    @PostMapping("/getLotDistributeResponseForInvoiceAndBonusScheme")
+    public ResponseEntity<?> getLotDistributeResponseForInvoiceAndBonusScheme(@RequestBody LotStatusSeedMarketRequest lotStatusSeedMarketRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(LotGroupageResponse.class);
+
+        rw.setContent (lotGroupageService.getLotDistributeResponseForInvoiceAndBonusScheme(lotStatusSeedMarketRequest));
+        return ResponseEntity.ok(rw);
+    }
+
+    @PostMapping("/getAllottedLotIds")
+    public ResponseEntity<?> getAllottedLotIds(@RequestBody LotStatusSeedMarketRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(Integer.class);
+        rw.setContent(lotGroupageService.getAllottedLotIds(request));
+        return ResponseEntity.ok(rw);
+    }
+
 }

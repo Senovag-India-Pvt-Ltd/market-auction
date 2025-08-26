@@ -107,4 +107,9 @@ public class LotDistributeResponse extends ResponseBody {
     private String lotWeightAfterWeighment;
     private int serialNumber;
     private String farmerFullName;
+    private Float sumLotWeightRspNssoGovt;
+    private Float sumSoldAmountRspNssoGovt;
+    private Float sumLotWeightReeling;
+    private Float sumSoldAmountReeling;
+    private Float totalLotWeight;
 }

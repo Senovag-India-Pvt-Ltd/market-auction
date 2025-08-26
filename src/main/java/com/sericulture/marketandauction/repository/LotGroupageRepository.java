@@ -426,4 +426,126 @@ List<Object[]> getLotDistributeDetailsForInvoice(
             @Param("marketId") Integer marketId,
             @Param("allottedLotId") Integer allottedLotId);
 
+
+    @Query(nativeQuery = true, value = """
+            WITH PrimaryAddress AS (
+            SELECT
+            fa.farmer_id,
+            fa.STATE_ID,
+            fa.DISTRICT_ID,
+            fa.TALUK_ID,
+            fa.HOBLI_ID,
+            fa.VILLAGE_ID,
+            fa.address_text,
+            ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
+            FROM
+            farmer_address fa
+            WHERE
+            fa.active = 1
+            ),
+            MainQuery AS (
+            SELECT
+            f.farmer_number,
+            f.fruits_id,
+            (ISNULL(f.first_name, '') + ' ' +ISNULL(f.middle_name, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
+            ) AS farmer_full_name,
+            v.village_name_in_kannada,
+            mm.market_name_in_kannada,
+            rm.race_name,
+            mm.box_weight,
+            l.status,
+            lg.lot_groupage_id,
+            lg.buyer_id,
+            lg.buyer_type,
+            lg.lot_weight,
+            lg.amount,
+            lg.market_fee,
+            lg.sold_amount,
+            ma.dfl_lot_number,
+            ma.lot_variety,
+            ma.lot_Parental_Level,
+            ma.estimated_weight,
+            ptaca.TEST_DATE,
+            ptaca.NO_OF_COCOON_TAKEN_FOR_EXAMINATION,
+            ptaca.NO_OF_DFL_FROM_FC,
+            ptaca.NO_OF_COCOON_PER_KG,
+            ma.market_auction_date,
+            l.allotted_lot_id,
+            lg.average_yield,
+            lg.invoice_number,
+            l.LOT_WEIGHT_AFTER_WEIGHMENT,
+            CASE
+            WHEN lg.buyer_type = 'RSP' THEN es.license_number
+            WHEN lg.buyer_type = 'NSSO' THEN es.address
+            WHEN lg.buyer_type = 'Govt Grainage' THEN gm.grainage_master_name
+            WHEN lg.buyer_type = 'Reeling' THEN r.name
+            ELSE NULL
+            END AS buyer_name,
+            SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage') THEN lg.lot_weight ELSE 0 END)\s
+                  OVER () AS sum_lot_weight_rsp_nss_govt,
+            SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage') THEN lg.sold_amount ELSE 0 END)\s
+                  OVER () AS sum_sold_amount_rsp_nss_govt,
+            SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN lg.lot_weight ELSE 0 END)\s
+                  OVER () AS sum_lot_weight_reeling,
+            SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN lg.sold_amount ELSE 0 END)\s
+                  OVER () AS sum_sold_amount_reeling,
+            SUM(lg.lot_weight) OVER () AS totalLotWeight
+            FROM
+            FARMER f
+            INNER JOIN
+            market_auction ma ON ma.farmer_id = f.FARMER_ID
+            INNER JOIN
+            lot l ON l.market_auction_id = ma.market_auction_id
+            LEFT JOIN
+            PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
+            LEFT JOIN
+            Village v ON pa.VILLAGE_ID = v.village_id AND f.ACTIVE = 1
+            LEFT JOIN
+            market_master mm ON mm.market_master_id = ma.market_id
+            LEFT JOIN
+            race_master rm ON rm.race_id = ma.lot_variety
+            LEFT JOIN
+            lot_groupage lg ON l.lot_id = lg.lot_id
+            LEFT JOIN
+            PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
+            LEFT JOIN
+            reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
+            LEFT JOIN
+            external_unit_registration es ON lg.external_unit_id = es.external_unit_registration_id
+            AND lg.buyer_type IN ('RSP', 'NSSO')
+            LEFT JOIN
+            grainage_master gm ON lg.external_unit_id = gm.grainage_master_id AND lg.buyer_type = 'Govt Grainage'
+            WHERE
+            lg.auction_date = :auctionDate
+            AND l.market_id = :marketId
+            AND lg.allotted_lot_id = :allottedLotId
+            AND f.ACTIVE = 1
+            AND lg.fruits_id  = :fruitsId
+            AND ma.active = 1
+            AND l.status = 'weighmentcompleted'
+            )
+            SELECT * FROM MainQuery
+    """)
+    List<Object[]> getLotDistributeResponseForInvoiceAndBonusScheme(
+            @Param("auctionDate") LocalDate auctionDate,
+            @Param("marketId") Integer marketId,
+            @Param("allottedLotId") Integer allottedLotId,
+            @Param("fruitsId") String fruitsId);
+
+    @Query(nativeQuery = true, value = """
+    SELECT DISTINCT lg.allotted_lot_id
+    FROM lot_groupage lg
+    INNER JOIN lot l ON l.lot_id = lg.lot_id
+    INNER JOIN market_auction ma ON ma.market_auction_id = l.market_auction_id
+    WHERE lg.auction_date = :auctionDate
+      AND l.market_id = :marketId
+      AND lg.fruits_id = :fruitsId
+""")
+    List<Integer> getAllottedLotIds(
+            @Param("auctionDate") LocalDate auctionDate,
+            @Param("marketId") Integer marketId,
+            @Param("fruitsId") String fruitsId
+    );
+
+
 }
