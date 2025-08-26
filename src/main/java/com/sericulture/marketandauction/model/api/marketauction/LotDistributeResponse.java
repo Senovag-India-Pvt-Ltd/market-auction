@@ -120,5 +120,4 @@ public class LotDistributeResponse extends ResponseBody {
     private Float sumSoldAmountRspNssoGovt;
     private Float sumLotWeightReeling;
     private Float sumSoldAmountReeling;
-    private Float totalLotWeight;
 }
