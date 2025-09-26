@@ -39,7 +39,7 @@ public class MarketAuctionRequest extends RequestBody {
 
 
     @Schema(name = "estimatedWeight", example = "Estimated weight from farmer", required = true)
-    private int estimatedWeight;
+    private Float estimatedWeight;
 
     @Schema(name = "numberOfLot", example = "number of lots assigned to this transaction", required = true)
     private int numberOfLot;

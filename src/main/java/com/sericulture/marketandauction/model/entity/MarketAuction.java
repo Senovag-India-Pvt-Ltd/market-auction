@@ -38,7 +38,7 @@ public class MarketAuction extends BaseEntity implements Serializable {
     @Column(name = "DFL_COUNT")
     private int dflCount;
     @Column(name = "ESTIMATED_WEIGHT")
-    private int estimatedWeight;
+    private Float estimatedWeight;
     @Column(name = "STATUS")
     private String status;
     @Column(name = "NUMBER_OF_LOT")

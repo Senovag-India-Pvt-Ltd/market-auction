@@ -163,14 +163,14 @@ public class MarketAuctionService {
 
 
     }
-    private List<Integer> saveLot(BigInteger id, int numberOfLot, int marketId, int godownId,int estimatedWeight,EntityManager entityManager) {
+    private List<Integer> saveLot(BigInteger id, int numberOfLot, int marketId, int godownId,float estimatedWeight,EntityManager entityManager) {
         List<Integer> lotList = new ArrayList<>();
         Integer lotCounter = 0;
         lotCounter = lotRepository.findByMarketIdAndAuctionDate(marketId, Util.getISTLocalDate());
         if (lotCounter == null) {
             lotCounter = 0;
         }
-        int approxWeightPerLot = estimatedWeight / numberOfLot;
+        float approxWeightPerLot = estimatedWeight / numberOfLot;
         List<Lot> lots = new ArrayList<>();
         for (int i = 0; i < numberOfLot; i++) {
             Lot lot = new Lot();
