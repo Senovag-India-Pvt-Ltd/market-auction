@@ -35,7 +35,7 @@ public class SeedMarketAuctionDetailsResponse {
     private String lotNumberRsp;
     private Long raceOfDfls;
     private String raceName;
-    private Long initialWeighment;
+    private Float initialWeighment;
     private Long marketAuctionId;
     private Long pricePerKg;
     private String fixationDate;
