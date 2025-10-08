@@ -30,6 +30,11 @@ public class LotGroupageController {
 
     }
 
+    @PostMapping("/getReelingLotNumberDetails")
+    public ResponseEntity<?> getReelingLotNumberDetails() {
+        return lotGroupageService.getReelingLotNumberDetails();
+    }
+
     @PostMapping("/updateLotGroupage")
     public ResponseEntity<?> editLotGroupage(@RequestBody LotGroupageDetailsRequestEdit lotGroupageDetailsRequestEdit){
         ResponseWrapper rw = ResponseWrapper.createWrapper(LotGroupageResponse.class);

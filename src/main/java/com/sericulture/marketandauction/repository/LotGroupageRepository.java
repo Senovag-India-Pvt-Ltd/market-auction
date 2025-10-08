@@ -609,5 +609,54 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
             @Param("fruitsId") String fruitsId
     );
 
+    @Query(
+            nativeQuery = true,
+            value = """
+    SELECT
+    lg.lot_groupage_id,
+    lg.buyer_type,
+    lg.buyer_id,
+    lg.lot_weight,
+    lg.amount,
+    lg.market_fee,
+    lg.sold_amount,
+    lg.allotted_lot_id,
+    lg.market_auction_id,
+    lg.lot_id,
+    lg.auction_date,
+    lg.average_yield,
+    lg.no_of_dfls,
+    lg.invoice_number,
+    lg.lot_parental_level,
+    lg.remaining_cocoon,
+    lg.user_master_id,
+    lg.external_unit_id,
+    lg.is_accepted,
+    CASE
+    WHEN lg.buyer_type = 'Reeling' THEN r.name
+    ELSE NULL
+    END AS buyer_name,
+    f.first_name,
+    mm.market_name,
+    lg.fruits_id,
+    f.mobile_number,
+    lg.ALLOTTED_LOT_ID
+    FROM lot_groupage lg
+    LEFT JOIN reeler r
+    ON lg.external_unit_id = r.reeler_id
+    AND lg.buyer_type IN ('Reeling')
+    AND r.active = 1
+    LEFT JOIN farmer f
+    ON lg.fruits_id = f.fruits_id
+    LEFT JOIN market_auction ma
+    ON lg.market_auction_id = ma.market_auction_id
+    LEFT JOIN market_master mm
+    ON ma.market_id = mm.market_master_id
+    Where lg.buyer_type = 'Reeling'
+    And ma.market_id = :marketId
+    """
+    )
+    List<Object[]> getReelingLotNumberDetails(@Param("marketId") Integer marketId);
+
 
 }

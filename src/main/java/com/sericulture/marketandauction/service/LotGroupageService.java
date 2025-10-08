@@ -960,4 +960,54 @@ public class LotGroupageService {
     }
 
 
+    public ResponseEntity<?> getReelingLotNumberDetails() {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<LotDistributeResponse> responseList = new ArrayList<>();
+
+        // ✅ Step 1: Get logged-in user's ID from JWT
+        Integer marketId = Util.getMarketId(Util.getTokenValues());
+
+        // ✅ Step 3: Fetch all expiring reeler licenses for that TSC
+        List<Object[]> applicableList = lotGroupageRepository.getReelingLotNumberDetails(marketId);
+
+        // ✅ Step 4: Convert to response
+        reelerResponses(responseList, applicableList);
+
+        rw.setTotalRecords((long) applicableList.size());
+        rw.setContent(responseList);
+        return ResponseEntity.ok(rw);
+    }
+
+    private static void reelerResponses(List<LotDistributeResponse> lotDistributeResponseList, List<Object[]> applicableList) {
+//        int serialNumber = pageNumber * pageSize + 1;
+        for (Object[] arr : applicableList) {
+            LotDistributeResponse lotDistributeResponse;
+            lotDistributeResponse = LotDistributeResponse.builder()
+//                    .serialNumber(serialNumber++)
+                    .lotGroupageId(Util.objectToLong(arr[0]))
+                    .buyerType(Util.objectToString(arr[1]))
+                    .buyerId(Util.objectToLong(arr[2]))
+                    .lotWeight(Util.objectToFloat(arr[3]))
+                    .amount(Util.objectToFloat(arr[4]))
+                    .marketFee(Util.objectToFloat(arr[5]))
+                    .soldAmount(Util.objectToFloat(arr[6]))
+                    .allottedLotId(Util.objectToInteger(arr[7]))
+                    .marketAuctionDate(Util.objectToString(arr[10]))
+                    .averageYield(Util.objectToString(arr[11]))
+                    .noOfDFLs(Util.objectToString(arr[12]))
+                    .invoiceNumber(Util.objectToString(arr[13]))
+                    .lotParentLevel(Util.objectToString(arr[14]))
+                    .remainingCocoonWeight(Util.objectToString(arr[15]))
+                    .buyerName(Util.objectToString(arr[19]))
+                    .farmerFirstName(Util.objectToString(arr[20]))
+                    .marketName(Util.objectToString(arr[21]))
+                    .farmerFruitsId(Util.objectToString(arr[22]))
+                    .allottedLotId(Util.objectToInteger(arr[24]))
+                    .build();
+            lotDistributeResponseList.add(lotDistributeResponse);
+        }
+    }
+
+
 }
