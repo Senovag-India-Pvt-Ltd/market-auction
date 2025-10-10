@@ -38,7 +38,7 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private float lotSoldOutAmount;
     private float bidAmount;
     private double reelerCurrentBalance;
-    private int farmerEstimatedWeight;
+    private Float farmerEstimatedWeight;
     private List<Float> lotWeightDetail;
     private String marketName;
     private String race;
@@ -106,7 +106,7 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String formNo;
     private String silkQuality;
     private String silkType;
-    private int approximateEstimatedWeight;
+    private Float approximateEstimatedWeight;
 
 
 

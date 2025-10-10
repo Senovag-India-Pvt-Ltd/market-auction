@@ -38,7 +38,7 @@ public class LotPendingReportResponse {
     private float lotSoldOutAmount;
     private float bidAmount;
     private double reelerCurrentBalance;
-    private int farmerEstimatedWeight;
+    private Float farmerEstimatedWeight;
     private List<Float> lotWeightDetail;
     private String marketName;
     private String race;
