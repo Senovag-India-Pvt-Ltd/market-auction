@@ -643,7 +643,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
     lg.ALLOTTED_LOT_ID
     FROM lot_groupage lg
     LEFT JOIN reeler r
-    ON lg.external_unit_id = r.reeler_id
+    ON lg.buyer_id = r.reeler_id
     AND lg.buyer_type IN ('Reeling')
     AND r.active = 1
     LEFT JOIN farmer f
