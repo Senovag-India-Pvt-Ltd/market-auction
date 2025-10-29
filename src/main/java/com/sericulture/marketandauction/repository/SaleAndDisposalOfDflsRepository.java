@@ -12,7 +12,7 @@ public interface SaleAndDisposalOfDflsRepository extends JpaRepository<SaleAndDi
 
     Optional<SaleAndDisposalOfDfls> findByIdAndActive(Integer id,boolean isActive);
 
-    SaleAndDisposalOfDfls findByFruitsIdAndLotNumberAndActive(String fruitsId, String lotNumber,boolean active);
+    SaleAndDisposalOfDfls findByFruitsIdAndLotNumberAndIsVerifiedAndActive(String fruitsId, String lotNumber,Integer isVerified,boolean active);
 
     public SaleAndDisposalOfDfls findByFruitsIdAndIdAndActiveIn(@Param("fruitsId") String fruitsId,@Param("id") long id, @Param("active") Set<Boolean> active);
 

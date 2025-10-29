@@ -212,7 +212,7 @@ public class LotGroupageService {
 
             // 👉 Update isDisposed = 1 for corresponding farmerId and lotNumber
             SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
-                    .findByFruitsIdAndLotNumberAndActive(lotGroupageRequest.getFruitsId(), lotGroupageRequest.getLotParentLevel(),true);
+                    .findByFruitsIdAndLotNumberAndIsVerifiedAndActive(lotGroupageRequest.getFruitsId(), lotGroupageRequest.getLotParentLevel(),1,true);
 
             if (disposalEntry != null) {
                 disposalEntry.setIsDisposed(1);
