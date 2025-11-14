@@ -309,13 +309,7 @@ public class LotGroupageService {
                 lg.invoice_number,
                 (l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / ma.dfl_lot_number AS calculatedAverageYield,
                 lg.remaining_cocoon,
-                (SELECT COALESCE(SUM(lg_inner.lot_weight), 0)
-                  FROM lot_groupage lg_inner
-                  INNER JOIN lot l_inner ON lg_inner.lot_id = l_inner.lot_id
-                  WHERE lg_inner.allotted_lot_id = l.allotted_lot_id
-                    AND l_inner.auction_date = l.auction_date
-                    AND lg_inner.lot_weight > 0
-                 ) AS soldCocoonInKgs,
+                SUM(lg.lot_weight) OVER (PARTITION BY l.lot_id) AS soldCocoonInKgs,
                  l.LOT_WEIGHT_AFTER_WEIGHMENT,
                 CASE
                     WHEN lg.buyer_type = 'RSP' THEN es.license_number
