@@ -14,6 +14,8 @@ public interface SaleAndDisposalOfDflsRepository extends JpaRepository<SaleAndDi
 
     SaleAndDisposalOfDfls findByFruitsIdAndLotNumberAndIsVerifiedAndActive(String fruitsId, String lotNumber,Integer isVerified,boolean active);
 
+    SaleAndDisposalOfDfls findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(String fruitsId, String lotNumber,Long noOfDfls,Integer isVerified,boolean active);
+
     public SaleAndDisposalOfDfls findByFruitsIdAndIdAndActiveIn(@Param("fruitsId") String fruitsId,@Param("id") long id, @Param("active") Set<Boolean> active);
 
 }

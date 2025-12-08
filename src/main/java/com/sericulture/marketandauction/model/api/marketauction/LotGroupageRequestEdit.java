@@ -73,4 +73,9 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name = "fruitsId", example = "Reeler")
     String fruitsId;
 
+    @Schema(name="marketId", example = "1")
+    int marketId;
+
+
+
 }

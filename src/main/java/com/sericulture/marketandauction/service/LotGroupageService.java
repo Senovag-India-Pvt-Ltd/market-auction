@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.*;
 
@@ -193,12 +194,12 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
+                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
                         break;
                     case "Reeling":
                         // For Reeling, you can either skip the fee calculation or handle it differently
                         if (soldAmount != null) {
-                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
+                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
                         } else {
                             marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
                         }
@@ -209,25 +210,42 @@ public class LotGroupageService {
 
                 lotGroupage.setMarketFee(marketFee.longValue());
             }
+            // Always set isDisposed = 1 in LotGroupage
+            lotGroupage.setIsDisposed(1);
 
-            // 👉 Update isDisposed = 1 for corresponding farmerId and lotNumber
+            Float remainingCocoon = lotGroupageRequest.getRemainingCocoonWeight();
+
+            // Fetch disposal entry
             SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
-                    .findByFruitsIdAndLotNumberAndIsVerifiedAndActive(lotGroupageRequest.getFruitsId(), lotGroupageRequest.getLotParentLevel(),1,true);
+                    .findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
+                            lotGroupageRequest.getFruitsId(),
+                            lotGroupageRequest.getLotParentLevel(),
+                            lotGroupageRequest.getDflLotNumber(),
+                            1,
+                            true
+                    );
 
-            if (disposalEntry != null) {
-                disposalEntry.setIsDisposed(1);
-                saleAndDisposalOfDflsRepository.save(disposalEntry);
+            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0
+            if (remainingCocoon == null || remainingCocoon == 0) {
+                if (disposalEntry != null) {
+                    disposalEntry.setIsDisposed(1);
+                    saleAndDisposalOfDflsRepository.save(disposalEntry);
+                }
             }
 
+            // Save LotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);
-            LotGroupageResponse lotGroupageResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+
+            // Prepare Response
+            LotGroupageResponse lotGroupageResponse =
+                    mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+
             lotGroupageResponse.setError(false);
-            responses.add(lotGroupageResponse); // Collect all responses
+            responses.add(lotGroupageResponse);
         }
 
         return responses;
     }
-
 
     //    public ResponseEntity<?> getLotDistributeDetailsByLotAndMarketAndAuctionDateForSeedMarket(LotStatusSeedMarketRequest lotStatusRequest) {
 //        ResponseWrapper rw = ResponseWrapper.createWrapper(LotDistributeResponse.class);
@@ -307,8 +325,8 @@ public class LotGroupageService {
                 lg.average_yield,
                 lg.no_of_dfls,
                 lg.invoice_number,
-                (l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / ma.dfl_lot_number AS calculatedAverageYield,
-                lg.remaining_cocoon,
+                ROUND((l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / ma.dfl_lot_number, 2) AS calculatedAverageYield,
+                ROUND(lg.remaining_cocoon, 2) AS remaining_cocoon,
                 SUM(lg.lot_weight) OVER (PARTITION BY l.lot_id) AS soldCocoonInKgs,
                  l.LOT_WEIGHT_AFTER_WEIGHMENT,
                 CASE
@@ -607,7 +625,41 @@ public class LotGroupageService {
                 lotGroupage.setMarketFee(marketFee.longValue());
             }
 
-            // Save updated or new lotGroupage
+//            // Save updated or new lotGroupage
+//            lotGroupage = lotGroupageRepository.save(lotGroupage);
+//
+//            // Map the saved lotGroupage to the response object
+//            LotGroupageResponse singleResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+//            singleResponse.setError(false);
+//            responses.add(singleResponse);  // Collect each response
+//        }
+//
+//        return responses; // Return the list of responses
+//    }
+
+            lotGroupage.setIsDisposed(1);
+
+            Float remainingCocoon = lotGroupageRequestEdit.getRemainingCocoonWeight();
+
+            // Fetch disposal entry
+            SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
+                    .findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
+                            lotGroupageRequestEdit.getFruitsId(),
+                            lotGroupageRequestEdit.getLotParentLevel(),
+                            lotGroupageRequestEdit.getDflLotNumber(),
+                            1,
+                            true
+                    );
+
+            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0
+            if (remainingCocoon == null || remainingCocoon == 0) {
+                if (disposalEntry != null) {
+                    disposalEntry.setIsDisposed(1);
+                    saleAndDisposalOfDflsRepository.save(disposalEntry);
+                }
+            }
+
+            // Save LotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);
 
             // Map the saved lotGroupage to the response object
