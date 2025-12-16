@@ -357,7 +357,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                 l.status,
                 SUM(lg.lot_weight) AS total_lot_weight,
                 lg.amount,
-                lg.market_fee,
+                SUM(CAST(ISNULL(lg.market_fee, 0) AS FLOAT)) AS total_market_fee,
                 SUM(CAST(ISNULL(lg.sold_amount, 0) AS FLOAT)) AS total_sold_amount,
                 MAX(CAST(ma.dfl_lot_number AS FLOAT)) AS dfl_lot_number,
                 ma.lot_variety,
