@@ -194,12 +194,15 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     case "Reeling":
                         // For Reeling, you can either skip the fee calculation or handle it differently
                         if (soldAmount != null) {
-                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+//                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
+
                         } else {
                             marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
                         }
@@ -605,7 +608,8 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
 //                    case "Reeling":
 //                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
@@ -613,7 +617,8 @@ public class LotGroupageService {
                     case "Reeling":
                         // For Reeling, you can either skip the fee calculation or handle it differently
                         if (soldAmount != null) {
-                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+//                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
                         } else {
                             marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
                         }
