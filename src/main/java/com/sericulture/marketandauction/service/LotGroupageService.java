@@ -342,42 +342,71 @@ public class LotGroupageService {
                     WHEN lg.buyer_type = 'Reeling' THEN r.name
                     ELSE NULL
                 END AS buyer_name
-            FROM
-                FARMER f
-            INNER JOIN
-                market_auction ma ON ma.farmer_id = f.FARMER_ID
-            INNER JOIN
-                lot l ON l.market_auction_id = ma.market_auction_id
-            LEFT JOIN
-                PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
-            LEFT JOIN
-                Village v ON pa.VILLAGE_ID = v.village_id AND f.ACTIVE = 1
-            LEFT JOIN
-                market_master mm ON mm.market_master_id = ma.market_id
-            LEFT JOIN
-                race_master rm ON rm.race_id = ma.lot_variety
-            LEFT JOIN
-                source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
-            LEFT JOIN
-                lot_groupage lg ON l.lot_id = lg.lot_id
-            LEFT JOIN
-                PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
-            LEFT JOIN LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id
-                 AND lbpf.FIXATION_DATE = CAST(GETDATE() AS DATE)
-            LEFT JOIN
-                reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
-                LEFT JOIN
-             external_unit_registration es ON lg.external_unit_id = es.external_unit_registration_id
-             AND lg.buyer_type IN ('RSP', 'NSSO')
-           LEFT JOIN
-             grainage_master gm ON lg.external_unit_id = gm.grainage_master_id AND lg.buyer_type = 'Govt Grainage'
-            WHERE
-                l.allotted_lot_id = ?
-                AND l.auction_date = ?
-                AND l.market_id = ?
-                AND f.ACTIVE = 1
-                AND ma.active = 1
-                AND l.status = 'weighmentcompleted';
+                FROM FARMER f
+                    INNER JOIN market_auction ma
+                        ON ma.farmer_id = f.FARMER_ID
+                       AND ma.ACTIVE = 1
+        
+                    INNER JOIN lot l
+                        ON l.market_auction_id = ma.market_auction_id
+                       AND l.ACTIVE = 1
+        
+                    LEFT JOIN PrimaryAddress pa
+                        ON pa.farmer_id = f.FARMER_ID
+                       AND pa.rn = 1
+        
+                    LEFT JOIN Village v
+                        ON pa.VILLAGE_ID = v.village_id
+                       AND v.ACTIVE = 1
+        
+                    LEFT JOIN market_master mm
+                        ON mm.market_master_id = ma.market_id
+                       AND mm.ACTIVE = 1
+        
+                    LEFT JOIN race_master rm
+                        ON rm.race_id = ma.lot_variety
+                       AND rm.ACTIVE = 1
+        
+                    LEFT JOIN source_master sm
+                        ON sm.source_id = ma.SOURCE_MASTER_ID
+                       AND sm.ACTIVE = 1
+        
+                    LEFT JOIN lot_groupage lg
+                        ON l.lot_id = lg.lot_id
+                       AND lg.ACTIVE = 1
+        
+                    LEFT JOIN PUPA_TEST_AND_COCOON_ASSESSMENT ptaca
+                        ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id
+                       AND ptaca.ACTIVE = 1
+        
+                    LEFT JOIN LOT_BASE_PRICE_FIXATION lbpf
+                        ON lbpf.MARKET_ID = ma.market_id
+                       AND lbpf.allotted_lot_id = l.allotted_lot_id
+                       AND lbpf.FIXATION_DATE = CAST(GETDATE() AS DATE)
+                       AND lbpf.ACTIVE = 1
+        
+                    LEFT JOIN reeler r
+                        ON lg.buyer_id = r.reeler_id
+                       AND lg.buyer_type = 'Reeling'
+                       AND r.ACTIVE = 1
+        
+                    LEFT JOIN external_unit_registration es
+                        ON lg.external_unit_id = es.external_unit_registration_id
+                       AND lg.buyer_type IN ('RSP', 'NSSO')
+                       AND es.ACTIVE = 1
+        
+                    LEFT JOIN grainage_master gm
+                        ON lg.external_unit_id = gm.grainage_master_id
+                       AND lg.buyer_type = 'Govt Grainage'
+                       AND gm.ACTIVE = 1
+        
+                    WHERE f.ACTIVE = 1
+                        AND l.allotted_lot_id = ?
+                        AND l.auction_date = ?
+                        AND l.market_id = ?
+                        AND f.ACTIVE = 1
+                        AND ma.active = 1
+                        AND l.status = 'weighmentcompleted';
             """);
 
         nativeQuery.setParameter(1, lotStatusRequest.getAllottedLotId());

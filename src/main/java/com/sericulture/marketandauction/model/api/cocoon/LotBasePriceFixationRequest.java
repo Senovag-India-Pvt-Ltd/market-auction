@@ -10,6 +10,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class LotBasePriceFixationRequest {
+    private int allottedLotId;
     private int marketId;
     private int pricePerKg;
+    private String priceType;
 }
