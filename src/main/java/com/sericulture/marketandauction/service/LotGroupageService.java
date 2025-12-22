@@ -304,10 +304,13 @@ public class LotGroupageService {
                 lg.amount,
                 lg.market_fee,
                 lg.sold_amount,
-                CASE
-                    WHEN lg.lot_groupage_id IS NOT NULL THEN lg.remaining_cocoon
-                    ELSE l.LOT_WEIGHT_AFTER_WEIGHMENT
-                END AS weight_to_show,
+                ROUND(
+                     CASE
+                         WHEN lg.lot_groupage_id IS NOT NULL THEN lg.remaining_cocoon
+                         ELSE l.LOT_WEIGHT_AFTER_WEIGHMENT
+                     END,
+                     2
+                 ) AS weight_to_show,
                 ma.dfl_lot_number,
                 ma.lot_variety,
                 ma.lot_Parental_Level,
@@ -331,7 +334,7 @@ public class LotGroupageService {
                 ROUND((l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / ma.dfl_lot_number, 2) AS calculatedAverageYield,
                 ROUND(lg.remaining_cocoon, 2) AS remaining_cocoon,
                 SUM(lg.lot_weight) OVER (PARTITION BY l.lot_id) AS soldCocoonInKgs,
-                 l.LOT_WEIGHT_AFTER_WEIGHMENT,
+                ROUND(l.LOT_WEIGHT_AFTER_WEIGHMENT, 2) AS LOT_WEIGHT_AFTER_WEIGHMENT,
                 CASE
                     WHEN lg.buyer_type = 'RSP' THEN es.license_number
                     WHEN lg.buyer_type = 'NSSO' THEN es.address
