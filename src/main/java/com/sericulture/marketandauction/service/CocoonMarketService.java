@@ -229,15 +229,22 @@ public class CocoonMarketService {
 
 
     public ResponseEntity<?> getPrices() {
+
         JwtPayloadData jwtPayloadData = Util.getTokenValues();
         int marketId = Util.getMarketId(jwtPayloadData);
+
+        // ✅ Get today’s date (IST)
+        LocalDate fixationDate = Util.getISTLocalDate();
+        // or: LocalDate.now(ZoneId.of("Asia/Kolkata"));
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
         List<LotBasePriceFixation> lotBasePriceFixationList =
                 lotBasePriceFixationRepository
-                        .findByMarketIdAndPriceTypeAndActiveOrderByIdDesc(
-                                marketId, "Lot Wise Price",
+                        .findByMarketIdAndPriceTypeAndFixationDateAndActiveOrderByIdDesc(
+                                marketId,
+                                "Lot Wise Price",
+                                fixationDate,
                                 true
                         );
 
@@ -245,7 +252,8 @@ public class CocoonMarketService {
         for (LotBasePriceFixation entity : lotBasePriceFixationList) {
             responseList.add(
                     mapper.lotBasePriceFixationEntityToObject(
-                            entity, LotBasePriceFixationResponse.class
+                            entity,
+                            LotBasePriceFixationResponse.class
                     )
             );
         }
@@ -253,6 +261,7 @@ public class CocoonMarketService {
         rw.setContent(responseList);
         return ResponseEntity.ok(rw);
     }
+
 
 
 //    public ResponseEntity<?> savePupaTestAndCocoonAssessmentResult(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest){

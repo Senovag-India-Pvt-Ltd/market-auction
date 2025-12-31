@@ -13,6 +13,14 @@ public interface LotBasePriceFixationRepository extends PagingAndSortingReposito
     public LotBasePriceFixation findByIdAndActive(long id,boolean isActive);
     List<LotBasePriceFixation> findTop10ByMarketIdAndPriceTypeAndActiveOrderByIdDesc(int marketId,String priceType,boolean isActive);
     List<LotBasePriceFixation> findByMarketIdAndPriceTypeAndActiveOrderByIdDesc(int marketId,String priceType,boolean isActive);
+    List<LotBasePriceFixation>
+    findByMarketIdAndPriceTypeAndFixationDateAndActiveOrderByIdDesc(
+            int marketId,
+            String priceType,
+            LocalDate fixationDate,
+            boolean active
+    );
+
     public LotBasePriceFixation findByMarketIdAndFixationDateAndPriceTypeAndActive(int id, LocalDate fixationDate,String priceType,boolean isActive);
 
     public LotBasePriceFixation findByMarketIdAndFixationDateAndAllottedLotIdAndPriceTypeAndActive(int id, LocalDate fixationDate,int allottedLotId ,String priceType,boolean isActive);
