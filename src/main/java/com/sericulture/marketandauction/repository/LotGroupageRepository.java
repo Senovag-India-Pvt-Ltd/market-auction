@@ -209,7 +209,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
             SELECT
                 f.farmer_number,
                 f.fruits_id,
-                (ISNULL(f.first_name, '') + ' ' +ISNULL(f.middle_name, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
+                (ISNULL(f.name_kan, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
                 ) AS farmer_full_name,
                 ma.RACE_MASTER_ID,
                 v.village_name_in_kannada,
