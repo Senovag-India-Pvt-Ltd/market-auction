@@ -1093,4 +1093,34 @@ public class LotGroupageService {
     }
 
 
+    public List<LotDistributeResponse> getLotDisposalDetails(String fruitsId) {
+
+        List<Object[]> list = lotGroupageRepository.getLotDisposalDetails(fruitsId);
+
+        List<LotDistributeResponse> responses = new ArrayList<>();
+        int serial = 1;
+
+        for (Object[] obj : list) {
+
+            LotDistributeResponse response = LotDistributeResponse.builder()
+                    .serialNumber(serial++)
+                    .lotNumber(Util.objectToString(obj[0]))
+                    .numberOfDflsDisposed(Util.objectToLong(obj[1]))
+                    .spunDate(Util.objectToString(obj[2]))
+                    .noOfChandies(Util.objectToLong(obj[3]))
+                    .expectedCocoon(Util.objectToLong(obj[4]))
+                    .farmerNameKan(Util.objectToString(obj[5]))
+                    .fatherNameKan(Util.objectToString(obj[6]))
+                    .villageName(Util.objectToString(obj[7]))
+                    .fitnessCertificateId(Util.objectToLong(obj[8]))
+                    .tscName(Util.objectToString(obj[9]))
+                    .build();
+
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
+
 }

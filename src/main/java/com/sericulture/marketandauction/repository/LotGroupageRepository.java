@@ -659,4 +659,61 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
     List<Object[]> getReelingLotNumberDetails(@Param("marketId") Integer marketId);
 
 
+    @Query(nativeQuery = true, value = """
+    WITH PrimaryAddress AS (
+        SELECT
+            fa.farmer_id,
+            fa.VILLAGE_ID,
+            ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.farmer_address_id DESC) AS rn
+        FROM farmer_address fa
+        WHERE fa.active = 1
+    )
+
+    SELECT 
+        a.lot_number,
+        a.number_of_dfls_disposed,
+        b.spun_date,
+        b.no_of_chandies,
+        b.expected_cocoon,
+        c.name_kan,
+        c.father_name_kan,
+        e.village_name_in_kannada,
+        b.fitness_certificate_id,
+        t.name AS tsc_name
+
+    FROM sale_and_disposal_of_dfls a
+
+    INNER JOIN fitness_certificate b 
+        ON a.id = b.sale_and_disposal_id
+        AND a.fruits_id = b.fruits_id
+        AND b.active = 1
+
+    INNER JOIN FARMER c 
+        ON b.farmer_id = c.FARMER_ID
+        AND a.fruits_id = c.fruits_id
+        AND c.active = 1
+
+    INNER JOIN PrimaryAddress d 
+        ON c.FARMER_ID = d.farmer_id
+        AND d.rn = 1
+
+    INNER JOIN VILLAGE e 
+        ON d.VILLAGE_ID = e.VILLAGE_ID
+        AND e.active = 1
+
+    LEFT JOIN user_master u 
+        ON u.username = b.created_by
+        AND u.active = 1
+
+    LEFT JOIN tsc_master t 
+        ON t.tsc_master_id = u.tsc_master_id
+        AND t.active = 1
+
+    WHERE 
+        a.active = 1
+        AND b.fruits_id = :fruitsId
+""")
+    List<Object[]> getLotDisposalDetails(@Param("fruitsId") String fruitsId);
+
+
 }
