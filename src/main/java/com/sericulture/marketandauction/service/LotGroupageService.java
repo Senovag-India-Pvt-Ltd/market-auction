@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.*;
 
@@ -193,12 +194,15 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
+//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
                         marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     case "Reeling":
                         // For Reeling, you can either skip the fee calculation or handle it differently
                         if (soldAmount != null) {
+//                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
                             marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
+
                         } else {
                             marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
                         }
@@ -209,25 +213,42 @@ public class LotGroupageService {
 
                 lotGroupage.setMarketFee(marketFee.longValue());
             }
+            // Always set isDisposed = 1 in LotGroupage
+            lotGroupage.setIsDisposed(1);
 
-            // 👉 Update isDisposed = 1 for corresponding farmerId and lotNumber
+            Float remainingCocoon = lotGroupageRequest.getRemainingCocoonWeight();
+
+            // Fetch disposal entry
             SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
-                    .findByFruitsIdAndLotNumberAndActive(lotGroupageRequest.getFruitsId(), lotGroupageRequest.getLotParentLevel(),true);
+                    .findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
+                            lotGroupageRequest.getFruitsId(),
+                            lotGroupageRequest.getLotParentLevel(),
+                            lotGroupageRequest.getDflLotNumber(),
+                            1,
+                            true
+                    );
 
-            if (disposalEntry != null) {
-                disposalEntry.setIsDisposed(1);
-                saleAndDisposalOfDflsRepository.save(disposalEntry);
+            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0
+            if (remainingCocoon == null || remainingCocoon == 0) {
+                if (disposalEntry != null) {
+                    disposalEntry.setIsDisposed(1);
+                    saleAndDisposalOfDflsRepository.save(disposalEntry);
+                }
             }
 
+            // Save LotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);
-            LotGroupageResponse lotGroupageResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+
+            // Prepare Response
+            LotGroupageResponse lotGroupageResponse =
+                    mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+
             lotGroupageResponse.setError(false);
-            responses.add(lotGroupageResponse); // Collect all responses
+            responses.add(lotGroupageResponse);
         }
 
         return responses;
     }
-
 
     //    public ResponseEntity<?> getLotDistributeDetailsByLotAndMarketAndAuctionDateForSeedMarket(LotStatusSeedMarketRequest lotStatusRequest) {
 //        ResponseWrapper rw = ResponseWrapper.createWrapper(LotDistributeResponse.class);
@@ -283,10 +304,13 @@ public class LotGroupageService {
                 lg.amount,
                 lg.market_fee,
                 lg.sold_amount,
-                CASE
-                    WHEN lg.lot_groupage_id IS NOT NULL THEN lg.remaining_cocoon
-                    ELSE l.LOT_WEIGHT_AFTER_WEIGHMENT
-                END AS weight_to_show,
+                ROUND(
+                     CASE
+                         WHEN lg.lot_groupage_id IS NOT NULL THEN lg.remaining_cocoon
+                         ELSE l.LOT_WEIGHT_AFTER_WEIGHMENT
+                     END,
+                     2
+                 ) AS weight_to_show,
                 ma.dfl_lot_number,
                 ma.lot_variety,
                 ma.lot_Parental_Level,
@@ -307,16 +331,10 @@ public class LotGroupageService {
                 lg.average_yield,
                 lg.no_of_dfls,
                 lg.invoice_number,
-                (l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / ma.dfl_lot_number AS calculatedAverageYield,
-                lg.remaining_cocoon,
-                (SELECT COALESCE(SUM(lg_inner.lot_weight), 0)
-                  FROM lot_groupage lg_inner
-                  INNER JOIN lot l_inner ON lg_inner.lot_id = l_inner.lot_id
-                  WHERE lg_inner.allotted_lot_id = l.allotted_lot_id
-                    AND l_inner.auction_date = l.auction_date
-                    AND lg_inner.lot_weight > 0
-                 ) AS soldCocoonInKgs,
-                 l.LOT_WEIGHT_AFTER_WEIGHMENT,
+                ROUND((l.LOT_WEIGHT_AFTER_WEIGHMENT * 100) / ma.dfl_lot_number, 2) AS calculatedAverageYield,
+                ROUND(lg.remaining_cocoon, 2) AS remaining_cocoon,
+                SUM(lg.lot_weight) OVER (PARTITION BY l.lot_id) AS soldCocoonInKgs,
+                ROUND(l.LOT_WEIGHT_AFTER_WEIGHMENT, 2) AS LOT_WEIGHT_AFTER_WEIGHMENT,
                 CASE
                     WHEN lg.buyer_type = 'RSP' THEN es.license_number
                     WHEN lg.buyer_type = 'NSSO' THEN es.address
@@ -324,42 +342,71 @@ public class LotGroupageService {
                     WHEN lg.buyer_type = 'Reeling' THEN r.name
                     ELSE NULL
                 END AS buyer_name
-            FROM
-                FARMER f
-            INNER JOIN
-                market_auction ma ON ma.farmer_id = f.FARMER_ID
-            INNER JOIN
-                lot l ON l.market_auction_id = ma.market_auction_id
-            LEFT JOIN
-                PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
-            LEFT JOIN
-                Village v ON pa.VILLAGE_ID = v.village_id AND f.ACTIVE = 1
-            LEFT JOIN
-                market_master mm ON mm.market_master_id = ma.market_id
-            LEFT JOIN
-                race_master rm ON rm.race_id = ma.lot_variety
-            LEFT JOIN
-                source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
-            LEFT JOIN
-                lot_groupage lg ON l.lot_id = lg.lot_id
-            LEFT JOIN
-                PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
-            LEFT JOIN LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id
-                 AND lbpf.FIXATION_DATE = CAST(GETDATE() AS DATE)
-            LEFT JOIN
-                reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
-                LEFT JOIN
-             external_unit_registration es ON lg.external_unit_id = es.external_unit_registration_id
-             AND lg.buyer_type IN ('RSP', 'NSSO')
-           LEFT JOIN
-             grainage_master gm ON lg.external_unit_id = gm.grainage_master_id AND lg.buyer_type = 'Govt Grainage'
-            WHERE
-                l.allotted_lot_id = ?
-                AND l.auction_date = ?
-                AND l.market_id = ?
-                AND f.ACTIVE = 1
-                AND ma.active = 1
-                AND l.status = 'weighmentcompleted';
+                FROM FARMER f
+                    INNER JOIN market_auction ma
+                        ON ma.farmer_id = f.FARMER_ID
+                       AND ma.ACTIVE = 1
+        
+                    INNER JOIN lot l
+                        ON l.market_auction_id = ma.market_auction_id
+                       AND l.ACTIVE = 1
+        
+                    LEFT JOIN PrimaryAddress pa
+                        ON pa.farmer_id = f.FARMER_ID
+                       AND pa.rn = 1
+        
+                    LEFT JOIN Village v
+                        ON pa.VILLAGE_ID = v.village_id
+                       AND v.ACTIVE = 1
+        
+                    LEFT JOIN market_master mm
+                        ON mm.market_master_id = ma.market_id
+                       AND mm.ACTIVE = 1
+        
+                    LEFT JOIN race_master rm
+                        ON rm.race_id = ma.lot_variety
+                       AND rm.ACTIVE = 1
+        
+                    LEFT JOIN source_master sm
+                        ON sm.source_id = ma.SOURCE_MASTER_ID
+                       AND sm.ACTIVE = 1
+        
+                    LEFT JOIN lot_groupage lg
+                        ON l.lot_id = lg.lot_id
+                       AND lg.ACTIVE = 1
+        
+                    LEFT JOIN PUPA_TEST_AND_COCOON_ASSESSMENT ptaca
+                        ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id
+                       AND ptaca.ACTIVE = 1
+        
+                    LEFT JOIN LOT_BASE_PRICE_FIXATION lbpf
+                        ON lbpf.MARKET_ID = ma.market_id
+                       AND lbpf.allotted_lot_id = l.allotted_lot_id
+                       AND lbpf.FIXATION_DATE = CAST(GETDATE() AS DATE)
+                       AND lbpf.ACTIVE = 1
+        
+                    LEFT JOIN reeler r
+                        ON lg.buyer_id = r.reeler_id
+                       AND lg.buyer_type = 'Reeling'
+                       AND r.ACTIVE = 1
+        
+                    LEFT JOIN external_unit_registration es
+                        ON lg.external_unit_id = es.external_unit_registration_id
+                       AND lg.buyer_type IN ('RSP', 'NSSO')
+                       AND es.ACTIVE = 1
+        
+                    LEFT JOIN grainage_master gm
+                        ON lg.external_unit_id = gm.grainage_master_id
+                       AND lg.buyer_type = 'Govt Grainage'
+                       AND gm.ACTIVE = 1
+        
+                    WHERE f.ACTIVE = 1
+                        AND l.allotted_lot_id = ?
+                        AND l.auction_date = ?
+                        AND l.market_id = ?
+                        AND f.ACTIVE = 1
+                        AND ma.active = 1
+                        AND l.status = 'weighmentcompleted';
             """);
 
         nativeQuery.setParameter(1, lotStatusRequest.getAllottedLotId());
@@ -593,7 +640,8 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
 //                    case "Reeling":
 //                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
@@ -601,7 +649,8 @@ public class LotGroupageService {
                     case "Reeling":
                         // For Reeling, you can either skip the fee calculation or handle it differently
                         if (soldAmount != null) {
-                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+//                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
                         } else {
                             marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
                         }
@@ -613,7 +662,41 @@ public class LotGroupageService {
                 lotGroupage.setMarketFee(marketFee.longValue());
             }
 
-            // Save updated or new lotGroupage
+//            // Save updated or new lotGroupage
+//            lotGroupage = lotGroupageRepository.save(lotGroupage);
+//
+//            // Map the saved lotGroupage to the response object
+//            LotGroupageResponse singleResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+//            singleResponse.setError(false);
+//            responses.add(singleResponse);  // Collect each response
+//        }
+//
+//        return responses; // Return the list of responses
+//    }
+
+            lotGroupage.setIsDisposed(1);
+
+            Float remainingCocoon = lotGroupageRequestEdit.getRemainingCocoonWeight();
+
+            // Fetch disposal entry
+            SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
+                    .findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
+                            lotGroupageRequestEdit.getFruitsId(),
+                            lotGroupageRequestEdit.getLotParentLevel(),
+                            lotGroupageRequestEdit.getDflLotNumber(),
+                            1,
+                            true
+                    );
+
+            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0
+            if (remainingCocoon == null || remainingCocoon == 0) {
+                if (disposalEntry != null) {
+                    disposalEntry.setIsDisposed(1);
+                    saleAndDisposalOfDflsRepository.save(disposalEntry);
+                }
+            }
+
+            // Save LotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);
 
             // Map the saved lotGroupage to the response object
@@ -1007,6 +1090,36 @@ public class LotGroupageService {
                     .build();
             lotDistributeResponseList.add(lotDistributeResponse);
         }
+    }
+
+
+    public List<LotDistributeResponse> getLotDisposalDetails(String fruitsId) {
+
+        List<Object[]> list = lotGroupageRepository.getLotDisposalDetails(fruitsId);
+
+        List<LotDistributeResponse> responses = new ArrayList<>();
+        int serial = 1;
+
+        for (Object[] obj : list) {
+
+            LotDistributeResponse response = LotDistributeResponse.builder()
+                    .serialNumber(serial++)
+                    .lotNumber(Util.objectToString(obj[0]))
+                    .numberOfDflsDisposed(Util.objectToLong(obj[1]))
+                    .spunDate(Util.objectToString(obj[2]))
+                    .noOfChandies(Util.objectToLong(obj[3]))
+                    .expectedCocoon(Util.objectToLong(obj[4]))
+                    .farmerNameKan(Util.objectToString(obj[5]))
+                    .fatherNameKan(Util.objectToString(obj[6]))
+                    .villageName(Util.objectToString(obj[7]))
+                    .fitnessCertificateId(Util.objectToLong(obj[8]))
+                    .tscName(Util.objectToString(obj[9]))
+                    .build();
+
+            responses.add(response);
+        }
+
+        return responses;
     }
 
 

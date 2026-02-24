@@ -6,10 +6,7 @@ import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.RequestBody;
 import com.sericulture.marketandauction.model.api.cocoon.*;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerPaymentInfoResponse;
-import com.sericulture.marketandauction.model.api.marketauction.FarmerReadyForPaymentResponse;
-import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
-import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionResponse;
+import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.LotBasePriceFixation;
 import com.sericulture.marketandauction.model.entity.MarketAuction;
@@ -32,6 +29,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -172,7 +170,7 @@ public class CocoonMarketService {
 
     public ResponseEntity<?> saveLotBasePriceFixation(LotBasePriceFixationRequest lotBasePriceFixationRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
-        LotBasePriceFixation lotBasePriceFixation = lotBasePriceFixationRepository.findByMarketIdAndFixationDate(lotBasePriceFixationRequest.getMarketId(),Util.getISTLocalDate());
+        LotBasePriceFixation lotBasePriceFixation = lotBasePriceFixationRepository.findByMarketIdAndFixationDateAndPriceTypeAndActive(lotBasePriceFixationRequest.getMarketId(),Util.getISTLocalDate(),"Base Price",true);
         if(lotBasePriceFixation!=null){
             rw.setErrorCode(-1);
             rw.setContent("Already price exists first deactivate this and then enter new price");
@@ -181,22 +179,90 @@ public class CocoonMarketService {
         }
         lotBasePriceFixation = mapper.lotBasePriceFixationObjectToEntity(lotBasePriceFixationRequest,LotBasePriceFixation.class);
         lotBasePriceFixation.setFixationDate(Util.getISTLocalDate());
+        lotBasePriceFixation.setPriceType("Base Price");
         lotBasePriceFixationRepository.save(lotBasePriceFixation);
         return ResponseEntity.ok(rw);
     }
 
-    public ResponseEntity<?> getLast10DaysPrices(){
-        JwtPayloadData jwtPayloadData = Util.getTokenValues();
-        int marketId = Util.getMarketId(jwtPayloadData);
-        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        List<LotBasePriceFixation> lotBasePriceFixationList = lotBasePriceFixationRepository.findTop10ByMarketIdOrderByIdDesc(marketId);
-        List<LotBasePriceFixationResponse> lotBasePriceFixationResponseList = new ArrayList<>();
-        for(LotBasePriceFixation lotBasePriceFixation:lotBasePriceFixationList){
-            lotBasePriceFixationResponseList.add(mapper.lotBasePriceFixationEntityToObject(lotBasePriceFixation, LotBasePriceFixationResponse.class));
+    public ResponseEntity<?> saveLotWiseBasePriceKGLot(LotBasePriceFixationRequest lotBasePriceFixationRequest){
+        ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
+        LotBasePriceFixation lotBasePriceFixation = lotBasePriceFixationRepository.findByMarketIdAndFixationDateAndAllottedLotIdAndPriceTypeAndActive(lotBasePriceFixationRequest.getMarketId(),Util.getISTLocalDate(),lotBasePriceFixationRequest.getAllottedLotId(),"Lot Wise Price",true);
+        if(lotBasePriceFixation!=null){
+            rw.setErrorCode(-1);
+            rw.setContent("Already price exists first deactivate this and then enter new price");
+            return ResponseEntity.ok(rw);
+
         }
-        rw.setContent(lotBasePriceFixationResponseList);
+        lotBasePriceFixation = mapper.lotBasePriceFixationObjectToEntity(lotBasePriceFixationRequest,LotBasePriceFixation.class);
+        lotBasePriceFixation.setFixationDate(Util.getISTLocalDate());
+        lotBasePriceFixation.setPriceType("Lot Wise Price");
+        lotBasePriceFixationRepository.save(lotBasePriceFixation);
         return ResponseEntity.ok(rw);
     }
+
+    public ResponseEntity<?> getLast10DaysPrices() {
+        JwtPayloadData jwtPayloadData = Util.getTokenValues();
+        int marketId = Util.getMarketId(jwtPayloadData);
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<LotBasePriceFixation> lotBasePriceFixationList =
+                lotBasePriceFixationRepository
+                        .findTop10ByMarketIdAndPriceTypeAndActiveOrderByIdDesc(
+                                marketId, "Base Price",
+                                true
+
+                        );
+
+        List<LotBasePriceFixationResponse> responseList = new ArrayList<>();
+        for (LotBasePriceFixation entity : lotBasePriceFixationList) {
+            responseList.add(
+                    mapper.lotBasePriceFixationEntityToObject(
+                            entity, LotBasePriceFixationResponse.class
+                    )
+            );
+        }
+
+        rw.setContent(responseList);
+        return ResponseEntity.ok(rw);
+    }
+
+
+    public ResponseEntity<?> getPrices() {
+
+        JwtPayloadData jwtPayloadData = Util.getTokenValues();
+        int marketId = Util.getMarketId(jwtPayloadData);
+
+        // ✅ Get today’s date (IST)
+        LocalDate fixationDate = Util.getISTLocalDate();
+        // or: LocalDate.now(ZoneId.of("Asia/Kolkata"));
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<LotBasePriceFixation> lotBasePriceFixationList =
+                lotBasePriceFixationRepository
+                        .findByMarketIdAndPriceTypeAndFixationDateAndActiveOrderByIdDesc(
+                                marketId,
+                                "Lot Wise Price",
+                                fixationDate,
+                                true
+                        );
+
+        List<LotBasePriceFixationResponse> responseList = new ArrayList<>();
+        for (LotBasePriceFixation entity : lotBasePriceFixationList) {
+            responseList.add(
+                    mapper.lotBasePriceFixationEntityToObject(
+                            entity,
+                            LotBasePriceFixationResponse.class
+                    )
+            );
+        }
+
+        rw.setContent(responseList);
+        return ResponseEntity.ok(rw);
+    }
+
+
 
 //    public ResponseEntity<?> savePupaTestAndCocoonAssessmentResult(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest){
 //        ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
@@ -354,6 +420,69 @@ public class CocoonMarketService {
 
         return responses;
     }
+
+    @Transactional
+    public LotBasePriceFixationResponse deleteDetails(long id) {
+
+        LotBasePriceFixationResponse response = new LotBasePriceFixationResponse();
+
+        LotBasePriceFixation entity =
+                lotBasePriceFixationRepository.findByIdAndActive(id, true);
+
+        if (entity != null) {
+            entity.setActive(false);
+            LotBasePriceFixation saved =
+                    lotBasePriceFixationRepository.save(entity);
+
+            response = mapper.lotBasePriceFixationEntityToObject(
+                    saved, LotBasePriceFixationResponse.class
+            );
+            response.setError(false);
+
+        } else {
+            response.setError(true);
+            response.setError_description("Invalid Id");
+        }
+
+        return response;
+    }
+
+    public LotBasePriceFixationResponse getById(long id) {
+
+        LotBasePriceFixationResponse response = new LotBasePriceFixationResponse();
+
+        LotBasePriceFixation entity =
+                lotBasePriceFixationRepository.findByIdAndActive(id, true);
+
+        if (entity == null) {
+            response.setError(true);
+            response.setError_description("Invalid id");
+        } else {
+            response = mapper.lotBasePriceFixationEntityToObject(
+                    entity, LotBasePriceFixationResponse.class
+            );
+            response.setError(false);
+        }
+
+        return response;
+    }
+
+    public List<Integer> getAllottedLotIdsForPrice() {
+
+        // Get values from JWT
+        JwtPayloadData jwtPayloadData = Util.getTokenValues();
+        int marketId = Util.getMarketId(jwtPayloadData);
+
+        // Get today's date (IST)
+        LocalDate auctionDate = Util.getISTLocalDate();
+
+        return lotBasePriceFixationRepository.getAllottedLotIdsForPrice(
+                auctionDate,
+                marketId
+        );
+    }
+
+
 
 
 }

@@ -24,7 +24,11 @@ public class LotBasePriceFixation extends BaseEntity{
 
     private int marketId;
 
+    private int allottedLotId;
+
     private LocalDate fixationDate;
 
     private int pricePerKg;
+
+    private String priceType;
 }

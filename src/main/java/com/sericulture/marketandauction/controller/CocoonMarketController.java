@@ -2,16 +2,16 @@ package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
-import com.sericulture.marketandauction.model.api.cocoon.LotBasePriceFixationRequest;
-import com.sericulture.marketandauction.model.api.cocoon.PupaTestAndCocoonAssessmentRequest;
-import com.sericulture.marketandauction.model.api.cocoon.PupaTestResultFinderRequest;
-import com.sericulture.marketandauction.model.api.cocoon.SeedMarketAuctionDetailsResponse;
+import com.sericulture.marketandauction.model.api.cocoon.*;
 import com.sericulture.marketandauction.model.api.marketauction.LotGroupageDetailsRequest;
 import com.sericulture.marketandauction.model.api.marketauction.LotGroupageResponse;
+import com.sericulture.marketandauction.model.api.marketauction.LotStatusSeedMarketRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionRequest;
 import com.sericulture.marketandauction.model.entity.LotBasePriceFixation;
 import com.sericulture.marketandauction.model.entity.PupaTestAndCocoonAssessment;
 import com.sericulture.marketandauction.service.CocoonMarketService;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -38,9 +38,19 @@ public class CocoonMarketController {
         return cocoonMarketService.saveLotBasePriceFixation(lotBasePriceFixationRequest);
     }
 
+    @PostMapping("/saveLotWiseBasePriceKGLot")
+    public ResponseEntity<?> saveLotWiseBasePriceKGLot(@RequestBody LotBasePriceFixationRequest lotBasePriceFixationRequest){
+        return cocoonMarketService.saveLotWiseBasePriceKGLot(lotBasePriceFixationRequest);
+    }
+
     @GetMapping("/getLast10daysBasePrice")
     public ResponseEntity<?> getLast10daysBasePrice(){
         return cocoonMarketService.getLast10DaysPrices();
+    }
+
+    @GetMapping("/getPrices")
+    public ResponseEntity<?> getPrices(){
+        return cocoonMarketService.getPrices();
     }
 
     @PostMapping("/savePupaTestAndCocoonAssessmentResult")
@@ -81,6 +91,35 @@ public class CocoonMarketController {
     public List<SeedMarketAuctionDetailsResponse> getFinalWeighmentList() {
         return cocoonMarketService.getFinalWeighmentList(Util.getMarketId(Util.getTokenValues()));
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        ResponseWrapper<LotBasePriceFixationResponse> rw =
+                ResponseWrapper.createWrapper(LotBasePriceFixationResponse.class);
+
+        rw.setContent(cocoonMarketService.deleteDetails(id));
+        return ResponseEntity.ok(rw);
+    }
+
+    @GetMapping("/get/{id}")
+    public ResponseEntity<?> getById(
+            @PathVariable final Integer id
+    ) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(LotBasePriceFixationResponse.class);
+
+        rw.setContent(cocoonMarketService.getById(id));
+        return ResponseEntity.ok(rw);
+    }
+
+    @PostMapping("/getAllottedLotIdsForPrice")
+    public ResponseEntity<?> getAllottedLotIdsForPrice() {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(Integer.class);
+        rw.setContent(cocoonMarketService.getAllottedLotIdsForPrice());
+
+        return ResponseEntity.ok(rw);
+    }
+
 
 
 }

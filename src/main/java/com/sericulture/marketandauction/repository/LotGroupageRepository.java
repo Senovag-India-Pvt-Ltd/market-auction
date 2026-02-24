@@ -69,12 +69,12 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
             SELECT
                 f.farmer_number,
                 f.fruits_id,
-                (ISNULL(f.first_name, '') + ' ' +ISNULL(f.middle_name, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
+                (ISNULL(f.name_kan, '') + ' ' +ISNULL(f.middle_name, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
                 ) AS farmer_full_name,
                 ma.RACE_MASTER_ID,
                 v.village_name_in_kannada,
                 mm.market_name_in_kannada,
-                rm.race_name,
+                rm.race_name_in_kannada,
                 sm.source_name,
                 mm.box_weight,
                 l.status,
@@ -209,7 +209,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
             SELECT
                 f.farmer_number,
                 f.fruits_id,
-                (ISNULL(f.first_name, '') + ' ' +ISNULL(f.middle_name, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
+                (ISNULL(f.name_kan, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
                 ) AS farmer_full_name,
                 ma.RACE_MASTER_ID,
                 v.village_name_in_kannada,
@@ -357,7 +357,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                 l.status,
                 SUM(lg.lot_weight) AS total_lot_weight,
                 lg.amount,
-                lg.market_fee,
+                SUM(CAST(ISNULL(lg.market_fee, 0) AS FLOAT)) AS total_market_fee,
                 SUM(CAST(ISNULL(lg.sold_amount, 0) AS FLOAT)) AS total_sold_amount,
                 MAX(CAST(ma.dfl_lot_number AS FLOAT)) AS dfl_lot_number,
                 ma.lot_variety,
@@ -643,7 +643,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
     lg.ALLOTTED_LOT_ID
     FROM lot_groupage lg
     LEFT JOIN reeler r
-    ON lg.external_unit_id = r.reeler_id
+    ON lg.buyer_id = r.reeler_id
     AND lg.buyer_type IN ('Reeling')
     AND r.active = 1
     LEFT JOIN farmer f
@@ -657,6 +657,63 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
     """
     )
     List<Object[]> getReelingLotNumberDetails(@Param("marketId") Integer marketId);
+
+
+    @Query(nativeQuery = true, value = """
+    WITH PrimaryAddress AS (
+        SELECT
+            fa.farmer_id,
+            fa.VILLAGE_ID,
+            ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.farmer_address_id DESC) AS rn
+        FROM farmer_address fa
+        WHERE fa.active = 1
+    )
+
+    SELECT 
+        a.lot_number,
+        a.number_of_dfls_disposed,
+        b.spun_date,
+        b.no_of_chandies,
+        b.expected_cocoon,
+        c.name_kan,
+        c.father_name_kan,
+        e.village_name_in_kannada,
+        b.fitness_certificate_id,
+        t.name AS tsc_name
+
+    FROM sale_and_disposal_of_dfls a
+
+    INNER JOIN fitness_certificate b 
+        ON a.id = b.sale_and_disposal_id
+        AND a.fruits_id = b.fruits_id
+        AND b.active = 1
+
+    INNER JOIN FARMER c 
+        ON b.farmer_id = c.FARMER_ID
+        AND a.fruits_id = c.fruits_id
+        AND c.active = 1
+
+    INNER JOIN PrimaryAddress d 
+        ON c.FARMER_ID = d.farmer_id
+        AND d.rn = 1
+
+    INNER JOIN VILLAGE e 
+        ON d.VILLAGE_ID = e.VILLAGE_ID
+        AND e.active = 1
+
+    LEFT JOIN user_master u 
+        ON u.username = b.created_by
+        AND u.active = 1
+
+    LEFT JOIN tsc_master t 
+        ON t.tsc_master_id = u.tsc_master_id
+        AND t.active = 1
+
+    WHERE 
+        a.active = 1
+        AND b.fruits_id = :fruitsId
+""")
+    List<Object[]> getLotDisposalDetails(@Param("fruitsId") String fruitsId);
 
 
 }

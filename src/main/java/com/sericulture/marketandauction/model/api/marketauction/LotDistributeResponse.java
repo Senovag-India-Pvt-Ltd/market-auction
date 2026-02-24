@@ -120,4 +120,25 @@ public class LotDistributeResponse extends ResponseBody {
     private Float sumSoldAmountRspNssoGovt;
     private Float sumLotWeightReeling;
     private Float sumSoldAmountReeling;
+
+
+
+    private String lotNumber;
+
+    private Long numberOfDflsDisposed;
+
+    private String spunDate;
+
+    private Long noOfChandies;
+
+    private Long expectedCocoon;
+
+    private String farmerNameKan;
+
+
+    private String villageName;
+
+    private Long fitnessCertificateId;
+
+    private String tscName;
 }
