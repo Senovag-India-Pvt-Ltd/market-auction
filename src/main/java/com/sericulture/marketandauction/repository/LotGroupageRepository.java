@@ -679,8 +679,8 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
         c.father_name_kan,
         e.village_name_in_kannada,
         b.fitness_certificate_id,
-        t.name AS tsc_name
-
+        t.name AS tsc_name,
+        b.expected_marker_date
     FROM sale_and_disposal_of_dfls a
 
     INNER JOIN fitness_certificate b 
