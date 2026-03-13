@@ -712,8 +712,9 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
     WHERE 
         a.active = 1
         AND b.fruits_id = :fruitsId
+        AND b.fitness_certificate_id = :fitnessCertificateId
 """)
-    List<Object[]> getLotDisposalDetails(@Param("fruitsId") String fruitsId);
+    List<Object[]> getLotDisposalDetails(@Param("fruitsId") String fruitsId,@Param("fitnessCertificateId") Long fitnessCertificateId);
 
 
 }

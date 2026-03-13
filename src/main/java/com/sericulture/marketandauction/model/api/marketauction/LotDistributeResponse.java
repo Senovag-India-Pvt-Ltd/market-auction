@@ -129,9 +129,9 @@ public class LotDistributeResponse extends ResponseBody {
 
     private String spunDate;
 
-    private Long noOfChandies;
+    private String noOfChandies;
 
-    private Long expectedCocoon;
+    private String expectedCocoon;
 
     private String farmerNameKan;
 

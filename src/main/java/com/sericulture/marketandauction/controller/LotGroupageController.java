@@ -84,10 +84,10 @@ public class LotGroupageController {
     }
 
     @PostMapping("/getFitnessCertificateDetails")
-    public ResponseEntity<?> getLotDisposalDetails(@RequestParam String fruitsId){
+    public ResponseEntity<?> getLotDisposalDetails(@RequestParam String fruitsId,@RequestParam Long  fitnessCertificateId){
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(LotDistributeResponse.class);
-        rw.setContent(lotGroupageService.getLotDisposalDetails(fruitsId));
+        rw.setContent(lotGroupageService.getLotDisposalDetails(fruitsId,fitnessCertificateId));
 
         return ResponseEntity.ok(rw);
     }

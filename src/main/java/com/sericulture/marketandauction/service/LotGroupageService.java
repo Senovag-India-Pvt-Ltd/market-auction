@@ -1093,9 +1093,9 @@ public class LotGroupageService {
     }
 
 
-    public List<LotDistributeResponse> getLotDisposalDetails(String fruitsId) {
+    public List<LotDistributeResponse> getLotDisposalDetails(String fruitsId,Long fitnessCertificateId) {
 
-        List<Object[]> list = lotGroupageRepository.getLotDisposalDetails(fruitsId);
+        List<Object[]> list = lotGroupageRepository.getLotDisposalDetails(fruitsId,fitnessCertificateId);
 
         List<LotDistributeResponse> responses = new ArrayList<>();
         int serial = 1;
@@ -1107,8 +1107,8 @@ public class LotGroupageService {
                     .lotNumber(Util.objectToString(obj[0]))
                     .numberOfDflsDisposed(Util.objectToLong(obj[1]))
                     .spunDate(Util.objectToString(obj[2]))
-                    .noOfChandies(Util.objectToLong(obj[3]))
-                    .expectedCocoon(Util.objectToLong(obj[4]))
+                    .noOfChandies(Util.objectToString(obj[3]))
+                    .expectedCocoon(Util.objectToString(obj[4]))
                     .farmerNameKan(Util.objectToString(obj[5]))
                     .fatherNameKan(Util.objectToString(obj[6]))
                     .villageName(Util.objectToString(obj[7]))
