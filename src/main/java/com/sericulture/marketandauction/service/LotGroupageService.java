@@ -1093,9 +1093,12 @@ public class LotGroupageService {
     }
 
 
-    public List<LotDistributeResponse> getLotDisposalDetails(String fruitsId,Long fitnessCertificateId) {
+    public List<LotDistributeResponse> getLotDisposalDetails(LotStatusSeedMarketRequest request) {
 
-        List<Object[]> list = lotGroupageRepository.getLotDisposalDetails(fruitsId,fitnessCertificateId);
+        List<Object[]> list = lotGroupageRepository.getLotDisposalDetails(
+                request.getFruitsId(),
+                request.getFitnessCertificateId()
+        );
 
         List<LotDistributeResponse> responses = new ArrayList<>();
         int serial = 1;

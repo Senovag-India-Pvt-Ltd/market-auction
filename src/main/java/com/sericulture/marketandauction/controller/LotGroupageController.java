@@ -83,11 +83,23 @@ public class LotGroupageController {
         return ResponseEntity.ok(rw);
     }
 
+//    @PostMapping("/getFitnessCertificateDetails")
+//    public ResponseEntity<?> getLotDisposalDetails(@RequestParam String fruitsId,@RequestParam Long  fitnessCertificateId){
+//
+//        ResponseWrapper rw = ResponseWrapper.createWrapper(LotDistributeResponse.class);
+//        rw.setContent(lotGroupageService.getLotDisposalDetails(fruitsId,fitnessCertificateId));
+//
+//        return ResponseEntity.ok(rw);
+//    }
+
     @PostMapping("/getFitnessCertificateDetails")
-    public ResponseEntity<?> getLotDisposalDetails(@RequestParam String fruitsId,@RequestParam Long  fitnessCertificateId){
+    public ResponseEntity<?> getLotDisposalDetails(@RequestBody LotStatusSeedMarketRequest request){
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(LotDistributeResponse.class);
-        rw.setContent(lotGroupageService.getLotDisposalDetails(fruitsId,fitnessCertificateId));
+
+        rw.setContent(
+                lotGroupageService.getLotDisposalDetails(request)
+        );
 
         return ResponseEntity.ok(rw);
     }
