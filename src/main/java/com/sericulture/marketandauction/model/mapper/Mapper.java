@@ -27,7 +27,7 @@ public class Mapper {
      */
     public <T> T marketAuctionEntityToObject(MarketAuction marketAuctionEntity, Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, marketAuctionEntity);
+        log.debug("Value of mapper is:",mapper, marketAuctionEntity);
         return (T) mapper.map(marketAuctionEntity, claaz);
     }
 
@@ -38,7 +38,7 @@ public class Mapper {
      */
     public <T> T marketAuctionObjectToEntity(MarketAuctionRequest marketAuctionRequest, Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, marketAuctionRequest);
+        log.debug("Value of mapper is:",mapper, marketAuctionRequest);
         return (T) mapper.map(marketAuctionRequest, claaz);
     }
 
@@ -49,7 +49,7 @@ public class Mapper {
      */
     public <T> T reelerAuctionEntityToObject(ReelerAuction reelerAuctionEntity, Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, reelerAuctionEntity);
+        log.debug("Value of mapper is:",mapper, reelerAuctionEntity);
         return (T) mapper.map(reelerAuctionEntity, claaz);
     }
 
@@ -60,7 +60,7 @@ public class Mapper {
      */
     public <T> T reelerAuctionObjectToEntity(ReelerBidRequest reelerBidRequest, Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, reelerBidRequest);
+        log.debug("Value of mapper is:",mapper, reelerBidRequest);
         return (T) mapper.map(reelerBidRequest, claaz);
     }
 
@@ -71,7 +71,7 @@ public class Mapper {
      */
     public <T> T flexTimeEntityToObject(FlexTime flexTimeEntity, Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, flexTimeEntity);
+        log.debug("Value of mapper is:",mapper, flexTimeEntity);
         return (T) mapper.map(flexTimeEntity, claaz);
     }
 
@@ -82,7 +82,7 @@ public class Mapper {
      */
     public <T> T flextimeObjectToEntity(FLexTimeRequest fLexTimeRequest, Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, fLexTimeRequest);
+        log.debug("Value of mapper is:",mapper, fLexTimeRequest);
         return (T) mapper.map(fLexTimeRequest, claaz);
     }
 
@@ -93,7 +93,7 @@ public class Mapper {
      */
     public <T> T lotGroupageEntityToObject(LotGroupage lotGroupageEntity, Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper,lotGroupageEntity);
+        log.debug("Value of mapper is:",mapper,lotGroupageEntity);
         return (T) mapper.map(lotGroupageEntity, claaz);
     }
 
@@ -105,7 +105,7 @@ public class Mapper {
      */
     public <T> T lotGroupageObjectToEntity(LotGroupageRequest lotGroupageRequest , Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, lotGroupageRequest);
+        log.debug("Value of mapper is:",mapper, lotGroupageRequest);
         return (T) mapper.map(lotGroupageRequest, claaz);
     }
 
@@ -117,7 +117,7 @@ public class Mapper {
      */
     public <T> T editLotGroupageObjectToEntity(LotGroupageRequestEdit lotGroupageRequestEdit , Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, lotGroupageRequestEdit);
+        log.debug("Value of mapper is:",mapper, lotGroupageRequestEdit);
         return (T) mapper.map(lotGroupageRequestEdit, claaz);
 
 
@@ -126,31 +126,31 @@ public class Mapper {
     public void editLotGroupageObjectToEntity(LotGroupageRequestEdit lotGroupageRequestEdit, LotGroupage lotGroupage) {
         // Assuming you have a mapping logic here to map fields from LotGroupageRequestEdit to LotGroupage
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Mapping lotGroupageRequestEdit to lotGroupage: {}", lotGroupageRequestEdit);
+        log.debug("Mapping lotGroupageRequestEdit to lotGroupage: {}", lotGroupageRequestEdit);
         mapper.map(lotGroupageRequestEdit, lotGroupage);
     }
 
     public <T> T lotBasePriceFixationObjectToEntity(LotBasePriceFixationRequest lotBasePriceFixationRequest , Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, lotBasePriceFixationRequest);
+        log.debug("Value of mapper is:",mapper, lotBasePriceFixationRequest);
         return (T) mapper.map(lotBasePriceFixationRequest, claaz);
     }
 
     public <T> T lotBasePriceFixationEntityToObject(LotBasePriceFixation lotBasePriceFixation , Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, lotBasePriceFixation);
+        log.debug("Value of mapper is:",mapper, lotBasePriceFixation);
         return (T) mapper.map(lotBasePriceFixation, claaz);
     }
 
     public <T> T pupaTestAndCocoonAssessmentObjectToEntity(PupaTestAndCocoonAssessmentRequest pupaTestAndCocoonAssessmentRequest , Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, pupaTestAndCocoonAssessmentRequest);
+        log.debug("Value of mapper is:",mapper, pupaTestAndCocoonAssessmentRequest);
         return (T) mapper.map(pupaTestAndCocoonAssessmentRequest, claaz);
     }
 
     public <T> T pupaTestAndCocoonAssessmentEntityToObject(PupaTestAndCocoonAssessment pupaTestAndCocoonAssessment , Class<T> claaz) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        log.info("Value of mapper is:",mapper, pupaTestAndCocoonAssessment);
+        log.debug("Value of mapper is:",mapper, pupaTestAndCocoonAssessment);
         return (T) mapper.map(pupaTestAndCocoonAssessment, claaz);
     }
 
