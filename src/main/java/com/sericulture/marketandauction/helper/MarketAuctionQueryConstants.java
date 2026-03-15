@@ -1211,7 +1211,12 @@ public class MarketAuctionQueryConstants {
                         WHEN lg.buyer_type = 'Reeling' THEN r.name
                         ELSE NULL
                     END AS buyer_name,
-                    l.BID_ACCEPTED_BY
+                    l.BID_ACCEPTED_BY,
+                    ptaca.TEST_DATE,
+                    ptaca.NO_OF_COCOON_TAKEN_FOR_EXAMINATION,
+                    ptaca.NO_OF_DFL_FROM_FC,
+                    ptaca.NO_OF_COCOON_PER_KG,
+                    lg.remaining_cocoon
     
                     FROM FARMER f
     
@@ -1273,6 +1278,10 @@ public class MarketAuctionQueryConstants {
                     LEFT JOIN source_master sm
                         ON sm.source_id = ma.SOURCE_MASTER_ID
                         AND sm.active = 1
+                        
+                   LEFT JOIN
+                        PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id
+                        AND ptaca.ACTIVE = 1
     
                     WHERE
                         f.active = 1

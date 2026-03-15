@@ -107,6 +107,11 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String silkQuality;
     private String silkType;
     private Float approximateEstimatedWeight;
+    private String testDate;
+    private Long noOfCocoonTakenForExamination;
+    private Long noOfDFLFromFc;
+    private Long noOfCocoonPerKg;
+    private String remainingCocoon;
 
 
 

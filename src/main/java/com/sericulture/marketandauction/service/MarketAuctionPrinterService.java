@@ -452,6 +452,11 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
                 .lgLotParentLevel(Util.objectToString(response[41]))
                 .lgAuctionDate(Util.objectToString(response[42]))
                 .lgBuyerName(Util.objectToString(response[43]))
+                .testDate(Util.objectToString(response[45]))
+                .noOfCocoonTakenForExamination(Util.objectToLong(response[46]))
+                .noOfDFLFromFc(Util.objectToLong(response[47]))
+                .noOfCocoonPerKg(Util.objectToLong(response[48]))
+                .remainingCocoon(Util.objectToString(response[49]))
 
 
                 .loginName(token.getUsername())
