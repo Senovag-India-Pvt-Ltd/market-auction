@@ -1118,6 +1118,7 @@ public class LotGroupageService {
                     .fitnessCertificateId(Util.objectToLong(obj[8]))
                     .tscName(Util.objectToString(obj[9]))
                     .marketAuctionDate(Util.objectToString(obj[10]))
+                    .farmerFruitsId(Util.objectToString(obj[11]))
                     .build();
 
             responses.add(response);
