@@ -1287,7 +1287,7 @@ public class MarketAuctionQueryConstants {
                         f.active = 1
                         AND l.auction_date = :auctionDate
                         AND l.market_id = :marketId
-                        AND l.allotted_lot_id = :allottedLotId;
+                        AND l.allotted_lot_id = :allottedLotId
 """;
 
 
