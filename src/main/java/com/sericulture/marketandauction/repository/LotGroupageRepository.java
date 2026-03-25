@@ -66,7 +66,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                     fa.active = 1
             ),
             MainQuery AS (
-                SELECT
+                SELECT DISTINCT 
                     f.farmer_number,
                     f.fruits_id,
                     (ISNULL(f.name_kan, '') + ' ' +ISNULL(f.middle_name, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
@@ -210,7 +210,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                 fa.active = 1
         ),
         MainQuery AS (
-            SELECT
+            SELECT  DISTINCT
                 f.farmer_number,
                 f.fruits_id,
                 (ISNULL(f.name_kan, '') + ' ' +ISNULL(f.last_name, '') + ' - ' +ISNULL(pa.address_text, '')
@@ -348,7 +348,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                 fa.active = 1
         ),
         MainQuery AS (
-            SELECT
+            SELECT  DISTINCT
                 f.farmer_number,
                 f.fruits_id,
                 (ISNULL(f.first_name, '') + ' ' + ISNULL(f.last_name, '')) AS farmer_full_name,
@@ -495,7 +495,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
 
     @Query(nativeQuery = true, value = """
             WITH PrimaryAddress AS (
-            SELECT
+            SELECT DISTINCT
             fa.farmer_id,
             fa.STATE_ID,
             fa.DISTRICT_ID,
