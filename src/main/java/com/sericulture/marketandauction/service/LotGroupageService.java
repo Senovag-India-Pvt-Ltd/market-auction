@@ -1109,7 +1109,7 @@ public class LotGroupageService {
                     .serialNumber(serial++)
                     .lotNumber(Util.objectToString(obj[0]))
                     .numberOfDflsDisposed(Util.objectToLong(obj[1]))
-                    .spunDate(Util.objectToString(obj[2]))
+                    .spunToDate(Util.objectToString(obj[2]))
                     .noOfChandies(Util.objectToString(obj[3]))
                     .expectedCocoon(Util.objectToString(obj[4]))
                     .farmerNameKan(Util.objectToString(obj[5]))
@@ -1117,8 +1117,9 @@ public class LotGroupageService {
                     .villageName(Util.objectToString(obj[7]))
                     .fitnessCertificateId(Util.objectToLong(obj[8]))
                     .tscName(Util.objectToString(obj[9]))
-                    .marketAuctionDate(Util.objectToString(obj[10]))
+                    .spunFromDate(Util.objectToString(obj[10]))
                     .farmerFruitsId(Util.objectToString(obj[11]))
+                    .marketAuctionDate(Util.objectToString(obj[12]))
                     .build();
 
             responses.add(response);
