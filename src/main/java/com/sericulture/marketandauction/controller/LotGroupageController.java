@@ -104,4 +104,12 @@ public class LotGroupageController {
         return ResponseEntity.ok(rw);
     }
 
+    @PostMapping("/getDetailsForMarketReceipt")
+    public ResponseEntity<?> getDetailsForMarketReceipt(
+            @RequestBody LotStatusSeedMarketRequest lotStatusSeedMarketRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(LotDistributeBuyerWiseResponse.class);
+        rw.setContent(lotGroupageService.getDetailsForMarketReceipt(lotStatusSeedMarketRequest));
+        return ResponseEntity.ok(rw);
+    }
+
 }

@@ -42,109 +42,109 @@ public class LotGroupageService {
 
     @Transactional
 
-//    public LotGroupageResponse saveLotGroupage(LotGroupageDetailsRequest lotGroupageDetailsRequest) {
-//        LotGroupageResponse lotGroupageResponse = new LotGroupageResponse();
+
+
+//    public List<LotGroupageResponse> saveLotGroupage(LotGroupageDetailsRequest lotGroupageDetailsRequest) {
+//        List<LotGroupageResponse> responses = new ArrayList<>();
 //
 //        // Check if lotGroupageRequests is null or empty
 //        if (lotGroupageDetailsRequest.getLotGroupageRequests() == null || lotGroupageDetailsRequest.getLotGroupageRequests().isEmpty()) {
-//            lotGroupageResponse.setError(true);
-//            lotGroupageResponse.setError_description("Lot groupage requests are null or empty.");
-//            return lotGroupageResponse;
+//            LotGroupageResponse errorResponse = new LotGroupageResponse();
+//            errorResponse.setError(true);
+//            errorResponse.setError_description("Lot groupage requests are null or empty.");
+//            responses.add(errorResponse);
+//            return responses;
 //        }
 //
 //        for (int i = 0; i < lotGroupageDetailsRequest.getLotGroupageRequests().size(); i++) {
 //            LotGroupageRequest lotGroupageRequest = lotGroupageDetailsRequest.getLotGroupageRequests().get(i);
 //            LotGroupage lotGroupage = mapper.lotGroupageObjectToEntity(lotGroupageRequest, LotGroupage.class);
-//            List<Object[]> list = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(lotGroupageRequest.getAllottedLotId().intValue(), lotGroupageRequest.getAuctionDate());
-//            for(Object[] arr :list){
-//                lotGroupage.setMarketAuctionId(((BigDecimal) arr[0]).toBigIntegerExact());
-//                lotGroupage.setId(((BigDecimal) arr[1]).toBigIntegerExact());
-//            }
 //
-//            // Calculate and set market fee based on buyer type
-//            if (lotGroupageRequest.getBuyerType() != null) {
-//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequest.getSoldAmount());
-//                BigDecimal marketFee = BigDecimal.ZERO;
+//            // Retrieve and set the userMasterId from the JWT token
+//            lotGroupage.setUserMasterId(Util.getUserMasterId(Util.getTokenValues()));
 //
-//                switch (lotGroupageRequest.getBuyerType()) {
-//                    case "ExternalStakeHolders":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
-//                        break;
-//                    case "Reeler":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
-//                        break;
-//                    default:
-//                        // Handle unknown buyer types if necessary
-//                        break;
-//                }
-//
-//                lotGroupage.setMarketFee(marketFee.longValue());
-////                lotGroupage.setMarketAuctionId(marketAuctionId);
-//            }
-//
-//            lotGroupage = lotGroupageRepository.save(lotGroupage);
-//            lotGroupageResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
-//            lotGroupageResponse.setError(false);
-//        }
-//
-//        return lotGroupageResponse;
-//    }
-//    public LotGroupageResponse saveLotGroupage(LotGroupageDetailsRequest lotGroupageDetailsRequest) {
-//        LotGroupageResponse lotGroupageResponse = new LotGroupageResponse();
-//
-//        // Check if lotGroupageRequests is null or empty
-//        if (lotGroupageDetailsRequest.getLotGroupageRequests() == null || lotGroupageDetailsRequest.getLotGroupageRequests().isEmpty()) {
-//            lotGroupageResponse.setError(true);
-//            lotGroupageResponse.setError_description("Lot groupage requests are null or empty.");
-//            return lotGroupageResponse;
-//        }
-//
-//        for (int i = 0; i < lotGroupageDetailsRequest.getLotGroupageRequests().size(); i++) {
-//            LotGroupageRequest lotGroupageRequest = lotGroupageDetailsRequest.getLotGroupageRequests().get(i);
-//            LotGroupage lotGroupage = mapper.lotGroupageObjectToEntity(lotGroupageRequest, LotGroupage.class);
 //            List<Object[]> list = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(
-//                    lotGroupageRequest.getAllottedLotId().intValue(), lotGroupageRequest.getAuctionDate());
+//                    lotGroupageRequest.getAllottedLotId().intValue(), lotGroupageRequest.getAuctionDate(), lotGroupageRequest.getMarketId());
 //            for (Object[] arr : list) {
 //                lotGroupage.setMarketAuctionId(((BigDecimal) arr[0]).toBigIntegerExact());
 //                lotGroupage.setId(((BigDecimal) arr[1]).toBigIntegerExact());
 //            }
 //
-//            // Generate invoice number
-//            String nextSeq = lotGroupageRepository.getNextValRecieptSequence().toString();
+//            // Generate invoice number for each iteration
+//            String nextSeq = lotGroupageRepository.getNextValInvoiceSequence().toString();
 //            if (nextSeq.length() == 1)
 //                nextSeq = "0" + nextSeq;
 //
-//            String inovoiceNumber = "INV/LOTALLOT/" + nextSeq;
-//            lotGroupage.setInvoiceNumber(inovoiceNumber);
+//            String invoiceNumber = "INV/LOTALLOT/" + nextSeq;
+//            lotGroupage.setInvoiceNumber(invoiceNumber);
 //
 //            // Calculate and set market fee based on buyer type
+////            if (lotGroupageRequest.getBuyerType() != null) {
+////                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequest.getSoldAmount());
 //            if (lotGroupageRequest.getBuyerType() != null) {
-//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequest.getSoldAmount());
+//                BigDecimal soldAmount = (lotGroupageRequest.getSoldAmount() != null)
+//                        ? BigDecimal.valueOf(lotGroupageRequest.getSoldAmount())
+//                        : BigDecimal.ZERO; // default to zero if soldAmount is null
 //                BigDecimal marketFee = BigDecimal.ZERO;
 //
 //                switch (lotGroupageRequest.getBuyerType()) {
 //                    case "RSP":
 //                    case "NSSO":
 //                    case "Govt Grainage":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+////                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
+//                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
 //                        break;
 //                    case "Reeling":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+//                        // For Reeling, you can either skip the fee calculation or handle it differently
+//                        if (soldAmount != null) {
+////                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
+//                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
+//
+//                        } else {
+//                            marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
+//                        }
 //                        break;
 //                    default:
-//                        // Handle unknown buyer types if necessary
 //                        break;
 //                }
 //
 //                lotGroupage.setMarketFee(marketFee.longValue());
 //            }
+//            // Always set isDisposed = 1 in LotGroupage
+//            lotGroupage.setIsDisposed(1);
 //
+//            Float remainingCocoon = lotGroupageRequest.getRemainingCocoonWeight();
+//
+//            // Fetch disposal entry
+//            SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
+//                    .findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
+//                            lotGroupageRequest.getFruitsId(),
+//                            lotGroupageRequest.getLotParentLevel(),
+//                            lotGroupageRequest.getDflLotNumber(),
+//                            1,
+//                            true
+//                    );
+//
+//            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0
+//            if (remainingCocoon == null || remainingCocoon == 0) {
+//                if (disposalEntry != null) {
+//                    disposalEntry.setIsDisposed(1);
+//                    saleAndDisposalOfDflsRepository.save(disposalEntry);
+//                }
+//            }
+//
+//            // Save LotGroupage
 //            lotGroupage = lotGroupageRepository.save(lotGroupage);
-//            lotGroupageResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+//
+//            // Prepare Response
+//            LotGroupageResponse lotGroupageResponse =
+//                    mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
+//
 //            lotGroupageResponse.setError(false);
+//            responses.add(lotGroupageResponse);
 //        }
 //
-//        return lotGroupageResponse;
+//        return responses;
 //    }
 
     public List<LotGroupageResponse> saveLotGroupage(LotGroupageDetailsRequest lotGroupageDetailsRequest) {
@@ -168,9 +168,39 @@ public class LotGroupageService {
 
             List<Object[]> list = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(
                     lotGroupageRequest.getAllottedLotId().intValue(), lotGroupageRequest.getAuctionDate(), lotGroupageRequest.getMarketId());
+
+            // ✅ Validate that the query returned a result
+            if (list == null || list.isEmpty()) {
+                LotGroupageResponse errorResponse = new LotGroupageResponse();
+                errorResponse.setError(true);
+                errorResponse.setError_description("No market auction or lot found for allottedLotId: "
+                        + lotGroupageRequest.getAllottedLotId()
+                        + ", auctionDate: " + lotGroupageRequest.getAuctionDate()
+                        + ", marketId: " + lotGroupageRequest.getMarketId());
+                responses.add(errorResponse);
+                continue; // Skip saving this record, move to next
+            }
+
+            boolean hasValidIds = false;
             for (Object[] arr : list) {
+                // ✅ Validate individual fields are not null before setting
+                if (arr[0] == null || arr[1] == null) {
+                    LotGroupageResponse errorResponse = new LotGroupageResponse();
+                    errorResponse.setError(true);
+                    errorResponse.setError_description("market_auction_id or lot_id is null for allottedLotId: "
+                            + lotGroupageRequest.getAllottedLotId());
+                    responses.add(errorResponse);
+                    hasValidIds = false;
+                    break;
+                }
                 lotGroupage.setMarketAuctionId(((BigDecimal) arr[0]).toBigIntegerExact());
                 lotGroupage.setId(((BigDecimal) arr[1]).toBigIntegerExact());
+                hasValidIds = true;
+            }
+
+            // ✅ Skip saving if IDs were not set due to null values
+            if (!hasValidIds) {
+                continue;
             }
 
             // Generate invoice number for each iteration
@@ -182,30 +212,20 @@ public class LotGroupageService {
             lotGroupage.setInvoiceNumber(invoiceNumber);
 
             // Calculate and set market fee based on buyer type
-//            if (lotGroupageRequest.getBuyerType() != null) {
-//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequest.getSoldAmount());
             if (lotGroupageRequest.getBuyerType() != null) {
                 BigDecimal soldAmount = (lotGroupageRequest.getSoldAmount() != null)
                         ? BigDecimal.valueOf(lotGroupageRequest.getSoldAmount())
-                        : BigDecimal.ZERO; // default to zero if soldAmount is null
+                        : BigDecimal.ZERO;
                 BigDecimal marketFee = BigDecimal.ZERO;
 
                 switch (lotGroupageRequest.getBuyerType()) {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
                         marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     case "Reeling":
-                        // For Reeling, you can either skip the fee calculation or handle it differently
-                        if (soldAmount != null) {
-//                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
-                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
-
-                        } else {
-                            marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
-                        }
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     default:
                         break;
@@ -213,6 +233,7 @@ public class LotGroupageService {
 
                 lotGroupage.setMarketFee(marketFee.longValue());
             }
+
             // Always set isDisposed = 1 in LotGroupage
             lotGroupage.setIsDisposed(1);
 
@@ -473,89 +494,7 @@ public class LotGroupageService {
         return responses;
     }
 
-//    @Transactional
-//    public LotGroupageResponse editLotGroupage(LotGroupageDetailsRequestEdit lotGroupageDetailsRequestEdit) {
-//        LotGroupageResponse lotGroupageResponse = new LotGroupageResponse();
 //
-//        // Check if lotGroupageRequestEditList is null or empty
-//        if (lotGroupageDetailsRequestEdit.getLotGroupageRequestEditList() == null || lotGroupageDetailsRequestEdit.getLotGroupageRequestEditList().isEmpty()) {
-//            lotGroupageResponse.setError(true);
-//            lotGroupageResponse.setError_description("Lot groupage edit requests are null or empty.");
-//            return lotGroupageResponse;
-//        }
-//
-//        for (LotGroupageRequestEdit lotGroupageRequestEdit : lotGroupageDetailsRequestEdit.getLotGroupageRequestEditList()) {
-//            LotGroupage lotGroupage;
-//
-//            // Check for lotGroupageId and fetch existing lotGroupage if present
-//            if (lotGroupageRequestEdit.getLotGroupageId() != null) {
-//                Optional<LotGroupage> optionalLotGroupage = lotGroupageRepository.findByLotGroupageIdAndActiveIn(lotGroupageRequestEdit.getLotGroupageId(), Set.of(true, false));
-//                if (!optionalLotGroupage.isPresent()) {
-//                    lotGroupageResponse.setError(true);
-//                    lotGroupageResponse.setError_description("Lot groupage with ID " + lotGroupageRequestEdit.getLotGroupageId() + " not found.");
-//                    return lotGroupageResponse;
-//                }
-//                lotGroupage = optionalLotGroupage.get();
-//            } else {
-//                // Create a new LotGroupage if no ID is provided
-//                lotGroupage = new LotGroupage();
-//
-//                // Generate invoice number for the new LotGroupage
-//                String nextSeq = lotGroupageRepository.getNextValInvoiceSequence().toString();
-//                if (nextSeq.length() == 1)
-//                    nextSeq = "0" + nextSeq;
-//
-//                String invoiceNumber = "INV/LOTALLOT/" + nextSeq;
-//                lotGroupage.setInvoiceNumber(invoiceNumber);
-//            }
-//
-//            // Save the current invoice number (if it exists) to avoid overwriting
-//            String currentInvoiceNumber = lotGroupage.getInvoiceNumber();
-//
-//            // Fetch market auction details and update lotGroupage
-//            List<Object[]> marketAuctionDetails = lotGroupageRepository.getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate(lotGroupageRequestEdit.getAllottedLotId().intValue(), lotGroupageRequestEdit.getAuctionDate());
-//            for (Object[] arr : marketAuctionDetails) {
-//                lotGroupage.setMarketAuctionId(((BigDecimal) arr[0]).toBigIntegerExact());
-//                lotGroupage.setId(((BigDecimal) arr[1]).toBigIntegerExact());
-//            }
-//
-//            // Update lotGroupage based on lotGroupageRequestEdit using the mapper method
-//            mapper.editLotGroupageObjectToEntity(lotGroupageRequestEdit, lotGroupage);
-//
-//            lotGroupage.setInvoiceNumber(currentInvoiceNumber);
-//
-//            // Update market fee based on buyer type
-//            if (lotGroupageRequestEdit.getBuyerType() != null) {
-//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount());
-//                BigDecimal marketFee = BigDecimal.ZERO;
-//
-//                switch (lotGroupageRequestEdit.getBuyerType()) {
-//                    case "RSP":
-//                    case "NSSO":
-//                    case "Govt Grainage":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
-//                        break;
-//                    case "Reeling":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
-//                        break;
-//                    default:
-//                        break;
-//                }
-//
-//                lotGroupage.setMarketFee(marketFee.longValue());
-//            }
-//
-//            // Save updated or new lotGroupage
-//            lotGroupage = lotGroupageRepository.save(lotGroupage);
-//
-//            // Map the saved lotGroupage to the response object
-//            LotGroupageResponse singleResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
-//            lotGroupageResponse = singleResponse; // Only set response after all edits
-//            lotGroupageResponse.setError(false);
-//        }
-//
-//        return lotGroupageResponse;
-//    }
 
     @Transactional
     public List<LotGroupageResponse> editLotGroupage(LotGroupageDetailsRequestEdit lotGroupageDetailsRequestEdit) {
@@ -650,7 +589,7 @@ public class LotGroupageService {
                         // For Reeling, you can either skip the fee calculation or handle it differently
                         if (soldAmount != null) {
 //                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
-                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
+                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         } else {
                             marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
                         }
@@ -1120,6 +1059,59 @@ public class LotGroupageService {
                     .spunFromDate(Util.objectToString(obj[10]))
                     .farmerFruitsId(Util.objectToString(obj[11]))
                     .marketAuctionDate(Util.objectToString(obj[12]))
+                    .build();
+
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
+
+    public List<LotDistributeBuyerWiseResponse> getDetailsForMarketReceipt(
+            LotStatusSeedMarketRequest lotStatusRequest) {
+
+        List<Object[]> results = lotGroupageRepository.getDetailsForMarketReceipt(
+                lotStatusRequest.getAuctionDate(),
+                lotStatusRequest.getMarketId(),
+                lotStatusRequest.getAllottedLotId()
+        );
+
+        List<LotDistributeBuyerWiseResponse> responses = new ArrayList<>();
+        int serial = 1;
+
+        for (Object[] row : results) {
+            LotDistributeBuyerWiseResponse response = LotDistributeBuyerWiseResponse.builder()
+                    .serialNumber(serial++)                                  // index  0 (manual)
+                    .farmerNumber(Util.objectToString(row[0]))              // farmer_number
+                    .farmerFruitsId(Util.objectToString(row[1]))            // fruits_id
+                    .farmerFullName(Util.objectToString(row[2]))            // farmer_full_name
+                    .fatherNameKan(Util.objectToString(row[3]))             // father_name_kan
+                    .districtNameKan(Util.objectToString(row[4]))           // district_name_in_kannada
+                    .talukNameKan(Util.objectToString(row[5]))              // taluk_name_in_kannada
+                    .farmerVillage(Util.objectToString(row[6]))             // village_name_in_kannada
+                    .marketName(Util.objectToString(row[7]))                // market_name_in_kannada
+                    .race(Util.objectToString(row[8]))                      // race_name
+                    .source(Util.objectToString(row[9]))                    // source_name
+                    .lotParentLevel(Util.objectToString(row[10]))           // lot_Parental_Level
+                    .allottedLotId(Util.objectToInteger(row[11]))           // allotted_lot_id
+                    .auctionDate(Util.objectToString(row[12]))              // auction_date
+                    .buyerName(Util.objectToString(row[13]))                // buyer_name
+                    .calculatedAverageYield(Util.objectToString(row[14]))   // total_calculatedAverageYield
+                    .lotWeightAfterWeighment(Util.objectToString(row[15]))  // LOT_WEIGHT_AFTER_WEIGHMENT
+                    .totalRspNssoGrainageLotWeight(Util.objectToString(row[16]))  // total_rsp_nsso_grainage_lot_weight
+                    .totalReelingLotWeight(Util.objectToString(row[17]))          // total_reeling_lot_weight
+                    .totalRspNssoGrainageAmount(Util.objectToString(row[18]))     // total_rsp_nsso_grainage_amount
+                    .totalReelingAmount(Util.objectToString(row[19]))             // total_reeling_amount
+                    .totalRspNssoGrainageSoldAmount(Util.objectToString(row[20])) // total_rsp_nsso_grainage_sold_amount
+                    .totalReelingSOldAmount(Util.objectToString(row[21]))         // total_reeling_sold_amount
+                    .totalRspNssoGrainageMarketFee(Util.objectToString(row[22]))  // total_rsp_nsso_grainage_market_fee
+                    .totalReelingMarketFee(Util.objectToString(row[23]))          // total_reeling_market_fee
+                    .totalLotWeight(Util.objectToString(row[24]))                 // total_lot_weight
+                    .totalAmount(Util.objectToString(row[25]))                    // total_amount
+                    .totalSoldAmount(Util.objectToString(row[26]))                // total_sold_amount
+                    .totalMarketFee(Util.objectToString(row[27]))
+                    .price(Util.objectToString(row[28]))// total_market_fee
                     .build();
 
             responses.add(response);
