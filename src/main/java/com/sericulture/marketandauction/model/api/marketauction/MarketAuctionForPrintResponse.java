@@ -113,7 +113,7 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private Long noOfCocoonPerKg;
     private String remainingCocoon;
 
-
+    private List<Buyer> buyerList;
 
 
 }

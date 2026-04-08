@@ -4,6 +4,7 @@ import com.sericulture.authentication.model.JwtPayloadData;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.api.marketauction.Buyer;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionForPrintRequest;
 import com.sericulture.marketandauction.model.api.marketauction.MarketAuctionForPrintResponse;
 import com.sericulture.marketandauction.model.enums.LotStatus;
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @Slf4j
@@ -358,42 +360,68 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
     }
 
 
-    public ResponseEntity<?> getPrintableDataForLotForSeedCocoonTriplet(MarketAuctionForPrintRequest marketAuctionForPrintRequest) {
+    public ResponseEntity<?> getPrintableDataForLotForSeedCocoonTriplet(
+            MarketAuctionForPrintRequest request) {
 
-        JwtPayloadData token = marketAuctionHelper.getAuthToken(marketAuctionForPrintRequest);
+        JwtPayloadData token = marketAuctionHelper.getAuthToken(request);
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(MarketAuctionForPrintResponse.class);
 
-        MarketAuctionForPrintResponse marketAuctionForPrintResponse = null;
-
-        // Fetch lot details using the provided request parameters
         Object[][] lotDetails = lotRepository.getNewlyCreatedLotDetailsSeedCocoonsTriplet(
-                marketAuctionForPrintRequest.getAuctionDate(),
-                marketAuctionForPrintRequest.getMarketId(),
-                marketAuctionForPrintRequest.getAllottedLotId()
+                request.getAuctionDate(),
+                request.getMarketId(),
+                request.getAllottedLotId()
         );
 
+        List<Buyer> buyerList = new ArrayList<>();
+        MarketAuctionForPrintResponse baseResponse = null;
+
         if (lotDetails != null && lotDetails.length > 0) {
+
             for (Object[] response : lotDetails) {
-                // Check if lot status is cancelled
+
                 if (LotStatus.CANCELLED.getLabel().equals(Util.objectToString(response[18]))) {
-                    return marketAuctionHelper.retrunIfError(rw, "Lot is cancelled and hence cannot be printed");
+                    return marketAuctionHelper.retrunIfError(rw, "Lot is cancelled");
                 }
 
                 BigInteger lotId = BigInteger.valueOf(Long.parseLong(String.valueOf(response[16])));
-                marketAuctionForPrintResponse = prepareResponseForLotBaseResponseSeedCocoonTriplet(token, response, lotId);
 
-                // Fetch lot weight details and set in the response
+                // ✅ base response (ONLY ONCE)
+                if (baseResponse == null) {
+                    baseResponse = prepareResponseForLotBaseResponseSeedCocoonTriplet(token, response, lotId);
+                }
+
+                // ✅ CREATE BUYER OBJECT (MAIN FIX)
+                Buyer buyer = new Buyer();
+                buyer.setLgBuyerType(Util.objectToString(response[33]));
+                buyer.setLgBuyerName(Util.objectToString(response[43]));
+                buyer.setLgLotWeight(Util.objectToString(response[34]));
+                buyer.setLgAmount(Util.objectToString(response[35]));
+                buyer.setLgSoldOutAmount(Util.objectToString(response[37]));
+                buyer.setNoOfCocoonPerKg(Util.objectToLong(response[48]));
+                buyer.setRemainingCocoon(Util.objectToString(response[49]));
+                buyer.setFarmerAmount(Util.objectToFloat(response[28]));
+
+                buyerList.add(buyer);   // ✅ CORRECT
+
+                // lot weight
                 List<Float> lotWeightList = lotWeightDetailRepository.findAllByLotId(lotId);
-                if (!Util.isNullOrEmptyList(lotWeightList)) {
-                    marketAuctionForPrintResponse.setLotWeightDetail(lotWeightList);
+                if (!Util.isNullOrEmptyList(lotWeightList) && baseResponse != null) {
+                    baseResponse.setLotWeightDetail(lotWeightList);
                 }
             }
+
         } else {
-            return marketAuctionHelper.retrunIfError(rw, "No Lot found for given request");
+            return marketAuctionHelper.retrunIfError(rw, "No Lot found");
         }
 
-        rw.setContent(marketAuctionForPrintResponse);
+        // ✅ SET BUYER LIST
+        if (baseResponse != null) {
+            baseResponse.setBuyerList(buyerList);
+        }
+
+        rw.setContent(baseResponse);
+
         return ResponseEntity.ok(rw);
     }
 
