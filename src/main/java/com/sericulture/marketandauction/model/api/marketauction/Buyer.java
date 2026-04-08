@@ -13,5 +13,7 @@ public class Buyer {
     private Long noOfCocoonPerKg;
     private String remainingCocoon;
     private Float farmerAmount;
+    private Integer lgMarketFee;
+
 
 }

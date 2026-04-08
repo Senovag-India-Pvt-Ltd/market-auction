@@ -93,7 +93,7 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String lgBuyerType;
     private String lgLotWeight;
     private String lgAmount;
-    private String lgMarketFee;
+    private Integer lgMarketFee;
     private String lgSoldOutAmount;
     private String lgAverageYield;
     private String lgNoOfDfl;
