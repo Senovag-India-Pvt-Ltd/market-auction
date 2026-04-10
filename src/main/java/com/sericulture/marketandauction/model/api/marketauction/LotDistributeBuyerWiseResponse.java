@@ -3,6 +3,8 @@ package com.sericulture.marketandauction.model.api.marketauction;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -42,4 +44,29 @@ public class LotDistributeBuyerWiseResponse {
     private String totalSoldAmount;
     private String totalMarketFee;
     private String price;
+
+    private String parentalLevel;
+    private String noOfDfls;
+    private Integer fcIssued;
+
+    private Float lotWeight;
+    private Float estimatedWeight;
+
+    private Integer cocoonsPerKg;
+    private Float meltPercentage;
+    private Float totalQuantity;
+
+    private Float rspQty;
+    private Float nssoQty;
+    private Float govtGrainageQty;
+    private Float reelingQty;
+    private Float remainingCocoon;
+
+
+    private String rspName;
+    private String nssoName;
+    private String govtGrainageName;
+    private String reelingName;
+    private Date marketAuctionDate;
+
 }

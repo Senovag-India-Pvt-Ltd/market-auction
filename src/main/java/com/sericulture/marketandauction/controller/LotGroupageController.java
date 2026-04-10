@@ -112,4 +112,12 @@ public class LotGroupageController {
         return ResponseEntity.ok(rw);
     }
 
+    @PostMapping("/getSeedCocoonDTRReport")
+    public ResponseEntity<?> getDetailsForSeedCocoonDTRReport(
+            @RequestBody LotStatusSeedMarketRequest lotStatusSeedMarketRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(LotDistributeBuyerWiseResponse.class);
+        rw.setContent(lotGroupageService.getSeedCocoonDTRReport(lotStatusSeedMarketRequest));
+        return ResponseEntity.ok(rw);
+    }
+
 }
