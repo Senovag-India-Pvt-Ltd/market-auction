@@ -169,8 +169,8 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
         race_master rm ON rm.race_id = ma.lot_variety AND rm.active = 1
     INNER JOIN
         PUPA_TEST_AND_COCOON_ASSESSMENT ptaca ON ptaca.MARKET_AUCTION_ID = ma.market_auction_id AND ptaca.ACTIVE = 1
-    INNER JOIN
-        LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id AND lbpf.FIXATION_DATE = ma.market_auction_date AND lbpf.active = 1
+    LEFT JOIN
+        LOT_BASE_PRICE_FIXATION lbpf ON lbpf.MARKET_ID = ma.market_id AND lbpf.FIXATION_DATE = ma.market_auction_date AND lbpf.allotted_lot_id = l.allotted_lot_id and lbpf.active = 1
     WHERE
         ma.market_id = :marketId
         AND ptaca.pupa_cocoon_status = 'assessment'
