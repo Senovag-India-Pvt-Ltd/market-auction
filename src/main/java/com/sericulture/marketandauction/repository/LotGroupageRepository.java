@@ -825,98 +825,116 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
 
 
 //    @Query(nativeQuery = true, value = """
-//WITH PrimaryAddress AS (
-//    SELECT
-//        fa.farmer_id,
-//        fa.address_text,
-//        fa.VILLAGE_ID,
-//        ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
-//    FROM farmer_address fa
-//    WHERE fa.active = 1
-//)
+//            WITH PrimaryAddress AS (
+//                            SELECT
+//                                fa.farmer_id,
+//                                fa.address_text,
+//                                fa.VILLAGE_ID,
+//                                ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
+//                            FROM farmer_address fa
+//                            WHERE fa.active = 1
+//                        )
 //
-//SELECT
-//    lg.ALLOTTED_LOT_ID,
-//    f.name_kan,
-//    f.father_name_kan,
-//    f.fruits_id,
-//    v.VILLAGE_NAME_IN_KANNADA AS villageName,
-//    lg.lot_Parental_Level,
-//    lg.no_of_dfls,
-//    ptaca.NO_OF_DFL_FROM_FC,
-//    l.LOT_WEIGHT_AFTER_WEIGHMENT,
-//    ma.estimated_weight,
-//    mm.market_name,
-//    ptaca.NO_OF_COCOON_PER_KG,
-//    ptaca.MELT_PERCENTAGE,
+//                        SELECT
+//                            l.ALLOTTED_LOT_ID,
+//                            f.name_kan,
+//                            f.father_name_kan,
+//                            f.fruits_id,
+//                            v.VILLAGE_NAME_IN_KANNADA AS villageName,
+//                            lg.lot_Parental_Level,
+//                            lg.no_of_dfls,
+//                            ptaca.NO_OF_DFL_FROM_FC,
+//                            l.LOT_WEIGHT_AFTER_WEIGHMENT,
+//                            ma.estimated_weight,
+//                            mm.market_name,
+//                            ptaca.NO_OF_COCOON_PER_KG,
+//                            ptaca.MELT_PERCENTAGE,
 //
-//    (l.LOT_WEIGHT_AFTER_WEIGHMENT * ptaca.NO_OF_COCOON_PER_KG) AS totalQuantity,
+//                            (l.LOT_WEIGHT_AFTER_WEIGHMENT * ptaca.NO_OF_COCOON_PER_KG) AS totalQuantity,
 //
-//    CASE WHEN lg.buyer_type = 'RSP' THEN lg.lot_weight ELSE 0 END AS rspQty,
-//    CASE WHEN lg.buyer_type = 'NSSO' THEN lg.lot_weight ELSE 0 END AS nssoQty,
-//    CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.lot_weight ELSE 0 END AS govtGrainageQty,
-//    CASE WHEN lg.buyer_type = 'Reeling' THEN lg.lot_weight ELSE 0 END AS reelingQty,
+//                            SUM(CASE WHEN lg.buyer_type = 'RSP' THEN lg.lot_weight ELSE 0 END) AS rspQty,
+//                            SUM(CASE WHEN lg.buyer_type = 'NSSO' THEN lg.lot_weight ELSE 0 END) AS nssoQty,
+//                            SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.lot_weight ELSE 0 END) AS govtGrainageQty,
+//                            SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN lg.lot_weight ELSE 0 END) AS reelingQty,
 //
-//    CASE WHEN lg.buyer_type = 'RSP' THEN es.license_number + ' - ' + es.name END AS rspName,
-//    CASE WHEN lg.buyer_type = 'NSSO' THEN es.address + ' - ' + es.name END AS nssoName,
-//    CASE WHEN lg.buyer_type = 'Govt Grainage' THEN gr.grainage_master_name END AS govtGrainageName,
-//    CASE WHEN lg.buyer_type = 'Reeling' THEN r.name END AS reelingName,
+//                            MAX(CASE WHEN lg.buyer_type = 'RSP' THEN es.license_number + ' - ' + es.name END) AS rspName,
+//                            MAX(CASE WHEN lg.buyer_type = 'NSSO' THEN es.address + ' - ' + es.name END) AS nssoName,
+//                            MAX(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN gr.grainage_master_name END) AS govtGrainageName,
+//                            MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN r.name END) AS reelingName,
 //
-//    l.auction_date,
-//    lg.remaining_cocoon
-//FROM farmer f
+//                            l.auction_date,
 //
-//INNER JOIN market_auction ma
-//    ON ma.farmer_id = f.farmer_id
-//    AND ma.active = 1
+//                            SUM(lg.remaining_cocoon) AS remaining_cocoon
 //
-//INNER JOIN lot l
-//    ON l.market_auction_id = ma.market_auction_id
-//    AND l.active = 1
+//                        FROM farmer f
 //
-//LEFT JOIN PrimaryAddress pa
-//    ON pa.farmer_id = f.farmer_id
-//    AND pa.rn = 1
+//                        INNER JOIN market_auction ma
+//                            ON ma.farmer_id = f.farmer_id
+//                            AND ma.active = 1
 //
-//LEFT JOIN village v
-//    ON v.village_id = pa.VILLAGE_ID
-//    AND v.active = 1
+//                        INNER JOIN lot l
+//                            ON l.market_auction_id = ma.market_auction_id
+//                            AND l.active = 1
 //
-//LEFT JOIN lot_groupage lg
-//    ON lg.lot_id = l.lot_id
-//    AND lg.active = 1
+//                        LEFT JOIN PrimaryAddress pa
+//                            ON pa.farmer_id = f.farmer_id
+//                            AND pa.rn = 1
 //
-//LEFT JOIN market_master mm
-//    ON mm.market_master_id = ma.market_id
-//    AND mm.active = 1
+//                        LEFT JOIN village v
+//                            ON v.village_id = pa.VILLAGE_ID
+//                            AND v.active = 1
 //
-//LEFT JOIN PUPA_TEST_AND_COCOON_ASSESSMENT ptaca
-//    ON ptaca.market_auction_id = ma.market_auction_id
-//    AND ptaca.active = 1
+//                        LEFT JOIN lot_groupage lg
+//                            ON lg.lot_id = l.lot_id
+//                            AND lg.active = 1
 //
-//LEFT JOIN reeler r
-//    ON lg.buyer_id = r.reeler_id
-//    AND lg.buyer_type = 'Reeling'
-//    AND r.active = 1
+//                        LEFT JOIN market_master mm
+//                            ON mm.market_master_id = ma.market_id
+//                            AND mm.active = 1
 //
-//LEFT JOIN external_unit_registration es
-//    ON lg.external_unit_id = es.external_unit_registration_id
-//    AND lg.buyer_type IN ('RSP','NSSO')
-//    AND es.active = 1
+//                        LEFT JOIN PUPA_TEST_AND_COCOON_ASSESSMENT ptaca
+//                            ON ptaca.market_auction_id = ma.market_auction_id
+//                            AND ptaca.active = 1
 //
-//LEFT JOIN grainage_master gr
-//    ON lg.external_unit_id = gr.grainage_master_id
-//    AND lg.buyer_type = 'Govt Grainage'
-//    AND gr.active = 1
+//                        LEFT JOIN reeler r
+//                            ON lg.buyer_id = r.reeler_id
+//                            AND lg.buyer_type = 'Reeling'
+//                            AND r.active = 1
 //
-//WHERE
-//    f.active = 1
-//    AND (:allottedLotId IS NULL OR l.allotted_lot_id = :allottedLotId)
-//    AND (
-//        (:fromDate IS NULL OR :toDate IS NULL)
-//        OR l.auction_date BETWEEN :fromDate AND :toDate
-//    )
-//    AND ma.market_id = :marketId
+//                        LEFT JOIN external_unit_registration es
+//                            ON lg.external_unit_id = es.external_unit_registration_id
+//                            AND lg.buyer_type IN ('RSP','NSSO')
+//                            AND es.active = 1
+//
+//                        LEFT JOIN grainage_master gr
+//                            ON lg.external_unit_id = gr.grainage_master_id
+//                            AND lg.buyer_type = 'Govt Grainage'
+//                            AND gr.active = 1
+//
+//                        WHERE
+//                            f.active = 1
+//                            AND (:allottedLotId IS NULL OR l.allotted_lot_id = :allottedLotId)
+//                            AND (
+//                                (:fromDate IS NULL OR :toDate IS NULL)
+//                                OR l.auction_date BETWEEN :fromDate AND :toDate
+//                            )
+//                            AND ma.market_id = :marketId
+//
+//                        GROUP BY
+//                            l.ALLOTTED_LOT_ID,
+//                            f.name_kan,
+//                            f.father_name_kan,
+//                            f.fruits_id,
+//                            v.VILLAGE_NAME_IN_KANNADA,
+//                            lg.lot_Parental_Level,
+//                            lg.no_of_dfls,
+//                            ptaca.NO_OF_DFL_FROM_FC,
+//                            l.LOT_WEIGHT_AFTER_WEIGHMENT,
+//                            ma.estimated_weight,
+//                            mm.market_name,
+//                            ptaca.NO_OF_COCOON_PER_KG,
+//                            ptaca.MELT_PERCENTAGE,
+//                            l.auction_date
 //""")
 //    List<Object[]> getDetailsForSeedCocoonSeedMarketReport(
 //            @Param("fromDate") LocalDate fromDate,
@@ -928,119 +946,163 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
 
     @Query(nativeQuery = true, value = """
             WITH PrimaryAddress AS (
-                            SELECT
-                                fa.farmer_id,
-                                fa.address_text,
-                                fa.VILLAGE_ID,
-                                ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
-                            FROM farmer_address fa
-                            WHERE fa.active = 1
-                        )
+                SELECT
+                    fa.farmer_id,
+                    fa.address_text,
+                    fa.VILLAGE_ID,
+                    ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
+                FROM farmer_address fa
+                WHERE fa.active = 1
+            ),
             
-                        SELECT
-                            l.ALLOTTED_LOT_ID,
-                            f.name_kan,
-                            f.father_name_kan,
-                            f.fruits_id,
-                            v.VILLAGE_NAME_IN_KANNADA AS villageName,
-                            lg.lot_Parental_Level,
-                            lg.no_of_dfls,
-                            ptaca.NO_OF_DFL_FROM_FC,
-                            l.LOT_WEIGHT_AFTER_WEIGHMENT,
-                            ma.estimated_weight,
-                            mm.market_name,
-                            ptaca.NO_OF_COCOON_PER_KG,
-                            ptaca.MELT_PERCENTAGE,
+            LotAgg AS (
+                SELECT
+                    lg.lot_id,
             
-                            (l.LOT_WEIGHT_AFTER_WEIGHMENT * ptaca.NO_OF_COCOON_PER_KG) AS totalQuantity,
+                    MAX(lg.lot_Parental_Level) AS lot_Parental_Level,
+                    MAX(lg.no_of_dfls) AS no_of_dfls,
             
-                            SUM(CASE WHEN lg.buyer_type = 'RSP' THEN lg.lot_weight ELSE 0 END) AS rspQty,
-                            SUM(CASE WHEN lg.buyer_type = 'NSSO' THEN lg.lot_weight ELSE 0 END) AS nssoQty,
-                            SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.lot_weight ELSE 0 END) AS govtGrainageQty,
-                            SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN lg.lot_weight ELSE 0 END) AS reelingQty,
+                    SUM(CASE WHEN lg.buyer_type = 'RSP' THEN lg.lot_weight ELSE 0 END) AS rspQty,
+                    SUM(CASE WHEN lg.buyer_type = 'NSSO' THEN lg.lot_weight ELSE 0 END) AS nssoQty,
+                    SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.lot_weight ELSE 0 END) AS govtGrainageQty,
+                    SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN lg.lot_weight ELSE 0 END) AS reelingQty,
             
-                            MAX(CASE WHEN lg.buyer_type = 'RSP' THEN es.license_number + ' - ' + es.name END) AS rspName,
-                            MAX(CASE WHEN lg.buyer_type = 'NSSO' THEN es.address + ' - ' + es.name END) AS nssoName,
-                            MAX(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN gr.grainage_master_name END) AS govtGrainageName,
-                            MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN r.name END) AS reelingName,
+                    MAX(CASE WHEN lg.buyer_type = 'RSP' THEN es.license_number + ' - ' + es.name END) AS rspName,
+                    MAX(CASE WHEN lg.buyer_type = 'NSSO' THEN es.address + ' - ' + es.name END) AS nssoName,
+                    MAX(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN gr.grainage_master_name END) AS govtGrainageName,
+                    MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN r.name END) AS reelingName,
             
-                            l.auction_date,
+                    SUM(lg.remaining_cocoon) AS remaining_cocoon,
+                    SUM(lg.market_fee) AS market_fee,
+                    SUM(lg.amount) AS amount,
             
-                            SUM(lg.remaining_cocoon) AS remaining_cocoon
+                    -- ✅ FIX ADDED HERE
+                    SUM(lg.sold_amount) AS sold_amount,
             
-                        FROM farmer f
+                    MAX(lg.auction_date) AS lg_auction_date
             
-                        INNER JOIN market_auction ma
-                            ON ma.farmer_id = f.farmer_id
-                            AND ma.active = 1
+                FROM lot_groupage lg
             
-                        INNER JOIN lot l
-                            ON l.market_auction_id = ma.market_auction_id
-                            AND l.active = 1
+                LEFT JOIN reeler r
+                    ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling' AND r.active = 1
             
-                        LEFT JOIN PrimaryAddress pa
-                            ON pa.farmer_id = f.farmer_id
-                            AND pa.rn = 1
+                LEFT JOIN external_unit_registration es
+                    ON lg.external_unit_id = es.external_unit_registration_id
+                    AND lg.buyer_type IN ('RSP','NSSO')
+                    AND es.active = 1
             
-                        LEFT JOIN village v
-                            ON v.village_id = pa.VILLAGE_ID
-                            AND v.active = 1
+                LEFT JOIN grainage_master gr
+                    ON lg.external_unit_id = gr.grainage_master_id
+                    AND lg.buyer_type = 'Govt Grainage'
+                    AND gr.active = 1
             
-                        LEFT JOIN lot_groupage lg
-                            ON lg.lot_id = l.lot_id
-                            AND lg.active = 1
+                WHERE lg.active = 1
             
-                        LEFT JOIN market_master mm
-                            ON mm.market_master_id = ma.market_id
-                            AND mm.active = 1
+                GROUP BY lg.lot_id
+            )
             
-                        LEFT JOIN PUPA_TEST_AND_COCOON_ASSESSMENT ptaca
-                            ON ptaca.market_auction_id = ma.market_auction_id
-                            AND ptaca.active = 1
+            SELECT
+                l.ALLOTTED_LOT_ID,
+                f.name_kan,
+                f.father_name_kan,
+                f.fruits_id,
+                v.VILLAGE_NAME_IN_KANNADA,
             
-                        LEFT JOIN reeler r
-                            ON lg.buyer_id = r.reeler_id
-                            AND lg.buyer_type = 'Reeling'
-                            AND r.active = 1
+                la.lot_Parental_Level,
+                la.no_of_dfls,
             
-                        LEFT JOIN external_unit_registration es
-                            ON lg.external_unit_id = es.external_unit_registration_id
-                            AND lg.buyer_type IN ('RSP','NSSO')
-                            AND es.active = 1
+                ptaca.NO_OF_DFL_FROM_FC,
+                l.LOT_WEIGHT_AFTER_WEIGHMENT,
+                ma.estimated_weight,
+                mm.market_name,
+                ptaca.NO_OF_COCOON_PER_KG,
+                ptaca.MELT_PERCENTAGE,
             
-                        LEFT JOIN grainage_master gr
-                            ON lg.external_unit_id = gr.grainage_master_id
-                            AND lg.buyer_type = 'Govt Grainage'
-                            AND gr.active = 1
+                (l.LOT_WEIGHT_AFTER_WEIGHMENT * ptaca.NO_OF_COCOON_PER_KG) AS totalQuantity,
             
-                        WHERE
-                            f.active = 1
-                            AND (:allottedLotId IS NULL OR l.allotted_lot_id = :allottedLotId)
-                            AND (
-                                (:fromDate IS NULL OR :toDate IS NULL)
-                                OR l.auction_date BETWEEN :fromDate AND :toDate
-                            )
-                            AND ma.market_id = :marketId
+                la.rspQty,
+                la.nssoQty,
+                la.govtGrainageQty,
+                la.reelingQty,
             
-                        GROUP BY
-                            l.ALLOTTED_LOT_ID,
-                            f.name_kan,
-                            f.father_name_kan,
-                            f.fruits_id,
-                            v.VILLAGE_NAME_IN_KANNADA,
-                            lg.lot_Parental_Level,
-                            lg.no_of_dfls,
-                            ptaca.NO_OF_DFL_FROM_FC,
-                            l.LOT_WEIGHT_AFTER_WEIGHMENT,
-                            ma.estimated_weight,
-                            mm.market_name,
-                            ptaca.NO_OF_COCOON_PER_KG,
-                            ptaca.MELT_PERCENTAGE,
-                            l.auction_date
+                la.rspName,
+                la.nssoName,
+                la.govtGrainageName,
+                la.reelingName,
+            
+                l.auction_date,
+                la.remaining_cocoon,
+                MAX(fc.spun_date) AS spun_date,
+                MAX(fc.expected_marker_date) AS expected_marker_date,
+                la.market_fee,
+                la.amount,
+                la.sold_amount
+            
+            FROM farmer f
+            
+            INNER JOIN market_auction ma
+                ON ma.farmer_id = f.farmer_id AND ma.active = 1
+            
+            INNER JOIN lot l
+                ON l.market_auction_id = ma.market_auction_id AND l.active = 1
+            
+            LEFT JOIN LotAgg la
+                ON la.lot_id = l.lot_id
+            
+            LEFT JOIN PrimaryAddress pa
+                ON pa.farmer_id = f.farmer_id AND pa.rn = 1
+            
+            LEFT JOIN village v
+                ON v.village_id = pa.VILLAGE_ID AND v.active = 1
+            
+            LEFT JOIN market_master mm
+                ON mm.market_master_id = ma.market_id AND mm.active = 1
+            
+            LEFT JOIN PUPA_TEST_AND_COCOON_ASSESSMENT ptaca
+                ON ptaca.market_auction_id = ma.market_auction_id AND ptaca.active = 1
+            
+            LEFT JOIN fitness_certificate fc
+                ON fc.farmer_id = f.farmer_id
+                AND fc.fruits_id = f.fruits_id
+                AND fc.active = 1
+            
+            WHERE
+                f.active = 1
+                AND (:allottedLotId IS NULL OR l.allotted_lot_id = :allottedLotId)
+                    AND (:auctionDate IS NULL OR CAST(l.auction_date AS DATE) = :auctionDate)
+                AND ma.market_id = :marketId
+            
+            GROUP BY
+                l.ALLOTTED_LOT_ID,
+                f.name_kan,
+                f.father_name_kan,
+                f.fruits_id,
+                v.VILLAGE_NAME_IN_KANNADA,
+                la.lot_Parental_Level,
+                la.no_of_dfls,
+                ptaca.NO_OF_DFL_FROM_FC,
+                l.LOT_WEIGHT_AFTER_WEIGHMENT,
+                ma.estimated_weight,
+                mm.market_name,
+                ptaca.NO_OF_COCOON_PER_KG,
+                ptaca.MELT_PERCENTAGE,
+                l.auction_date,
+                la.rspQty,
+                la.nssoQty,
+                la.govtGrainageQty,
+                la.reelingQty,
+                la.rspName,
+                la.nssoName,
+                la.govtGrainageName,
+                la.reelingName,
+                la.remaining_cocoon,
+                la.market_fee,
+                la.amount,
+                la.sold_amount
+
 """)
     List<Object[]> getDetailsForSeedCocoonSeedMarketReport(
-            @Param("fromDate") LocalDate fromDate,
-            @Param("toDate") LocalDate toDate,
+            @Param("auctionDate") LocalDate auctionDate,
             @Param("allottedLotId") Integer allottedLotId,
             @Param("marketId") Integer marketId
     );

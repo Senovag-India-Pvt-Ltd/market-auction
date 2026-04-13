@@ -1120,12 +1120,18 @@ public class LotGroupageService {
         return responses;
     }
 
+    private Object getSafe(Object[] row, int index) {
+        if (row == null || index < 0 || index >= row.length) {
+            return null;
+        }
+        return row[index];
+    }
+
     public List<LotDistributeBuyerWiseResponse> getSeedCocoonDTRReport(
             LotStatusSeedMarketRequest request) {
 
         List<Object[]> results = lotGroupageRepository.getDetailsForSeedCocoonSeedMarketReport(
-                request.getFromDate(),
-                request.getToDate(),
+                request.getAuctionDate(),
                 request.getAllottedLotId(),
                 request.getMarketId()
         );
@@ -1135,40 +1141,52 @@ public class LotGroupageService {
 
         for (Object[] row : results) {
 
+            if (row == null) continue;
+
+            System.out.println("Row length = " + row.length);
+
             LotDistributeBuyerWiseResponse response = LotDistributeBuyerWiseResponse.builder()
                     .serialNumber(serial++)
 
-                    .allottedLotId(Util.objectToInteger(row[0]))
-                    .farmerFullName(Util.objectToString(row[1]))
-                    .fatherNameKan(Util.objectToString(row[2]))
-                    .farmerFruitsId(Util.objectToString(row[3]))
-                    .farmerVillage(Util.objectToString(row[4]))
+                    .allottedLotId(Util.objectToInteger(getSafe(row, 0)))
 
-                    .parentalLevel(Util.objectToString(row[5]))
-                    .noOfDfls(Util.objectToString(row[6]))
-                    .fcIssued(Util.objectToInteger(row[7]))
+                    .farmerFullName(Util.objectToString(getSafe(row, 1)))
+                    .fatherNameKan(Util.objectToString(getSafe(row, 2)))
+                    .farmerFruitsId(Util.objectToString(getSafe(row, 3)))
+                    .farmerVillage(Util.objectToString(getSafe(row, 4)))
 
-                    .lotWeight(Util.objectToFloat(row[8]))
-                    .estimatedWeight(Util.objectToFloat(row[9]))
-                    .marketName(Util.objectToString(row[10]))
+                    .parentalLevel(Util.objectToString(getSafe(row, 5)))
+                    .noOfDfls(Util.objectToString(getSafe(row, 6)))
+                    .fcIssued(Util.objectToInteger(getSafe(row, 7)))
 
-                    .cocoonsPerKg(Util.objectToInteger(row[11]))
-                    .meltPercentage(Util.objectToFloat(row[12]))
-                    .totalQuantity(Util.objectToFloat(row[13]))
+                    .lotWeight(Util.objectToFloat(getSafe(row, 8)))
+                    .estimatedWeight(Util.objectToFloat(getSafe(row, 9)))
+                    .marketName(Util.objectToString(getSafe(row, 10)))
 
-                    .rspQty(Util.objectToFloat(row[14]))
-                    .nssoQty(Util.objectToFloat(row[15]))
-                    .govtGrainageQty(Util.objectToFloat(row[16]))
-                    .reelingQty(Util.objectToFloat(row[17]))
+                    .cocoonsPerKg(Util.objectToInteger(getSafe(row, 11)))
+                    .meltPercentage(Util.objectToFloat(getSafe(row, 12)))
+                    .totalQuantity(Util.objectToFloat(getSafe(row, 13)))
 
-                    .rspName(Util.objectToString(row[18]))
-                    .nssoName(Util.objectToString(row[19]))
-                    .govtGrainageName(Util.objectToString(row[20]))
-                    .reelingName(Util.objectToString(row[21]))
+                    .rspQty(Util.objectToFloat(getSafe(row, 14)))
+                    .nssoQty(Util.objectToFloat(getSafe(row, 15)))
+                    .govtGrainageQty(Util.objectToFloat(getSafe(row, 16)))
+                    .reelingQty(Util.objectToFloat(getSafe(row, 17)))
 
-                    .auctionDate(Util.objectToString(row[22]))
-                    .remainingCocoon(Util.objectToFloat(row[23]))
+                    .rspName(Util.objectToString(getSafe(row, 18)))
+                    .nssoName(Util.objectToString(getSafe(row, 19)))
+                    .govtGrainageName(Util.objectToString(getSafe(row, 20)))
+                    .reelingName(Util.objectToString(getSafe(row, 21)))
 
+                    .auctionDate(Util.objectToString(getSafe(row, 22)))
+                    .remainingCocoon(Util.objectToFloat(getSafe(row, 23)))
+
+                    // ✅ FIXED (correct mapping)
+                    .spunFromDate(Util.objectToString(getSafe(row, 24)))   // spun_date
+                    .spunToDate(Util.objectToString(getSafe(row, 25)))     // expected_marker_date
+
+                    .marketFee(Util.objectToFloat(getSafe(row, 26)))
+                    .ratePerKg(Util.objectToFloat(getSafe(row, 27)))
+                    .soldAmount(Util.objectToFloat(getSafe(row, 28)))
 
                     .build();
 

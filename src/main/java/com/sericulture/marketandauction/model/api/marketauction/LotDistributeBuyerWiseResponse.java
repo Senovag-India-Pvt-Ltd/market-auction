@@ -69,4 +69,14 @@ public class LotDistributeBuyerWiseResponse {
     private String reelingName;
     private Date marketAuctionDate;
 
+    private String spunFromDate;
+    private String spunToDate;
+    private Float amount;
+    private Float marketFee;
+    private String lgAuctionDate;
+    private Float ratePerKg;
+    private Float soldAmount;
+
+
+
 }
