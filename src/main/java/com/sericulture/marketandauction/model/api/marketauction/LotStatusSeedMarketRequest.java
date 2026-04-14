@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class LotStatusSeedMarketRequest extends RequestBody {
 
     @Schema(name = "allottedLotId", example = "1", required = true)
-    private int allottedLotId;
+    private Integer allottedLotId;
 
     @Schema(name = "auctionDate", example = "1")
     private LocalDate auctionDate;
