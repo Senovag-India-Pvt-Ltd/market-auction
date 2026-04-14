@@ -77,6 +77,13 @@ public class LotDistributeBuyerWiseResponse {
     private Float ratePerKg;
     private Float soldAmount;
 
+    private String reelerName;
+    private String reelerFatherName;
+    private String reelerDistrict;
+    private String reelerTaluk;
+    private String reelerHobli;
+    private String reelerVillage;
+
 
 
 }
