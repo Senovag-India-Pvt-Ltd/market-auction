@@ -2,10 +2,16 @@ package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
+import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.service.LotGroupageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/lotGroupage")
@@ -111,6 +117,28 @@ public class LotGroupageController {
         rw.setContent(lotGroupageService.getDetailsForMarketReceipt(lotStatusSeedMarketRequest));
         return ResponseEntity.ok(rw);
     }
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Ok Response"),
+//            @ApiResponse(responseCode = "400", description = "Bad Request - Has validation errors",
+//                    content = {
+//                            @Content(mediaType = "application/json", schema =
+//                            @Schema(example = "{\"content\":null,\"errorMessages\":[{\"errorType\":\"VALIDATION\",\"message\":[{\"message\":\"Invalid Input\",\"label\":\"NON_LABEL_MESSAGE\",\"locale\":null}]}]}"))
+//                    }),
+//            @ApiResponse(responseCode = "500", description = "Internal Server Error - Error occurred while processing the request.")
+//    })
+    @GetMapping("/getdetails")
+    public ResponseEntity<?> getLotDetails(
+            @RequestParam LocalDate date,
+            @RequestParam int lotNo
+    ) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
+
+        rw.setContent(
+                lotGroupageService.getLotDetails(date, lotNo)
+        );
+
+        return ResponseEntity.ok(rw);
+    }
 
     @PostMapping("/getSeedCocoonDTRReport")
     public ResponseEntity<?> getDetailsForSeedCocoonDTRReport(
@@ -122,4 +150,14 @@ public class LotGroupageController {
         return ResponseEntity.ok(rw);
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteLot(
+            @RequestParam int lotId,
+            @RequestParam LocalDate date) {
+        System.out.println("API HIT");
+
+        String message = lotGroupageService.deleteLot(lotId, date);
+
+        return ResponseEntity.ok(Map.of("content", message));
+    }
 }

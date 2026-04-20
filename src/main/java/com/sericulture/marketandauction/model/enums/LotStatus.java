@@ -9,6 +9,7 @@ public enum LotStatus {
     REJECTED("rejected"),
     WEIGHMENTCOMPLETED("weighmentcompleted"),
     READYFORPAYMENT("readyforpayment"),
+    DISTRIBUTED("distributed"),
     PAYMENTSUCCESS("paymentsuccess"),
     PAYMENTFAILED("paymentfailed"),
     PAYMENTVALIDATIONFAILED("paymentvalidationfailed"),
