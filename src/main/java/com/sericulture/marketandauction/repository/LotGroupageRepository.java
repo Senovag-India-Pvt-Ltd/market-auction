@@ -728,98 +728,129 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
 
     @Query(nativeQuery = true, value = """
         WITH PrimaryAddress AS (
-            SELECT
-                fa.farmer_id,
-                fa.STATE_ID,
-                fa.DISTRICT_ID,
-                fa.TALUK_ID,
-                fa.HOBLI_ID,
-                fa.VILLAGE_ID,
-                fa.address_text,
-                ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
-            FROM
-                farmer_address fa
-            WHERE
-                fa.active = 1
-        ),
-        MainQuery AS (
-            SELECT DISTINCT
-                f.farmer_number,
-                f.fruits_id,
-                (ISNULL(f.first_name, '') + ' ' + ISNULL(f.last_name, '')) AS farmer_full_name,
-                f.father_name_kan,
-                d.district_name_in_kannada,
-                t.taluk_name_in_kannada,
-                v.village_name_in_kannada,
-                mm.market_name_in_kannada,
-                rm.race_name,
-                sm.source_name,
-                ma.lot_Parental_Level,
-                lg.allotted_lot_id,
-                lg.auction_date,
-                MAX(
-                    CASE
-                        WHEN lg.buyer_type = 'RSP'          THEN es.license_number
-                        WHEN lg.buyer_type = 'NSSO'         THEN es.address
-                        WHEN lg.buyer_type = 'Govt Grainage' THEN gm.grainage_master_name
-                        WHEN lg.buyer_type = 'Reeling'      THEN r.name
-                        ELSE NULL
-                    END
-                ) AS buyer_name,
-                (CAST(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) * 100 AS FLOAT) / NULLIF(SUM(CAST(ma.dfl_lot_number AS FLOAT)), 0)) AS total_calculatedAverageYield,
-                l.LOT_WEIGHT_AFTER_WEIGHMENT,
-                SUM(CASE WHEN lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage') THEN ISNULL(lg.lot_weight, 0) ELSE 0 END) AS total_rsp_nsso_grainage_lot_weight,
-                SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN ISNULL(lg.lot_weight, 0) ELSE 0 END) AS total_reeling_lot_weight,
-                SUM(CASE WHEN lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage') THEN ISNULL(lg.amount, 0) ELSE 0 END) AS total_rsp_nsso_grainage_amount,
-                SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN ISNULL(lg.amount, 0) ELSE 0 END) AS total_reeling_amount,
-                SUM(CASE WHEN lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage') THEN ISNULL(lg.sold_amount, 0) ELSE 0 END) AS total_rsp_nsso_grainage_sold_amount,
-                SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN ISNULL(lg.sold_amount, 0) ELSE 0 END) AS total_reeling_sold_amount,
-                SUM(CASE WHEN lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage') THEN ISNULL(lg.market_fee, 0) ELSE 0 END) AS total_rsp_nsso_grainage_market_fee,
-                SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN ISNULL(lg.market_fee, 0) ELSE 0 END) AS total_reeling_market_fee,
-                SUM(lg.lot_weight)  AS total_lot_weight,
-                SUM(lg.amount)      AS total_amount,
-                SUM(lg.sold_amount) AS total_sold_amount,
-                SUM(lg.market_fee)  AS total_market_fee,
-                lg.amount
-            FROM
-                FARMER f
-            INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID AND ma.active = 1
-            INNER JOIN lot l ON l.market_auction_id = ma.market_auction_id AND l.active = 1
-            LEFT JOIN PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
-            LEFT JOIN Village v ON pa.VILLAGE_ID = v.village_id AND v.ACTIVE = 1
-            LEFT JOIN TALUK t ON pa.TALUK_ID = t.TALUK_ID AND t.ACTIVE = 1
-            LEFT JOIN DISTRICT d ON pa.DISTRICT_ID = d.DISTRICT_ID AND d.ACTIVE = 1
-            LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id AND mm.active = 1
-            LEFT JOIN race_master rm ON rm.race_id = ma.lot_variety AND rm.active = 1
-            LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID AND sm.active = 1
-            LEFT JOIN lot_groupage lg ON l.lot_id = lg.lot_id AND lg.active = 1
-            LEFT JOIN reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
-            LEFT JOIN external_unit_registration es ON lg.external_unit_id = es.external_unit_registration_id AND lg.buyer_type IN ('RSP', 'NSSO')
-            LEFT JOIN grainage_master gm ON lg.external_unit_id = gm.grainage_master_id AND lg.buyer_type = 'Govt Grainage'
-            WHERE
-                l.auction_date = :auctionDate
-                AND l.market_id = :marketId
-                AND l.allotted_lot_id = :allottedLotId
-                AND l.status = 'weighmentcompleted'
-            GROUP BY
-                f.farmer_number,
-                f.fruits_id,
-                f.first_name,
-                f.last_name,
-                f.father_name_kan,
-                d.district_name_in_kannada,
-                t.taluk_name_in_kannada,
-                v.village_name_in_kannada,
-                mm.market_name_in_kannada,
-                rm.race_name,
-                sm.source_name,
-                ma.lot_Parental_Level,
-                lg.allotted_lot_id,
-                lg.auction_date,
-                l.LOT_WEIGHT_AFTER_WEIGHMENT,
-                lg.amount
-        )
-        SELECT * FROM MainQuery;
+        SELECT
+            fa.farmer_id,
+            fa.STATE_ID,
+            fa.DISTRICT_ID,
+            fa.TALUK_ID,
+            fa.HOBLI_ID,
+            fa.VILLAGE_ID,
+            fa.address_text,
+            ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
+        FROM farmer_address fa
+        WHERE fa.active = 1
+    ),
+            
+    MainQuery AS (
+        SELECT
+            f.farmer_number,
+            f.fruits_id,
+            (ISNULL(f.first_name, '') + ' ' + ISNULL(f.last_name, '')) AS farmer_full_name,
+            f.father_name_kan,
+            d.district_name_in_kannada,
+            t.taluk_name_in_kannada,
+            v.village_name_in_kannada,
+            mm.market_name_in_kannada,
+            rm.race_name,
+            sm.source_name,
+            ma.lot_Parental_Level,
+            lg.allotted_lot_id,
+            lg.auction_date,
+            
+            -- Buyer Name
+            MAX(
+                CASE
+                    WHEN lg.buyer_type = 'RSP' THEN es.license_number
+                    WHEN lg.buyer_type = 'NSSO' THEN es.address
+                    WHEN lg.buyer_type = 'Govt Grainage' THEN gm.grainage_master_name
+                    WHEN lg.buyer_type = 'Reeling' THEN r.name
+                END
+            ) AS buyer_name,
+            
+            (CAST(SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) * 100 AS FLOAT)
+                / NULLIF(SUM(CAST(ma.dfl_lot_number AS FLOAT)), 0)) AS total_calculatedAverageYield,
+            
+            
+            SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
+                     THEN ISNULL(lg.lot_weight,0) ELSE 0 END) AS total_rsp_nsso_grainage_lot_weight,
+            
+            SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
+                     THEN ISNULL(lg.amount,0) ELSE 0 END) AS total_rsp_nsso_grainage_amount,
+            
+            SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
+                     THEN ISNULL(lg.sold_amount,0) ELSE 0 END) AS total_rsp_nsso_grainage_sold_amount,
+            
+            SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
+                     THEN ISNULL(lg.market_fee,0) ELSE 0 END) AS total_rsp_nsso_grainage_market_fee,
+            
+           
+            SUM(CASE WHEN lg.buyer_type = 'Reeling'
+                     THEN ISNULL(lg.lot_weight,0) ELSE 0 END) AS total_reeling_lot_weight,
+            
+            SUM(CASE WHEN lg.buyer_type = 'Reeling'
+                     THEN ISNULL(lg.amount,0) ELSE 0 END) AS total_reeling_amount,
+            
+            SUM(CASE WHEN lg.buyer_type = 'Reeling'
+                     THEN ISNULL(lg.sold_amount,0) ELSE 0 END) AS total_reeling_sold_amount,
+            
+            SUM(CASE WHEN lg.buyer_type = 'Reeling'
+                     THEN ISNULL(lg.market_fee,0) ELSE 0 END) AS total_reeling_market_fee,
+            
+            
+            SUM(ISNULL(lg.lot_weight,0))  AS total_lot_weight,
+            SUM(ISNULL(lg.amount,0))      AS total_amount,
+            SUM(ISNULL(lg.sold_amount,0)) AS total_sold_amount,
+            SUM(ISNULL(lg.market_fee,0))  AS total_market_fee,
+            MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN r.name END) AS reeler_name,
+                    MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN r.father_name END) AS reeler_father_name,
+                    MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN rd.district_name_in_kannada END) AS reeler_district,
+                    MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN rt.taluk_name_in_kannada END) AS reeler_taluk,
+                    MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN rh.hobli_name_in_kannada END) AS reeler_hobli,
+                    MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN rv.village_name_in_kannada END) AS reeler_village
+            
+        FROM FARMER f
+        INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID AND ma.active = 1
+        INNER JOIN lot l ON l.market_auction_id = ma.market_auction_id AND l.active = 1
+        LEFT JOIN PrimaryAddress pa ON pa.farmer_id = f.FARMER_ID AND pa.rn = 1
+        LEFT JOIN Village v ON pa.VILLAGE_ID = v.village_id AND v.ACTIVE = 1
+        LEFT JOIN TALUK t ON pa.TALUK_ID = t.TALUK_ID AND t.ACTIVE = 1
+        LEFT JOIN DISTRICT d ON pa.DISTRICT_ID = d.DISTRICT_ID AND d.ACTIVE = 1
+        LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id AND mm.active = 1
+        LEFT JOIN race_master rm ON rm.race_id = ma.lot_variety AND rm.active = 1
+        LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID AND sm.active = 1
+        LEFT JOIN lot_groupage lg ON l.lot_id = lg.lot_id AND lg.active = 1
+        LEFT JOIN reeler r ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling'
+        LEFT JOIN DISTRICT rd ON r.district_id = rd.district_id AND rd.active = 1
+                LEFT JOIN TALUK rt ON r.taluk_id = rt.taluk_id AND rt.active = 1
+                LEFT JOIN HOBLI rh ON r.hobli_id = rh.hobli_id AND rh.active = 1
+                LEFT JOIN VILLAGE rv ON r.village_id = rv.village_id AND rv.active = 1
+        LEFT JOIN external_unit_registration es ON lg.external_unit_id = es.external_unit_registration_id
+               AND lg.buyer_type IN ('RSP','NSSO')
+        LEFT JOIN grainage_master gm ON lg.external_unit_id = gm.grainage_master_id
+               AND lg.buyer_type = 'Govt Grainage'
+            
+        WHERE
+            l.auction_date = :auctionDate
+            AND l.market_id = :marketId
+            AND l.allotted_lot_id = :allottedLotId
+            AND l.status = 'weighmentcompleted'            
+        GROUP BY
+            f.farmer_number,
+            f.fruits_id,
+            f.first_name,
+            f.last_name,
+            f.father_name_kan,
+            d.district_name_in_kannada,
+            t.taluk_name_in_kannada,
+            v.village_name_in_kannada,
+            mm.market_name_in_kannada,
+            rm.race_name,
+            sm.source_name,
+            ma.lot_Parental_Level,
+            lg.allotted_lot_id,
+            lg.auction_date
+    )            
+    SELECT * FROM MainQuery;
     """)
     List<Object[]> getDetailsForMarketReceipt(
             @Param("auctionDate") LocalDate auctionDate,
@@ -988,159 +1019,127 @@ AND lg.active = true
 
     @Query(nativeQuery = true, value = """
             WITH PrimaryAddress AS (
-                SELECT
-                    fa.farmer_id,
-                    fa.address_text,
-                    fa.VILLAGE_ID,
-                    ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
-                FROM farmer_address fa
-                WHERE fa.active = 1
-            ),
-            
-            LotAgg AS (
-                SELECT
-                    lg.lot_id,
-            
-                    MAX(lg.lot_Parental_Level) AS lot_Parental_Level,
-                    MAX(lg.no_of_dfls) AS no_of_dfls,
-            
-                    SUM(CASE WHEN lg.buyer_type = 'RSP' THEN lg.lot_weight ELSE 0 END) AS rspQty,
-                    SUM(CASE WHEN lg.buyer_type = 'NSSO' THEN lg.lot_weight ELSE 0 END) AS nssoQty,
-                    SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.lot_weight ELSE 0 END) AS govtGrainageQty,
-                    SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN lg.lot_weight ELSE 0 END) AS reelingQty,
-            
-                    MAX(CASE WHEN lg.buyer_type = 'RSP' THEN es.license_number + ' - ' + es.name END) AS rspName,
-                    MAX(CASE WHEN lg.buyer_type = 'NSSO' THEN es.address + ' - ' + es.name END) AS nssoName,
-                    MAX(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN gr.grainage_master_name END) AS govtGrainageName,
-                    MAX(CASE WHEN lg.buyer_type = 'Reeling' THEN r.name END) AS reelingName,
-            
-                    SUM(lg.remaining_cocoon) AS remaining_cocoon,
-                    SUM(lg.market_fee) AS market_fee,
-                    SUM(lg.amount) AS amount,
-            
-                    -- ✅ FIX ADDED HERE
-                    SUM(lg.sold_amount) AS sold_amount,
-            
-                    MAX(lg.auction_date) AS lg_auction_date
-            
-                FROM lot_groupage lg
-            
-                LEFT JOIN reeler r
-                    ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling' AND r.active = 1
-            
-                LEFT JOIN external_unit_registration es
-                    ON lg.external_unit_id = es.external_unit_registration_id
-                    AND lg.buyer_type IN ('RSP','NSSO')
-                    AND es.active = 1
-            
-                LEFT JOIN grainage_master gr
-                    ON lg.external_unit_id = gr.grainage_master_id
-                    AND lg.buyer_type = 'Govt Grainage'
-                    AND gr.active = 1
-            
-                WHERE lg.active = 1
-            
-                GROUP BY lg.lot_id
-            )
-            
             SELECT
-                l.ALLOTTED_LOT_ID,
-                f.name_kan,
-                f.father_name_kan,
-                f.fruits_id,
-                v.VILLAGE_NAME_IN_KANNADA,
-            
-                la.lot_Parental_Level,
-                la.no_of_dfls,
-            
-                ptaca.NO_OF_DFL_FROM_FC,
-                l.LOT_WEIGHT_AFTER_WEIGHMENT,
-                ma.estimated_weight,
-                mm.market_name,
-                ptaca.NO_OF_COCOON_PER_KG,
-                ptaca.MELT_PERCENTAGE,
-            
-                (l.LOT_WEIGHT_AFTER_WEIGHMENT * ptaca.NO_OF_COCOON_PER_KG) AS totalQuantity,
-            
-                la.rspQty,
-                la.nssoQty,
-                la.govtGrainageQty,
-                la.reelingQty,
-            
-                la.rspName,
-                la.nssoName,
-                la.govtGrainageName,
-                la.reelingName,
-            
-                l.auction_date,
-                la.remaining_cocoon,
-                MAX(fc.spun_date) AS spun_date,
-                MAX(fc.expected_marker_date) AS expected_marker_date,
-                la.market_fee,
-                la.amount,
-                la.sold_amount
-            
-            FROM farmer f
-            
-            INNER JOIN market_auction ma
-                ON ma.farmer_id = f.farmer_id AND ma.active = 1
-            
-            INNER JOIN lot l
-                ON l.market_auction_id = ma.market_auction_id AND l.active = 1
-            
-            LEFT JOIN LotAgg la
-                ON la.lot_id = l.lot_id
-            
-            LEFT JOIN PrimaryAddress pa
-                ON pa.farmer_id = f.farmer_id AND pa.rn = 1
-            
-            LEFT JOIN village v
-                ON v.village_id = pa.VILLAGE_ID AND v.active = 1
-            
-            LEFT JOIN market_master mm
-                ON mm.market_master_id = ma.market_id AND mm.active = 1
-            
-            LEFT JOIN PUPA_TEST_AND_COCOON_ASSESSMENT ptaca
-                ON ptaca.market_auction_id = ma.market_auction_id AND ptaca.active = 1
-            
-            LEFT JOIN fitness_certificate fc
-                ON fc.farmer_id = f.farmer_id
-                AND fc.fruits_id = f.fruits_id
-                AND fc.active = 1
-            
-            WHERE
-                f.active = 1
-                AND (:allottedLotId IS NULL OR l.allotted_lot_id = :allottedLotId)
-                    AND (:auctionDate IS NULL OR CAST(l.auction_date AS DATE) = :auctionDate)
-                AND ma.market_id = :marketId
-            
-            GROUP BY
-                l.ALLOTTED_LOT_ID,
-                f.name_kan,
-                f.father_name_kan,
-                f.fruits_id,
-                v.VILLAGE_NAME_IN_KANNADA,
-                la.lot_Parental_Level,
-                la.no_of_dfls,
-                ptaca.NO_OF_DFL_FROM_FC,
-                l.LOT_WEIGHT_AFTER_WEIGHMENT,
-                ma.estimated_weight,
-                mm.market_name,
-                ptaca.NO_OF_COCOON_PER_KG,
-                ptaca.MELT_PERCENTAGE,
-                l.auction_date,
-                la.rspQty,
-                la.nssoQty,
-                la.govtGrainageQty,
-                la.reelingQty,
-                la.rspName,
-                la.nssoName,
-                la.govtGrainageName,
-                la.reelingName,
-                la.remaining_cocoon,
-                la.market_fee,
-                la.amount,
-                la.sold_amount
+                fa.farmer_id,
+                fa.address_text,
+                fa.VILLAGE_ID,
+                ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.district_id DESC) AS rn
+            FROM farmer_address fa
+            WHERE fa.active = 1
+        ),
+        LotAgg AS (
+            SELECT
+                lg.lot_id,
+                MAX(lg.lot_Parental_Level) AS lot_Parental_Level,
+                MAX(lg.no_of_dfls) AS no_of_dfls,
+                SUM(CASE WHEN lg.buyer_type = 'RSP' THEN lg.lot_weight ELSE 0 END) AS rspQty,
+                SUM(CASE WHEN lg.buyer_type = 'NSSO' THEN lg.lot_weight ELSE 0 END) AS nssoQty,
+                SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.lot_weight ELSE 0 END) AS govtGrainageQty,
+                SUM(CASE WHEN lg.buyer_type = 'Reeling' THEN lg.lot_weight ELSE 0 END) AS reelingQty,
+                STRING_AGG(CASE WHEN lg.buyer_type = 'RSP' THEN es.license_number + ' - ' + es.name END, ', ') AS rspName,
+                STRING_AGG(CASE WHEN lg.buyer_type = 'NSSO' THEN es.address + ' - ' + es.name END, ', ') AS nssoName,
+                STRING_AGG(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN gr.grainage_master_name END, ', ') AS govtGrainageName,
+                STRING_AGG(CASE WHEN lg.buyer_type = 'Reeling' THEN r.name END, ', ') AS reelingName,
+                MAX(lg.remaining_cocoon) AS remaining_cocoon,
+                SUM(lg.market_fee) AS market_fee,
+                SUM(lg.amount) AS amount,
+                SUM(lg.sold_amount) AS sold_amount,
+                MAX(lg.auction_date) AS lg_auction_date
+            FROM lot_groupage lg
+            LEFT JOIN reeler r
+                ON lg.buyer_id = r.reeler_id AND lg.buyer_type = 'Reeling' AND r.active = 1
+            LEFT JOIN external_unit_registration es
+                ON lg.external_unit_id = es.external_unit_registration_id
+                AND lg.buyer_type IN ('RSP','NSSO')
+                AND es.active = 1
+            LEFT JOIN grainage_master gr
+                ON lg.external_unit_id = gr.grainage_master_id
+                AND lg.buyer_type = 'Govt Grainage'
+                AND gr.active = 1
+            WHERE lg.active = 1
+            GROUP BY lg.lot_id
+        )
+        SELECT
+            l.ALLOTTED_LOT_ID,
+            f.name_kan,
+            f.father_name_kan,
+            f.fruits_id,
+            v.VILLAGE_NAME_IN_KANNADA,
+            la.lot_Parental_Level,
+            la.no_of_dfls,
+            ptaca.NO_OF_DFL_FROM_FC,
+            l.LOT_WEIGHT_AFTER_WEIGHMENT,
+            ma.estimated_weight,
+            mm.market_name,
+            ptaca.NO_OF_COCOON_PER_KG,
+            ptaca.MELT_PERCENTAGE,
+            (l.LOT_WEIGHT_AFTER_WEIGHMENT * ptaca.NO_OF_COCOON_PER_KG) AS totalQuantity,
+            la.rspQty,
+            la.nssoQty,
+            la.govtGrainageQty,
+            la.reelingQty,
+            la.rspName,
+            la.nssoName,
+            la.govtGrainageName,
+            la.reelingName,
+            l.auction_date,
+            la.remaining_cocoon,
+            MAX(fc.spun_date) AS spun_date,
+            MAX(fc.expected_marker_date) AS expected_marker_date,
+            la.market_fee,
+            la.amount,
+            la.sold_amount
+        FROM farmer f
+        INNER JOIN market_auction ma
+            ON ma.farmer_id = f.farmer_id AND ma.active = 1
+        INNER JOIN lot l
+            ON l.market_auction_id = ma.market_auction_id AND l.active = 1
+        LEFT JOIN LotAgg la
+            ON la.lot_id = l.lot_id
+        LEFT JOIN PrimaryAddress pa
+            ON pa.farmer_id = f.farmer_id AND pa.rn = 1
+        LEFT JOIN village v
+            ON v.village_id = pa.VILLAGE_ID AND v.active = 1
+        LEFT JOIN market_master mm
+            ON mm.market_master_id = ma.market_id AND mm.active = 1
+        LEFT JOIN PUPA_TEST_AND_COCOON_ASSESSMENT ptaca
+            ON ptaca.market_auction_id = ma.market_auction_id AND ptaca.active = 1
+        LEFT JOIN fitness_certificate fc
+            ON fc.farmer_id = f.farmer_id
+            AND fc.fruits_id = f.fruits_id
+            AND fc.active = 1
+        WHERE
+        f.active = 1  
+        AND (:allottedLotId IS NULL OR l.allotted_lot_id = :allottedLotId)
+        AND (:auctionDate IS NULL OR CONVERT(DATE, l.auction_date) = CONVERT(DATE, :auctionDate))           
+        AND ma.market_id = :marketId
+        GROUP BY
+            l.ALLOTTED_LOT_ID,
+            f.name_kan,
+            f.father_name_kan,
+            f.fruits_id,
+            v.VILLAGE_NAME_IN_KANNADA,
+            la.lot_Parental_Level,
+            la.no_of_dfls,
+            ptaca.NO_OF_DFL_FROM_FC,
+            l.LOT_WEIGHT_AFTER_WEIGHMENT,
+            ma.estimated_weight,
+            mm.market_name,
+            ptaca.NO_OF_COCOON_PER_KG,
+            ptaca.MELT_PERCENTAGE,
+            l.auction_date,
+            la.rspQty,
+            la.nssoQty,
+            la.govtGrainageQty,
+            la.reelingQty,
+            la.rspName,
+            la.nssoName,
+            la.govtGrainageName,
+            la.reelingName,
+            la.remaining_cocoon,
+            la.market_fee,
+            la.amount,
+            la.sold_amount
 
 """)
     List<Object[]> getDetailsForSeedCocoonSeedMarketReport(
