@@ -1163,12 +1163,19 @@ AND lg.active = true
     Object[][] getExternalUnitVirtualAccountBalance(@Param("externalUnitId") Long externalUnitId, @Param("marketId") int marketId);
 
     @Query(nativeQuery = true, value = """
-            SELECT evba.virtual_account_number, rvcb.CURRENT_BALANCE
-            FROM dbo.external_unit_registration eur
-            INNER JOIN dbo.external_unit_type_master et ON et.external_unit_type_id = eur.external_unit_type_id
-            LEFT JOIN dbo.eu_virtual_bank_account evba ON evba.eu_id = eur.external_unit_registration_id AND evba.market_master_id = :marketId
-            LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number = evba.virtual_account_number
-            WHERE eur.external_unit_registration_id = :externalUnitId AND et.payment_via_bank = 1
-            """)
-    Object[] getExternalUnitVirtualAccountBalanceInSave(@Param("externalUnitId") Long externalUnitId, @Param("marketId") int marketId);
+        SELECT evba.virtual_account_number
+        FROM dbo.external_unit_registration eur
+        INNER JOIN dbo.external_unit_type_master et 
+            ON et.external_unit_type_id = eur.external_unit_type_id
+        LEFT JOIN dbo.eu_virtual_bank_account evba 
+            ON evba.eu_id = eur.external_unit_registration_id 
+            AND evba.market_master_id = :marketId
+        LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb 
+            ON rvcb.reeler_virtual_account_number = evba.virtual_account_number
+        WHERE eur.external_unit_registration_id = :externalUnitId 
+            AND et.payment_via_bank = 1
+        """)
+    String getExternalUnitVirtualAccountAndBalanceSave(
+            @Param("externalUnitId") Long externalUnitId,
+            @Param("marketId") int marketId);
 }
