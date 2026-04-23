@@ -1178,4 +1178,46 @@ AND lg.active = true
     String getExternalUnitVirtualAccountAndBalanceSave(
             @Param("externalUnitId") Long externalUnitId,
             @Param("marketId") int marketId);
+
+    @Query(value = """
+        SELECT
+             eur.name,
+             eur.license_number,
+             evba.virtual_account_number,
+             ISNULL(rvcb.CURRENT_BALANCE, 0) AS CURRENT_BALANCE,
+             FORMAT(ISNULL(rvcb.MODIFIED_DATE, rvcb.CREATED_DATE), 'dd-MM-yyyy HH:mm:ss') AS modified_date
+             FROM dbo.external_unit_registration eur
+             INNER JOIN dbo.external_unit_type_master et\s
+             ON et.external_unit_type_id = eur.external_unit_type_id
+             INNER JOIN dbo.eu_virtual_bank_account evba\s
+             ON evba.eu_id = eur.external_unit_registration_id\s
+             AND evba.market_master_id = :marketId
+             LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb\s
+             ON rvcb.reeler_virtual_account_number = evba.virtual_account_number
+""", nativeQuery = true)
+    List<Object[]>  getExternalUnitBalanceByMarket(
+            @Param("marketId") Long marketId);
+
+    @Query(value = """
+            SELECT\s
+                r.name,
+                rvba.virtual_account_number,
+                ISNULL(rvcb.CURRENT_BALANCE, 0) AS CURRENT_BALANCE,
+                mm.releer_minimum_balance,
+                FORMAT(ISNULL(rvcb.MODIFIED_DATE, rvcb.CREATED_DATE), 'dd-MM-yyyy HH:mm:ss') AS updated_date
+            FROM reeler r
+            
+            INNER JOIN reeler_virtual_bank_account rvba
+                ON rvba.reeler_Id = r.reeler_Id
+                AND rvba.market_master_id = :marketId
+                AND rvba.active = 1
+            
+            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb
+                ON rvcb.reeler_virtual_account_number = rvba.virtual_account_number
+            
+            LEFT JOIN market_master mm
+                ON mm.market_master_id = rvba.market_master_id
+""", nativeQuery = true)
+    List<Object[]> getReelerBalance(
+            @Param("marketId") Long marketId);
 }
