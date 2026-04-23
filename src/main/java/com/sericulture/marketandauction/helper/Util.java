@@ -95,9 +95,22 @@ public final class Util {
         return object == null ? 0 : Integer.parseInt(String.valueOf(object));
     }
 
-    public static long objectToLong(Object object) {
-        return object == null ? 0 : Long.parseLong(String.valueOf(object));
+    public static long objectToLong(Object obj) {
+        if (obj == null) return 0L;
+
+        // ✅ BEST way (handles 90, 90.00, BigDecimal, etc.)
+        if (obj instanceof Number) {
+            return ((Number) obj).longValue();
+        }
+
+        try {
+            return (long) Double.parseDouble(obj.toString());
+        } catch (Exception e) {
+            return 0L;
+        }
+
     }
+
 
     public static String getCRN(LocalDate date, int marketId, int allottedLotId) {
         String dateInString = date.toString();
