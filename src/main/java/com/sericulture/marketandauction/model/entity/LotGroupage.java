@@ -37,7 +37,7 @@ public class LotGroupage extends BaseEntity implements Serializable {
     private Long amount;
 
     @Column(name = "MARKET_FEE")
-    private Long marketFee;
+    private Double marketFee;
 
     @Column(name = "SOLD_AMOUNT")
     private Long soldAmount;

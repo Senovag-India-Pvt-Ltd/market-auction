@@ -729,6 +729,11 @@ ORDER BY lg.auction_date DESC
     @Query(nativeQuery = true, value = LotTransactionQueryConstants.QUERY_ELIGIBLE_FOR_PAYMENT_LOTS_CASH)
     public List<Object[]> getAllEligiblePaymentTxnByOptionalLotListAndLotStatusForCashPaymentMode(LocalDate paymentDate, int marketId, List<Long> lotList, String lotStatus);
 
+    @Query("SELECT l FROM Lot l WHERE l.allottedLotId = :lotNo AND l.auctionDate = :date AND l.active = true")
+    Optional<Lot> findByAllottedLotIdAndAuctionDateActiveTrue(@Param("lotNo") int lotNo, @Param("date") LocalDate date);
+
+    @Query("SELECT l FROM Lot l WHERE l.id = :lotId AND l.auctionDate = :date AND l.active = true")
+    Optional<Lot> findByIdAndAuctionDateAndActiveTrue(@Param("lotId") BigInteger lotId, @Param("date") LocalDate date);
 
 
 }

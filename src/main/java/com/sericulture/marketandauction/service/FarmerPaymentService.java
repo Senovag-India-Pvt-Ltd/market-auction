@@ -320,6 +320,40 @@ public static long prepareFarmerReadyPaymentInfoForSeedMarketResponseList(
         return response;
     }
 
+    public static Long prepareFarmerReadyPaymentInfoForSeedMarketResponseList(
+            List<Object[]> paginatedResponse,
+            List<FarmerReadyPaymentInfoForSeedMarketResponse> farmerReadyPaymentInfoForSeedMarketResponseList) {
+
+        long totalFarmerAmount = 0L;
+
+        for (Object[] response : paginatedResponse) {
+            long soldAmount = Util.objectToLong(response[14]);
+            double marketFee = (double) Util.objectToFloat(response[13]);
+            long farmerAmount = (long) (soldAmount - marketFee);
+            totalFarmerAmount = farmerAmount + totalFarmerAmount;
+
+            // Corrected instantiation of FarmerReadyPaymentInfoForSeedMarketResponse
+            FarmerReadyPaymentInfoForSeedMarketResponse farmerReadyPaymentInfoForSeedMarketResponse =
+                    new FarmerReadyPaymentInfoForSeedMarketResponse(
+                            Integer.parseInt(Util.objectToString(response[0])),
+                            Util.objectToLong(response[2]),
+                            Util.objectToString(response[3]),
+                            Util.objectToString(response[4]),
+                            Util.objectToString(response[5]),
+                            Util.objectToString(response[6]),
+                            Util.objectToString(response[7]),
+                            Util.objectToString(response[8]),
+                            Util.objectToLong(response[9]),   // lot_groupage_id
+                            Util.objectToString(response[10]),   // buyer_type
+                            Util.objectToLong(response[11]),  // buyer_id
+                            Util.objectToLong(response[12]),
+                            // lot_weight
+                            marketFee,
+                            soldAmount,
+                            Util.objectToString(response[15]),  // buyer_name
+                            Util.objectToLong(response[16]),   // lot_id
+                            Util.objectToLong(response[17]),farmerAmount
+                    );
 
 //    public ResponseEntity<?> updateSeedMarketLotlistByChangingTheStatus(FarmerPaymentInfoForSeedMarketRequestByLotList farmerPaymentInfoForSeedMarketRequestByLotList, boolean selectedLot, String fromlotStatus, String toLotStatus) {
 //        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);

@@ -20,6 +20,11 @@ public class LotGroupageController {
     @Autowired
     LotGroupageService lotGroupageService;
 
+    @PostMapping("/validateReelerBalance")
+    public ResponseEntity<?> validateReelerBalance(@RequestBody LotGroupageDetailsRequest lotGroupageRequest) {
+        return lotGroupageService.validateReelerBalanceForLotGroupage(lotGroupageRequest);
+    }
+
     @PostMapping("/saveLotGroupage")
     public ResponseEntity<?> saveLotGroupage(@RequestBody LotGroupageDetailsRequest lotGroupageRequest){
         ResponseWrapper rw = ResponseWrapper.createWrapper(LotGroupageResponse.class);
