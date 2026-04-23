@@ -33,7 +33,7 @@ public class LotGroupageResponse extends ResponseBody {
     Long amount;
 
     @Schema(name="marketFee", example = "1")
-    Long marketFee;
+    Double marketFee;
 
     @Schema(name="soldAmount", example = "1")
     Long soldAmount;
@@ -72,6 +72,9 @@ public class LotGroupageResponse extends ResponseBody {
 
     @Schema(name="fruitsId", example = "1")
     String fruitsId;
+
+    @Schema(name = "status", example = "pending")
+    private String status;
 
     @Schema(name = "error", example = "true")
     Boolean error;

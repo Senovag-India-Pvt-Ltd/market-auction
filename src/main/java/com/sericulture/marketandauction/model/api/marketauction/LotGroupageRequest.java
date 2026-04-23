@@ -3,6 +3,7 @@ package com.sericulture.marketandauction.model.api.marketauction;
 import brave.Request;
 import com.sericulture.marketandauction.model.api.RequestBody;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -68,5 +69,6 @@ public class LotGroupageRequest extends RequestBody {
     @Schema(name = "fruitsId", example = "Reeler")
     String fruitsId;
 
-
+    @Schema(name = "status", example = "pending")
+    private String status;
 }

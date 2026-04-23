@@ -401,7 +401,7 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
                 buyer.setNoOfCocoonPerKg(Util.objectToLong(response[48]));
                 buyer.setRemainingCocoon(Util.objectToString(response[49]));
                 buyer.setFarmerAmount(Util.objectToFloat(response[28]));
-                buyer.setLgMarketFee(Util.objectToInteger(response[36]));
+                buyer.setLgMarketFee(Util.objectToFloat(response[36]));
 
 
                 buyerList.add(buyer);   // ✅ CORRECT
@@ -474,7 +474,7 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
                 .lgBuyerType(Util.objectToString(response[33]))
                 .lgLotWeight(Util.objectToString(response[34]))
                 .lgAmount(Util.objectToString(response[35]))
-                .lgMarketFee(Util.objectToInteger(response[36]))
+                .lgMarketFee(Util.objectToFloat(response[36]))
                 .lgSoldOutAmount(Util.objectToString(response[37]))
                 .lgAverageYield(Util.objectToString(response[38]))
                 .lgNoOfDfl(Util.objectToString(response[39]))
