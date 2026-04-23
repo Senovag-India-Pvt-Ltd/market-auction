@@ -15,6 +15,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
+@Builder
 public class FarmerReadyPaymentInfoForSeedMarketResponse extends ResponseBody {
     //    private int serialNumber;
 //    @Column(name = "MARKET_AUCTION_ID")
@@ -59,6 +60,7 @@ public class FarmerReadyPaymentInfoForSeedMarketResponse extends ResponseBody {
 //    @Column(name = "AUCTION_DATE")
 //    private LocalDate auctionDate;
     private int serialNumber;
+    private Long lotGroupageId;
     private Long allottedLotId;
     private String auctionDate;
     private String farmerFirstName;
@@ -66,15 +68,21 @@ public class FarmerReadyPaymentInfoForSeedMarketResponse extends ResponseBody {
     private String farmerLastName;
     private String farmerNumber;
     private String farmerMobileNumber;
-    private Long lotGroupageId;
     private String buyerType;
+    private String buyerName;
     private Long lotWeight;
     private Long amount;
-    private Long marketFee;
     private Long soldAmount;
-    private String buyerName;
+    private Long marketFee;
     private Long buyerId;
     private Long id;
     private Long farmerAmount;
+//    private String reelerLicense;
+    private String bankName;
+    private String branchName;
+    private String ifscCode;
+    private String accountNumber;
+    private float lotSoldOutAmount;
+    private double farmerMarketFee;
 
 }
