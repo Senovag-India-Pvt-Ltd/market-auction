@@ -1,13 +1,19 @@
 package com.sericulture.marketandauction.controller;
 
+import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.service.LotGroupageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileInputStream;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
@@ -164,5 +170,65 @@ public class LotGroupageController {
         String message = lotGroupageService.deleteLot(lotId, date);
 
         return ResponseEntity.ok(Map.of("content", message));
+    }
+
+    @PostMapping("/external-unit-balance-report")
+    public ResponseEntity<InputStreamResource> downloadExternalUnitBalance(
+            @RequestParam Long marketId) {
+
+        try {
+
+            FileInputStream fis = lotGroupageService.downloadExternalUnitBalance(marketId);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=external_unit_balance_" + Util.getISTLocalDate() + ".xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new InputStreamResource(fis));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/reeler-balance-report")
+    public ResponseEntity<InputStreamResource> downloadReelerBalance(
+            @RequestParam Long marketId) {
+
+        try {
+
+            FileInputStream fis = lotGroupageService.downloadReelerBalance(marketId);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=reeler_balance_" + Util.getISTLocalDate() + ".xlsx")
+                    .header(HttpHeaders.CONTENT_TYPE,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .body(new InputStreamResource(fis));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @PostMapping("/external-unit-balance-data")
+    public ResponseEntity<?> getExternalUnitBalanceData(
+            @RequestParam Long marketId) {
+
+        return ResponseEntity.ok(
+                lotGroupageService.getExternalUnitBalanceData(marketId)
+        );
+    }
+
+    @PostMapping("/reeler-balance-data")
+    public ResponseEntity<?> getReelerBalanceData(
+            @RequestParam Long marketId) {
+
+        return ResponseEntity.ok(
+                lotGroupageService.getReelerBalanceData(marketId)
+        );
     }
 }

@@ -12,16 +12,26 @@ import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.model.mapper.Mapper;
 import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
+import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.io.File;
+import java.util.List;
+
 
 @Service
 @Slf4j
@@ -1295,5 +1305,164 @@ public class LotGroupageService {
         return "Lot deleted successfully";
     }
 
+    public FileInputStream downloadExternalUnitBalance(Long marketId) throws Exception {
 
+        List<Object[]> list = lotGroupageRepository.getExternalUnitBalanceByMarket(marketId);
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("External Unit Balance");
+
+        // Header
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("Name");
+        header.createCell(1).setCellValue("License No");
+        header.createCell(2).setCellValue("Virtual Account Number");
+        header.createCell(3).setCellValue("Current Balance");
+        header.createCell(4).setCellValue("Updated Date & Time");
+
+        int rowNum = 1;
+
+        for (Object[] data : list) {
+
+            Row row = sheet.createRow(rowNum++);
+
+            // Safe mapping
+            String name = data[0] != null ? data[0].toString() : "";
+            String licenseNo = data[1] != null ? data[1].toString() : "";
+            String account = data[2] != null ? data[2].toString() : "";
+
+            double balance = 0;
+            if (data[3] != null) {
+                try {
+                    balance = Double.parseDouble(data[3].toString());
+                } catch (Exception e) {
+                    balance = 0;
+                }
+            }
+
+            String date = data[4] != null ? data[4].toString() : "";
+
+            row.createCell(0).setCellValue(name);
+            row.createCell(1).setCellValue(licenseNo);
+            row.createCell(2).setCellValue(account);
+            row.createCell(3).setCellValue(balance);
+            row.createCell(4).setCellValue(date);
+        }
+
+        // Create temp file
+        File file = File.createTempFile("External_Unit_Balance_", ".xlsx");
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            workbook.write(fos);
+        }
+
+        workbook.close();
+
+        return new FileInputStream(file);
+    }
+
+    public FileInputStream downloadReelerBalance(Long marketId) throws Exception {
+
+        List<Object[]> list = lotGroupageRepository.getReelerBalance(marketId);
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Reeler Balance");
+
+        // Header
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("Reeler Name");
+        header.createCell(1).setCellValue("Virtual Account Number");
+        header.createCell(2).setCellValue("Current Balance");
+        header.createCell(3).setCellValue("Minimum Balance");
+        header.createCell(4).setCellValue("Updated Date & Time");
+
+        int rowNum = 1;
+
+        for (Object[] data : list) {
+
+            Row row = sheet.createRow(rowNum++);
+
+            String reelerName = data[0] != null ? data[0].toString() : "";
+            String account = data[1] != null ? data[1].toString() : "";
+
+            Double balance = 0.0;
+            if (data[2] != null) {
+                try {
+                    balance = Double.parseDouble(data[2].toString());
+                } catch (Exception e) {
+                    balance = 0.0;
+                }
+            }
+
+            Double minBalance = 0.0;
+            if (data[3] != null) {
+                try {
+                    minBalance = Double.parseDouble(data[3].toString());
+                } catch (Exception e) {
+                    minBalance = 0.0;
+                }
+            }
+
+            String date = data[4] != null ? data[4].toString() : "";
+
+            row.createCell(0).setCellValue(reelerName);
+            row.createCell(1).setCellValue(account);
+            row.createCell(2).setCellValue(balance);
+            row.createCell(3).setCellValue(minBalance);
+            row.createCell(4).setCellValue(date);
+        }
+
+        File file = File.createTempFile("Reeler_Balance_", ".xlsx");
+        FileOutputStream fos = new FileOutputStream(file);
+
+        workbook.write(fos);
+        workbook.close();
+        fos.close();
+
+        return new FileInputStream(file);
+    }
+
+    public List<Map<String, Object>> getExternalUnitBalanceData(Long marketId) {
+
+        List<Object[]> list = lotGroupageRepository.getExternalUnitBalanceByMarket(marketId);
+
+        List<Map<String, Object>> response = new ArrayList<>();
+
+        for (Object[] data : list) {
+
+            Map<String, Object> map = new HashMap<>();
+
+            map.put("name", data[0]);
+            map.put("licenseNo", data[1]);
+            map.put("virtualAccountNumber", data[2]);
+            map.put("currentBalance", data[3]);
+            map.put("updatedDate", data[4]);
+
+            response.add(map);
+        }
+
+        return response;
+    }
+
+    public List<Map<String, Object>> getReelerBalanceData(Long marketId) {
+
+        List<Object[]> list = lotGroupageRepository.getReelerBalance(marketId);
+
+        List<Map<String, Object>> response = new ArrayList<>();
+
+        for (Object[] data : list) {
+
+            Map<String, Object> map = new HashMap<>();
+
+            map.put("name", data[0]);
+            map.put("virtualAccountNumber", data[1]);
+            map.put("currentBalance", data[2]);
+            map.put("minimumBalance", data[3]);
+            map.put("updatedDate", data[4]);
+
+            response.add(map);
+        }
+
+        return response;
+    }
 }
