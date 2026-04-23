@@ -76,10 +76,6 @@ public class LotGroupageService {
 
     @Transactional
 
-
-
-
-
     public List<LotGroupageResponse> saveLotGroupage(LotGroupageDetailsRequest lotGroupageDetailsRequest) {
         List<LotGroupageResponse> responses = new ArrayList<>();
 
@@ -155,8 +151,6 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
-                        break;
                     case "Reeling":
                         marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
@@ -164,7 +158,7 @@ public class LotGroupageService {
                         break;
                 }
 
-                lotGroupage.setMarketFee(marketFee.longValue());
+                lotGroupage.setMarketFee(marketFee.setScale(2, RoundingMode.HALF_UP).doubleValue());
             }
 
             // Fetch market master for ONLINE debit (validation done via separate API)
@@ -181,17 +175,14 @@ public class LotGroupageService {
             Float remainingCocoon = lotGroupageRequest.getRemainingCocoonWeight();
 
             LotStatus status;
-            // ❌ Case 1: Invalid data
             if (remainingCocoon == null) {
                 status = LotStatus.PAYMENTFAILED;
-            }
-            else if (remainingCocoon == 0) {
+            } else if (remainingCocoon == 0) {
                 status = LotStatus.DISTRIBUTED;
-            }
-            else {
+            } else {
                 status = LotStatus.PAYMENTFAILED;
             }
-
+            lotGroupage.setStatus(status.getLabel());
 
             // Fetch disposal entry
             SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
@@ -219,8 +210,9 @@ public class LotGroupageService {
             if (marketMaster != null && PAYMENTMODE.ONLINE.getLabel().equalsIgnoreCase(marketMaster.getPaymentMode())
                     && buyerVirtualAccount != null && lotGroupageRequest.getSoldAmount() != null) {
                 double soldAmount = lotGroupageRequest.getSoldAmount().doubleValue();
-                int buyerId = lotGroupageRequest.getBuyerId() != null ? lotGroupageRequest.getBuyerId().intValue()
-                        : (lotGroupageRequest.getExternalUnitId() != null ? lotGroupageRequest.getExternalUnitId().intValue() : 0);
+                int buyerId = "RSP".equals(lotGroupageRequest.getBuyerType())
+                        ? (lotGroupageRequest.getExternalUnitId() != null ? lotGroupageRequest.getExternalUnitId().intValue() : 0)
+                        : (lotGroupageRequest.getBuyerId() != null ? lotGroupageRequest.getBuyerId().intValue() : 0);
                 ReelerVidDebitTxn debitTxn = new ReelerVidDebitTxn(
                         lotGroupageRequest.getAllottedLotId().intValue(),
                         lotGroupageRequest.getMarketId(),
@@ -508,11 +500,10 @@ public class LotGroupageService {
                 lotGroupage.setInvoiceNumber(invoiceNumber);
             }
 
-            // Capture old buyer info before mapper overwrites it
-            Long oldBuyerId = lotGroupage.getBuyerId();
-            Long oldExternalUnitId = lotGroupage.getExternalUnitId();
-            String oldBuyerType = lotGroupage.getBuyerType();
+            // Capture values before mapper overwrites them
             Long oldSoldAmount = lotGroupage.getSoldAmount();
+            Long existingExternalUnitId = lotGroupage.getExternalUnitId();
+            Double existingMarketFee = lotGroupage.getMarketFee();
 
             // Set the userMasterId from JWT token
             lotGroupage.setUserMasterId(Util.getUserMasterId(Util.getTokenValues()));
@@ -536,54 +527,43 @@ public class LotGroupageService {
             // Restore the invoice number to ensure it's not overwritten
             lotGroupage.setInvoiceNumber(currentInvoiceNumber);
 
-            // Detect buyer change and handle credit/debit for ONLINE payment mode
+            // Restore externalUnitId: use request value if provided, else keep existing DB value
+            lotGroupage.setExternalUnitId(
+                lotGroupageRequestEdit.getExternalUnitId() != null
+                    ? lotGroupageRequestEdit.getExternalUnitId()
+                    : existingExternalUnitId
+            );
+
+            // Restore marketFee for existing records; new records calculate it below
+            if (lotGroupageRequestEdit.getLotGroupageId() != null) {
+                lotGroupage.setMarketFee(existingMarketFee);
+            }
+
+            // Save debit txn for the difference only (ONLINE mode only)
             MarketMaster editMarketMaster = marketMasterRepository.findById(lotGroupageRequestEdit.getMarketId());
             if (editMarketMaster != null && PAYMENTMODE.ONLINE.getLabel().equalsIgnoreCase(editMarketMaster.getPaymentMode())) {
-                boolean buyerChanged = isBuyerChanged(oldBuyerType, oldBuyerId, oldExternalUnitId,
-                        lotGroupageRequestEdit.getBuyerType(), lotGroupageRequestEdit.getBuyerId(), lotGroupageRequestEdit.getExternalUnitId());
-
-                if (buyerChanged) {
-                    // Credit old buyer: negative txn reverses the debit; view recalculates balance automatically
-                    String oldVirtualAccount = getVirtualAccountForBuyer(oldBuyerType, oldBuyerId, oldExternalUnitId, lotGroupageRequestEdit.getMarketId());
-                    if (oldVirtualAccount != null && oldSoldAmount != null && oldSoldAmount > 0) {
-                        int oldBuyerIntId = oldBuyerId != null ? oldBuyerId.intValue()
-                                : (oldExternalUnitId != null ? oldExternalUnitId.intValue() : 0);
-                        ReelerVidDebitTxn creditTxn = new ReelerVidDebitTxn(
-                                lotGroupageRequestEdit.getAllottedLotId().intValue(),
-                                lotGroupageRequestEdit.getMarketId(),
-                                lotGroupageRequestEdit.getAuctionDate(),
-                                oldBuyerIntId,
-                                oldVirtualAccount,
-                                -oldSoldAmount.doubleValue()
-                        );
-                        reelerVidDebitTxnRepository.save(creditTxn);
-                    }
-
-                    long newSoldAmount = lotGroupageRequestEdit.getSoldAmount() != null ? lotGroupageRequestEdit.getSoldAmount() : 0L;
-
-                    // Debit new buyer: positive txn; view recalculates balance automatically
-                    String newVirtualAccount = getVirtualAccountForBuyer(lotGroupageRequestEdit.getBuyerType(),
-                            lotGroupageRequestEdit.getBuyerId(), lotGroupageRequestEdit.getExternalUnitId(), lotGroupageRequestEdit.getMarketId());
-                    if (newVirtualAccount != null && newSoldAmount > 0) {
-                        int newBuyerIntId = lotGroupageRequestEdit.getBuyerId() != null ? lotGroupageRequestEdit.getBuyerId().intValue()
-                                : (lotGroupageRequestEdit.getExternalUnitId() != null ? lotGroupageRequestEdit.getExternalUnitId().intValue() : 0);
-                        ReelerVidDebitTxn debitTxn = new ReelerVidDebitTxn(
-                                lotGroupageRequestEdit.getAllottedLotId().intValue(),
-                                lotGroupageRequestEdit.getMarketId(),
-                                lotGroupageRequestEdit.getAuctionDate(),
-                                newBuyerIntId,
-                                newVirtualAccount,
-                                (double) newSoldAmount
-                        );
-                        reelerVidDebitTxnRepository.save(debitTxn);
-                    }
+                long newSoldAmount = lotGroupageRequestEdit.getSoldAmount() != null ? lotGroupageRequestEdit.getSoldAmount() : 0L;
+                long prevSoldAmount = oldSoldAmount != null ? oldSoldAmount : 0L;
+                long debitDifference = newSoldAmount - prevSoldAmount;
+                String newVirtualAccount = getVirtualAccountForBuyer(lotGroupageRequestEdit.getBuyerType(),
+                        lotGroupageRequestEdit.getBuyerId(), lotGroupageRequestEdit.getExternalUnitId(), lotGroupageRequestEdit.getMarketId());
+                if (newVirtualAccount != null && debitDifference > 0) {
+                    int newBuyerIntId = "RSP".equals(lotGroupageRequestEdit.getBuyerType())
+                            ? (lotGroupageRequestEdit.getExternalUnitId() != null ? lotGroupageRequestEdit.getExternalUnitId().intValue() : 0)
+                            : (lotGroupageRequestEdit.getBuyerId() != null ? lotGroupageRequestEdit.getBuyerId().intValue() : 0);
+                    reelerVidDebitTxnRepository.save(new ReelerVidDebitTxn(
+                            lotGroupageRequestEdit.getAllottedLotId().intValue(),
+                            lotGroupageRequestEdit.getMarketId(),
+                            lotGroupageRequestEdit.getAuctionDate(),
+                            newBuyerIntId,
+                            newVirtualAccount,
+                            (double) debitDifference
+                    ));
                 }
             }
 
-            // Update market fee based on buyer type
-//            if (lotGroupageRequestEdit.getBuyerType() != null) {
-//                BigDecimal soldAmount = BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount());
-            if (lotGroupageRequestEdit.getBuyerType() != null) {
+            // Calculate market fee only for new records; existing records keep their saved value
+            if (lotGroupageRequestEdit.getLotGroupageId() == null && lotGroupageRequestEdit.getBuyerType() != null) {
                 BigDecimal soldAmount = (lotGroupageRequestEdit.getSoldAmount() != null)
                         ? BigDecimal.valueOf(lotGroupageRequestEdit.getSoldAmount())
                         : BigDecimal.ZERO; // default to zero if soldAmount is null
@@ -593,26 +573,14 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.01)));
-                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
-                        break;
-//                    case "Reeling":
-//                        marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
-//                        break;
                     case "Reeling":
-                        // For Reeling, you can either skip the fee calculation or handle it differently
-                        if (soldAmount != null) {
-//                            marketFee = soldAmount.add(soldAmount.multiply(BigDecimal.valueOf(0.02)));
-                            marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
-                        } else {
-                            marketFee = BigDecimal.ZERO; // Or any logic for when soldAmount is null for Reeling
-                        }
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     default:
                         break;
                 }
 
-                lotGroupage.setMarketFee(marketFee.longValue());
+                lotGroupage.setMarketFee(marketFee.setScale(2, RoundingMode.HALF_UP).doubleValue());
             }
 
 //            // Save updated or new lotGroupage
@@ -630,6 +598,16 @@ public class LotGroupageService {
             lotGroupage.setIsDisposed(1);
 
             Float remainingCocoon = lotGroupageRequestEdit.getRemainingCocoonWeight();
+
+            LotStatus editStatus;
+            if (remainingCocoon == null) {
+                editStatus = LotStatus.PAYMENTFAILED;
+            } else if (remainingCocoon == 0) {
+                editStatus = LotStatus.DISTRIBUTED;
+            } else {
+                editStatus = LotStatus.PAYMENTFAILED;
+            }
+            lotGroupage.setStatus(editStatus.getLabel());
 
             // Fetch disposal entry
             SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
