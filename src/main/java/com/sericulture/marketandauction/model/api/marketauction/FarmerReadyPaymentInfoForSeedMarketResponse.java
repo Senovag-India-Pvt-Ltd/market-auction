@@ -70,7 +70,7 @@ public class FarmerReadyPaymentInfoForSeedMarketResponse extends ResponseBody {
     private String buyerType;
     private Long lotWeight;
     private Long amount;
-    private Long marketFee;
+    private Double marketFee;
     private Long soldAmount;
     private String buyerName;
     private Long buyerId;

@@ -267,8 +267,8 @@ public class FarmerPaymentService {
 
         for (Object[] response : paginatedResponse) {
             long soldAmount = Util.objectToLong(response[14]);
-            long marketFee = Util.objectToLong(response[13]);
-            long farmerAmount = soldAmount - marketFee;
+            double marketFee = (double) Util.objectToFloat(response[13]);
+            long farmerAmount = (long) (soldAmount - marketFee);
             totalFarmerAmount = farmerAmount + totalFarmerAmount;
 
             // Corrected instantiation of FarmerReadyPaymentInfoForSeedMarketResponse
