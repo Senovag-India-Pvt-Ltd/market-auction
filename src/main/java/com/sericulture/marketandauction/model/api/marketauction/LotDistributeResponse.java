@@ -141,4 +141,6 @@ public class LotDistributeResponse extends ResponseBody {
     private Long fitnessCertificateId;
 
     private String tscName;
+    private Long cropStatusId;
+    private String cropStatusName;
 }

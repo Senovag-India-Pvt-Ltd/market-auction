@@ -665,60 +665,79 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
 
     @Query(nativeQuery = true, value = """
     WITH PrimaryAddress AS (
-        SELECT
-            fa.farmer_id,
-            fa.VILLAGE_ID,
-            ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.farmer_address_id DESC) AS rn
-        FROM farmer_address fa
-        WHERE fa.active = 1
-    )
-
-    SELECT 
-        a.lot_number,
-        a.number_of_dfls_disposed,
-        b.spun_date,
-        b.no_of_chandies,
-        b.expected_cocoon,
-        c.name_kan,
-        c.father_name_kan,
-        e.village_name_in_kannada,
-        b.fitness_certificate_id,
-        t.name AS tsc_name,
-        b.expected_marker_date,
-        b.fruits_id,
-        b.transaction_date
-    FROM sale_and_disposal_of_dfls a
-
-    INNER JOIN fitness_certificate b 
-        ON a.id = b.sale_and_disposal_id
-        AND a.fruits_id = b.fruits_id
-        AND b.active = 1
-
-    INNER JOIN FARMER c 
-        ON b.farmer_id = c.FARMER_ID
-        AND a.fruits_id = c.fruits_id
-        AND c.active = 1
-
-    INNER JOIN PrimaryAddress d 
-        ON c.FARMER_ID = d.farmer_id
-        AND d.rn = 1
-
-    INNER JOIN VILLAGE e 
-        ON d.VILLAGE_ID = e.VILLAGE_ID
-        AND e.active = 1
-
-    LEFT JOIN user_master u 
-        ON u.username = b.created_by
-        AND u.active = 1
-
-    LEFT JOIN tsc_master t 
-        ON t.tsc_master_id = u.tsc_master_id
-        AND t.active = 1
-
-    WHERE 
-        a.active = 1
-        AND b.fruits_id = :fruitsId
-        AND b.fitness_certificate_id = :fitnessCertificateId
+    SELECT
+        fa.farmer_id,
+        fa.VILLAGE_ID,
+        ROW_NUMBER() OVER (PARTITION BY fa.farmer_id ORDER BY fa.farmer_address_id DESC) AS rn
+    FROM farmer_address fa
+    WHERE fa.active = 1),
+            
+LatestCropInspection AS (
+    SELECT * FROM (SELECT ci.*,
+            ROW_NUMBER() OVER (
+                PARTITION BY ci.farmer_id, ci.fruits_id
+                ORDER BY ci.crop_inspection_id DESC) AS rn
+        FROM crop_inspection ci WHERE ci.active = 1) x
+    WHERE x.rn = 1
+)
+            
+SELECT
+    a.lot_number,
+    a.number_of_dfls_disposed,
+    b.spun_date,
+    b.no_of_chandies,
+    b.expected_cocoon,
+    c.name_kan,
+    c.father_name_kan,
+    e.village_name_in_kannada,
+    b.fitness_certificate_id,
+    t.name AS tsc_name,
+    b.expected_marker_date,
+    b.fruits_id,
+    b.transaction_date,
+            
+    ci.crop_status_id,
+    cs.name
+            
+FROM sale_and_disposal_of_dfls a
+            
+INNER JOIN fitness_certificate b
+    ON a.id = b.sale_and_disposal_id
+    AND a.fruits_id = b.fruits_id
+    AND b.active = 1
+            
+INNER JOIN FARMER c
+    ON b.farmer_id = c.FARMER_ID
+    AND a.fruits_id = c.fruits_id
+    AND c.active = 1
+            
+INNER JOIN PrimaryAddress d
+    ON c.FARMER_ID = d.farmer_id
+    AND d.rn = 1
+            
+INNER JOIN VILLAGE e
+    ON d.VILLAGE_ID = e.VILLAGE_ID
+    AND e.active = 1
+            
+LEFT JOIN user_master u
+    ON u.username = b.created_by
+    AND u.active = 1
+            
+LEFT JOIN tsc_master t
+    ON t.tsc_master_id = u.tsc_master_id
+    AND t.active = 1
+            
+LEFT JOIN LatestCropInspection ci
+    ON ci.farmer_id = c.farmer_id
+    AND ci.fruits_id = b.fruits_id
+            
+LEFT JOIN crop_status cs
+    ON cs.crop_status_id = ci.crop_status_id
+            
+WHERE
+    a.active = 1
+    AND b.fruits_id = :fruitsId
+    AND b.fitness_certificate_id = :fitnessCertificateId
 """)
     List<Object[]> getLotDisposalDetails(@Param("fruitsId") String fruitsId,@Param("fitnessCertificateId") Long fitnessCertificateId);
 

@@ -1059,6 +1059,8 @@ public class LotGroupageService {
                     .spunFromDate(Util.objectToString(obj[10]))
                     .farmerFruitsId(Util.objectToString(obj[11]))
                     .marketAuctionDate(Util.objectToString(obj[12]))
+                    .cropStatusId(Util.objectToLong(obj[13]))
+                    .cropStatusName(Util.objectToString(obj[14]))
                     .build();
 
             responses.add(response);
