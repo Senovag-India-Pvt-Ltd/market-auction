@@ -24,7 +24,7 @@ public interface LotRepository extends PagingAndSortingRepository<Lot, BigIntege
 //    Optional<Lot> findByIdAndAuctionDateActiveTrue(@Param("lotId") BigInteger lotId, @Param("date") LocalDate date);
 
     @Query("SELECT l FROM Lot l WHERE l.allottedLotId = :lotNo AND l.auctionDate = :date AND l.active = true")
-    Optional<Lot> findByAllottedLotIdAndAuctionDateActiveTrue(@Param("lotNo") int lotNo, @Param("date") LocalDate date);
+    List<Lot> findByAllottedLotIdAndAuctionDateActiveTrue(@Param("lotNo") int lotNo, @Param("date") LocalDate date);
 
     @Query("SELECT l FROM Lot l WHERE l.id = :lotId AND l.auctionDate = :date AND l.active = true")
     Optional<Lot> findByIdAndAuctionDateAndActiveTrue(@Param("lotId") BigInteger lotId, @Param("date") LocalDate date);
@@ -479,7 +479,7 @@ public Object[][] getNewlyCreatedLotDetailsSeedCocoons(LocalDate auctionDate, in
 //        and l.market_id =:marketId
 //        ORDER by lg.lot_id""")
 @Query(nativeQuery = true, value = """
-        SELECT 
+            SELECT 
     ROW_NUMBER() OVER(ORDER BY lg.lot_groupage_id ASC) AS row_id,
     lg.lot_groupage_id AS FARMER_PAYMENT_ID,
     l.allotted_lot_id,
@@ -562,16 +562,15 @@ LEFT JOIN dbo.farmer_bank_account fba
 INNER JOIN dbo.market_master mm
     ON mm.market_master_id = ma.market_id
 
-        WHERE lg.status IN ('DISTRIBUTED','paymentfailed')
-    AND l.market_id = :marketId
-    AND (
-        lg.buyer_type = 'Reeling'
-        OR (
-             (lg.buyer_type <> 'Reeling' OR lg.buyer_type IS NULL)
-            AND et.payment_via_bank = 1
-        )
-    )
-      
+         WHERE lg.status IN ('DISTRIBUTED', 'paymentfailed')
+             AND l.market_id = :marketId
+             AND (
+                 lg.buyer_type = 'Reeling'
+                 OR (
+                     lg.buyer_type = 'RSP'
+                     AND et.payment_via_bank = 1
+                 )
+             )
 ORDER BY l.lot_id;
 """)
 public Page<Object[]> getAllWeighmentCompletedTxnForSeedMarketByMarket(final Pageable pageable, int marketId);

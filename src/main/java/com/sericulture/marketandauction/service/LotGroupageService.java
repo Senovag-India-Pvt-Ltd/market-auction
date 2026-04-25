@@ -1235,8 +1235,11 @@ public class LotGroupageService {
     public List<Map<String, Object>> getLotDetails(LocalDate date, int lotNo) {
 
         // ✅ ADD THIS VALIDATION
-        lotRepository.findByAllottedLotIdAndAuctionDateActiveTrue(lotNo, date)
-                .orElseThrow(() -> new RuntimeException("Lot not found"));
+        List<Lot> lots = lotRepository.findByAllottedLotIdAndAuctionDateActiveTrue(lotNo, date);
+
+        if (lots == null || lots.isEmpty()) {
+            throw new RuntimeException("Lot not found");
+        }
 
         // Then fetch details
         return lotGroupageRepository.getLotDetails(date, lotNo);
