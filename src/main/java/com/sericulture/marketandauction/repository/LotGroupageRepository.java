@@ -797,8 +797,8 @@ WHERE
             SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
                      THEN ISNULL(lg.lot_weight,0) ELSE 0 END) AS total_rsp_nsso_grainage_lot_weight,
             
-            SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
-                     THEN ISNULL(lg.amount,0) ELSE 0 END) AS total_rsp_nsso_grainage_amount,
+            MAX(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
+            THEN ISNULL(lg.amount,0) ELSE 0 END) AS total_rsp_nsso_grainage_amount,
             
             SUM(CASE WHEN lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
                      THEN ISNULL(lg.sold_amount,0) ELSE 0 END) AS total_rsp_nsso_grainage_sold_amount,
@@ -810,7 +810,7 @@ WHERE
             SUM(CASE WHEN lg.buyer_type = 'Reeling'
                      THEN ISNULL(lg.lot_weight,0) ELSE 0 END) AS total_reeling_lot_weight,
             
-            SUM(CASE WHEN lg.buyer_type = 'Reeling'
+            MAX(CASE WHEN lg.buyer_type = 'Reeling'
                      THEN ISNULL(lg.amount,0) ELSE 0 END) AS total_reeling_amount,
             
             SUM(CASE WHEN lg.buyer_type = 'Reeling'
