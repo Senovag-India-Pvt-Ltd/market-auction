@@ -165,7 +165,6 @@ public class LotGroupageController {
     public ResponseEntity<?> deleteLot(
             @RequestParam int lotId,
             @RequestParam LocalDate date) {
-        System.out.println("API HIT");
 
         String message = lotGroupageService.deleteLot(lotId, date);
 

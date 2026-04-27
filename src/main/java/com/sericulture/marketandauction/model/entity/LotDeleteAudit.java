@@ -19,7 +19,12 @@ import java.time.LocalDateTime;
 public class LotDeleteAudit extends BaseEntity{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "lot_delete_audit_seq_gen")
+    @SequenceGenerator(
+            name = "lot_delete_audit_seq_gen",
+            sequenceName = "lot_delete_audit_seq",
+            allocationSize = 1
+    )
     private Long auditId;
 
     private BigInteger lotId;
