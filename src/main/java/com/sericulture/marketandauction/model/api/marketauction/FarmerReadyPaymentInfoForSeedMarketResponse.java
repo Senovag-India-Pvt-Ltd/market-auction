@@ -85,5 +85,7 @@ public class FarmerReadyPaymentInfoForSeedMarketResponse extends ResponseBody {
     private String accountNumber;
     private float lotSoldOutAmount;
     private double farmerMarketFee;
+    private String customerReferenceNumber;
+    private String farmerEmail;
 
 }

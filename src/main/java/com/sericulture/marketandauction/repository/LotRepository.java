@@ -606,7 +606,10 @@ SELECT
 
     rvcb.CURRENT_BALANCE,
 
-    COALESCE(rvba.virtual_account_number, evba.virtual_account_number) AS virtual_account_number
+    COALESCE(rvba.virtual_account_number, evba.virtual_account_number) AS virtual_account_number,
+
+    lg.customer_reference_number,
+    f.email
 
 FROM dbo.FARMER f
 
