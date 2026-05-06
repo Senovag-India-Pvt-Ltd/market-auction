@@ -205,6 +205,10 @@ public class LotGroupageService {
             // Save LotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);
 
+            // Set CRN using the generated lotGroupageId so each row gets a unique CRN
+            String crn = Util.getCRN(Util.getISTLocalDate(), lotGroupageRequest.getMarketId(), lotGroupage.getLotGroupageId().intValue());
+            lotGroupageRepository.updateCustomerReferenceNumber(lotGroupage.getLotGroupageId(), crn);
+
             // Debit buyer's virtual account (ONLINE mode only) — inserting into REELER_VID_DEBIT_TXN
             // automatically updates REELER_VID_CURRENT_BALANCE (it is a view computed from that table)
             if (marketMaster != null && PAYMENTMODE.ONLINE.getLabel().equalsIgnoreCase(marketMaster.getPaymentMode())

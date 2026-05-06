@@ -84,4 +84,10 @@ public class LotGroupage extends BaseEntity implements Serializable {
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "customer_reference_number")
+    private String customerReferenceNumber;
+
+    @Column(name = "payment_comments")
+    private String paymentComments;
 }
