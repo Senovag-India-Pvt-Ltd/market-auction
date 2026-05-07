@@ -606,7 +606,10 @@ SELECT
 
     rvcb.CURRENT_BALANCE,
 
-    COALESCE(rvba.virtual_account_number, evba.virtual_account_number) AS virtual_account_number
+    COALESCE(rvba.virtual_account_number, evba.virtual_account_number) AS virtual_account_number,
+
+    lg.customer_reference_number,
+    f.email
 
 FROM dbo.FARMER f
 
@@ -668,7 +671,7 @@ WHERE lg.status IN ('DISTRIBUTED','paymentfailed','readyforpayment')
 
     -- ✅ Optional lot filter
     AND (:lotList IS NULL OR 
-         l.allotted_lot_id IN (:lotList))
+         lg.lot_groupage_id IN (:lotList))
 
     -- ✅ Bank validation (from your old query)
     AND fba.farmer_bank_account_number <> ''
@@ -677,10 +680,10 @@ WHERE lg.status IN ('DISTRIBUTED','paymentfailed','readyforpayment')
     -- ✅ MOST IMPORTANT CONDITION (unchanged)
     AND (
         lg.buyer_type = 'Reeling'
-        OR (
-            (lg.buyer_type <> 'Reeling' OR lg.buyer_type IS NULL)
-            AND et.payment_via_bank = 1
-        )
+         OR (
+                     lg.buyer_type = 'RSP'
+                     AND et.payment_via_bank = 1
+                 )
     )
 
 ORDER BY lg.lot_groupage_id

@@ -907,6 +907,10 @@ WHERE
                                 @Param("statuses") List<String> statuses);
 
     @Modifying
+    @Query("UPDATE LotGroupage lg SET lg.customerReferenceNumber = :crn WHERE lg.lotGroupageId = :id")
+    void updateCustomerReferenceNumber(@Param("id") Long id, @Param("crn") String crn);
+
+    @Modifying
     @Query("""
 UPDATE LotGroupage lg
 SET lg.active = false
