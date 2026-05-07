@@ -3,6 +3,9 @@ package com.sericulture.marketandauction.controller;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.ReelerReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.ReelerTxnReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.ReportRequest;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.service.LotGroupageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -229,5 +232,94 @@ public class LotGroupageController {
         return ResponseEntity.ok(
                 lotGroupageService.getReelerBalanceData(marketId)
         );
+    }
+
+    @PostMapping("/getSeedMFReport")
+    public ResponseEntity<?> getSeedMFReport(@RequestBody ReportRequest reportRequest) {
+        return lotGroupageService.getSeedMFReport(reportRequest);
+    }
+
+    @PostMapping("/downloadSeedMFReport")
+    public ResponseEntity<?> downloadSeedMFReport(@RequestBody ReportRequest request) {
+        try {
+
+            FileInputStream file = lotGroupageService.downloadSeedMFReport(request);
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=SeedMFReport.xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new InputStreamResource(file));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error downloading file");
+        }
+    }
+
+    @PostMapping("/getSeedMarketBiddingReport")
+    public ResponseEntity<?> getSeedMarketBiddingReport(
+            @RequestBody ReelerReportRequest reportRequest){
+
+        return lotGroupageService
+                .getSeedMarketBiddingReport(reportRequest);
+    }
+    @PostMapping("/downloadSeedMarketBiddingReport")
+    public ResponseEntity<?> downloadSeedMarketBiddingReport(
+            @RequestBody ReelerReportRequest request) {
+        try {
+            FileInputStream file = lotGroupageService.downloadSeedMarketBiddingReport(request);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition",
+                            "attachment; filename=SeedMarketBiddingReport.xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new InputStreamResource(file));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error downloading file");
+        }
+    }
+
+    @PostMapping("/getSeedMarketTxnReport")
+    public ResponseEntity<?> getSeedMarketTxnReport(
+            @RequestBody ReelerTxnReportRequest reelerTxnReportRequest){
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        rw.setContent(
+                lotGroupageService.getSeedMarketTxnReport(
+                        reelerTxnReportRequest.getMarketId(),
+                        reelerTxnReportRequest.getLicenseNumber(),
+                        reelerTxnReportRequest.getFromDate(),
+                        reelerTxnReportRequest.getToDate()
+                )
+        );
+
+        return ResponseEntity.ok(rw);
+    }
+
+    @PostMapping("/downloadSeedMarketTxnReport")
+    public ResponseEntity<?> downloadSeedMarketTxnReport(
+            @RequestBody ReelerTxnReportRequest request) {
+
+        try {
+
+            FileInputStream file =
+                    lotGroupageService
+                            .downloadSeedMarketTxnReport(request);
+
+            return ResponseEntity.ok()
+                    .header(
+                            "Content-Disposition",
+                            "attachment; filename=SeedMarketTransactionReport.xlsx"
+                    )
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new InputStreamResource(file));
+
+        } catch (Exception e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error downloading file");
+        }
     }
 }

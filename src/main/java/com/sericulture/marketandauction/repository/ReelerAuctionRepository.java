@@ -8,6 +8,7 @@ import com.sericulture.marketandauction.model.entity.ReelerAuctionAccepted;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -236,5 +237,84 @@ public interface ReelerAuctionRepository  extends PagingAndSortingRepository<Ree
             ORDER BY total_Amount DESC;
             """)
     public List<Object[]> getReelerCreditDetailsAllMarket(LocalDate today);
+
+    // REPOSITORY
+
+    @Query(nativeQuery = true,value = """
+SELECT
+    market_name,
+    market_master_id,
+    ISNULL(SUM(reeler_amount),0) AS total_reeler_amount,
+
+    ISNULL(SUM(external_unit_amount),0)
+        AS total_external_unit_amount,
+
+    ISNULL(SUM(reeler_deposit_count),0)
+        AS total_reeler_deposit_count,
+
+    ISNULL(SUM(external_unit_deposit_count),0)
+        AS total_external_unit_deposit_count,
+
+    ISNULL(SUM(total_amount),0)
+        AS total_amount
+
+FROM
+(
+    SELECT
+        mm.market_name AS market_name,
+        mm.market_master_id AS market_master_id,
+        SUM(rvct.AMOUNT) AS reeler_amount,
+        0 AS external_unit_amount,
+        SUM(rvct.AMOUNT) AS total_amount,
+        COUNT(rvct.REELER_VID_CREDIT_TXN_ID)AS reeler_deposit_count,
+        0 AS external_unit_deposit_count
+    FROM REELER_VID_CREDIT_TXN rvct
+    INNER JOIN reeler_virtual_bank_account rvba
+        ON rvct.VIRTUAL_ACCOUNT =
+           rvba.virtual_account_number
+    INNER JOIN market_master mm
+        ON rvba.market_master_id =
+           mm.market_master_id
+    WHERE mm.market_type_master_id = 1
+      AND mm.active = 1
+      AND CAST(rvct.TRANSACTION_DATE AS DATE) = :today
+    GROUP BY
+        mm.market_name,
+        mm.market_master_id
+    UNION ALL
+    SELECT
+        mm.market_name AS market_name,
+        mm.market_master_id AS market_master_id,
+        0 AS reeler_amount,
+        SUM(rvct.AMOUNT) AS external_unit_amount,
+        SUM(rvct.AMOUNT) AS total_amount,
+        0 AS reeler_deposit_count,
+        COUNT(rvct.REELER_VID_CREDIT_TXN_ID)
+            AS external_unit_deposit_count
+    FROM REELER_VID_CREDIT_TXN rvct
+    INNER JOIN eu_virtual_bank_account evba
+        ON rvct.VIRTUAL_ACCOUNT =
+           evba.virtual_account_number
+    INNER JOIN external_unit_registration eur
+        ON eur.external_unit_registration_id =
+           evba.eu_id
+    INNER JOIN market_master mm
+        ON evba.market_master_id =
+           mm.market_master_id
+    WHERE mm.market_type_master_id = 1
+      AND mm.active = 1
+      AND CAST(rvct.TRANSACTION_DATE AS DATE) = :today
+    GROUP BY
+        mm.market_name,
+        mm.market_master_id
+) A
+GROUP BY
+    market_name,
+    market_master_id
+ORDER BY total_amount DESC
+
+""")
+    public List<Object[]> getSeedMarketCreditReport(
+            @Param("today") LocalDate today);
 
 }

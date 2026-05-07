@@ -23,10 +23,18 @@ import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.HttpHeaders;
+
+
+import java.io.ByteArrayOutputStream;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -711,6 +719,176 @@ public class ReelerAuctionService {
         }
         rw.setContent(reelerTransactionResponses);
         return ResponseEntity.ok(rw);
+    }
+
+
+    // SERVICE METHOD
+
+    public ResponseEntity<?> getSeedMarketCreditReport(ReelerTransactionRequest reelerTransactionRequest) {
+
+        ResponseWrapper rw = ResponseWrapper.createWrapper(SeedMarketCreditResponse.class);
+
+        List<Object[]> reportData = reelerAuctionRepository.getSeedMarketCreditReport(reelerTransactionRequest.getTransactionDate());
+
+        List<SeedMarketCreditResponse> responses = new ArrayList<>();
+
+        for (Object[] data : reportData) {
+
+            SeedMarketCreditResponse response = SeedMarketCreditResponse.builder()
+
+                            .marketName(Util.objectToString(data[0]))
+
+                            .marketId(Util.objectToString(data[1]))
+
+                            .totalReelerAmount(Util.objectToString(data[2]))
+
+                            .totalExternalUnitAmount(Util.objectToString(data[3]))
+
+                            .totalReelerDepositCount(Util.objectToString(data[4]))
+
+                            .totalExternalUnitDepositCount(Util.objectToString(data[5]))
+
+                            .totalAmount(Util.objectToString(data[6]))
+
+                            .postDate(Util.objectToString(reelerTransactionRequest.getTransactionDate()))
+
+                            .build();
+
+            responses.add(response);
+        }
+
+        rw.setContent(responses);
+
+        return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> downloadSeedMarketCreditReport(
+            ReelerTransactionRequest request) {
+
+        try {
+
+            List<Object[]> reportData =
+                    reelerAuctionRepository
+                            .getSeedMarketCreditReport(
+                                    request.getTransactionDate());
+
+            XSSFWorkbook workbook =
+                    new XSSFWorkbook();
+
+            XSSFSheet sheet =
+                    workbook.createSheet(
+                            "Seed Market Credit Report");
+
+            int rowNum = 0;
+
+            Row header =
+                    sheet.createRow(rowNum++);
+
+            header.createCell(0)
+                    .setCellValue("SL No");
+
+            header.createCell(1)
+                    .setCellValue("Posting Date");
+
+            header.createCell(2)
+                    .setCellValue("Market Id");
+
+            header.createCell(3)
+                    .setCellValue("Market Name");
+
+            header.createCell(4)
+                    .setCellValue("Reeler Amount");
+
+            header.createCell(5)
+                    .setCellValue("External Unit Amount");
+
+            header.createCell(6)
+                    .setCellValue("Reeler Deposit Count");
+
+            header.createCell(7)
+                    .setCellValue(
+                            "External Unit Deposit Count");
+
+            header.createCell(8)
+                    .setCellValue("Total Amount");
+
+            int slNo = 1;
+
+            double totalReelerAmount = 0;
+
+            double totalExternalAmount = 0;
+
+            double totalAmount = 0;
+
+            for (Object[] data : reportData) {
+
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(slNo++);
+
+                row.createCell(1).setCellValue(String.valueOf(request.getTransactionDate()));
+
+                row.createCell(2).setCellValue(Util.objectToString(data[1]));
+
+                row.createCell(3).setCellValue(Util.objectToString(data[0]));
+
+                row.createCell(4).setCellValue(Util.objectToString(data[2]));
+
+                row.createCell(5).setCellValue(Util.objectToString(data[3]));
+
+                row.createCell(6).setCellValue(Util.objectToString(data[4]));
+
+                row.createCell(7).setCellValue(Util.objectToString(data[5]));
+
+                row.createCell(8).setCellValue(Util.objectToString(data[6]));
+
+                totalReelerAmount += Double.parseDouble(Util.objectToString(data[2]));
+
+                totalExternalAmount += Double.parseDouble(Util.objectToString(data[3]));
+
+                totalAmount += Double.parseDouble(Util.objectToString(data[6]));
+            }
+
+            Row totalRow =
+                    sheet.createRow(rowNum);
+
+            totalRow.createCell(3)
+                    .setCellValue("TOTAL");
+
+            totalRow.createCell(4)
+                    .setCellValue(totalReelerAmount);
+
+            totalRow.createCell(5)
+                    .setCellValue(totalExternalAmount);
+
+            totalRow.createCell(8)
+                    .setCellValue(totalAmount);
+
+            ByteArrayOutputStream out =
+                    new ByteArrayOutputStream();
+
+            workbook.write(out);
+
+            workbook.close();
+
+            HttpHeaders headers =
+                    new HttpHeaders();
+
+            headers.add(
+                    "Content-Disposition",
+                    "attachment; filename=SeedMarketCreditReport.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(
+                            MediaType.APPLICATION_OCTET_STREAM)
+                    .body(out.toByteArray());
+
+        } catch (Exception e) {
+
+            return ResponseEntity.badRequest()
+                    .body(e.getMessage());
+        }
     }
 
    /* public int checkCurrentAuction(int marketMasterId) {

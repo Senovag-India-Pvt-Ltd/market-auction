@@ -17,7 +17,7 @@ public class ReportRequest extends RequestBody {
     private LocalDate toDate;
     private String reelerNumber;
     private String traderLicenseNumber;
-
+private String licenseNumber;
 
 
 }

@@ -1,5 +1,6 @@
 package com.sericulture.marketandauction.repository;
 
+import com.sericulture.marketandauction.helper.MarketAuctionQueryConstants;
 import com.sericulture.marketandauction.model.entity.Lot;
 import com.sericulture.marketandauction.model.entity.LotGroupage;
 import org.springframework.data.jpa.repository.Modifying;
@@ -1239,4 +1240,64 @@ AND lg.active = true
 """, nativeQuery = true)
     List<Object[]> getReelerBalance(
             @Param("marketId") Long marketId);
+
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.SEED_MF_REPORT_WITHOUT_LICENSE)
+    List<Object[]> getSeedMFReportWithoutLicense(LocalDate fromDate, LocalDate toDate, int marketId);
+
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.SEED_MF_REPORT_WITH_LICENSE)
+    List<Object[]> getSeedMFReportWithLicense(LocalDate fromDate, LocalDate toDate, int marketId, String licenseNumber);
+
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.SEED_MARKET_BIDDING_REPORT_QUERY_WITH_LICENSE)
+    List<Object[]> getSeedMarketBiddingReport(
+            int marketId,
+            LocalDate auctionDate,
+            String licenseNumber
+    );
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.SEED_MARKET_BIDDING_REPORT_QUERY_WITHOUT_LICENSE)
+    List<Object[]> getSeedMarketBiddingReportWithoutLicense(
+            int marketId,
+            LocalDate auctionDate
+    );
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.BUYER_QUERY)
+    List<Object[]> getBuyerDetails(
+            int marketId,
+            String licenseNumber
+    );
+
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.SEED_MARKET_CURRENT_BALANCE_QUERY)
+    List<Object[]> getSeedMarketCurrentBalance(
+            String virtualAccount
+    );
+
+
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.SEED_MARKET_TRANSACTION_PASS_BOOK)
+    List<Object[]> getSeedMarketTransactionPassBook(
+            LocalDate fromDate,
+            LocalDate toDate,
+            String vAccount,
+            int marketId
+    );
+
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.CASH_BALANCE)
+    List<Object[]> getCashBalance(
+            LocalDate fromDate,
+            LocalDate toDate,
+            int marketId
+    );
+
+
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.CASH_BALANCE_WITH_LICENSE)
+    List<Object[]> getCashBalanceWithLicense(
+            LocalDate fromDate,
+            LocalDate toDate,
+            int marketId,
+            String licenseNumber
+    );
 }

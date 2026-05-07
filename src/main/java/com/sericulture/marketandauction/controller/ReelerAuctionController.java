@@ -127,7 +127,18 @@ public class ReelerAuctionController {
     public ResponseEntity<?> getReelerCreditDetailsAllMarket(@RequestBody ReelerTransactionRequest reelerTransactionRequest){
         return reelerAuctionService.getReelerCreditDetailsAllMarket(reelerTransactionRequest);
     }
+    @PostMapping("/getSeedMarketCreditReport")
+    public ResponseEntity<?> getSeedMarketCreditReport(
+            @RequestBody ReelerTransactionRequest reelerTransactionRequest){
 
+        return reelerAuctionService.getSeedMarketCreditReport(reelerTransactionRequest);
+    }
+    @PostMapping("/downloadSeedMarketCreditReport")
+    public ResponseEntity<?> downloadSeedMarketCreditReport(
+            @RequestBody ReelerTransactionRequest request) {
 
+        return reelerAuctionService
+                .downloadSeedMarketCreditReport(request);
+    }
 
 }

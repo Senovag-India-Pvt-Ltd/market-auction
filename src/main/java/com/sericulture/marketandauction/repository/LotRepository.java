@@ -734,5 +734,62 @@ ORDER BY lg.auction_date DESC
 //    @Query("SELECT l FROM Lot l WHERE l.id = :lotId AND l.auctionDate = :date AND l.active = true")
 //    Optional<Lot> findByIdAndAuctionDateAndActiveTrue(@Param("lotId") BigInteger lotId, @Param("date") LocalDate date);
 
-
+    @Query(nativeQuery = true, value = """
+            SELECT\s
+                l.allotted_lot_id,
+                l.auction_date,
+            
+                lg.buyer_type,
+            
+                CASE\s
+                    WHEN lg.buyer_type = 'Reeling' THEN r.name
+                    ELSE eur.name
+                END AS bidder_name,
+            
+                CASE\s
+                    WHEN lg.buyer_type = 'Reeling' THEN r.reeling_license_number
+                    ELSE eur.license_number
+                END AS license_number,
+            
+                lg.lot_weight,
+                lg.amount,
+                lg.sold_amount,
+                lg.market_fee,
+            
+                mm.market_name,
+            
+                lg.created_date,
+                lg.lot_groupage_id
+            
+            FROM lot l
+            
+            -- ✅ IMPORTANT CHANGE
+            INNER JOIN lot_groupage lg\s
+                ON lg.lot_id = l.lot_id \s
+            
+            LEFT JOIN reeler r\s
+                ON lg.buyer_type = 'Reeling'
+                AND r.reeler_id = lg.buyer_id
+            
+            LEFT JOIN external_unit_registration eur\s
+                ON lg.buyer_type IN ('RSP','NSSO','Govt Grainage')
+                AND eur.external_unit_registration_id = lg.external_unit_id
+            
+            LEFT JOIN market_auction ma\s
+                ON ma.market_auction_id = l.market_auction_id
+            
+            LEFT JOIN market_master mm\s
+                ON mm.market_master_id = ma.market_id
+            
+            WHERE\s
+                l.market_id = :marketId
+                AND l.auction_date = :auctionDate
+            
+            ORDER BY l.lot_id ASC;
+            
+            """)
+    List<Object[]> getSeedMarketBiddingReport(
+            @Param("marketId") int marketId,
+            @Param("auctionDate") LocalDate auctionDate
+    );
 }
