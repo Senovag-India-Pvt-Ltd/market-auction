@@ -252,7 +252,7 @@ public class FarmerPaymentService {
                         farmerPaymentInfoResponse.getFarmerFirstName() + " " + farmerPaymentInfoResponse.getFarmerMiddleName() + " " + farmerPaymentInfoResponse.getFarmerLastName(),
                         farmerPaymentInfoResponse.getFarmerNumber(), farmerPaymentInfoResponse.getFarmerMobileNumber(),
                         farmerPaymentInfoResponse.getReelerLicense(), farmerPaymentInfoResponse.getBankName() + " " + farmerPaymentInfoResponse.getBranchName(),
-                        farmerPaymentInfoResponse.getIfscCode(), farmerPaymentInfoResponse.getAccountNumber(), (farmerPaymentInfoResponse.getLotSoldOutAmount() - farmerPaymentInfoResponse.getFarmerMarketFee())
+                        farmerPaymentInfoResponse.getIfscCode(), farmerPaymentInfoResponse.getAccountNumber(), (long) (farmerPaymentInfoResponse.getLotSoldOutAmount() - farmerPaymentInfoResponse.getFarmerMarketFee())
                 );
 
                 csvPrinter.printRecord(data);
@@ -539,7 +539,7 @@ public class FarmerPaymentService {
              CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format)) {
 
             for (FarmerReadyPaymentInfoForSeedMarketResponse item : farmerReadyForPaymentForSeedMarketResponse.getFarmerReadyPaymentInfoForSeedMarketResponseList()) {
-                double amount = item.getLotSoldOutAmount() - item.getFarmerMarketFee();
+                long amount = (long) (item.getLotSoldOutAmount() - item.getFarmerMarketFee());
                 String beneficiaryName = (item.getFarmerFirstName() + " " + item.getFarmerMiddleName() + " " + item.getFarmerLastName()).trim();
                 List<Serializable> data = Arrays.asList(
                         "N",           // transactionType

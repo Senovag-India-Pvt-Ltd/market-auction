@@ -634,6 +634,12 @@ public class LotGroupageService {
             // Save LotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);
 
+            // Set CRN for newly created records (remaining lot distribution path)
+            if (lotGroupageRequestEdit.getLotGroupageId() == null) {
+                String crn = Util.getCRN(Util.getISTLocalDate(), lotGroupageRequestEdit.getMarketId(), lotGroupage.getLotGroupageId().intValue());
+                lotGroupageRepository.updateCustomerReferenceNumber(lotGroupage.getLotGroupageId(), crn);
+            }
+
             // Map the saved lotGroupage to the response object
             LotGroupageResponse singleResponse = mapper.lotGroupageEntityToObject(lotGroupage, LotGroupageResponse.class);
             singleResponse.setError(false);
