@@ -606,6 +606,118 @@ public class MarketAuctionQueryConstants {
 
     public static final String REELER_MF_REPORT_WITHOUT_REELER_QUERY = REELER_MF_REPORT_WITHOUT_REELER_QUERYS;
 
+    public static final String SEED_MF_REPORT_WITHOUT_LICENSE_QUERY = """
+SELECT
+    l.allotted_lot_id,
+    l.auction_date,
+
+    SUM(lg.lot_weight) AS total_weight,
+    MAX(lg.amount) AS bid_amount,
+
+    SUM(lg.sold_amount) AS total_sold_amount,
+    SUM(lg.market_fee) AS total_market_fee,
+
+    CASE 
+        WHEN lg.buyer_type IN ('Reeling','Reeler') THEN r.reeling_license_number
+        ELSE eur.license_number
+    END AS license_number,
+
+    CASE 
+        WHEN lg.buyer_type IN ('Reeling','Reeler') THEN r.name
+        ELSE eur.name
+    END AS buyer_name,
+
+    ROW_NUMBER() OVER (ORDER BY l.auction_date ASC) AS row_id
+
+FROM lot l
+INNER JOIN lot_groupage lg ON lg.lot_id = l.lot_id
+
+LEFT JOIN reeler r 
+    ON lg.buyer_id = r.reeler_id 
+    AND lg.buyer_type IN ('Reeling','Reeler')
+
+LEFT JOIN external_unit_registration eur 
+    ON lg.buyer_id = eur.external_unit_registration_id 
+    AND lg.buyer_type NOT IN ('Reeling','Reeler')
+
+WHERE
+    l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.market_id = :marketId
+    AND lg.active = 1
+
+GROUP BY
+    l.allotted_lot_id,
+    l.auction_date,
+    lg.buyer_type,
+    r.reeling_license_number,
+    r.name,
+    eur.license_number,
+    eur.name
+
+ORDER BY l.auction_date
+""";
+
+
+    public static final String SEED_MF_REPORT_WITH_LICENSE_QUERY = """
+SELECT
+    l.allotted_lot_id,
+    l.auction_date,
+
+    SUM(lg.lot_weight) AS total_weight,
+    MAX(lg.amount) AS bid_amount,
+
+    SUM(lg.sold_amount) AS total_sold_amount,
+    SUM(lg.market_fee) AS total_market_fee,
+
+    CASE 
+        WHEN lg.buyer_type IN ('Reeling','Reeler') THEN r.reeling_license_number
+        ELSE eur.license_number
+    END AS license_number,
+
+    CASE 
+        WHEN lg.buyer_type IN ('Reeling','Reeler') THEN r.name
+        ELSE eur.name
+    END AS buyer_name,
+
+    ROW_NUMBER() OVER (ORDER BY l.auction_date ASC) AS row_id
+
+FROM lot l
+INNER JOIN lot_groupage lg ON lg.lot_id = l.lot_id
+
+LEFT JOIN reeler r 
+    ON lg.buyer_id = r.reeler_id 
+    AND lg.buyer_type IN ('Reeling','Reeler')
+
+LEFT JOIN external_unit_registration eur 
+    ON lg.buyer_id = eur.external_unit_registration_id 
+    AND lg.buyer_type NOT IN ('Reeling','Reeler')
+
+WHERE
+    l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.market_id = :marketId
+    AND lg.active = 1
+
+    AND (
+        CASE 
+            WHEN lg.buyer_type IN ('Reeling','Reeler') THEN r.reeling_license_number
+            ELSE eur.license_number
+        END = :licenseNumber
+    )
+
+GROUP BY
+    l.allotted_lot_id,
+    l.auction_date,
+    lg.buyer_type,
+    r.reeling_license_number,
+    r.name,
+    eur.license_number,
+    eur.name
+
+ORDER BY l.auction_date
+""";
+
+    public static final String SEED_MF_REPORT_WITHOUT_LICENSE =SEED_MF_REPORT_WITHOUT_LICENSE_QUERY;
+    public static final String SEED_MF_REPORT_WITH_LICENSE =SEED_MF_REPORT_WITH_LICENSE_QUERY;
 
 //    public static final String UNIT_COUNTER_REPORT_QUERY = """
 //    SELECT
@@ -1507,6 +1619,59 @@ public class MarketAuctionQueryConstants {
         AND l.market_id = :marketId
         """;
 
+    public static final String SEED_MARKET_BIDDING_REPORT_QUERY = """
+SELECT 
+    l.allotted_lot_id,
+    l.auction_date,
+
+    lg.buyer_type,
+
+    CASE 
+        WHEN lg.buyer_type = 'Reeling' THEN r.name
+        ELSE eur.name
+    END AS bidder_name,
+
+    CASE 
+        WHEN lg.buyer_type = 'Reeling' THEN r.reeling_license_number
+        ELSE eur.license_number
+    END AS license_number,
+
+    lg.lot_weight,
+    lg.amount,
+    lg.sold_amount,
+    lg.market_fee,
+
+    mm.market_name,
+
+    lg.created_date,
+    lg.lot_groupage_id,
+
+    ROW_NUMBER() OVER(ORDER BY l.lot_id ASC) AS row_id
+
+FROM lot l
+
+INNER JOIN lot_groupage lg 
+    ON lg.lot_id = l.lot_id
+
+LEFT JOIN reeler r 
+    ON lg.buyer_type = 'Reeling'
+    AND r.reeler_id = lg.buyer_id
+
+LEFT JOIN external_unit_registration eur 
+    ON lg.buyer_type <> 'Reeling'
+    AND eur.external_unit_registration_id = lg.external_unit_id
+
+LEFT JOIN market_auction ma 
+    ON ma.market_auction_id = l.market_auction_id
+
+LEFT JOIN market_master mm 
+    ON mm.market_master_id = ma.market_id
+
+WHERE 
+    l.market_id = :marketId
+    AND l.auction_date = :auctionDate
+""";
+
     public static final String BIDDING_REPORT_QUERY_LOT = BIDDING_REPORT_QUERY + "and l.allotted_lot_id =:lotId order by ra.CREATED_DATE asc";
 
     public static final String BIDDING_REPORT_QUERY_WITHOUT_LOT = LOT_BIDDING_REPORT_QUERY +
@@ -1516,6 +1681,18 @@ public class MarketAuctionQueryConstants {
     public static final String BIDDING_REPORT_QUERY_REELER = BIDDING_REPORT_QUERY + "and r.reeling_license_number  =:reelerLicenseNumber order by l.lot_id asc,ra.CREATED_DATE DESC";
 
     public static final String BIDDING_REPORT_QUERY_WITHOUT_REELER = BIDDING_REPORT_QUERY + " order by l.lot_id asc,ra.CREATED_DATE DESC";
+
+    public static final String SEED_MARKET_BIDDING_REPORT_QUERY_WITH_LICENSE =
+            SEED_MARKET_BIDDING_REPORT_QUERY +
+                    """
+                    AND (
+                        r.reeling_license_number = :licenseNumber
+                        OR eur.license_number = :licenseNumber
+                    )
+                    ORDER BY l.lot_id ASC, lg.created_date DESC
+                    """;
+    public static final String SEED_MARKET_BIDDING_REPORT_QUERY_WITHOUT_LICENSE =
+            SEED_MARKET_BIDDING_REPORT_QUERY + " ORDER BY l.lot_id ASC, lg.created_date DESC";
 
 
     public static final String UNIT_COUNTER_REPORT = UNIT_COUNTER_REPORT_QUERY;
@@ -3418,4 +3595,213 @@ GROUP BY
             """;
 
     public static final String AUCTION_DATE_LIST_BY_LOT_STATUS_FOR_SEED_MARKET_CASH_PAYMENT = "select  distinct l.auction_date " + FROM + SPACE + LOT_ACCEPTED_ALL_TABLES_FROM_CLAUSE_FARMER_FOR_SEED_MARKET + SPACE + WHERE_CLAUSE_AUCTION_DATE_LIST  + ORDER_BY_L_AUCTION_DATE;
+
+    public static final String BUYER_QUERYS = """
+SELECT
+    name,
+    virtual_account_number
+FROM
+(
+    SELECT
+        r.name,
+        rvba.virtual_account_number
+    FROM
+        reeler r
+    INNER JOIN
+        reeler_virtual_bank_account rvba
+            ON rvba.reeler_id = r.reeler_id
+    WHERE
+        rvba.market_master_id = :marketId
+        AND r.reeling_license_number = :licenseNumber
+
+    UNION
+
+    SELECT
+        eur.name,
+        evba.virtual_account_number
+    FROM
+        external_unit_registration eur
+    INNER JOIN
+        eu_virtual_bank_account evba
+            ON evba.eu_id = eur.external_unit_registration_id
+    WHERE
+        evba.market_master_id = :marketId
+        AND eur.license_number = :licenseNumber
+) A
+""";
+
+    public static final String SEED_MARKET_CURRENT_BALANCE_QUERYS = """
+            SELECT
+                CURRENT_BALANCE,
+                reeler_virtual_account_number,
+                CREATED_DATE
+            FROM
+                REELER_VID_CURRENT_BALANCE
+            WHERE
+                reeler_virtual_account_number =:virtualAccount
+            """;
+    public static final String SEED_MARKET_TRANSACTION_PASS_BOOK_QUERY = """
+            SELECT I.TXN_TYPE,AMOUNT, CREATED_DATE, LOT_ID, CAST(I.CREATED_DATE AS DATE) DATE_ON,FARMER_NAME
+            FROM (
+                SELECT
+                    'C' AS TXN_TYPE,
+                    AMOUNT,
+                    CREATED_DATE,
+                    -1 as LOT_ID,
+                    VIRTUAL_ACCOUNT,
+                    '-' AS FARMER_NAME
+                FROM REELER_VID_CREDIT_TXN
+                WHERE
+                        CAST(CREATED_DATE AS DATE)
+                                 BETWEEN :fromDate AND :toDate
+                    AND VIRTUAL_ACCOUNT = :vAccount
+            UNION ALL
+                SELECT
+                    'D' AS TXN_TYPE,
+                     AMOUNT,
+                     CREATED_DATE,
+                     LOT_ID,
+                     VIRTUAL_ACCOUNT,
+                     (SELECT
+                          f.first_name
+                      FROM
+                      dbo.FARMER f
+                                 INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
+                                 INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
+                                 WHERE l.allotted_lot_id =DT.LOT_ID  AND l.auction_date =DT.AUCTION_DATE  AND l.market_id =:marketId
+                      ) AS FARMER_NAME
+                FROM REELER_VID_DEBIT_TXN DT
+            WHERE CAST(CREATED_DATE AS DATE) BETWEEN :fromDate AND :toDate AND VIRTUAL_ACCOUNT = :vAccount
+            ) as I
+            WHERE I.VIRTUAL_ACCOUNT = :vAccount
+            ORDER BY I.CREATED_DATE ASC
+            """;
+
+    public static final String CASH_BALANCE_QUERY = """
+SELECT
+        lg.sold_amount,
+        l.allotted_lot_id,
+        l.auction_date,
+
+        f.first_name,
+        f.middle_name,
+        f.last_name,
+
+        CASE
+            WHEN lg.buyer_type = 'Reeling'
+                THEN r.name
+            ELSE eur.name
+        END AS buyer_name,
+
+        CASE
+            WHEN lg.buyer_type = 'Reeling'
+                THEN r.reeling_license_number
+            ELSE eur.license_number
+        END AS license_number,
+
+        lg.buyer_type,
+
+        SUM(lg.sold_amount)
+        OVER (
+            PARTITION BY
+                l.market_id,
+                lg.buyer_id,
+                lg.buyer_type
+        ) AS total_sold_out_amount
+
+    FROM lot_groupage lg
+
+    INNER JOIN lot l
+        ON l.lot_id = lg.lot_id
+
+    LEFT JOIN market_auction ma
+        ON ma.market_auction_id = l.market_auction_id
+
+    LEFT JOIN farmer f
+        ON f.farmer_id = ma.farmer_id
+
+    LEFT JOIN reeler r
+        ON r.reeler_id = lg.buyer_id
+        AND lg.buyer_type = 'Reeling'
+
+    LEFT JOIN external_unit_registration eur
+        ON eur.external_unit_registration_id = lg.buyer_id
+        AND lg.buyer_type <> 'Reeling'
+
+    WHERE l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.market_id =:marketId
+    AND lg.status = 'distributed'
+
+    ORDER BY l.allotted_lot_id
+""";
+
+    public static final String CASH_BALANCE_WITH_LICENSE_QUERY ="""
+SELECT
+        lg.sold_amount,
+        l.allotted_lot_id,
+        l.auction_date,
+
+        f.first_name,
+        f.middle_name,
+        f.last_name,
+
+        CASE
+            WHEN lg.buyer_type = 'Reeling'
+                THEN r.name
+            ELSE eur.name
+        END AS buyer_name,
+
+        CASE
+            WHEN lg.buyer_type = 'Reeling'
+                THEN r.reeling_license_number
+            ELSE eur.license_number
+        END AS license_number,
+
+        lg.buyer_type,
+
+        SUM(lg.sold_amount)
+        OVER (
+            PARTITION BY
+                l.market_id,
+                lg.buyer_id,
+                lg.buyer_type
+        ) AS total_sold_out_amount
+
+    FROM lot_groupage lg
+
+    INNER JOIN lot l
+        ON l.lot_id = lg.lot_id
+
+    LEFT JOIN market_auction ma
+        ON ma.market_auction_id = l.market_auction_id
+
+    LEFT JOIN farmer f
+        ON f.farmer_id = ma.farmer_id
+
+    LEFT JOIN reeler r
+        ON r.reeler_id = lg.buyer_id
+        AND lg.buyer_type = 'Reeling'
+
+    LEFT JOIN external_unit_registration eur
+        ON eur.external_unit_registration_id = lg.buyer_id
+        AND lg.buyer_type <> 'Reeling'
+
+    WHERE l.auction_date BETWEEN :fromDate AND :toDate
+    AND l.market_id = :marketId
+    AND lg.status = 'distributed'
+
+    AND (
+        r.reeling_license_number = :licenseNumber
+        OR eur.license_number = :licenseNumber
+    )
+
+    ORDER BY l.allotted_lot_id
+""";
+
+
+    public static final String BUYER_QUERY =BUYER_QUERYS;
+    public static final String SEED_MARKET_CURRENT_BALANCE_QUERY =SEED_MARKET_CURRENT_BALANCE_QUERYS;
+    public static final String SEED_MARKET_TRANSACTION_PASS_BOOK =SEED_MARKET_TRANSACTION_PASS_BOOK_QUERY;
+    public static final String CASH_BALANCE = CASH_BALANCE_QUERY ;
+    public static final String CASH_BALANCE_WITH_LICENSE =CASH_BALANCE_WITH_LICENSE_QUERY ;
 }

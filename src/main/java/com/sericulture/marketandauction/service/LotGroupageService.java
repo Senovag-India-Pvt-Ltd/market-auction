@@ -3,7 +3,13 @@ package com.sericulture.marketandauction.service;
 import com.sericulture.marketandauction.helper.MarketAuctionHelper;
 import com.sericulture.marketandauction.helper.Util;
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.api.ReelerTransactionReport;
+import com.sericulture.marketandauction.model.api.ReelerTransactionReportWrapper;
 import com.sericulture.marketandauction.model.api.marketauction.*;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.ReelerReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.ReelerTxnReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.ReportRequest;
+import com.sericulture.marketandauction.model.api.marketauction.reporting.SeedMarketBiddingResponse;
 import com.sericulture.marketandauction.model.entity.*;
 import com.sericulture.marketandauction.model.enums.LotStatus;
 import com.sericulture.marketandauction.model.enums.PAYMENTMODE;
@@ -25,10 +31,10 @@ import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 import java.io.FileInputStream;
-import java.nio.file.Files;
 import java.io.File;
 import java.util.List;
 
@@ -1458,4 +1464,649 @@ public class LotGroupageService {
 
         return response;
     }
+
+    public ResponseEntity<?> getSeedMFReport(ReportRequest reportRequest) {
+
+        List<SeedMFResponse> responseList = new ArrayList<>();
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> resultSet;
+
+        // 🔥 IMPORTANT LOGIC (LIKE REELER MF)
+        if (reportRequest.getLicenseNumber() == null || reportRequest.getLicenseNumber().trim().isEmpty()) {
+
+            // 👉 WITHOUT LICENSE
+            resultSet = lotGroupageRepository.getSeedMFReportWithoutLicense(
+                    reportRequest.getFromDate(),
+                    reportRequest.getToDate(),
+                    reportRequest.getMarketId()
+            );
+
+        } else {
+
+            // 👉 WITH LICENSE
+            resultSet = lotGroupageRepository.getSeedMFReportWithLicense(
+                    reportRequest.getFromDate(),
+                    reportRequest.getToDate(),
+                    reportRequest.getMarketId(),
+                    reportRequest.getLicenseNumber().trim()
+            );
+        }
+
+        // ❌ NO DATA
+        if (Util.isNullOrEmptyList(resultSet)) {
+            marketAuctionHelper.retrunIfError(rw, "No data found");
+            return ResponseEntity.ok(rw);
+        }
+
+        // 🔥 MAPPING
+        for (Object[] row : resultSet) {
+
+            SeedMFResponse response = SeedMFResponse.builder()
+                    .allottedLotId(Util.objectToInteger(row[0]))
+                    .auctionDate(Util.objectToString(row[1]))
+
+                    .totalWeight(Util.objectToFloat(row[2]))
+                    .bidAmount(Util.objectToFloat(row[3]))
+
+                    .totalSoldAmount(Util.objectToFloat(row[4]))
+                    .totalMarketFee(Util.objectToFloat(row[5]))
+
+                    .licenseNumber(Util.objectToString(row[6]))
+                    .buyerName(Util.objectToString(row[7]))
+
+                    .serialNumber(Util.objectToInteger(row[8]))
+                    .build();
+
+            responseList.add(response);
+        }
+
+        rw.setContent(responseList);
+        return ResponseEntity.ok(rw);
+    }
+
+    public FileInputStream downloadSeedMFReport(ReportRequest request) throws Exception {
+
+        List<Object[]> list;
+
+        // SAME LOGIC AS YOUR GET METHOD
+        if (request.getLicenseNumber() == null || request.getLicenseNumber().trim().isEmpty()) {
+
+            list = lotGroupageRepository.getSeedMFReportWithoutLicense(
+                    request.getFromDate(),
+                    request.getToDate(),
+                    request.getMarketId()
+            );
+
+        } else {
+
+            list = lotGroupageRepository.getSeedMFReportWithLicense(
+                    request.getFromDate(),
+                    request.getToDate(),
+                    request.getMarketId(),
+                    request.getLicenseNumber().trim()
+            );
+        }
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Seed MF Report");
+
+        // HEADER
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("SL No");
+        header.createCell(1).setCellValue("Lot No");
+        header.createCell(2).setCellValue("Date");
+        header.createCell(3).setCellValue("License");
+        header.createCell(4).setCellValue("Buyer Name");
+        header.createCell(5).setCellValue("Bid Amount");
+        header.createCell(6).setCellValue("Weight");
+        header.createCell(7).setCellValue("Amount");
+        header.createCell(8).setCellValue("MF Amount");
+
+        int rowNum = 1;
+
+        for (Object[] data : list) {
+
+            Row row = sheet.createRow(rowNum++);
+
+            row.createCell(0).setCellValue(rowNum - 1);
+            row.createCell(1).setCellValue(data[0] != null ? data[0].toString() : "");
+            row.createCell(2).setCellValue(data[1] != null ? data[1].toString() : "");
+            row.createCell(3).setCellValue(data[6] != null ? data[6].toString() : "");
+            row.createCell(4).setCellValue(data[7] != null ? data[7].toString() : "");
+
+            row.createCell(5).setCellValue(data[3] != null ? Double.parseDouble(data[3].toString()) : 0);
+            row.createCell(6).setCellValue(data[2] != null ? Double.parseDouble(data[2].toString()) : 0);
+            row.createCell(7).setCellValue(data[4] != null ? Double.parseDouble(data[4].toString()) : 0);
+            row.createCell(8).setCellValue(data[5] != null ? Double.parseDouble(data[5].toString()) : 0);
+        }
+
+        File file = File.createTempFile("Seed_MF_Report_", ".xlsx");
+        FileOutputStream fos = new FileOutputStream(file);
+
+        workbook.write(fos);
+        workbook.close();
+        fos.close();
+
+        return new FileInputStream(file);
+    }
+
+    public ResponseEntity<?> getSeedMarketBiddingReport(
+            ReelerReportRequest reportRequest) {
+
+        ResponseWrapper rw =
+                ResponseWrapper.createWrapper(List.class);
+
+        List<Object[]> responses;
+
+        // WITH LICENSE NUMBER
+        if(reportRequest.getLicenseNumber() != null
+                && !reportRequest.getLicenseNumber().trim().isEmpty()) {
+
+            responses = lotGroupageRepository.getSeedMarketBiddingReport(
+                    reportRequest.getMarketId(),
+                    reportRequest.getReportFromDate(),
+                    reportRequest.getLicenseNumber().trim()
+            );
+
+        } else {
+
+            // WITHOUT LICENSE NUMBER
+            responses = lotGroupageRepository.getSeedMarketBiddingReportWithoutLicense(reportRequest.getMarketId(), reportRequest.getReportFromDate());
+        }
+
+        List<SeedMarketBiddingResponse> responseList = new ArrayList<>();
+
+        for (Object[] row : responses) {
+
+            SeedMarketBiddingResponse res = new SeedMarketBiddingResponse();
+            res.setAllottedLotId(row[0] != null ? row[0].toString() : "");
+            res.setAuctionDate(row[1] != null ? row[1].toString() : "");
+            res.setBuyerType(row[2] != null ? row[2].toString() : "");
+            res.setBidderName(row[3] != null ? row[3].toString() : "");
+            res.setLicenseNumber(row[4] != null ? row[4].toString() : "");
+            res.setLotWeight(row[5] != null ? row[5].toString() : "0");
+            res.setAmount(row[6] != null ? row[6].toString() : "0");
+            res.setSoldAmount(row[7] != null ? row[7].toString() : "0");
+            res.setMarketFee(row[8] != null ? row[8].toString() : "0");
+            res.setMarketName(row[9] != null ? row[9].toString() : "");
+            res.setCreatedDate(row[10] != null ? row[10].toString() : "");
+            res.setLotGroupageId(row[11] != null ? row[11].toString() : "");
+            responseList.add(res);
+        }
+
+        rw.setContent(responseList);
+
+        return ResponseEntity.ok(rw);
+    }
+
+    public FileInputStream downloadSeedMarketBiddingReport(
+            ReelerReportRequest request) throws Exception {
+
+        List<Object[]> list;
+
+        // WITH LICENSE
+        if (request.getLicenseNumber() != null
+                && !request.getLicenseNumber().trim().isEmpty()) {
+
+            list = lotGroupageRepository.getSeedMarketBiddingReport(
+                    request.getMarketId(),
+                    request.getReportFromDate(),
+                    request.getLicenseNumber().trim()
+            );
+
+        } else {
+
+            // WITHOUT LICENSE
+            list = lotGroupageRepository
+                    .getSeedMarketBiddingReportWithoutLicense(
+                            request.getMarketId(),
+                            request.getReportFromDate()
+                    );
+        }
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Seed Market Bidding Report");
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("SL No");
+        header.createCell(1).setCellValue("Lot Number");
+        header.createCell(2).setCellValue("Auction Date");
+        header.createCell(3).setCellValue("Buyer Type");
+        header.createCell(4).setCellValue("Bidder Name");
+        header.createCell(5).setCellValue("License Number");
+        header.createCell(6).setCellValue("Lot Weight");
+        header.createCell(7).setCellValue("Bid Amount");
+        header.createCell(8).setCellValue("Sold Amount");
+        header.createCell(9).setCellValue("Market Fee");
+        header.createCell(10).setCellValue("Market Name");
+
+        int rowNum = 1;
+
+        for (Object[] data : list) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(rowNum - 1);
+            row.createCell(1).setCellValue(data[0] != null ? data[0].toString() : "");
+            row.createCell(2).setCellValue(data[1] != null ? data[1].toString() : "");
+            row.createCell(3).setCellValue(data[2] != null ? data[2].toString() : "");
+            row.createCell(4).setCellValue(data[3] != null ? data[3].toString() : "");
+            row.createCell(5).setCellValue(data[4] != null ? data[4].toString() : "");
+
+            row.createCell(6).setCellValue(data[5] != null ? Double.parseDouble(data[5].toString()) : 0);
+
+            row.createCell(7).setCellValue(data[6] != null ? Double.parseDouble(data[6].toString()) : 0);
+
+            row.createCell(8).setCellValue(data[7] != null ? Double.parseDouble(data[7].toString()) : 0);
+
+            row.createCell(9).setCellValue(data[8] != null ? Double.parseDouble(data[8].toString()) : 0);
+
+            row.createCell(10).setCellValue(data[9] != null ? data[9].toString() : "");
+        }
+
+        File file = File.createTempFile(
+                "Seed_Market_Bidding_Report_", ".xlsx");
+
+        FileOutputStream fos = new FileOutputStream(file);
+        workbook.write(fos);
+        workbook.close();
+        fos.close();
+        return new FileInputStream(file);
+    }
+
+    public ReelerTransactionReportWrapper getSeedMarketTxnReport(
+            int marketId,
+            String licenseNumber,
+            LocalDate fromDate,
+            LocalDate toDate) {
+
+        ReelerTransactionReportWrapper wrapper =
+                new ReelerTransactionReportWrapper();
+
+        try {
+
+            MarketMaster marketMaster =
+                    marketMasterRepository.findById(marketId);
+
+            // ONLINE
+            if (!marketMaster.getPaymentMode().equalsIgnoreCase("cash")) {
+                List<Object[]> buyerResultList;
+
+                try {
+
+                    buyerResultList = lotGroupageRepository
+                            .getBuyerDetails(
+                                    marketId,
+                                    licenseNumber);
+
+                } catch (Exception e) {
+
+                    return new ReelerTransactionReportWrapper();
+                }
+
+                if (buyerResultList == null
+                        || buyerResultList.isEmpty()) {
+
+                    return new ReelerTransactionReportWrapper();
+                }
+
+                Object[] buyerResult =
+                        buyerResultList.get(0);
+
+                String buyerName =
+                        buyerResult[0].toString();
+
+                String virtualAccountNumber =
+                        buyerResult[1].toString();
+                // CURRENT BALANCE
+                List<Object[]> currentBalanceList =
+                        lotGroupageRepository
+                                .getSeedMarketCurrentBalance(
+                                        virtualAccountNumber);
+
+                if (currentBalanceList == null
+                        || currentBalanceList.isEmpty()) {
+
+                    wrapper.setOpeningBalance(0.0);
+                    wrapper.setReelerTransactionReports(new ArrayList<>());
+                    wrapper.setTotalDeposits(0.0);
+                    wrapper.setTotalPurchase(0.0);
+
+                    return wrapper;
+                }
+
+                Object[] currentBalanceResult =
+                        currentBalanceList.get(0);
+
+                ReportCurrentBalance reportCurrentBalance =
+                        new ReportCurrentBalance();
+
+                reportCurrentBalance.setCurrentBalance(
+                        ((BigDecimal) currentBalanceResult[0]).doubleValue());
+
+                reportCurrentBalance.setVirtualAccountNumber(
+                        (String) currentBalanceResult[1]);
+
+                reportCurrentBalance.setCreatedDate(
+                        ((Timestamp) currentBalanceResult[2])
+                                .toLocalDateTime());
+
+                // PASSBOOK
+                List<Object[]> transactionList =
+                        lotGroupageRepository
+                                .getSeedMarketTransactionPassBook(
+                                        fromDate,
+                                        toDate,
+                                        reportCurrentBalance.getVirtualAccountNumber(),
+                                        marketId
+                                );
+
+                List<ReportAllTransaction> reportAllTransactions =
+                        new ArrayList<>();
+
+                for (Object[] obj : transactionList) {
+
+                    ReportAllTransaction rat =
+                            new ReportAllTransaction();
+
+                    rat.setTransactionType(obj[0] + "");
+
+                    rat.setAmount(
+                            ((BigDecimal) obj[1]).doubleValue());
+
+                    if (obj[2] != null) {
+
+                        if (obj[2] instanceof java.sql.Timestamp) {
+
+                            rat.setCreatedDate(
+                                    ((java.sql.Timestamp) obj[2])
+                                            .toLocalDateTime());
+
+                        } else if (obj[2] instanceof java.sql.Date) {
+
+                            rat.setCreatedDate(
+                                    ((java.sql.Date) obj[2])
+                                            .toLocalDate()
+                                            .atStartOfDay());
+                        }
+                    }
+
+                    rat.setLot(
+                            ((Number) obj[3]).longValue());
+
+                    rat.setDateOn(
+                            ((java.sql.Date) obj[4]).toLocalDate());
+
+                    rat.setFarmerName((String) obj[5]);
+
+                    reportAllTransactions.add(rat);
+                }
+
+                double debitSum = 0.0;
+                double creditSum = 0.0;
+
+                double currentBalance =
+                        reportCurrentBalance.getCurrentBalance();
+
+                List<ReelerTransactionReport> reports =
+                        new ArrayList<>();
+
+                for (ReportAllTransaction rat : reportAllTransactions) {
+
+                    ReelerTransactionReport report =
+                            new ReelerTransactionReport();
+
+                    report.setTransactionType(
+                            rat.getTransactionType());
+
+                    report.setTransactionDate(
+                            rat.getCreatedDate().toLocalDate());
+
+                    if ("D".equalsIgnoreCase(
+                            rat.getTransactionType())) {
+
+                        debitSum += rat.getAmount();
+
+                        report.setPaymentAmount(
+                                rat.getAmount());
+
+                        report.setOperationDescription(
+                                "Paid to "
+                                        + rat.getFarmerName()
+                                        + ", for lot "
+                                        + rat.getLot());
+
+                    } else {
+
+                        creditSum += rat.getAmount();
+
+                        report.setDepositAmount(
+                                rat.getAmount());
+
+                        report.setOperationDescription(
+                                "Deposited by " + buyerName);
+                    }
+
+                    reports.add(report);
+                }
+
+                double creditDebitDiff =
+                        debitSum - creditSum;
+
+                double openingBalance =
+                        currentBalance - creditDebitDiff;
+
+                double runningBalance =
+                        openingBalance;
+
+                for (ReelerTransactionReport report : reports) {
+
+                    if ("D".equalsIgnoreCase(
+                            report.getTransactionType())) {
+
+                        runningBalance =
+                                runningBalance
+                                        - report.getPaymentAmount();
+
+                    } else {
+
+                        runningBalance =
+                                runningBalance
+                                        + report.getDepositAmount();
+                    }
+
+                    report.setBalance(runningBalance);
+                }
+
+                wrapper.setReelerTransactionReports(reports);
+                wrapper.setOpeningBalance(openingBalance);
+                wrapper.setTotalDeposits(creditSum);
+                wrapper.setTotalPurchase(debitSum);
+                wrapper.setName(buyerName);
+
+            }
+
+            // CASH
+            else {
+
+                List<Object[]> objectList;
+
+                if (licenseNumber != null
+                        && !licenseNumber.trim().isEmpty()) {
+
+                    objectList =
+                            lotGroupageRepository
+                                    .getCashBalanceWithLicense(
+                                            fromDate,
+                                            toDate,
+                                            marketId,
+                                            licenseNumber
+                                    );
+
+                } else {
+
+                    objectList =
+                            lotGroupageRepository
+                                    .getCashBalance(
+                                            fromDate,
+                                            toDate,
+                                            marketId
+                                    );
+                }
+
+                List<ReelerTransactionReport> reports =
+                        new ArrayList<>();
+
+                Double totalPurchase = 0.0;
+
+                String buyerName = "";
+
+                for (Object[] obj : objectList) {
+
+                    totalPurchase =
+                            ((BigDecimal) obj[9]).doubleValue();
+
+                    buyerName =
+                            (String) obj[6];
+
+                    ReelerTransactionReport report =
+                            new ReelerTransactionReport();
+
+                    report.setTransactionType("Cash");
+
+                    report.setPaymentAmount(
+                            ((BigDecimal) obj[0]).doubleValue());
+
+                    report.setTransactionDate(
+                            ((java.sql.Date) obj[2]).toLocalDate());
+
+                    int lotId =
+                            ((Number) obj[1]).intValue();
+
+                    report.setOperationDescription(
+                            "Paid to "
+                                    + obj[3] + " "
+                                    + obj[4] + " "
+                                    + obj[5]
+                                    + ", for lot "
+                                    + lotId);
+
+                    reports.add(report);
+                }
+
+                wrapper.setReelerTransactionReports(reports);
+
+                wrapper.setOpeningBalance(0.0);
+
+                wrapper.setTotalDeposits(0.0);
+
+                wrapper.setTotalPurchase(totalPurchase);
+
+                wrapper.setName(buyerName);
+            }
+
+        } catch (Exception ex) {
+
+            throw ex;
+        }
+
+        return wrapper;
+    }
+
+    public FileInputStream downloadSeedMarketTxnReport(
+            ReelerTxnReportRequest request) throws Exception {
+
+        ReelerTransactionReportWrapper wrapper =
+                getSeedMarketTxnReport(
+                        request.getMarketId(),
+                        request.getLicenseNumber(),
+                        request.getFromDate(),
+                        request.getToDate()
+                );
+
+        Workbook workbook = new XSSFWorkbook();
+
+        Sheet sheet =
+                workbook.createSheet(
+                        "Seed Market Transaction Report");
+
+        Row header = sheet.createRow(0);
+
+        header.createCell(0).setCellValue("SL No");
+        header.createCell(1).setCellValue("Transaction Date");
+        header.createCell(2).setCellValue("Transaction Type");
+        header.createCell(3).setCellValue("Deposit Amount");
+        header.createCell(4).setCellValue("Payment Amount");
+        header.createCell(5).setCellValue("Balance");
+        header.createCell(6).setCellValue("Description");
+
+        int rowNum = 1;
+
+        for (ReelerTransactionReport report :
+                wrapper.getReelerTransactionReports()) {
+
+            Row row = sheet.createRow(rowNum);
+
+            row.createCell(0)
+                    .setCellValue(rowNum);
+
+            row.createCell(1)
+                    .setCellValue(
+                            report.getTransactionDate() != null
+                                    ? report.getTransactionDate().toString()
+                                    : ""
+                    );
+
+            row.createCell(2)
+                    .setCellValue(
+                            report.getTransactionType() != null
+                                    ? report.getTransactionType()
+                                    : ""
+                    );
+
+            row.createCell(3)
+                    .setCellValue(
+                            report.getDepositAmount() != null
+                                    ? report.getDepositAmount()
+                                    : 0
+                    );
+
+            row.createCell(4)
+                    .setCellValue(
+                            report.getPaymentAmount() != null
+                                    ? report.getPaymentAmount()
+                                    : 0
+                    );
+
+            row.createCell(5)
+                    .setCellValue(
+                            report.getBalance() != null
+                                    ? report.getBalance()
+                                    : 0
+                    );
+
+            row.createCell(6)
+                    .setCellValue(
+                            report.getOperationDescription() != null
+                                    ? report.getOperationDescription()
+                                    : ""
+                    );
+
+            rowNum++;
+        }
+
+        File file = File.createTempFile(
+                "Seed_Market_Transaction_Report_",
+                ".xlsx"
+        );
+
+        FileOutputStream fos =
+                new FileOutputStream(file);
+
+        workbook.write(fos);
+
+        workbook.close();
+        fos.close();
+
+        return new FileInputStream(file);
+    }
+
 }
