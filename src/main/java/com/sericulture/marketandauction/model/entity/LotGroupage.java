@@ -90,4 +90,22 @@ public class LotGroupage extends BaseEntity implements Serializable {
 
     @Column(name = "payment_comments")
     private String paymentComments;
+
+    /**
+     * Set by the "Purpose for Rejection" checkbox on the Lot Distribution screen.
+     * When true, the lot's remaining cocoon weight is being flagged for rejection
+     * based on the market's REJECTION_PERCENTAGE threshold (compared in the UI).
+     */
+    @Column(name = "purpose_for_rejection", columnDefinition = "TINYINT")
+    private Boolean purposeForRejection;
+
+    /**
+     * Quantity (Kg) recorded as rejection when the "Purpose for Rejection" checkbox
+     * is ticked. Equals (lotWeightAfterWeighment - distributedQuantity) at save time.
+     * Null when the checkbox is not ticked.
+     *
+     * Example: weighment 100, distributed 90, checkbox on → rejection_quantity = 10.
+     */
+    @Column(name = "rejection_quantity", precision = 10, scale = 2)
+    private java.math.BigDecimal rejectionQuantity;
 }

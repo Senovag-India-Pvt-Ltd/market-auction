@@ -178,10 +178,33 @@ public class LotGroupageService {
             // Always set isDisposed = 1 in LotGroupage
             lotGroupage.setIsDisposed(1);
 
+            // Persist "Purpose for Rejection" flag explicitly — ModelMapper STRICT
+            // mode can silently skip it depending on configuration, so do it directly.
+            Boolean purposeForRejection = Boolean.TRUE.equals(lotGroupageRequest.getPurposeForRejection());
+            lotGroupage.setPurposeForRejection(purposeForRejection);
+
             Float remainingCocoon = lotGroupageRequest.getRemainingCocoonWeight();
 
+            // When the user marks the lot for rejection:
+            //   1. Snapshot the leftover (e.g. 100-90 = 10) into rejection_quantity.
+            //   2. Zero out remaining_cocoon and mark status = DISTRIBUTED below.
+            if (purposeForRejection) {
+                BigDecimal rejectionQty = (remainingCocoon != null)
+                        ? BigDecimal.valueOf(remainingCocoon).setScale(2, RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+                lotGroupage.setRejectionQuantity(rejectionQty);
+
+                remainingCocoon = 0f;
+                lotGroupage.setRemainingCocoonWeight(0f);
+            } else {
+                // Checkbox off → don't carry over a stale rejection quantity.
+                lotGroupage.setRejectionQuantity(null);
+            }
+
             LotStatus status;
-            if (remainingCocoon == null) {
+            if (purposeForRejection) {
+                status = LotStatus.DISTRIBUTED;
+            } else if (remainingCocoon == null) {
                 status = LotStatus.PAYMENTFAILED;
             } else if (remainingCocoon == 0) {
                 status = LotStatus.DISTRIBUTED;
@@ -607,10 +630,31 @@ public class LotGroupageService {
 
             lotGroupage.setIsDisposed(1);
 
+            // Persist "Purpose for Rejection" explicitly (mirrors save-path behavior).
+            Boolean editPurposeForRejection = Boolean.TRUE.equals(lotGroupageRequestEdit.getPurposeForRejection());
+            lotGroupage.setPurposeForRejection(editPurposeForRejection);
+
             Float remainingCocoon = lotGroupageRequestEdit.getRemainingCocoonWeight();
 
+            // Rejection check-box force-completes the lot:
+            //   1. Snapshot leftover into rejection_quantity.
+            //   2. Zero remaining_cocoon + status = DISTRIBUTED (below).
+            if (editPurposeForRejection) {
+                BigDecimal editRejectionQty = (remainingCocoon != null)
+                        ? BigDecimal.valueOf(remainingCocoon).setScale(2, RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+                lotGroupage.setRejectionQuantity(editRejectionQty);
+
+                remainingCocoon = 0f;
+                lotGroupage.setRemainingCocoonWeight(0f);
+            } else {
+                lotGroupage.setRejectionQuantity(null);
+            }
+
             LotStatus editStatus;
-            if (remainingCocoon == null) {
+            if (editPurposeForRejection) {
+                editStatus = LotStatus.DISTRIBUTED;
+            } else if (remainingCocoon == null) {
                 editStatus = LotStatus.PAYMENTFAILED;
             } else if (remainingCocoon == 0) {
                 editStatus = LotStatus.DISTRIBUTED;

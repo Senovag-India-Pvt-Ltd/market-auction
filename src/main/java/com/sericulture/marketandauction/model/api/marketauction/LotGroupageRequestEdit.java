@@ -76,6 +76,8 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name="marketId", example = "1")
     int marketId;
 
-
+    @Schema(name = "purposeForRejection", example = "true",
+            description = "User checkbox indicating the lot's remaining quantity is being flagged for rejection")
+    Boolean purposeForRejection;
 
 }
