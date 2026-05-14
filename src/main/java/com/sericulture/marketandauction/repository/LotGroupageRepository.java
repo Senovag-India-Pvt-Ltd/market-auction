@@ -140,10 +140,12 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                     CASE
                         WHEN lg.buyer_type = 'RSP' THEN es.license_number
                         WHEN lg.buyer_type = 'NSSO' THEN es.address
-                        WHEN lg.buyer_type = 'Govt Grainage' THEN gm.grainage_master_name
+                        WHEN lg.buyer_type = 'Govt Grainage' THEN gm.grainage_master_name_in_kannada
                         WHEN lg.buyer_type = 'Reeling' THEN r.name
                         ELSE NULL
-                    END AS buyer_name
+                    END AS buyer_name,
+                    fc.transaction_date,
+                    l.auction_date
                 FROM
                     FARMER f
                 INNER JOIN
@@ -166,7 +168,8 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                     SELECT
                         fc.fruits_id,
                         MAX(fc.expected_marker_date) AS expected_marker_date,
-                        MAX(fc.spun_date) AS spun_date
+                        MAX(fc.spun_date) AS spun_date,
+                        MAX(fc.transaction_date) AS transaction_date
                     FROM fitness_certificate fc
                     WHERE fc.active = 1
                     GROUP BY fc.fruits_id
@@ -226,7 +229,7 @@ public interface LotGroupageRepository extends PagingAndSortingRepository<LotGro
                 ma.RACE_MASTER_ID,
                 v.village_name_in_kannada,
                 mm.market_name_in_kannada,
-                rm.race_name,
+                rm.race_name_in_kannada,
                 sm.source_name,
                 mm.box_weight,
                 l.status,
@@ -705,8 +708,9 @@ SELECT
     b.transaction_date,
             
     ci.crop_status_id,
-    cs.name
-            
+    cs.name,
+    rm.race_name_in_kannada
+
 FROM sale_and_disposal_of_dfls a
             
 INNER JOIN fitness_certificate b
@@ -741,12 +745,16 @@ LEFT JOIN LatestCropInspection ci
             
 LEFT JOIN crop_status cs
     ON cs.crop_status_id = ci.crop_status_id
-            
+
+LEFT JOIN race_master rm
+    ON rm.race_id = a.RACE_ID
+
 WHERE
     a.active = 1
     AND b.fruits_id = :fruitsId
     AND b.fitness_certificate_id = :fitnessCertificateId
 """)
+
     List<Object[]> getLotDisposalDetails(@Param("fruitsId") String fruitsId,@Param("fitnessCertificateId") Long fitnessCertificateId);
 
 

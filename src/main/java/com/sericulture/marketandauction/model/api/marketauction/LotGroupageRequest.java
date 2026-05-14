@@ -71,4 +71,8 @@ public class LotGroupageRequest extends RequestBody {
 
     @Schema(name = "status", example = "pending")
     private String status;
+
+    @Schema(name = "purposeForRejection", example = "true",
+            description = "User checkbox indicating the lot's remaining quantity is being flagged for rejection")
+    private Boolean purposeForRejection;
 }
