@@ -202,12 +202,10 @@ public class LotGroupageService {
             }
 
             LotStatus status;
-            if (remainingCocoon == null) {
-                status = LotStatus.REJECTED;
             if (purposeForRejection) {
                 status = LotStatus.DISTRIBUTED;
             } else if (remainingCocoon == null) {
-                status = LotStatus.PAYMENTFAILED;
+                status = LotStatus.REJECTED;
             } else if (remainingCocoon == 0) {
                 status = LotStatus.DISTRIBUTED;
             } else {
@@ -564,9 +562,9 @@ public class LotGroupageService {
 
             // Restore externalUnitId: use request value if provided, else keep existing DB value
             lotGroupage.setExternalUnitId(
-                lotGroupageRequestEdit.getExternalUnitId() != null
-                    ? lotGroupageRequestEdit.getExternalUnitId()
-                    : existingExternalUnitId
+                    lotGroupageRequestEdit.getExternalUnitId() != null
+                            ? lotGroupageRequestEdit.getExternalUnitId()
+                            : existingExternalUnitId
             );
 
             // Restore marketFee for existing records; new records calculate it below
@@ -657,7 +655,7 @@ public class LotGroupageService {
             if (editPurposeForRejection) {
                 editStatus = LotStatus.DISTRIBUTED;
             } else if (remainingCocoon == null) {
-                editStatus = LotStatus.PAYMENTFAILED;
+                editStatus = LotStatus.REJECTED;
             } else if (remainingCocoon == 0) {
                 editStatus = LotStatus.DISTRIBUTED;
             } else {
