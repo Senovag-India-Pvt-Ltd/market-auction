@@ -77,4 +77,7 @@ public class MarketMaster extends BaseEntity implements Serializable {
 
     @Column(name="releer_minimum_balance")
     private Float releerMinimumBalance;
+
+    @Column(name = "rejection_percentage")
+    private Double rejectionPercentage;
 }
