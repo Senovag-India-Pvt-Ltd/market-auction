@@ -182,11 +182,11 @@ public class LotGroupageService {
 
             LotStatus status;
             if (remainingCocoon == null) {
-                status = LotStatus.PAYMENTFAILED;
+                status = LotStatus.REJECTED;
             } else if (remainingCocoon == 0) {
                 status = LotStatus.DISTRIBUTED;
             } else {
-                status = LotStatus.PAYMENTFAILED;
+                status = LotStatus.REJECTED;
             }
             lotGroupage.setStatus(status.getLabel());
 
@@ -611,11 +611,11 @@ public class LotGroupageService {
 
             LotStatus editStatus;
             if (remainingCocoon == null) {
-                editStatus = LotStatus.PAYMENTFAILED;
+                editStatus = LotStatus.REJECTED;
             } else if (remainingCocoon == 0) {
                 editStatus = LotStatus.DISTRIBUTED;
             } else {
-                editStatus = LotStatus.PAYMENTFAILED;
+                editStatus = LotStatus.REJECTED;
             }
             lotGroupage.setStatus(editStatus.getLabel());
 

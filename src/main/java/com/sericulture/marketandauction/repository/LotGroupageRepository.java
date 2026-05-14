@@ -1304,4 +1304,12 @@ AND lg.active = true
             int marketId,
             String licenseNumber
     );
+
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.SEED_MARKET_DASHBOARD_QUERY)
+    List<Object[]> getSeedMarketDashboard(
+            @Param("auctionDate") LocalDate auctionDate
+    );
+
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.SEED_MARKET_DASHBOARD_ALL_QUERY)
+    List<Object[]> getSeedMarketDashboardAll();
 }

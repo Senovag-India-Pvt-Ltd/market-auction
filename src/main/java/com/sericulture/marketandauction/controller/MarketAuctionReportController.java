@@ -199,4 +199,9 @@ public class MarketAuctionReportController {
     public ResponseEntity<?> getReelerBiddingReport(@RequestBody ReelerReportRequest reportRequest){
         return marketAuctionReportService.getReelerBiddingReport(reportRequest);
     }
+
+    @PostMapping("/getSeedMarketDashboard")
+    public ResponseEntity<?> getSeedMarketDashboard(@RequestBody DashboardReportRequest reportRequest){
+        return marketAuctionReportService.getSeedMarketDashboard(reportRequest);
+    }
 }

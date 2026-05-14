@@ -150,8 +150,8 @@ public class FarmerPaymentService {
                             .lotSoldOutAmount(r[13] != null ? Util.objectToFloat(r[13]) : 0f)
                             .farmerMarketFee(r[14] != null ? Util.objectToFloat(r[14]) : 0f)
 
-                            .customerReferenceNumber(r.length > 21 ? Util.objectToString(r[21]) : "")
-                            .farmerEmail(r.length > 22 ? Util.objectToString(r[22]) : "")
+//                            .customerReferenceNumber(r.length > 21 ? Util.objectToString(r[21]) : "")
+//                            .farmerEmail(r.length > 22 ? Util.objectToString(r[22]) : "")
 
                             .build();
 
@@ -533,46 +533,71 @@ public class FarmerPaymentService {
 
         FarmerReadyForPaymentForSeedMarketResponse farmerReadyForPaymentForSeedMarketResponse = getReadyForPaymentTxnsForSeedMarket(auctionDate, marketId);
         final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL);
-        String chequeDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+//        String chequeDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+//
+//        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+//             CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format)) {
+//
+//            for (FarmerReadyPaymentInfoForSeedMarketResponse item : farmerReadyForPaymentForSeedMarketResponse.getFarmerReadyPaymentInfoForSeedMarketResponseList()) {
+//                long amount = (long) (item.getLotSoldOutAmount() - item.getFarmerMarketFee());
+//                String beneficiaryName = (item.getFarmerFirstName() + " " + item.getFarmerMiddleName() + " " + item.getFarmerLastName()).trim();
+//                List<Serializable> data = Arrays.asList(
+//                        "N",           // transactionType
+//                        "",            // beneficiaryCode
+//                        item.getAccountNumber(),  // beneficiaryAccountNumber
+//                        amount,        // instrumentAmount
+//                        beneficiaryName, // beneficiaryName
+//                        "",            // draweeLocation
+//                        "",            // printLocation
+//                        "",            // beneficiaryAddress1
+//                        "",            // beneficiaryAddress2
+//                        "",            // beneficiaryAddress3
+//                        "",            // beneficiaryAddress4
+//                        "",            // beneficiaryAddress5
+//                        "",            // instrumentReferenceNumber
+//                        item.getCustomerReferenceNumber() != null ? item.getCustomerReferenceNumber() : "",  // customerReferenceNumber
+//                        "",            // paymentDetails1
+//                        "",            // paymentDetails2
+//                        "",            // paymentDetails3
+//                        "",            // paymentDetails4
+//                        "",            // paymentDetails5
+//                        "",            // paymentDetails6
+//                        "",            // paymentDetails7
+//                        "",            // chequeNumber
+//                        chequeDate,    // chequeDate
+//                        "",            // micrNumber
+//                        item.getIfscCode(),       // ifscCode
+//                        item.getBankName(),        // beneficiaryBankName
+//                        item.getBranchName(),      // beneficiaryBankBranchName
+//                        item.getFarmerEmail() != null ? item.getFarmerEmail() : ""  // beneficiaryEmailId
+//                );
+//                csvPrinter.printRecord(data);
+//            }
+//            csvPrinter.flush();
+//            return new ByteArrayInputStream(out.toByteArray());
+//        } catch (IOException e) {
+//            throw new RuntimeException("fail to import data to CSV file: " + e.getMessage());
+//        }
+//    }
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format)) {
+             CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format);) {
 
-            for (FarmerReadyPaymentInfoForSeedMarketResponse item : farmerReadyForPaymentForSeedMarketResponse.getFarmerReadyPaymentInfoForSeedMarketResponseList()) {
-                long amount = (long) (item.getLotSoldOutAmount() - item.getFarmerMarketFee());
-                String beneficiaryName = (item.getFarmerFirstName() + " " + item.getFarmerMiddleName() + " " + item.getFarmerLastName()).trim();
-                List<Serializable> data = Arrays.asList(
-                        "N",           // transactionType
-                        "",            // beneficiaryCode
-                        item.getAccountNumber(),  // beneficiaryAccountNumber
-                        amount,        // instrumentAmount
-                        beneficiaryName, // beneficiaryName
-                        "",            // draweeLocation
-                        "",            // printLocation
-                        "",            // beneficiaryAddress1
-                        "",            // beneficiaryAddress2
-                        "",            // beneficiaryAddress3
-                        "",            // beneficiaryAddress4
-                        "",            // beneficiaryAddress5
-                        "",            // instrumentReferenceNumber
-                        item.getCustomerReferenceNumber() != null ? item.getCustomerReferenceNumber() : "",  // customerReferenceNumber
-                        "",            // paymentDetails1
-                        "",            // paymentDetails2
-                        "",            // paymentDetails3
-                        "",            // paymentDetails4
-                        "",            // paymentDetails5
-                        "",            // paymentDetails6
-                        "",            // paymentDetails7
-                        "",            // chequeNumber
-                        chequeDate,    // chequeDate
-                        "",            // micrNumber
-                        item.getIfscCode(),       // ifscCode
-                        item.getBankName(),        // beneficiaryBankName
-                        item.getBranchName(),      // beneficiaryBankBranchName
-                        item.getFarmerEmail() != null ? item.getFarmerEmail() : ""  // beneficiaryEmailId
+            csvPrinter.printRecord(Arrays.asList("Serial Number", "Lot Id", " Farmer Name", "Farmer Number", "Farmer Mobile Number"
+                    , "Farmer Bank", "IFSC", "Account Number", "Amount"));
+            for (FarmerReadyPaymentInfoForSeedMarketResponse item : farmerReadyForPaymentForSeedMarketResponse.getFarmerReadyPaymentInfoForSeedMarketResponseList()){
+                List<? extends Serializable> data = Arrays.asList(
+                        item.getSerialNumber(),
+                        item.getAllottedLotId(),
+                        item.getFarmerFirstName() + " " + item.getFarmerMiddleName() + " " + item.getFarmerLastName(),
+                        item.getFarmerNumber(), item.getFarmerMobileNumber(),
+                        item.getBankName() + " " + item.getBranchName(),
+                        item.getIfscCode(), item.getAccountNumber(), (item.getLotSoldOutAmount() - item.getFarmerMarketFee())
                 );
+
                 csvPrinter.printRecord(data);
             }
+            csvPrinter.printRecord("Total Amount to be given to farmer is: " + farmerReadyForPaymentForSeedMarketResponse.getSoldAmount());
             csvPrinter.flush();
             return new ByteArrayInputStream(out.toByteArray());
         } catch (IOException e) {

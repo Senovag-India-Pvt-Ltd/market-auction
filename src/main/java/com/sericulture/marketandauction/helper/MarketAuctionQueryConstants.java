@@ -3804,4 +3804,143 @@ SELECT
     public static final String SEED_MARKET_TRANSACTION_PASS_BOOK =SEED_MARKET_TRANSACTION_PASS_BOOK_QUERY;
     public static final String CASH_BALANCE = CASH_BALANCE_QUERY ;
     public static final String CASH_BALANCE_WITH_LICENSE =CASH_BALANCE_WITH_LICENSE_QUERY ;
+
+    public static final String SEED_MARKET_DASHBOARD_QUERY = """
+            WITH MarketSeedArea AS (
+                SELECT market_id, MAX(lot_variety) AS lot_variety
+                FROM market_auction
+                WHERE lot_variety IN (2, 19)
+                GROUP BY market_id
+            ),
+            LotWeights AS (
+                SELECT ma.market_id, SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight
+                FROM lot l
+                INNER JOIN market_auction ma ON l.market_auction_id = ma.market_auction_id
+                WHERE l.auction_date = :auctionDate
+                GROUP BY ma.market_id
+            )
+            SELECT
+                ROW_NUMBER() OVER(ORDER BY mm.market_master_id)                                         AS sl_no,
+                mm.MARKET_NAME                                                                           AS seed_market_name,
+                CASE msa.lot_variety
+                    WHEN 2  THEN 'Mysore Seed Area'
+                    WHEN 19 THEN 'Bivoltine Seed Area'
+                    ELSE 'N/A'
+                END                                                                                      AS seed_area_type,
+                ISNULL(mm.PAYMENT_MODE, 'N/A')                                                          AS payment_mode,
+                COUNT(DISTINCT l.lot_id)                                                                 AS no_of_lots,
+                COUNT(DISTINCT ma.farmer_id)                                                             AS total_no_of_farmers,
+                ROUND(ISNULL(MAX(lw.total_weight), 0), 2)                                               AS total_inward_quantity,
+                COUNT(DISTINCT CASE WHEN lg.buyer_type = 'RSP'           THEN lg.external_unit_id END)  AS total_no_of_rsp,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'RSP'           THEN lg.lot_weight  END), 0)       AS total_rsp_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'RSP'           THEN lg.sold_amount END), 0)       AS total_rsp_amount,
+                COUNT(DISTINCT CASE WHEN lg.buyer_type = 'NSSO'          THEN lg.external_unit_id END)  AS total_no_of_nsso,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'NSSO'          THEN lg.lot_weight  END), 0)       AS total_nsso_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'NSSO'          THEN lg.sold_amount END), 0)       AS total_nsso_amount,
+                COUNT(DISTINCT CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.external_unit_id END)  AS total_no_of_govt_grainage,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.lot_weight  END), 0)       AS total_govt_grainage_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.sold_amount END), 0)       AS total_govt_grainage_amount,
+                COUNT(DISTINCT CASE WHEN lg.buyer_type = 'Reeling'       THEN lg.buyer_id END)          AS total_no_of_reelers,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'Reeling'       THEN lg.lot_weight  END), 0)       AS total_reeler_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'Reeling'       THEN lg.sold_amount END), 0)       AS total_reeler_amount,
+                ISNULL(SUM(CASE WHEN lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage') THEN lg.lot_weight  END), 0) AS total_seed_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage') THEN lg.sold_amount END), 0) AS total_seed_amount,
+                ISNULL(SUM(lg.lot_weight), 0)                                                           AS total_qty,
+                ISNULL(SUM(lg.sold_amount), 0)                                                          AS total_amount,
+                CASE
+                    WHEN UPPER(mm.PAYMENT_MODE) = 'CASH'
+                        THEN ''
+                    WHEN COUNT(lg.lot_groupage_id) = 0
+                        THEN 'Pending'
+                    WHEN COUNT(CASE WHEN lg.status = 'paymentfailed'     THEN 1 END) > 0
+                        THEN 'Failed'
+                    WHEN COUNT(CASE WHEN lg.status = 'paymentprocessing' THEN 1 END) = COUNT(lg.lot_groupage_id)
+                        THEN 'Success'
+                    ELSE 'Pending'
+                END                                                                                     AS payment_status
+            FROM market_master mm
+            LEFT JOIN MarketSeedArea msa
+                ON  msa.market_id = mm.market_master_id
+            LEFT JOIN LotWeights lw
+                ON  lw.market_id = mm.market_master_id
+            LEFT JOIN market_auction ma
+                ON  ma.market_id           = mm.market_master_id
+                AND ma.market_auction_date = :auctionDate
+            LEFT JOIN lot l
+                ON  l.market_auction_id = ma.market_auction_id
+                AND l.auction_date      = :auctionDate
+            LEFT JOIN lot_groupage lg
+                ON  lg.lot_id = l.lot_id
+            WHERE mm.market_type_master_id = 1
+            GROUP BY mm.market_master_id, mm.MARKET_NAME, mm.PAYMENT_MODE, msa.lot_variety
+            ORDER BY mm.market_master_id
+            """;
+
+    public static final String SEED_MARKET_DASHBOARD_ALL_QUERY = """
+            WITH MarketSeedArea AS (
+                SELECT market_id, MAX(lot_variety) AS lot_variety
+                FROM market_auction
+                WHERE lot_variety IN (2, 19)
+                GROUP BY market_id
+            ),
+            LotWeights AS (
+                SELECT ma.market_id, SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight
+                FROM lot l
+                INNER JOIN market_auction ma ON l.market_auction_id = ma.market_auction_id
+                GROUP BY ma.market_id
+            )
+            SELECT
+                ROW_NUMBER() OVER(ORDER BY mm.market_master_id)                                         AS sl_no,
+                mm.MARKET_NAME                                                                           AS seed_market_name,
+                CASE msa.lot_variety
+                    WHEN 2  THEN 'Mysore Seed Area'
+                    WHEN 19 THEN 'Bivoltine Seed Area'
+                    ELSE 'N/A'
+                END                                                                                      AS seed_area_type,
+                ISNULL(mm.PAYMENT_MODE, 'N/A')                                                          AS payment_mode,
+                COUNT(DISTINCT l.lot_id)                                                                 AS no_of_lots,
+                COUNT(DISTINCT ma.farmer_id)                                                             AS total_no_of_farmers,
+                ROUND(ISNULL(MAX(lw.total_weight), 0), 2)                                               AS total_inward_quantity,
+                COUNT(DISTINCT CASE WHEN lg.buyer_type = 'RSP'           THEN lg.external_unit_id END)  AS total_no_of_rsp,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'RSP'           THEN lg.lot_weight  END), 0)       AS total_rsp_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'RSP'           THEN lg.sold_amount END), 0)       AS total_rsp_amount,
+                COUNT(DISTINCT CASE WHEN lg.buyer_type = 'NSSO'          THEN lg.external_unit_id END)  AS total_no_of_nsso,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'NSSO'          THEN lg.lot_weight  END), 0)       AS total_nsso_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'NSSO'          THEN lg.sold_amount END), 0)       AS total_nsso_amount,
+                COUNT(DISTINCT CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.external_unit_id END)  AS total_no_of_govt_grainage,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.lot_weight  END), 0)       AS total_govt_grainage_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'Govt Grainage' THEN lg.sold_amount END), 0)       AS total_govt_grainage_amount,
+                COUNT(DISTINCT CASE WHEN lg.buyer_type = 'Reeling'       THEN lg.buyer_id END)          AS total_no_of_reelers,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'Reeling'       THEN lg.lot_weight  END), 0)       AS total_reeler_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type = 'Reeling'       THEN lg.sold_amount END), 0)       AS total_reeler_amount,
+                ISNULL(SUM(CASE WHEN lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage') THEN lg.lot_weight  END), 0) AS total_seed_kg,
+                ISNULL(SUM(CASE WHEN lg.buyer_type IN ('RSP', 'NSSO', 'Govt Grainage') THEN lg.sold_amount END), 0) AS total_seed_amount,
+                ISNULL(SUM(lg.lot_weight), 0)                                                           AS total_qty,
+                ISNULL(SUM(lg.sold_amount), 0)                                                          AS total_amount,
+                CASE
+                    WHEN UPPER(mm.PAYMENT_MODE) = 'CASH'
+                        THEN ''
+                    WHEN COUNT(lg.lot_groupage_id) = 0
+                        THEN 'Pending'
+                    WHEN COUNT(CASE WHEN lg.status = 'paymentfailed'     THEN 1 END) > 0
+                        THEN 'Failed'
+                    WHEN COUNT(CASE WHEN lg.status = 'paymentprocessing' THEN 1 END) = COUNT(lg.lot_groupage_id)
+                        THEN 'Success'
+                    ELSE 'Pending'
+                END                                                                                     AS payment_status
+            FROM market_master mm
+            LEFT JOIN MarketSeedArea msa
+                ON  msa.market_id = mm.market_master_id
+            LEFT JOIN LotWeights lw
+                ON  lw.market_id = mm.market_master_id
+            LEFT JOIN market_auction ma
+                ON  ma.market_id = mm.market_master_id
+            LEFT JOIN lot l
+                ON  l.market_auction_id = ma.market_auction_id
+            LEFT JOIN lot_groupage lg
+                ON  lg.lot_id = l.lot_id
+            WHERE mm.market_type_master_id = 1
+            GROUP BY mm.market_master_id, mm.MARKET_NAME, mm.PAYMENT_MODE, msa.lot_variety
+            ORDER BY mm.market_master_id
+            """;
 }

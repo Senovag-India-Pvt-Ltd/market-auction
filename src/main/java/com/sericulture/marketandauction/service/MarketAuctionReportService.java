@@ -75,6 +75,9 @@ public class MarketAuctionReportService {
     @Autowired
     private BinRepository binRepository;
 
+    @Autowired
+    private LotGroupageRepository lotGroupageRepository;
+
 //    private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
 //
 //        Long minAmount = Long.MAX_VALUE;
@@ -3833,6 +3836,48 @@ private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId
                 .build();
         lotPendingReportResponse.setLoginName(token.getUsername());
         return lotPendingReportResponse;
+    }
+
+    public ResponseEntity<?> getSeedMarketDashboard(DashboardReportRequest reportRequest) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        try {
+            List<Object[]> rows = reportRequest.getDashboardReportDate() == null
+                    ? lotGroupageRepository.getSeedMarketDashboardAll()
+                    : lotGroupageRepository.getSeedMarketDashboard(reportRequest.getDashboardReportDate());
+            List<SeedMarketDashboardResponse> dashboardList = new ArrayList<>();
+            for (Object[] row : rows) {
+                SeedMarketDashboardResponse item = new SeedMarketDashboardResponse();
+                item.setSlNo(Util.objectToString(row[0]));
+                item.setSeedMarketName(Util.objectToString(row[1]));
+                item.setSeedAreaType(Util.objectToString(row[2]));
+                item.setPaymentMode(Util.objectToString(row[3]));
+                item.setNoOfLots(Util.objectToString(row[4]));
+                item.setTotalNoOfFarmers(Util.objectToString(row[5]));
+                item.setTotalInwardQuantity(Util.objectToString(row[6]));
+                item.setTotalNoOfRSP(Util.objectToString(row[7]));
+                item.setTotalRspKg(Util.objectToString(row[8]));
+                item.setTotalRspAmount(Util.objectToString(row[9]));
+                item.setTotalNoOfNSSO(Util.objectToString(row[10]));
+                item.setTotalNssoKg(Util.objectToString(row[11]));
+                item.setTotalNssoAmount(Util.objectToString(row[12]));
+                item.setTotalNoOfGovtGrainage(Util.objectToString(row[13]));
+                item.setTotalGovtGrainageKg(Util.objectToString(row[14]));
+                item.setTotalGovtGrainageAmount(Util.objectToString(row[15]));
+                item.setTotalNoOfReelers(Util.objectToString(row[16]));
+                item.setTotalReelerKg(Util.objectToString(row[17]));
+                item.setTotalReelerAmount(Util.objectToString(row[18]));
+                item.setTotalSeedKg(Util.objectToString(row[19]));
+                item.setTotalSeedAmount(Util.objectToString(row[20]));
+                item.setTotalQty(Util.objectToString(row[21]));
+                item.setTotalAmount(Util.objectToString(row[22]));
+                item.setPaymentStatus(Util.objectToString(row[23]));
+                dashboardList.add(item);
+            }
+            rw.setContent(dashboardList);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ResponseEntity.ok(rw);
     }
 
 }
