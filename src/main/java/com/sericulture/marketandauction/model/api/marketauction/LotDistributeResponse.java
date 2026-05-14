@@ -143,4 +143,7 @@ public class LotDistributeResponse extends ResponseBody {
     private String tscName;
     private Long cropStatusId;
     private String cropStatusName;
+    private String raceName;
+    private String transactionDate;
+
 }

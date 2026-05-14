@@ -805,6 +805,9 @@ public class LotGroupageService {
                     .soldCocoonInKgs(Util.objectToString(lotWeightDetails[43]))
                     .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[44]))
                     .buyerName(Util.objectToString(lotWeightDetails[45]))
+                    .transactionDate(Util.objectToString(lotWeightDetails[46]))
+                    .auctionDate(Util.objectToDate(lotWeightDetails[47]))
+
                     .build();
 
             responses.add(lotDistributeResponse);
@@ -1095,6 +1098,7 @@ public class LotGroupageService {
                     .marketAuctionDate(Util.objectToString(obj[12]))
                     .cropStatusId(Util.objectToLong(obj[13]))
                     .cropStatusName(Util.objectToString(obj[14]))
+                    .raceName(Util.objectToString(obj[15]))
                     .build();
 
             responses.add(response);
