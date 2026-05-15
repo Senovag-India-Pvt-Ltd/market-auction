@@ -157,8 +157,10 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-                    case "Reeling":
                         marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
+                        break;
+                    case "Reeling":
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
                         break;
                     default:
                         break;

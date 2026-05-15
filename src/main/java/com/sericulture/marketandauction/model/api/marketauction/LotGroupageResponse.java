@@ -76,6 +76,9 @@ public class LotGroupageResponse extends ResponseBody {
     @Schema(name = "status", example = "pending")
     private String status;
 
+    @Schema(name = "qtyNos", example = "10")
+    private Integer qtyNos;
+
     @Schema(name = "error", example = "true")
     Boolean error;
 

@@ -80,4 +80,6 @@ public class LotGroupageRequestEdit extends RequestBody {
             description = "User checkbox indicating the lot's remaining quantity is being flagged for rejection")
     Boolean purposeForRejection;
 
+    @Schema(name = "qtyNos", example = "10")
+    private Integer qtyNos;
 }

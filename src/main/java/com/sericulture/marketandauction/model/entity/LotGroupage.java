@@ -99,6 +99,9 @@ public class LotGroupage extends BaseEntity implements Serializable {
     @Column(name = "purpose_for_rejection", columnDefinition = "TINYINT")
     private Boolean purposeForRejection;
 
+    @Column(name = "qty_nos")
+    private Integer qtyNos;
+
     /**
      * Quantity (Kg) recorded as rejection when the "Purpose for Rejection" checkbox
      * is ticked. Equals (lotWeightAfterWeighment - distributedQuantity) at save time.
