@@ -99,6 +99,9 @@ public class LotGroupage extends BaseEntity implements Serializable {
     @Column(name = "purpose_for_rejection", columnDefinition = "TINYINT")
     private Boolean purposeForRejection;
 
+    @Column(name = "qty_nos")
+    private Integer qtyNos;
+
     /**
      * Quantity (Kg) recorded as rejection when the "Purpose for Rejection" checkbox
      * is ticked. Equals (lotWeightAfterWeighment - distributedQuantity) at save time.
@@ -108,4 +111,18 @@ public class LotGroupage extends BaseEntity implements Serializable {
      */
     @Column(name = "rejection_quantity", precision = 10, scale = 2)
     private java.math.BigDecimal rejectionQuantity;
+
+    /**
+     * Set by the "Moving to another market" checkbox on the Lot Distribution screen.
+     * When true, the leftover cocoon is being shipped to a different market, so the
+     * lot is force-completed: status = DISTRIBUTED and remaining_cocoon = 0.
+     */
+    @Column(name = "moving_to_another_market", columnDefinition = "TINYINT")
+    private Boolean movingToAnotherMarket;
+
+    /**
+     * Free-text reason captured when "Moving to another market" is ticked.
+     */
+    @Column(name = "moving_market_reason", length = 500)
+    private String movingMarketReason;
 }

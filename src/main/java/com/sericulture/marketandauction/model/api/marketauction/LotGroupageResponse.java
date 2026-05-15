@@ -76,6 +76,17 @@ public class LotGroupageResponse extends ResponseBody {
     @Schema(name = "status", example = "pending")
     private String status;
 
+    @Schema(name = "qtyNos", example = "10")
+    private Integer qtyNos;
+
+    @Schema(name = "movingToAnotherMarket", example = "true",
+            description = "User checkbox indicating remaining cocoon is being moved to another market")
+    private Boolean movingToAnotherMarket;
+
+    @Schema(name = "movingMarketReason", example = "Better price expected at downstream market",
+            description = "Reason captured when movingToAnotherMarket is true")
+    private String movingMarketReason;
+
     @Schema(name = "error", example = "true")
     Boolean error;
 

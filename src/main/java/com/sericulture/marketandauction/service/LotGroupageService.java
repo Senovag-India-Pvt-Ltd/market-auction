@@ -157,8 +157,10 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-                    case "Reeling":
                         marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
+                        break;
+                    case "Reeling":
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
                         break;
                     default:
                         break;
@@ -183,6 +185,11 @@ public class LotGroupageService {
             Boolean purposeForRejection = Boolean.TRUE.equals(lotGroupageRequest.getPurposeForRejection());
             lotGroupage.setPurposeForRejection(purposeForRejection);
 
+            // Persist "Moving to another market" flag + reason explicitly for the same reason.
+            Boolean movingToAnotherMarket = Boolean.TRUE.equals(lotGroupageRequest.getMovingToAnotherMarket());
+            lotGroupage.setMovingToAnotherMarket(movingToAnotherMarket);
+            lotGroupage.setMovingMarketReason(movingToAnotherMarket ? lotGroupageRequest.getMovingMarketReason() : null);
+
             Float remainingCocoon = lotGroupageRequest.getRemainingCocoonWeight();
 
             // When the user marks the lot for rejection:
@@ -201,8 +208,17 @@ public class LotGroupageService {
                 lotGroupage.setRejectionQuantity(null);
             }
 
+            // Moving-to-another-market also force-completes the lot: zero out remaining and
+            // treat as DISTRIBUTED. Run AFTER rejection branch so both flags can coexist safely.
+            if (movingToAnotherMarket) {
+                remainingCocoon = 0f;
+                lotGroupage.setRemainingCocoonWeight(0f);
+            }
+
             LotStatus status;
-            if (purposeForRejection) {
+            if (movingToAnotherMarket) {
+                status = LotStatus.DISTRIBUTED;
+            } else if (purposeForRejection) {
                 status = LotStatus.DISTRIBUTED;
             } else if (remainingCocoon == null) {
                 status = LotStatus.REJECTED;
@@ -359,7 +375,11 @@ public class LotGroupageService {
                     WHEN lg.buyer_type = 'Govt Grainage' THEN gm.grainage_master_name
                     WHEN lg.buyer_type = 'Reeling' THEN r.name
                     ELSE NULL
-                END AS buyer_name
+                END AS buyer_name,
+                lg.purpose_for_rejection,
+                lg.rejection_quantity,
+                lg.moving_to_another_market,
+                lg.moving_market_reason
                 FROM FARMER f
                     INNER JOIN market_auction ma
                         ON ma.farmer_id = f.FARMER_ID
@@ -484,11 +504,28 @@ public class LotGroupageService {
                     .soldCocoonInKgs(Util.objectToString(lotWeightDetails[42]))
                     .lotWeightAfterWeighment(Util.objectToString(lotWeightDetails[43]))
                     .buyerName(Util.objectToString(lotWeightDetails[44]))
+                    // MySQL TINYINT(1) is returned as Boolean by the JDBC driver, but other
+                    // numeric columns come back as Number — accept either shape.
+                    .purposeForRejection(toBoolean(lotWeightDetails[45]))
+                    .rejectionQuantity(lotWeightDetails[46] != null
+                            ? (lotWeightDetails[46] instanceof BigDecimal
+                                ? (BigDecimal) lotWeightDetails[46]
+                                : BigDecimal.valueOf(((Number) lotWeightDetails[46]).doubleValue()))
+                            : null)
+                    .movingToAnotherMarket(toBoolean(lotWeightDetails[47]))
+                    .movingMarketReason(Util.objectToString(lotWeightDetails[48]))
                     .build();
             responses.add(lotDistributeResponse);
         }
 
         return responses;
+    }
+
+    private static boolean toBoolean(Object value) {
+        if (value == null) return false;
+        if (value instanceof Boolean) return (Boolean) value;
+        if (value instanceof Number) return ((Number) value).intValue() != 0;
+        return Boolean.parseBoolean(value.toString());
     }
 
 //
@@ -606,8 +643,10 @@ public class LotGroupageService {
                     case "RSP":
                     case "NSSO":
                     case "Govt Grainage":
-                    case "Reeling":
                         marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
+                        break;
+                    case "Reeling":
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
                         break;
                     default:
                         break;
@@ -634,6 +673,11 @@ public class LotGroupageService {
             Boolean editPurposeForRejection = Boolean.TRUE.equals(lotGroupageRequestEdit.getPurposeForRejection());
             lotGroupage.setPurposeForRejection(editPurposeForRejection);
 
+            // Persist "Moving to another market" explicitly (mirrors save-path behavior).
+            Boolean editMovingToAnotherMarket = Boolean.TRUE.equals(lotGroupageRequestEdit.getMovingToAnotherMarket());
+            lotGroupage.setMovingToAnotherMarket(editMovingToAnotherMarket);
+            lotGroupage.setMovingMarketReason(editMovingToAnotherMarket ? lotGroupageRequestEdit.getMovingMarketReason() : null);
+
             Float remainingCocoon = lotGroupageRequestEdit.getRemainingCocoonWeight();
 
             // Rejection check-box force-completes the lot:
@@ -651,8 +695,16 @@ public class LotGroupageService {
                 lotGroupage.setRejectionQuantity(null);
             }
 
+            // Moving-to-another-market also force-completes the lot.
+            if (editMovingToAnotherMarket) {
+                remainingCocoon = 0f;
+                lotGroupage.setRemainingCocoonWeight(0f);
+            }
+
             LotStatus editStatus;
-            if (editPurposeForRejection) {
+            if (editMovingToAnotherMarket) {
+                editStatus = LotStatus.DISTRIBUTED;
+            } else if (editPurposeForRejection) {
                 editStatus = LotStatus.DISTRIBUTED;
             } else if (remainingCocoon == null) {
                 editStatus = LotStatus.REJECTED;

@@ -80,4 +80,14 @@ public class LotGroupageRequestEdit extends RequestBody {
             description = "User checkbox indicating the lot's remaining quantity is being flagged for rejection")
     Boolean purposeForRejection;
 
+    @Schema(name = "qtyNos", example = "10")
+    private Integer qtyNos;
+
+    @Schema(name = "movingToAnotherMarket", example = "true",
+            description = "User checkbox indicating remaining cocoon is being moved to another market")
+    private Boolean movingToAnotherMarket;
+
+    @Schema(name = "movingMarketReason", example = "Better price expected at downstream market",
+            description = "Reason captured when movingToAnotherMarket is true")
+    private String movingMarketReason;
 }

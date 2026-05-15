@@ -8,6 +8,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 
@@ -146,4 +147,10 @@ public class LotDistributeResponse extends ResponseBody {
     private String raceName;
     private String transactionDate;
 
+    // Rejection / market-move flags persisted with the lot — restored on edit so the
+    // UI checkboxes reflect the saved DB state instead of defaulting to unchecked.
+    private Boolean purposeForRejection;
+    private BigDecimal rejectionQuantity;
+    private Boolean movingToAnotherMarket;
+    private String movingMarketReason;
 }
