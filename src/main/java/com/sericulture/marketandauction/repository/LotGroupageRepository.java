@@ -1317,7 +1317,4 @@ AND lg.active = true
     List<Object[]> getSeedMarketDashboard(
             @Param("auctionDate") LocalDate auctionDate
     );
-
-    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.SEED_MARKET_DASHBOARD_ALL_QUERY)
-    List<Object[]> getSeedMarketDashboardAll();
 }

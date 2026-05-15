@@ -1936,11 +1936,8 @@ public class LotGroupageService {
                     reports.add(report);
                 }
 
-                double creditDebitDiff =
-                        debitSum - creditSum;
-
                 double openingBalance =
-                        currentBalance - creditDebitDiff;
+                        currentBalance - creditSum + debitSum;
 
                 double runningBalance =
                         openingBalance;

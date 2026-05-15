@@ -3841,9 +3841,7 @@ private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId
     public ResponseEntity<?> getSeedMarketDashboard(DashboardReportRequest reportRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
         try {
-            List<Object[]> rows = reportRequest.getDashboardReportDate() == null
-                    ? lotGroupageRepository.getSeedMarketDashboardAll()
-                    : lotGroupageRepository.getSeedMarketDashboard(reportRequest.getDashboardReportDate());
+            List<Object[]> rows = lotGroupageRepository.getSeedMarketDashboard(reportRequest.getDashboardReportDate());
             List<SeedMarketDashboardResponse> dashboardList = new ArrayList<>();
             for (Object[] row : rows) {
                 SeedMarketDashboardResponse item = new SeedMarketDashboardResponse();

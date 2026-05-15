@@ -80,4 +80,7 @@ public class MarketMaster extends BaseEntity implements Serializable {
 
     @Column(name = "rejection_percentage")
     private Double rejectionPercentage;
+
+    @Column(name = "seed_area_type")
+    private String seedAreaType;
 }
