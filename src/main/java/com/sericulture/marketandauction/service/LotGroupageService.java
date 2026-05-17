@@ -160,7 +160,7 @@ public class LotGroupageService {
                         marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     case "Reeling":
-                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     default:
                         break;
@@ -646,7 +646,7 @@ public class LotGroupageService {
                         marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     case "Reeling":
-                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.02));
+                        marketFee = soldAmount.multiply(BigDecimal.valueOf(0.01));
                         break;
                     default:
                         break;
