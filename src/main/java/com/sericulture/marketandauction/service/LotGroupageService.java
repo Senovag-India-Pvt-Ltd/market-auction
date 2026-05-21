@@ -259,6 +259,8 @@ public class LotGroupageService {
             if (marketMaster != null && PAYMENTMODE.ONLINE.getLabel().equalsIgnoreCase(marketMaster.getPaymentMode())
                     && buyerVirtualAccount != null && lotGroupageRequest.getSoldAmount() != null) {
                 double soldAmount = lotGroupageRequest.getSoldAmount().doubleValue();
+                double marketFee = lotGroupage.getMarketFee() != null ? lotGroupage.getMarketFee() : 0.0;
+                double totalDebitAmount = soldAmount + marketFee;
                 int buyerId = "RSP".equals(lotGroupageRequest.getBuyerType())
                         ? (lotGroupageRequest.getExternalUnitId() != null ? lotGroupageRequest.getExternalUnitId().intValue() : 0)
                         : (lotGroupageRequest.getBuyerId() != null ? lotGroupageRequest.getBuyerId().intValue() : 0);
@@ -268,7 +270,7 @@ public class LotGroupageService {
                         lotGroupageRequest.getAuctionDate(),
                         buyerId,
                         buyerVirtualAccount,
-                        soldAmount
+                        totalDebitAmount
                 );
                 reelerVidDebitTxnRepository.save(debitTxn);
             }
