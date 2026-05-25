@@ -35,6 +35,12 @@ public class LotGroupageResponse extends ResponseBody {
     @Schema(name="marketFee", example = "1")
     Double marketFee;
 
+    @Schema(name="farmerMarketFee", example = "1")
+    Double farmerMarketFee;
+
+    @Schema(name="reelerMarketFee", example = "1")
+    Double reelerMarketFee;
+
     @Schema(name="soldAmount", example = "1")
     Long soldAmount;
 

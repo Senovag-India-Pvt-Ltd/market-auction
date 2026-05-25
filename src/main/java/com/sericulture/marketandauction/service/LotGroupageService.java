@@ -166,7 +166,10 @@ public class LotGroupageService {
                         break;
                 }
 
-                lotGroupage.setMarketFee(marketFee.setScale(2, RoundingMode.HALF_UP).doubleValue());
+                double mf = marketFee.setScale(2, RoundingMode.HALF_UP).doubleValue();
+                lotGroupage.setMarketFee(mf);
+                lotGroupage.setReelerMarketFee(mf);
+                lotGroupage.setFarmerMarketFee(mf);
             }
 
             // Fetch market master for ONLINE debit (validation done via separate API)
@@ -260,7 +263,8 @@ public class LotGroupageService {
                     && buyerVirtualAccount != null && lotGroupageRequest.getSoldAmount() != null) {
                 double soldAmount = lotGroupageRequest.getSoldAmount().doubleValue();
                 double marketFee = lotGroupage.getMarketFee() != null ? lotGroupage.getMarketFee() : 0.0;
-                double totalDebitAmount = soldAmount + marketFee;
+                boolean isReeling = "Reeling".equals(lotGroupageRequest.getBuyerType());
+                double totalDebitAmount = isReeling ? soldAmount + marketFee : soldAmount;
                 int buyerId = "RSP".equals(lotGroupageRequest.getBuyerType())
                         ? (lotGroupageRequest.getExternalUnitId() != null ? lotGroupageRequest.getExternalUnitId().intValue() : 0)
                         : (lotGroupageRequest.getBuyerId() != null ? lotGroupageRequest.getBuyerId().intValue() : 0);
@@ -576,6 +580,8 @@ public class LotGroupageService {
             Long oldSoldAmount = lotGroupage.getSoldAmount();
             Long existingExternalUnitId = lotGroupage.getExternalUnitId();
             Double existingMarketFee = lotGroupage.getMarketFee();
+            Double existingFarmerMarketFee = lotGroupage.getFarmerMarketFee();
+            Double existingReelerMarketFee = lotGroupage.getReelerMarketFee();
 
             // Set the userMasterId from JWT token
             lotGroupage.setUserMasterId(Util.getUserMasterId(Util.getTokenValues()));
@@ -609,6 +615,8 @@ public class LotGroupageService {
             // Restore marketFee for existing records; new records calculate it below
             if (lotGroupageRequestEdit.getLotGroupageId() != null) {
                 lotGroupage.setMarketFee(existingMarketFee);
+                lotGroupage.setFarmerMarketFee(existingFarmerMarketFee);
+                lotGroupage.setReelerMarketFee(existingReelerMarketFee);
             }
 
             // Save debit txn for the difference only (ONLINE mode only)
@@ -623,13 +631,16 @@ public class LotGroupageService {
                     int newBuyerIntId = "RSP".equals(lotGroupageRequestEdit.getBuyerType())
                             ? (lotGroupageRequestEdit.getExternalUnitId() != null ? lotGroupageRequestEdit.getExternalUnitId().intValue() : 0)
                             : (lotGroupageRequestEdit.getBuyerId() != null ? lotGroupageRequestEdit.getBuyerId().intValue() : 0);
+                    boolean isReeling = "Reeling".equals(lotGroupageRequestEdit.getBuyerType());
+                    double marketFee = lotGroupage.getMarketFee() != null ? lotGroupage.getMarketFee() : 0.0;
+                    double totalDebitDifference = isReeling ? debitDifference + marketFee : (double) debitDifference;
                     reelerVidDebitTxnRepository.save(new ReelerVidDebitTxn(
                             lotGroupageRequestEdit.getAllottedLotId().intValue(),
                             lotGroupageRequestEdit.getMarketId(),
                             lotGroupageRequestEdit.getAuctionDate(),
                             newBuyerIntId,
                             newVirtualAccount,
-                            (double) debitDifference
+                            totalDebitDifference
                     ));
                 }
             }

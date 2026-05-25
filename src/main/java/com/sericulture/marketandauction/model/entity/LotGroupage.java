@@ -39,6 +39,12 @@ public class LotGroupage extends BaseEntity implements Serializable {
     @Column(name = "MARKET_FEE")
     private Double marketFee;
 
+    @Column(name = "FARMER_MARKET_FEE")
+    private Double farmerMarketFee;
+
+    @Column(name = "REELER_MARKET_FEE")
+    private Double reelerMarketFee;
+
     @Column(name = "SOLD_AMOUNT")
     private Long soldAmount;
 
