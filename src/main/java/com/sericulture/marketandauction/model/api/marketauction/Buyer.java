@@ -14,6 +14,10 @@ public class Buyer {
     private String remainingCocoon;
     private Float farmerAmount;
     private Float lgMarketFee;
+    private Float lgMarketFeeForReeling;
+    private Float lgMarketFeeForSeed;
+    private String lgSoldOutAmountReeling;
+    private String lgSoldOutAmountSeed;
 
 
 }

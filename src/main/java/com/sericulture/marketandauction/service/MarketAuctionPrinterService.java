@@ -403,6 +403,15 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
                 buyer.setFarmerAmount(Util.objectToFloat(response[28]));
                 buyer.setLgMarketFee(Util.objectToFloat(response[36]));
 
+                String buyerType = Util.objectToString(response[33]);
+                if ("Reeling".equals(buyerType)) {
+                    buyer.setLgMarketFeeForReeling(Util.objectToFloat(response[36]));
+                    buyer.setLgSoldOutAmountReeling(Util.objectToString(response[37]));
+                } else {
+                    buyer.setLgMarketFeeForSeed(Util.objectToFloat(response[36]));
+                    buyer.setLgSoldOutAmountSeed(Util.objectToString(response[37]));
+                }
+
 
                 buyerList.add(buyer);   // ✅ CORRECT
 

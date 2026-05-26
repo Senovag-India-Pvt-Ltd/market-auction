@@ -95,6 +95,10 @@ public class MarketAuctionForPrintResponse extends ResponseBody {
     private String lgAmount;
     private Float lgMarketFee;
     private String lgSoldOutAmount;
+    private Float lgMarketFeeForReeling;
+    private Float lgMarketFeeForSeed;
+    private String lgSoldOutAmountReeling;
+    private String lgSoldOutAmountSeed;
     private String lgAverageYield;
     private String lgNoOfDfl;
     private String lgInvoiceNumber;

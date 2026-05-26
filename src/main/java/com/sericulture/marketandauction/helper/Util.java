@@ -88,7 +88,14 @@ public final class Util {
     }
 
     public static float objectToFloat(Object object) {
-        return object == null ? 0 : Float.valueOf(decimalFormat.format(Float.parseFloat(String.valueOf(object))));
+        if (object == null) return 0;
+        try {
+            return new BigDecimal(String.valueOf(object))
+                    .setScale(2, RoundingMode.HALF_UP)
+                    .floatValue();
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public static int objectToInteger(Object object) {
