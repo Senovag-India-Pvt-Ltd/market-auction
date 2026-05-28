@@ -375,6 +375,8 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
 
         List<Buyer> buyerList = new ArrayList<>();
         MarketAuctionForPrintResponse baseResponse = null;
+        long maxAmountReeling = 0L;
+        long maxAmountSeed = 0L;
 
         if (lotDetails != null && lotDetails.length > 0) {
 
@@ -404,12 +406,17 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
                 buyer.setLgMarketFee(Util.objectToFloat(response[36]));
 
                 String buyerType = Util.objectToString(response[33]);
+                long currentAmount = Util.objectToLong(response[35]);
                 if ("Reeling".equals(buyerType)) {
                     buyer.setLgMarketFeeForReeling(Util.objectToFloat(response[36]));
                     buyer.setLgSoldOutAmountReeling(Util.objectToString(response[37]));
+                    buyer.setLgLotWeightReeling(Util.objectToString(response[34]));
+                    if (currentAmount > maxAmountReeling) maxAmountReeling = currentAmount;
                 } else {
                     buyer.setLgMarketFeeForSeed(Util.objectToFloat(response[36]));
                     buyer.setLgSoldOutAmountSeed(Util.objectToString(response[37]));
+                    buyer.setLgLotWeightSeed(Util.objectToString(response[34]));
+                    if (currentAmount > maxAmountSeed) maxAmountSeed = currentAmount;
                 }
 
 
@@ -429,6 +436,8 @@ public MarketAuctionForPrintResponse prepareResponseForLotBaseResponseSeedCocoon
         // ✅ SET BUYER LIST
         if (baseResponse != null) {
             baseResponse.setBuyerList(buyerList);
+            baseResponse.setLgReelingAmount(maxAmountReeling > 0 ? String.valueOf(maxAmountReeling) : "");
+            baseResponse.setLgSeedAmount(maxAmountSeed > 0 ? String.valueOf(maxAmountSeed) : "");
         }
 
         rw.setContent(baseResponse);

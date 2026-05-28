@@ -18,6 +18,10 @@ public class Buyer {
     private Float lgMarketFeeForSeed;
     private String lgSoldOutAmountReeling;
     private String lgSoldOutAmountSeed;
+    private String lgLotWeightReeling;
+    private String lgLotWeightSeed;
+    private String lgReelingAmount;
+    private String lgSeedAmount;
 
 
 }
