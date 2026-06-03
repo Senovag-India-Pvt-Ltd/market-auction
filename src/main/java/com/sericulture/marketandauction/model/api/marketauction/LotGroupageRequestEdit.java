@@ -90,4 +90,8 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name = "movingMarketReason", example = "Better price expected at downstream market",
             description = "Reason captured when movingToAnotherMarket is true")
     private String movingMarketReason;
+
+    @Schema(name = "isMarketPaid", example = "0",
+            description = "0 = market fee not yet collected, 1 = market fee paid")
+    private Integer isMarketPaid;
 }

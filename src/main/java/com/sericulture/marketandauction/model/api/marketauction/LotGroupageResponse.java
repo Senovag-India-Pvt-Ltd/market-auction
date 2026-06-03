@@ -93,6 +93,10 @@ public class LotGroupageResponse extends ResponseBody {
             description = "Reason captured when movingToAnotherMarket is true")
     private String movingMarketReason;
 
+    @Schema(name = "isMarketPaid", example = "0",
+            description = "0 = market fee not yet collected, 1 = market fee paid")
+    private Integer isMarketPaid;
+
     @Schema(name = "error", example = "true")
     Boolean error;
 

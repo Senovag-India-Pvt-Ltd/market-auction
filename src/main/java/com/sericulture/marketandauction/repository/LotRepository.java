@@ -564,13 +564,11 @@ INNER JOIN dbo.market_master mm
 
          WHERE lg.status IN ('DISTRIBUTED', 'paymentfailed')
              AND l.market_id = :marketId
-             AND (
-                 lg.buyer_type = 'Reeling'
-                 OR (
-                     lg.buyer_type = 'RSP'
-                     AND et.payment_via_bank = 1
-                 )
-             )
+               AND (
+        lg.buyer_type = 'Reeling'
+         OR ( lg.buyer_type = 'RSP' AND et.payment_via_bank = 1 )
+        OR( lg.buyer_type='NSSO' AND et.payment_via_bank=1 )
+    )
 ORDER BY l.lot_id;
 """)
 public Page<Object[]> getAllWeighmentCompletedTxnForSeedMarketByMarket(final Pageable pageable, int marketId);
@@ -680,10 +678,8 @@ WHERE lg.status IN ('DISTRIBUTED','paymentfailed','readyforpayment')
     -- ✅ MOST IMPORTANT CONDITION (unchanged)
     AND (
         lg.buyer_type = 'Reeling'
-         OR (
-                     lg.buyer_type = 'RSP'
-                     AND et.payment_via_bank = 1
-                 )
+         OR (lg.buyer_type = 'RSP' AND et.payment_via_bank = 1)
+        OR(lg.buyer_type='NSSO' AND et.payment_via_bank=1)
     )
 
 ORDER BY lg.lot_groupage_id
@@ -706,12 +702,10 @@ LEFT JOIN dbo.external_unit_type_master et
 
 WHERE  lg.status = :lotStatus
     AND l.market_id = :marketId
-    AND (
+     AND (
         lg.buyer_type = 'Reeling'
-        OR (
-            (lg.buyer_type IS NULL OR lg.buyer_type <> 'Reeling')
-            AND et.payment_via_bank = 1
-        )
+         OR ( lg.buyer_type = 'RSP' AND et.payment_via_bank = 1 )
+        OR( lg.buyer_type='NSSO' AND et.payment_via_bank=1 )
     )
 ORDER BY lg.auction_date DESC
 """)

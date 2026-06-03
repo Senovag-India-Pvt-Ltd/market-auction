@@ -919,6 +919,11 @@ WHERE
     void updateCustomerReferenceNumber(@Param("id") Long id, @Param("crn") String crn);
 
     @Modifying
+    @Query("UPDATE LotGroupage lg SET lg.isMarketPaid = 1 WHERE lg.lotGroupageId = :lotGroupageId")
+    void markAsMarketPaid(@Param("lotGroupageId") Long lotGroupageId);
+
+
+    @Modifying
     @Query("""
 UPDATE LotGroupage lg
 SET lg.active = false
@@ -1185,30 +1190,100 @@ AND lg.active = true
     );
 
     @Query(nativeQuery = true, value = """
-            SELECT evba.virtual_account_number, rvcb.CURRENT_BALANCE
+            SELECT COALESCE(evba.virtual_account_number, eur.virtual_account_number) AS virtual_account_number,
+                   rvcb.CURRENT_BALANCE
             FROM dbo.external_unit_registration eur
             INNER JOIN dbo.external_unit_type_master et ON et.external_unit_type_id = eur.external_unit_type_id
             LEFT JOIN dbo.eu_virtual_bank_account evba ON evba.eu_id = eur.external_unit_registration_id AND evba.market_master_id = :marketId
-            LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb ON rvcb.reeler_virtual_account_number = evba.virtual_account_number
+            LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb
+                ON rvcb.reeler_virtual_account_number = COALESCE(evba.virtual_account_number, eur.virtual_account_number)
             WHERE eur.external_unit_registration_id = :externalUnitId AND et.payment_via_bank = 1
             """)
     Object[][] getExternalUnitVirtualAccountBalance(@Param("externalUnitId") Long externalUnitId, @Param("marketId") int marketId);
 
     @Query(nativeQuery = true, value = """
-        SELECT evba.virtual_account_number
+        SELECT COALESCE(evba.virtual_account_number, eur.virtual_account_number)
         FROM dbo.external_unit_registration eur
-        INNER JOIN dbo.external_unit_type_master et 
+        INNER JOIN dbo.external_unit_type_master et
             ON et.external_unit_type_id = eur.external_unit_type_id
-        LEFT JOIN dbo.eu_virtual_bank_account evba 
-            ON evba.eu_id = eur.external_unit_registration_id 
+        LEFT JOIN dbo.eu_virtual_bank_account evba
+            ON evba.eu_id = eur.external_unit_registration_id
             AND evba.market_master_id = :marketId
-        LEFT JOIN dbo.REELER_VID_CURRENT_BALANCE rvcb 
-            ON rvcb.reeler_virtual_account_number = evba.virtual_account_number
-        WHERE eur.external_unit_registration_id = :externalUnitId 
+        WHERE eur.external_unit_registration_id = :externalUnitId
             AND et.payment_via_bank = 1
         """)
     String getExternalUnitVirtualAccountAndBalanceSave(
             @Param("externalUnitId") Long externalUnitId,
+            @Param("marketId") int marketId);
+
+    @Query(nativeQuery = true, value = """
+        SELECT fvba.virtual_account_number
+        FROM farmer f
+        INNER JOIN farmer_virtual_bank_account fvba
+            ON fvba.farmer_id = f.farmer_id
+            AND fvba.market_master_id = :marketId
+            AND fvba.active = 1
+        INNER JOIN REELER_VID_CURRENT_BALANCE rvcb
+            ON rvcb.reeler_virtual_account_number = fvba.virtual_account_number
+        WHERE f.fruits_id = :fruitsId
+          AND f.active = 1
+        """)
+    String getFarmerVirtualAccount(@Param("fruitsId") String fruitsId,
+                                   @Param("marketId") int marketId);
+
+    @Query(nativeQuery = true, value = """
+        SELECT TOP 1 f.farmer_id
+        FROM farmer f
+        WHERE f.fruits_id = :fruitsId
+          AND f.active = 1
+        """)
+    Long getFarmerIdByFruitsId(@Param("fruitsId") String fruitsId);
+
+    @Query(nativeQuery = true, value = """
+        WITH PrimaryVirtualAccount AS (
+            SELECT
+                fvba.farmer_id,
+                fvba.virtual_account_number,
+                ROW_NUMBER() OVER (
+                    PARTITION BY fvba.farmer_id
+                    ORDER BY
+                        CASE WHEN rvcb.reeler_virtual_account_number IS NOT NULL THEN 0 ELSE 1 END,
+                        fvba.farmer_virtual_bank_account_id DESC
+                ) AS rn
+            FROM farmer_virtual_bank_account fvba
+            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb
+                ON rvcb.reeler_virtual_account_number = fvba.virtual_account_number
+            WHERE fvba.market_master_id = :marketId
+              AND fvba.active = 1
+        )
+        SELECT
+            lg.lot_groupage_id,
+            lg.allotted_lot_id,
+            lg.auction_date,
+            lg.sold_amount,
+            lg.farmer_market_fee,
+            lg.is_market_paid,
+            lg.fruits_id,
+            ISNULL(f.name_kan, ISNULL(f.first_name, '')) AS farmer_name,
+            ISNULL(rvcb.CURRENT_BALANCE, 0) AS current_balance,
+            SUM(lg.farmer_market_fee) OVER (PARTITION BY lg.fruits_id) - ISNULL(rvcb.CURRENT_BALANCE, 0) AS pending_amount
+        FROM lot_groupage lg
+        INNER JOIN lot l ON l.lot_id = lg.lot_id AND l.active = 1
+        LEFT JOIN farmer f ON f.fruits_id = lg.fruits_id AND f.active = 1
+        LEFT JOIN PrimaryVirtualAccount pva
+            ON pva.farmer_id = f.farmer_id
+            AND pva.rn = 1
+        LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb
+            ON rvcb.reeler_virtual_account_number = pva.virtual_account_number
+        WHERE lg.fruits_id = :fruitsId
+          AND l.market_id = :marketId
+          AND lg.buyer_type = 'Govt Grainage'
+          AND (lg.is_market_paid = 0 OR lg.is_market_paid IS NULL)
+          AND lg.active = 1
+        ORDER BY lg.auction_date DESC, lg.allotted_lot_id
+        """)
+    List<Object[]> getGovtGrainageUnpaidLotsByFruitsId(
+            @Param("fruitsId") String fruitsId,
             @Param("marketId") int marketId);
 
     @Query(value = """
@@ -1316,5 +1391,20 @@ AND lg.active = true
     @Query(nativeQuery = true, value = MarketAuctionQueryConstants.SEED_MARKET_DASHBOARD_QUERY)
     List<Object[]> getSeedMarketDashboard(
             @Param("auctionDate") LocalDate auctionDate
+    );
+
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.PENDING_MARKET_FEE_REPORT)
+    List<Object[]> getPendingMarketFeeReport(
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("marketId") int marketId,
+            @Param("fruitsId") String fruitsId,
+            @Param("statusFilter") String statusFilter
+    );
+
+    @Query(nativeQuery = true, value = MarketAuctionQueryConstants.MARKET_FEE_GOVT_TRANSFER_QUERY)
+    List<Object[]> getMarketFeeGovtTransferDetails(
+            @Param("date") LocalDate date,
+            @Param("marketId") int marketId
     );
 }

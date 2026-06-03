@@ -10,13 +10,19 @@ import com.sericulture.marketandauction.model.api.marketauction.reporting.AudioV
 import com.sericulture.marketandauction.model.api.marketauction.reporting.MonthlyReport.MonthlyReportRequest;
 import com.sericulture.marketandauction.service.MarketAuctionReportService;
 import com.sericulture.marketandauction.service.ReportService;
+import com.sericulture.marketandauction.helper.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.FileInputStream;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -204,4 +210,38 @@ public class MarketAuctionReportController {
     public ResponseEntity<?> getSeedMarketDashboard(@RequestBody DashboardReportRequest reportRequest){
         return marketAuctionReportService.getSeedMarketDashboard(reportRequest);
     }
+
+    @PostMapping("/getPendingMarketFeeReport")
+    public ResponseEntity<?> getPendingMarketFeeReport(@RequestBody ReportRequest reportRequest) {
+        return marketAuctionReportService.getPendingMarketFeeReport(reportRequest);
+    }
+
+    @PostMapping("/downloadPendingMarketFeeReportExcel")
+    public ResponseEntity<?> downloadPendingMarketFeeReportExcel(@RequestBody ReportRequest request) {
+        try {
+            FileInputStream file = marketAuctionReportService.downloadPendingMarketFeeReportExcel(request);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=PendingMarketFeeReport_" + Util.getISTLocalDate() + ".xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new InputStreamResource(file));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error generating Excel");
+        }
+    }
+
+    @PostMapping("/downloadPendingMarketFeeReportPdf")
+    public ResponseEntity<?> downloadPendingMarketFeeReportPdf(@RequestBody ReportRequest request) {
+        try {
+            FileInputStream file = marketAuctionReportService.downloadPendingMarketFeeReportPdf(request);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=PendingMarketFeeReport_" + Util.getISTLocalDate() + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(new InputStreamResource(file));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error generating PDF");
+        }
+    }
+
 }

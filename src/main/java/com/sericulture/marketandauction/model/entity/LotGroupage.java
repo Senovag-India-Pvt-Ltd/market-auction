@@ -131,4 +131,7 @@ public class LotGroupage extends BaseEntity implements Serializable {
      */
     @Column(name = "moving_market_reason", length = 500)
     private String movingMarketReason;
+
+    @Column(name = "is_market_paid", columnDefinition = "INT DEFAULT 0")
+    private Integer isMarketPaid;
 }

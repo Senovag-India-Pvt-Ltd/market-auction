@@ -3805,6 +3805,36 @@ SELECT
     public static final String CASH_BALANCE = CASH_BALANCE_QUERY ;
     public static final String CASH_BALANCE_WITH_LICENSE =CASH_BALANCE_WITH_LICENSE_QUERY ;
 
+    public static final String PENDING_MARKET_FEE_REPORT = """
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY f.farmer_number, lg.allotted_lot_id) AS row_id,
+                RTRIM(ISNULL(f.first_name, '') + ' ' + ISNULL(f.middle_name, '') + ' ' + ISNULL(f.last_name, '')) AS farmer_name,
+                f.farmer_id,
+                ISNULL(lg.fruits_id, '') AS fruits_id,
+                lg.allotted_lot_id,
+                mm.market_name,
+                ISNULL(lg.sold_amount, 0) AS lot_amount,
+                ISNULL(lg.farmer_market_fee, 0) AS market_fee,
+                CASE WHEN ISNULL(lg.is_market_paid, 0) = 1 THEN ISNULL(lg.farmer_market_fee, 0) ELSE 0 END AS paid_amount,
+                CASE WHEN ISNULL(lg.is_market_paid, 0) = 0 THEN ISNULL(lg.farmer_market_fee, 0) ELSE 0 END AS pending_amount,
+                CASE WHEN ISNULL(lg.is_market_paid, 0) = 1 THEN 'Paid' ELSE 'Pending' END AS current_status
+            FROM lot_groupage lg
+            INNER JOIN market_auction ma ON ma.market_auction_id = lg.market_auction_id
+            INNER JOIN FARMER f ON f.FARMER_ID = ma.farmer_id
+            INNER JOIN market_master mm ON mm.market_master_id = ma.market_id
+            WHERE lg.active = 1
+            AND lg.buyer_type = 'Govt Grainage'
+            AND lg.auction_date BETWEEN :fromDate AND :toDate
+            AND ma.market_id = :marketId
+            AND (:fruitsId IS NULL OR :fruitsId = '' OR lg.fruits_id = :fruitsId)
+            AND (
+                :statusFilter IS NULL OR :statusFilter = ''
+                OR (:statusFilter = 'Paid' AND ISNULL(lg.is_market_paid, 0) = 1)
+                OR (:statusFilter = 'Pending' AND ISNULL(lg.is_market_paid, 0) = 0)
+            )
+            ORDER BY f.farmer_number, lg.allotted_lot_id
+            """;
+
     public static final String SEED_MARKET_DASHBOARD_QUERY = """
             WITH LotWeights AS (
                 SELECT ma.market_id, SUM(l.LOT_WEIGHT_AFTER_WEIGHMENT) AS total_weight
@@ -3862,5 +3892,84 @@ SELECT
             WHERE mm.market_type_master_id = 1
             GROUP BY mm.market_master_id, mm.MARKET_NAME, mm.PAYMENT_MODE, mm.seed_area_type
             ORDER BY mm.market_master_id
+            """;
+
+    public static final String MARKET_FEE_GOVT_TRANSFER_QUERY = """
+            SELECT
+                lg.lot_groupage_id,
+                ISNULL(lg.fruits_id, '') AS fruits_id,
+                RTRIM(ISNULL(f.first_name, '') + ' ' + ISNULL(f.middle_name, '') + ' ' + ISNULL(f.last_name, '')) AS farmer_name,
+                ISNULL(lg.farmer_market_fee, 0) AS farmer_market_fee,
+                ISNULL(lg.reeler_market_fee, 0) AS reeler_market_fee,
+                (ISNULL(lg.farmer_market_fee, 0) + ISNULL(lg.reeler_market_fee, 0)) AS total_market_fee,
+                lg.allotted_lot_id,
+                l.market_id,
+                lg.auction_date,
+                ISNULL(lg.customer_reference_number, '') AS customer_reference_number
+            FROM lot_groupage lg
+            INNER JOIN lot l ON l.lot_id = lg.lot_id AND l.active = 1
+            INNER JOIN market_auction ma ON ma.market_auction_id = lg.market_auction_id AND ma.active = 1
+            INNER JOIN FARMER f ON f.FARMER_ID = ma.farmer_id AND f.active = 1
+            WHERE lg.active = 1
+            AND lg.status = 'distributed'
+            AND ISNULL(lg.is_market_paid, 0) = 1
+            AND CAST(lg.auction_date AS DATE) = :date
+            AND l.market_id = :marketId
+            AND NOT EXISTS (
+                SELECT 1 FROM market_fee_govt_transfer mfgt
+                WHERE mfgt.lot_groupage_id = lg.lot_groupage_id
+                AND mfgt.active = 1
+            )
+
+            UNION ALL
+
+            SELECT
+                lg.lot_groupage_id,
+                ISNULL(lg.fruits_id, '') AS fruits_id,
+                RTRIM(ISNULL(f.first_name, '') + ' ' + ISNULL(f.middle_name, '') + ' ' + ISNULL(f.last_name, '')) AS farmer_name,
+                ISNULL(lg.farmer_market_fee, 0) AS farmer_market_fee,
+                ISNULL(lg.reeler_market_fee, 0) AS reeler_market_fee,
+                (ISNULL(lg.farmer_market_fee, 0) + ISNULL(lg.reeler_market_fee, 0)) AS total_market_fee,
+                ISNULL(lg.allotted_lot_id, l.allotted_lot_id) AS allotted_lot_id,
+                l.market_id,
+                l.auction_date,
+                ISNULL(lg.customer_reference_number, '') AS customer_reference_number
+            FROM lot_groupage lg
+            INNER JOIN lot l ON l.lot_id = lg.lot_id AND l.active = 1
+            INNER JOIN market_auction ma ON ma.market_auction_id = lg.market_auction_id AND ma.active = 1
+            INNER JOIN FARMER f ON f.FARMER_ID = ma.farmer_id AND f.active = 1
+            WHERE lg.active = 1
+            AND lg.status IN ('readyforpayment', 'paymentcompleted')
+            AND (ISNULL(lg.is_market_paid, 0) = 1 OR lg.status = 'paymentcompleted')
+            AND CAST(l.auction_date AS DATE) = :date
+            AND l.market_id = :marketId
+            AND NOT EXISTS (
+                SELECT 1 FROM market_fee_govt_transfer mfgt
+                WHERE mfgt.lot_groupage_id = lg.lot_groupage_id
+                AND mfgt.active = 1
+            )
+
+            ORDER BY allotted_lot_id
+            """;
+
+    public static final String MARKET_FEE_TRANSFER_CSV_QUERY = """
+            SELECT
+                mfgt.allotted_lot_id,
+                mfgt.fruits_id,
+                RTRIM(ISNULL(f.first_name, '') + ' ' + ISNULL(f.middle_name, '') + ' ' + ISNULL(f.last_name, '')) AS farmer_name,
+                mfgt.farmer_market_fee,
+                mfgt.reeler_market_fee,
+                mfgt.total_market_fee,
+                mfgt.govt_account_number,
+                mfgt.collection_date,
+                ISNULL(lg.customer_reference_number, '') AS customer_reference_number
+            FROM market_fee_govt_transfer mfgt
+            INNER JOIN lot_groupage lg ON lg.lot_groupage_id = mfgt.lot_groupage_id AND lg.active = 1
+            INNER JOIN market_auction ma ON ma.market_auction_id = lg.market_auction_id AND ma.active = 1
+            INNER JOIN FARMER f ON f.FARMER_ID = ma.farmer_id AND f.active = 1
+            WHERE mfgt.active = 1
+            AND mfgt.market_id = :marketId
+            AND CAST(mfgt.collection_date AS DATE) = :date
+            ORDER BY mfgt.allotted_lot_id
             """;
 }

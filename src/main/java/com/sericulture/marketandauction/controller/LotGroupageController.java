@@ -322,4 +322,56 @@ public class LotGroupageController {
                     .body("Error downloading file");
         }
     }
+
+    @PostMapping("/getGovtGrainageUnpaidLots")
+    public ResponseEntity<?> getGovtGrainageUnpaidLots(@RequestBody LotStatusSeedMarketRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
+        rw.setContent(lotGroupageService.getGovtGrainageUnpaidLots(request));
+        return ResponseEntity.ok(rw);
+    }
+
+    @PostMapping("/markLotAsMarketPaid")
+    public ResponseEntity<?> markLotAsMarketPaid(
+            @RequestParam Long lotGroupageId,
+            @RequestParam int marketId) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
+        rw.setContent(lotGroupageService.markLotAsMarketPaid(lotGroupageId, marketId));
+        return ResponseEntity.ok(rw);
+    }
+
+    @PostMapping("/getTransferMarketFeeToGovtAccount")
+    public ResponseEntity<?> getTransferMarketFeeToGovtAccount(
+            @RequestBody MarketFeeGovtTransferRequest request) {
+        return lotGroupageService.getTransferMarketFeeToGovtAccount(request);
+    }
+
+    @PostMapping("/executeMarketFeeTransfer")
+    public ResponseEntity<?> executeMarketFeeTransfer(
+            @RequestBody MarketFeeGovtTransferRequest request) {
+        return lotGroupageService.executeMarketFeeTransfer(request);
+    }
+
+    @GetMapping("/generateMarketFeePreviewCSV")
+    public ResponseEntity<InputStreamResource> generateMarketFeePreviewCSV(
+            @RequestParam int marketId,
+            @RequestParam LocalDate date) {
+
+        String fileName = "market_fee_preview_" + marketId + "_" + date + ".csv";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
+                .contentType(MediaType.parseMediaType("application/csv"))
+                .body(new InputStreamResource(lotGroupageService.generateMarketFeePreviewCSV(date, marketId)));
+    }
+
+    @GetMapping("/downloadMarketFeeTransferCSV")
+    public ResponseEntity<InputStreamResource> downloadMarketFeeTransferCSV(
+            @RequestParam int marketId,
+            @RequestParam String fileName) {
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName + ".csv")
+                .contentType(MediaType.parseMediaType("application/csv"))
+                .body(new InputStreamResource(lotGroupageService.downloadMarketFeeTransferCSV(marketId, fileName)));
+    }
+
 }

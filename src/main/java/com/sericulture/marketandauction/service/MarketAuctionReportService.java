@@ -78,6 +78,7 @@ public class MarketAuctionReportService {
     @Autowired
     private LotGroupageRepository lotGroupageRepository;
 
+
 //    private void prepareDTROnlineInfoForBlankReport(DTROnlineReportResponse dtrOnlineReportResponse, List<Object[]> queryResponse) {
 //
 //        Long minAmount = Long.MAX_VALUE;
@@ -3876,6 +3877,138 @@ private ResponseEntity<ResponseWrapper> getBiddingReportLotOrReeler(int marketId
             ex.printStackTrace();
         }
         return ResponseEntity.ok(rw);
+    }
+
+    public ResponseEntity<?> getPendingMarketFeeReport(ReportRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        List<Object[]> responses = lotGroupageRepository.getPendingMarketFeeReport(
+                request.getFromDate(),
+                request.getToDate(),
+                request.getMarketId(),
+                StringUtils.isBlank(request.getFruitsId()) ? null : request.getFruitsId(),
+                StringUtils.isBlank(request.getStatusFilter()) ? null : request.getStatusFilter()
+        );
+        if (Util.isNullOrEmptyList(responses)) {
+            throw new ValidationException("No data found");
+        }
+        List<PendingMarketFeeReportInfo> reportList = new ArrayList<>();
+        for (Object[] row : responses) {
+            reportList.add(PendingMarketFeeReportInfo.builder()
+                    .serialNumber(Util.objectToInteger(row[0]))
+                    .farmerName(Util.objectToString(row[1]))
+                    .farmerId(Util.objectToString(row[2]))
+                    .fruitsId(Util.objectToString(row[3]))
+                    .lotNo(Util.objectToInteger(row[4]))
+                    .marketName(Util.objectToString(row[5]))
+                    .lotAmount(Util.objectToLong(row[6]))
+                    .marketFee(Util.objectToFloat(row[7]))
+                    .paidAmount(Util.objectToFloat(row[8]))
+                    .pendingAmount(Util.objectToFloat(row[9]))
+                    .currentStatus(Util.objectToString(row[10]))
+                    .build());
+        }
+        rw.setContent(reportList);
+        return ResponseEntity.ok(rw);
+    }
+
+
+    @org.springframework.transaction.annotation.Transactional
+
+    public java.io.FileInputStream downloadPendingMarketFeeReportExcel(ReportRequest request) throws Exception {
+        List<Object[]> responses = lotGroupageRepository.getPendingMarketFeeReport(
+                request.getFromDate(),
+                request.getToDate(),
+                request.getMarketId(),
+                StringUtils.isBlank(request.getFruitsId()) ? null : request.getFruitsId(),
+                StringUtils.isBlank(request.getStatusFilter()) ? null : request.getStatusFilter()
+        );
+        org.apache.poi.ss.usermodel.Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+        org.apache.poi.ss.usermodel.Sheet sheet = workbook.createSheet("Pending Market Fee Report");
+        String[] headers = {"Sl.No", "Farmer Name", "Farmer ID", "Fruit ID", "Lot No",
+                "Market Name", "Lot Amount", "Market Fee", "Paid Amount", "Pending Amount", "Status"};
+        org.apache.poi.ss.usermodel.Row header = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            header.createCell(i).setCellValue(headers[i]);
+        }
+        int rowNum = 1;
+        for (Object[] row : responses) {
+            org.apache.poi.ss.usermodel.Row dataRow = sheet.createRow(rowNum++);
+            dataRow.createCell(0).setCellValue(Util.objectToInteger(row[0]));
+            dataRow.createCell(1).setCellValue(Util.objectToString(row[1]));
+            dataRow.createCell(2).setCellValue(Util.objectToString(row[2]));
+            dataRow.createCell(3).setCellValue(Util.objectToString(row[3]));
+            dataRow.createCell(4).setCellValue(Util.objectToInteger(row[4]));
+            dataRow.createCell(5).setCellValue(Util.objectToString(row[5]));
+            dataRow.createCell(6).setCellValue(Util.objectToLong(row[6]));
+            dataRow.createCell(7).setCellValue(Util.objectToFloat(row[7]));
+            dataRow.createCell(8).setCellValue(Util.objectToFloat(row[8]));
+            dataRow.createCell(9).setCellValue(Util.objectToFloat(row[9]));
+            dataRow.createCell(10).setCellValue(Util.objectToString(row[10]));
+        }
+        java.io.File file = java.io.File.createTempFile("PendingMarketFeeReport_", ".xlsx");
+        try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) {
+            workbook.write(fos);
+        }
+        workbook.close();
+        return new java.io.FileInputStream(file);
+    }
+
+    public java.io.FileInputStream downloadPendingMarketFeeReportPdf(ReportRequest request) throws Exception {
+        List<Object[]> responses = lotGroupageRepository.getPendingMarketFeeReport(
+                request.getFromDate(),
+                request.getToDate(),
+                request.getMarketId(),
+                StringUtils.isBlank(request.getFruitsId()) ? null : request.getFruitsId(),
+                StringUtils.isBlank(request.getStatusFilter()) ? null : request.getStatusFilter()
+        );
+
+        java.io.File file = java.io.File.createTempFile("PendingMarketFeeReport_", ".pdf");
+        com.lowagie.text.Document document = new com.lowagie.text.Document(com.lowagie.text.PageSize.A4.rotate());
+        com.lowagie.text.pdf.PdfWriter.getInstance(document, new java.io.FileOutputStream(file));
+        document.open();
+
+        com.lowagie.text.Font titleFont = com.lowagie.text.FontFactory.getFont(
+                com.lowagie.text.FontFactory.HELVETICA_BOLD, 13);
+        com.lowagie.text.Paragraph title = new com.lowagie.text.Paragraph(
+                "Pending Market Fee Report", titleFont);
+        title.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+        document.add(title);
+        document.add(new com.lowagie.text.Paragraph(" "));
+
+        com.lowagie.text.pdf.PdfPTable table = new com.lowagie.text.pdf.PdfPTable(11);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{1f, 3f, 2f, 2f, 1f, 3f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f});
+
+        com.lowagie.text.Font headerFont = com.lowagie.text.FontFactory.getFont(
+                com.lowagie.text.FontFactory.HELVETICA_BOLD, 7);
+        com.lowagie.text.Font dataFont = com.lowagie.text.FontFactory.getFont(
+                com.lowagie.text.FontFactory.HELVETICA, 7);
+
+        String[] headers = {"Sl.No", "Farmer Name", "Farmer ID", "Fruit ID", "Lot No",
+                "Market Name", "Lot Amount", "Market Fee", "Paid Amount", "Pending Amount", "Status"};
+        for (String h : headers) {
+            com.lowagie.text.pdf.PdfPCell cell = new com.lowagie.text.pdf.PdfPCell(
+                    new com.lowagie.text.Phrase(h, headerFont));
+            cell.setBackgroundColor(java.awt.Color.LIGHT_GRAY);
+            cell.setHorizontalAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+            table.addCell(cell);
+        }
+        for (Object[] row : responses) {
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[0]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[1]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[2]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[3]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[4]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[5]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[6]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[7]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[8]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[9]), dataFont));
+            table.addCell(new com.lowagie.text.Phrase(Util.objectToString(row[10]), dataFont));
+        }
+        document.add(table);
+        document.close();
+        return new java.io.FileInputStream(file);
     }
 
 }

@@ -18,6 +18,7 @@ public enum LotStatus {
     INUPDATEWEIGHT("inupdateweight"),
     REQUESTED("requested"),
     PROCESSING("processing"),
+    PAYMENTCOMPLETED("paymentcompleted"),
 
     ASSESSMENT("assessment");
 
