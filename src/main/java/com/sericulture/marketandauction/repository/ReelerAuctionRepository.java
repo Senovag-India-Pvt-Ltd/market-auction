@@ -317,4 +317,50 @@ ORDER BY total_amount DESC
     public List<Object[]> getSeedMarketCreditReport(
             @Param("today") LocalDate today);
 
+    @Query(nativeQuery = true, value = """
+            SELECT r.reeler_id, r.name, r.reeling_license_number,
+                   rvba.virtual_account_number,
+                    ISNULL(rvcb.CURRENT_BALANCE, 0)     AS current_balance,
+                   ISNULL(mm.releer_minimum_balance, 0) AS minimum_balance,
+                   r.bank_account_number, r.ifsc_code, r.bank_name, r.branch_name,
+                   rvba.market_master_id               AS reeler_market_id
+            FROM reeler r
+            LEFT JOIN reeler_virtual_bank_account rvba
+                ON rvba.reeler_Id = r.reeler_Id AND rvba.active = 1
+            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb
+                ON rvcb.reeler_virtual_account_number = rvba.virtual_account_number
+            LEFT JOIN market_master mm
+                ON mm.market_master_id = rvba.market_master_id
+            WHERE r.reeler_id = :reelerId
+            """)
+    Object[][] getReelerBankDetails(@Param("reelerId") int reelerId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT r.reeler_id, r.name, r.reeling_license_number, r.mobile_number,
+                   rvba.virtual_account_number,
+                   ISNULL(rvcb.CURRENT_BALANCE, 0) AS current_balance,
+                   ISNULL(mm.releer_minimum_balance, 0) AS minimum_balance,
+                   r.bank_account_number, r.ifsc_code, r.bank_name, r.branch_name
+            FROM reeler r
+            LEFT JOIN reeler_virtual_bank_account rvba
+                ON rvba.reeler_Id = r.reeler_Id
+                AND rvba.active = 1
+            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb
+                ON rvcb.reeler_virtual_account_number = rvba.virtual_account_number
+            LEFT JOIN market_master mm
+                ON mm.market_master_id = rvba.market_master_id
+            WHERE r.reeling_license_number = :licenseNumber
+            """)
+    Object[][] getReelerDetailsByLicense(@Param("licenseNumber") String licenseNumber);
+
+    @Query(nativeQuery = true, value = """
+            SELECT r.reeler_id AS buyerId, r.name, r.reeling_license_number AS licenseNumber
+            FROM reeler r
+            INNER JOIN reeler_virtual_bank_account rvba
+                ON rvba.reeler_id = r.reeler_id AND rvba.active = 1
+            WHERE rvba.market_master_id = :marketId AND r.active = 1
+            ORDER BY r.name
+            """)
+    List<Object[]> getReelerListByMarket(@Param("marketId") int marketId);
+
 }

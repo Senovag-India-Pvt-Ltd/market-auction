@@ -22,4 +22,9 @@ public interface TransactionFileGenRepository extends CrudRepository<Transaction
             " tfgq.marketId=:marketId and tfgq.fileName=:fileName")
     public TransactionFileGeneration getRowForCSV(int marketId,String fileName);
 
+    @Query("select count(tfg) > 0 from TransactionFileGeneration tfg, TransactionFileGenQueue tfgq " +
+            "where tfg.transactionFileGenQueueId = tfgq.transFileGenQueueId " +
+            "and tfgq.marketId = :marketId and tfgq.fileName = :fileName")
+    boolean existsByMarketIdAndFileName(int marketId, String fileName);
+
 }

@@ -1407,4 +1407,72 @@ AND lg.active = true
             @Param("date") LocalDate date,
             @Param("marketId") int marketId
     );
+
+    /**
+     * Search RSP by license number — returns balance + bank details.
+     * Column map:
+     *   [0]=eu_id  [1]=name  [2]=license_number
+     *   [3]=virtual_account_number  [4]=current_balance  [5]=minimum_balance
+     *   [6]=bank_account_number  [7]=bank_ifsc_code  [8]=bank_name  [9]=bank_branch_name
+     *   [10]=eu_market_id
+     */
+    @Query(nativeQuery = true, value = """
+            SELECT eur.external_unit_registration_id,
+                   eur.name,
+                   eur.license_number,
+                   COALESCE(evba.virtual_account_number, '') AS virtual_account_number,
+                   ISNULL(rvcb.CURRENT_BALANCE, 0)           AS current_balance,
+                   ISNULL(mm.releer_minimum_balance, 0)       AS minimum_balance,
+                   eur.bank_account_number,
+                   eur.bank_ifsc_code,
+                   eur.bank_name,
+                   eur.bank_branch_name,
+                   evba.market_master_id                     AS eu_market_id
+            FROM external_unit_registration eur
+            LEFT JOIN eu_virtual_bank_account evba
+                ON evba.eu_id = eur.external_unit_registration_id AND evba.active = 1
+            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb
+                ON rvcb.reeler_virtual_account_number = COALESCE(evba.virtual_account_number, eur.virtual_account_number)
+            LEFT JOIN market_master mm
+                ON mm.market_master_id = evba.market_master_id
+            WHERE eur.license_number = :licenseNumber AND eur.active = 1
+            """)
+    Object[][] getExternalUnitDetailsByLicense(@Param("licenseNumber") String licenseNumber);
+
+    /**
+     * Get RSP bank details by external_unit_id — used during transfer.
+     * Column map same as getExternalUnitDetailsByLicense.
+     */
+    @Query(nativeQuery = true, value = """
+            SELECT eur.external_unit_registration_id,
+                   eur.name,
+                   eur.license_number,
+                   COALESCE(evba.virtual_account_number, '') AS virtual_account_number,
+                   ISNULL(rvcb.CURRENT_BALANCE, 0)           AS current_balance,
+                   ISNULL(mm.releer_minimum_balance, 0)       AS minimum_balance,
+                   eur.bank_account_number,
+                   eur.bank_ifsc_code,
+                   eur.bank_name,
+                   eur.bank_branch_name,
+                   evba.market_master_id                     AS eu_market_id
+            FROM external_unit_registration eur
+            LEFT JOIN eu_virtual_bank_account evba
+                ON evba.eu_id = eur.external_unit_registration_id AND evba.active = 1
+            LEFT JOIN REELER_VID_CURRENT_BALANCE rvcb
+                ON rvcb.reeler_virtual_account_number = COALESCE(evba.virtual_account_number, eur.virtual_account_number)
+            LEFT JOIN market_master mm
+                ON mm.market_master_id = evba.market_master_id
+            WHERE eur.external_unit_registration_id = :euId AND eur.active = 1
+            """)
+    Object[][] getExternalUnitBankDetailsById(@Param("euId") int euId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT eur.external_unit_registration_id AS buyerId, eur.name, eur.license_number AS licenseNumber
+            FROM external_unit_registration eur
+            INNER JOIN eu_virtual_bank_account evba
+                ON evba.eu_id = eur.external_unit_registration_id AND evba.active = 1
+            WHERE evba.market_master_id = :marketId AND eur.active = 1
+            ORDER BY eur.name
+            """)
+    List<Object[]> getExternalUnitListByMarket(@Param("marketId") int marketId);
 }
