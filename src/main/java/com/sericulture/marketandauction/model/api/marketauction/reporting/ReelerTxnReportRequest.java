@@ -11,4 +11,5 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public class ReelerTxnReportRequest extends ReelerReportRequest{
     private LocalDate reportToDate;
+    private String buyerType; // "REELING" or "EXTERNAL_UNIT" — sent from radio button
 }

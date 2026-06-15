@@ -19,5 +19,6 @@ public interface TransactionFileGenQueueRepository extends CrudRepository<Transa
 
     public boolean existsTransactionFileGenQueueByMarketIdAndFileName(int marketId,String fileName);
 
+    public boolean existsTransactionFileGenQueueByFileName(String fileName);
 
 }

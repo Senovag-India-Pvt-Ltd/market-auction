@@ -340,7 +340,8 @@ ORDER BY total_amount DESC
                    rvba.virtual_account_number,
                    ISNULL(rvcb.CURRENT_BALANCE, 0) AS current_balance,
                    ISNULL(mm.releer_minimum_balance, 0) AS minimum_balance,
-                   r.bank_account_number, r.ifsc_code, r.bank_name, r.branch_name
+                   r.bank_account_number, r.ifsc_code, r.bank_name, r.branch_name,
+                   rvba.market_master_id
             FROM reeler r
             LEFT JOIN reeler_virtual_bank_account rvba
                 ON rvba.reeler_Id = r.reeler_Id

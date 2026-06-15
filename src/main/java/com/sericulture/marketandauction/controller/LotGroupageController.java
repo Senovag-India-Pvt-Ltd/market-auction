@@ -279,20 +279,35 @@ public class LotGroupageController {
         }
     }
 
+    @GetMapping("/getLicenseNumberList")
+    public ResponseEntity<?> getLicenseNumberList(
+            @RequestParam int marketId,
+            @RequestParam String buyerType) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
+        rw.setContent(lotGroupageService.getLicenseNumberList(marketId, buyerType));
+        return ResponseEntity.ok(rw);
+    }
+
     @PostMapping("/getSeedMarketTxnReport")
     public ResponseEntity<?> getSeedMarketTxnReport(
             @RequestBody ReelerTxnReportRequest reelerTxnReportRequest){
 
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
 
-        rw.setContent(
-                lotGroupageService.getSeedMarketTxnReport(
-                        reelerTxnReportRequest.getMarketId(),
-                        reelerTxnReportRequest.getLicenseNumber(),
-                        reelerTxnReportRequest.getFromDate(),
-                        reelerTxnReportRequest.getToDate()
-                )
-        );
+        try {
+            rw.setContent(
+                    lotGroupageService.getSeedMarketTxnReport(
+                            reelerTxnReportRequest.getMarketId(),
+                            reelerTxnReportRequest.getLicenseNumber(),
+                            reelerTxnReportRequest.getFromDate(),
+                            reelerTxnReportRequest.getToDate(),
+                            reelerTxnReportRequest.getBuyerType()
+                    )
+            );
+        } catch (com.sericulture.marketandauction.model.exceptions.ValidationException e) {
+            rw.setErrorCode(-1);
+            rw.setErrorMessages(List.of(e.getErrorMessages().get(0).getMessage()));
+        }
 
         return ResponseEntity.ok(rw);
     }
@@ -316,10 +331,65 @@ public class LotGroupageController {
                     .body(new InputStreamResource(file));
 
         } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error downloading file: " + e.getMessage());
+        }
+    }
 
+
+    @PostMapping("/downloadSeedMarketTxnReportPDF")
+    public ResponseEntity<?> downloadSeedMarketTxnReportPDF(
+            @RequestBody ReelerTxnReportRequest request) {
+
+        try {
+            FileInputStream file = lotGroupageService.downloadSeedMarketTxnReportPDF(request);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition",
+                            "attachment; filename=SeedMarketTransactionReport.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(new InputStreamResource(file));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error generating PDF");
+        }
+    }
+
+    @PostMapping("/downloadEggProducerTxnReport")
+    public ResponseEntity<?> downloadEggProducerTxnReport(
+            @RequestBody ReelerTxnReportRequest request) {
+        try {
+            FileInputStream file = lotGroupageService.downloadEggProducerTxnReport(request);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition",
+                            "attachment; filename=EggProducerTransactionReport.xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new InputStreamResource(file));
+        } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error downloading file");
+        }
+    }
+
+
+    @PostMapping("/downloadEggProducerTxnReportPDF")
+    public ResponseEntity<?> downloadEggProducerTxnReportPDF(
+            @RequestBody ReelerTxnReportRequest request) {
+        try {
+            FileInputStream file = lotGroupageService.downloadEggProducerTxnReportPDF(request);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition",
+                            "attachment; filename=EggProducerTransactionReport.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(new InputStreamResource(file));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error generating PDF: " + e.getMessage());
         }
     }
 

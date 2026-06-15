@@ -3599,12 +3599,26 @@ GROUP BY
     public static final String BUYER_QUERYS = """
 SELECT
     name,
-    virtual_account_number
+    virtual_account_number,
+    address,
+    fruits_id,
+    buyer_source
 FROM
 (
     SELECT
         r.name,
-        rvba.virtual_account_number
+        rvba.virtual_account_number,
+        CASE
+            WHEN ISNULL(r.father_name, '') != '' AND ISNULL(r.address, '') != ''
+                THEN ' S/o. ' + r.father_name + ', ' + r.address
+            WHEN ISNULL(r.father_name, '') != ''
+                THEN ' S/o. ' + r.father_name
+            WHEN ISNULL(r.address, '') != ''
+                THEN ', ' + r.address
+            ELSE ''
+        END AS address,
+        ISNULL(r.fruits_id, '') AS fruits_id,
+        'REELING' AS buyer_source
     FROM
         reeler r
     INNER JOIN
@@ -3618,7 +3632,13 @@ FROM
 
     SELECT
         eur.name,
-        evba.virtual_account_number
+        evba.virtual_account_number,
+        CASE
+            WHEN ISNULL(eur.address, '') != '' THEN ', ' + eur.address
+            ELSE ''
+        END AS address,
+        '' AS fruits_id,
+        'EXTERNAL_UNIT' AS buyer_source
     FROM
         external_unit_registration eur
     INNER JOIN
@@ -3641,38 +3661,56 @@ FROM
                 reeler_virtual_account_number =:virtualAccount
             """;
     public static final String SEED_MARKET_TRANSACTION_PASS_BOOK_QUERY = """
-            SELECT I.TXN_TYPE,AMOUNT, CREATED_DATE, LOT_ID, CAST(I.CREATED_DATE AS DATE) DATE_ON,FARMER_NAME
+            SELECT I.TXN_TYPE, AMOUNT, CREATED_DATE, LOT_ID, CAST(I.CREATED_DATE AS DATE) DATE_ON, FARMER_NAME, LOT_WEIGHT, RATE_PER_KG, MARKET_FEE, TOTAL, QTY_NOS
             FROM (
                 SELECT
                     'C' AS TXN_TYPE,
                     AMOUNT,
                     CREATED_DATE,
-                    -1 as LOT_ID,
+                    -1 AS LOT_ID,
                     VIRTUAL_ACCOUNT,
-                    '-' AS FARMER_NAME
+                    '-' AS FARMER_NAME,
+                    0 AS LOT_WEIGHT,
+                    0.0 AS RATE_PER_KG,
+                    0.0 AS MARKET_FEE,
+                    0.0 AS TOTAL,
+                    0 AS QTY_NOS
                 FROM REELER_VID_CREDIT_TXN
-                WHERE
-                        CAST(CREATED_DATE AS DATE)
-                                 BETWEEN :fromDate AND :toDate
-                    AND VIRTUAL_ACCOUNT = :vAccount
+                WHERE CAST(CREATED_DATE AS DATE) BETWEEN :fromDate AND :toDate
+                  AND VIRTUAL_ACCOUNT = :vAccount
             UNION ALL
                 SELECT
                     'D' AS TXN_TYPE,
-                     AMOUNT,
-                     CREATED_DATE,
-                     LOT_ID,
-                     VIRTUAL_ACCOUNT,
-                     (SELECT
-                          f.first_name
-                      FROM
-                      dbo.FARMER f
-                                 INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
-                                 INNER JOIN dbo.lot l ON l.market_auction_id =ma.market_auction_id and l.auction_date = ma.market_auction_date
-                                 WHERE l.allotted_lot_id =DT.LOT_ID  AND l.auction_date =DT.AUCTION_DATE  AND l.market_id =:marketId
-                      ) AS FARMER_NAME
-                FROM REELER_VID_DEBIT_TXN DT
-            WHERE CAST(CREATED_DATE AS DATE) BETWEEN :fromDate AND :toDate AND VIRTUAL_ACCOUNT = :vAccount
-            ) as I
+                    CAST(ISNULL(lg.sold_amount, 0) AS FLOAT) AS AMOUNT,
+                    lg.CREATED_DATE,
+                    lg.allotted_lot_id AS LOT_ID,
+                    :vAccount AS VIRTUAL_ACCOUNT,
+                    (SELECT f.first_name
+                     FROM dbo.FARMER f
+                     INNER JOIN dbo.market_auction ma ON ma.farmer_id = f.FARMER_ID
+                     INNER JOIN dbo.lot l2 ON l2.market_auction_id = ma.market_auction_id AND l2.auction_date = ma.market_auction_date
+                     WHERE l2.allotted_lot_id = lg.allotted_lot_id AND l2.auction_date = lg.auction_date AND l2.market_id = :marketId
+                    ) AS FARMER_NAME,
+                    ISNULL(lg.lot_weight, 0) AS LOT_WEIGHT,
+                    ISNULL(CAST(lg.amount AS FLOAT), 0) AS RATE_PER_KG,
+                    ISNULL(lg.reeler_market_fee, 0) AS MARKET_FEE,
+                    CAST(ISNULL(lg.sold_amount, 0) AS FLOAT) + ISNULL(lg.reeler_market_fee, 0) AS TOTAL,
+                    ISNULL(lg.qty_nos, 0) AS QTY_NOS
+                FROM lot_groupage lg
+                INNER JOIN lot l ON l.lot_id = lg.lot_id
+                LEFT JOIN reeler_virtual_bank_account rvba
+                    ON lg.buyer_type = 'Reeling'
+                    AND rvba.reeler_id = lg.buyer_id
+                    AND rvba.virtual_account_number = :vAccount
+                LEFT JOIN eu_virtual_bank_account evba
+                    ON lg.buyer_type != 'Reeling'
+                    AND evba.eu_id = lg.external_unit_id
+                    AND evba.virtual_account_number = :vAccount
+                WHERE CAST(lg.CREATED_DATE AS DATE) BETWEEN :fromDate AND :toDate
+                  AND l.market_id = :marketId
+                  AND lg.active = 1
+                  AND (rvba.virtual_account_number IS NOT NULL OR evba.virtual_account_number IS NOT NULL)
+            ) AS I
             WHERE I.VIRTUAL_ACCOUNT = :vAccount
             ORDER BY I.CREATED_DATE ASC
             """;

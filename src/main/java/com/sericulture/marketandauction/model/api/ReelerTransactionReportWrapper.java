@@ -10,10 +10,18 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class ReelerTransactionReportWrapper {
+    List<String> columnHeaders;
     Double openingBalance;
     List<ReelerTransactionReport> reelerTransactionReports;
     Double totalDeposits;
+    Double totalLotWeight;
+    Double totalPaymentAmount;
+    Double totalMarketFee;
     Double totalPurchase;
+    Double closingBalance;
     String name;
+    String address;
+    String fruitsId;
+    String reportType; // "REELER" or "EXTERNal unit"
 
 }

@@ -17,4 +17,9 @@ public class ReportAllTransaction {
     Double amount;
     Long lot;
     String farmerName;
+    Double lotWeight;
+    Double ratePerKg;
+    Double marketFee;
+    Double total;
+    Integer qtyNos;
 }

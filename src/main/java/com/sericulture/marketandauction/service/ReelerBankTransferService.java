@@ -53,7 +53,7 @@ public class ReelerBankTransferService {
      * Reeler column map (getReelerDetailsByLicense):
      *   [0]=reeler_id  [1]=name  [2]=license  [3]=mobile
      *   [4]=virtual_account  [5]=current_balance  [6]=minimum_balance
-     *   [7]=bank_account_number  [8]=ifsc_code  [9]=bank_name  [10]=branch_name
+     *   [7]=bank_account_number  [8]=ifsc_code  [9]=bank_name  [10]=branch_name  [11]=market_master_id
      *
      * RSP column map (getExternalUnitDetailsByLicense):
      *   [0]=eu_id  [1]=name  [2]=license  [3]=virtual_account
@@ -61,7 +61,7 @@ public class ReelerBankTransferService {
      *   [6]=bank_account_number  [7]=bank_ifsc_code  [8]=bank_name  [9]=bank_branch_name
      *   [10]=eu_market_id
      */
-    public ResponseEntity<?> getReelerBalance(String licenseNumber, String buyerType) {
+    public ResponseEntity<?> getReelerBalance(String licenseNumber, String buyerType, int marketId) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
 
         if ("RSP".equals(buyerType)) {
@@ -70,6 +70,11 @@ public class ReelerBankTransferService {
                 return marketAuctionHelper.retrunIfError(rw, "No RSP found for license number: " + licenseNumber);
             }
             Object[] row = data[0];
+            int dbMarketId = Util.objectToInteger(row[10]);
+            if (dbMarketId != marketId) {
+                return marketAuctionHelper.retrunIfError(rw,
+                        "RSP license '" + licenseNumber + "' does not belong to the selected market.");
+            }
             double currentBalance     = Util.objectToFloat(row[4]);
             double minimumBalance     = Util.objectToFloat(row[5]);
             double transferableAmount = Math.max(0, currentBalance - minimumBalance);
@@ -97,6 +102,11 @@ public class ReelerBankTransferService {
             return marketAuctionHelper.retrunIfError(rw, "No reeler found for license number: " + licenseNumber);
         }
         Object[] row = data[0];
+        int dbMarketId = Util.objectToInteger(row[11]);
+        if (dbMarketId != marketId) {
+            return marketAuctionHelper.retrunIfError(rw,
+                    "Reeler license '" + licenseNumber + "' does not belong to the selected market.");
+        }
         double currentBalance     = Util.objectToFloat(row[5]);
         double minimumBalance     = Util.objectToFloat(row[6]);
         double transferableAmount = Math.max(0, currentBalance - minimumBalance);
@@ -143,7 +153,6 @@ public class ReelerBankTransferService {
         LocalDate today = Util.getISTLocalDate();
 
         Object[] rd;
-        int buyerMarketId;
         String virtualAccount;
         double currentBalance;
         double minimumBalance;
@@ -153,9 +162,7 @@ public class ReelerBankTransferService {
             if (data == null || data.length == 0) {
                 return marketAuctionHelper.retrunIfError(rw, "RSP details not found for id: " + buyerId);
             }
-            rd            = data[0];
-            // Fall back to request marketId if eu_virtual_bank_account row is absent
-            buyerMarketId = rd[10] != null ? Util.objectToInteger(rd[10]) : marketId;
+            rd             = data[0];
             virtualAccount = Util.objectToString(rd[3]);
             currentBalance = Util.objectToFloat(rd[4]);
             minimumBalance = Util.objectToFloat(rd[5]);
@@ -164,11 +171,15 @@ public class ReelerBankTransferService {
             if (data == null || data.length == 0) {
                 return marketAuctionHelper.retrunIfError(rw, "Reeler details not found for reelerId: " + buyerId);
             }
-            rd            = data[0];
-            buyerMarketId = Util.objectToInteger(rd[10]);
+            rd             = data[0];
             virtualAccount = Util.objectToString(rd[3]);
             currentBalance = Util.objectToFloat(rd[4]);
             minimumBalance = Util.objectToFloat(rd[5]);
+        }
+
+        if (transactionFileGenQueueRepository.existsTransactionFileGenQueueByFileName(fileName)) {
+            return marketAuctionHelper.retrunIfError(rw,
+                    "File name '" + fileName + "' is already used. Please use a different file name.");
         }
 
         double maxTransferable = currentBalance - minimumBalance;
@@ -189,7 +200,7 @@ public class ReelerBankTransferService {
 
         // 1. Debit virtual account
         reelerVidDebitTxnRepository.save(new ReelerVidDebitTxn(
-                0, buyerMarketId, today, buyerId, virtualAccount, transferAmount));
+                0, marketId, today, buyerId, virtualAccount, transferAmount));
 
         // 2. Save ReelerBankTransfer record
         ReelerBankTransfer bankTransfer = new ReelerBankTransfer();
@@ -205,22 +216,22 @@ public class ReelerBankTransferService {
         bankTransfer.setBankName(Util.objectToString(rd[8]));
         bankTransfer.setBranchName(Util.objectToString(rd[9]));
         bankTransfer.setTransferAmount(transferAmount);
-        bankTransfer.setMarketId(buyerMarketId);
+        bankTransfer.setMarketId(marketId);
         bankTransfer.setAuctionDate(today);
         bankTransfer.setTransferStatus("PENDING");
         bankTransfer.setComment(comment);
         String prefix = "RSP".equals(buyerType) ? "RSP" : "RBT";
         String crn = prefix + today.toString().replace("-", "")
-                + String.format("%03d", buyerMarketId)
+                + String.format("%03d", marketId)
                 + String.format("%04d", buyerId);
         bankTransfer.setCustomerReferenceNumber(crn);
         reelerBankTransferRepository.save(bankTransfer);
 
         // 3. Queue CSV generation
         if (!transactionFileGenQueueRepository
-                .existsTransactionFileGenQueueByMarketIdAndFileName(buyerMarketId, fileName)) {
+                .existsTransactionFileGenQueueByMarketIdAndFileName(marketId, fileName)) {
             TransactionFileGenQueue queue = TransactionFileGenQueue.builder()
-                    .marketId(buyerMarketId)
+                    .marketId(marketId)
                     .auctionDate(today)
                     .fileName(fileName)
                     .comment("RSP".equals(buyerType) ? "RSP_BANK_TRANSFER" : "REELER_BANK_TRANSFER")
@@ -236,81 +247,6 @@ public class ReelerBankTransferService {
                 "ifscCode",          Util.objectToString(rd[7]),
                 "fileName",          fileName
         ));
-        return ResponseEntity.ok(rw);
-    }
-
-    // -------------------------------------------------------------------------
-    // BALANCE BY ID — used after UI selects from buyer dropdown
-    // -------------------------------------------------------------------------
-
-    public ResponseEntity<?> getBalanceById(int buyerId, String buyerType) {
-        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
-
-        if ("RSP".equals(buyerType)) {
-            Object[][] data = lotGroupageRepository.getExternalUnitBankDetailsById(buyerId);
-            if (data == null || data.length == 0) {
-                return marketAuctionHelper.retrunIfError(rw, "No RSP found for id: " + buyerId);
-            }
-            Object[] row = data[0];
-            double currentBalance     = Util.objectToFloat(row[4]);
-            double minimumBalance     = Util.objectToFloat(row[5]);
-            double transferableAmount = Math.max(0, currentBalance - minimumBalance);
-
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("buyerId",              Util.objectToInteger(row[0]));
-            result.put("buyerType",            "RSP");
-            result.put("name",                 Util.objectToString(row[1]));
-            result.put("licenseNumber",        Util.objectToString(row[2]));
-            result.put("virtualAccountNumber", Util.objectToString(row[3]));
-            result.put("currentBalance",       currentBalance);
-            result.put("minimumBalance",       minimumBalance);
-            result.put("transferableAmount",   transferableAmount);
-            result.put("bankAccountNumber",    Util.objectToString(row[6]));
-            result.put("ifscCode",             Util.objectToString(row[7]));
-            result.put("bankName",             Util.objectToString(row[8]));
-            result.put("branchName",           Util.objectToString(row[9]));
-            rw.setContent(result);
-            return ResponseEntity.ok(rw);
-        }
-
-        // Default: Reeling
-        Object[][] data = reelerAuctionRepository.getReelerBankDetails(buyerId);
-        if (data == null || data.length == 0) {
-            return marketAuctionHelper.retrunIfError(rw, "No reeler found for id: " + buyerId);
-        }
-        Object[] row = data[0];
-        double currentBalance     = Util.objectToFloat(row[4]);
-        double minimumBalance     = Util.objectToFloat(row[5]);
-        double transferableAmount = Math.max(0, currentBalance - minimumBalance);
-
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("buyerId",              Util.objectToInteger(row[0]));
-        result.put("buyerType",            "Reeling");
-        result.put("name",                 Util.objectToString(row[1]));
-        result.put("licenseNumber",        Util.objectToString(row[2]));
-        result.put("virtualAccountNumber", Util.objectToString(row[3]));
-        result.put("currentBalance",       currentBalance);
-        result.put("minimumBalance",       minimumBalance);
-        result.put("transferableAmount",   transferableAmount);
-        result.put("bankAccountNumber",    Util.objectToString(row[6]));
-        result.put("ifscCode",             Util.objectToString(row[7]));
-        result.put("bankName",             Util.objectToString(row[8]));
-        result.put("branchName",           Util.objectToString(row[9]));
-        rw.setContent(result);
-        return ResponseEntity.ok(rw);
-    }
-
-    // -------------------------------------------------------------------------
-    // BUYER LIST — populate dropdown by market + buyerType
-    // -------------------------------------------------------------------------
-
-    public ResponseEntity<?> getBuyerList(int marketId, String buyerType) {
-        ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
-        if ("RSP".equals(buyerType)) {
-            rw.setContent(lotGroupageRepository.getExternalUnitListByMarket(marketId));
-        } else {
-            rw.setContent(reelerAuctionRepository.getReelerListByMarket(marketId));
-        }
         return ResponseEntity.ok(rw);
     }
 
@@ -333,9 +269,13 @@ public class ReelerBankTransferService {
 
     public ByteArrayInputStream downloadCSV(int marketId, String fileName) {
         if (!transactionFileGenRepository.existsByMarketIdAndFileName(marketId, fileName)) {
+            if (transactionFileGenQueueRepository.existsTransactionFileGenQueueByFileName(fileName)) {
+                throw new ValidationException(
+                        "CSV file '" + fileName + "' does not belong to the selected market.");
+            }
             throw new ValidationException(
                     "CSV is not yet generated for file: " + fileName
-                    + ". Please wait for the bank transaction service to process.");
+                    + ". Please initiate a transfer first.");
         }
         return marketAuctionFileDowndloadService.generateCSV(marketId, fileName);
     }

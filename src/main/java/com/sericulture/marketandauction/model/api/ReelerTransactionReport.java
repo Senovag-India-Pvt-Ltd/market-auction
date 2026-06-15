@@ -21,4 +21,14 @@ public class ReelerTransactionReport {
     Double balance;
 
     String transactionType;
+
+    Double lotWeight;
+
+    Double ratePerKg;
+
+    Double marketFee;
+
+    Double total;
+
+    Integer qtyNos;
 }

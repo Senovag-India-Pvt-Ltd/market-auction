@@ -1,6 +1,7 @@
 package com.sericulture.marketandauction.controller;
 
 import com.sericulture.marketandauction.model.ResponseWrapper;
+import com.sericulture.marketandauction.model.exceptions.ValidationException;
 import com.sericulture.marketandauction.service.ReelerBankTransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -25,31 +26,9 @@ public class ReelerBankTransferController {
     @GetMapping("/getReelerBalance")
     public ResponseEntity<?> getReelerBalance(
             @RequestParam String licenseNumber,
-            @RequestParam String buyerType) {
-        return reelerBankTransferService.getReelerBalance(licenseNumber, buyerType);
-    }
-
-    /**
-     * Get buyer list for a market by buyer type — used to populate the UI dropdown.
-     * buyerType: "Reeling" or "RSP"
-     * Returns list of { buyerId, name, licenseNumber }
-     */
-    @GetMapping("/getBuyerList")
-    public ResponseEntity<?> getBuyerList(
-            @RequestParam int marketId,
-            @RequestParam String buyerType) {
-        return reelerBankTransferService.getBuyerList(marketId, buyerType);
-    }
-
-    /**
-     * Get balance by buyer ID — called after user selects from the dropdown.
-     * buyerType: "Reeling" or "RSP"
-     */
-    @GetMapping("/getBalanceById")
-    public ResponseEntity<?> getBalanceById(
-            @RequestParam int buyerId,
-            @RequestParam String buyerType) {
-        return reelerBankTransferService.getBalanceById(buyerId, buyerType);
+            @RequestParam String buyerType,
+            @RequestParam int marketId) {
+        return reelerBankTransferService.getReelerBalance(licenseNumber, buyerType, marketId);
     }
 
     /**
@@ -89,6 +68,10 @@ public class ReelerBankTransferController {
                     .contentType(MediaType.parseMediaType("application/csv"))
                     .body(new InputStreamResource(
                             reelerBankTransferService.downloadCSV(marketId, fileName)));
+        } catch (ValidationException e) {
+            ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
+            rw.setContent(e.getErrorMessages().get(0).getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(rw);
         } catch (Exception e) {
             ResponseWrapper rw = ResponseWrapper.createWrapper(String.class);
             rw.setContent(e.getMessage());
