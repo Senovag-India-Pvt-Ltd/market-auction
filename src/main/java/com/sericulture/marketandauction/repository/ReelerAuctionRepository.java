@@ -364,4 +364,12 @@ ORDER BY total_amount DESC
             """)
     List<Object[]> getReelerListByMarket(@Param("marketId") int marketId);
 
+    @Query(nativeQuery = true, value = """
+            SELECT r.reeler_id AS buyerId, r.name, r.reeling_license_number AS licenseNumber
+            FROM reeler r
+            WHERE r.active = 1
+            ORDER BY r.name
+            """)
+    List<Object[]> getAllReelers();
+
 }

@@ -281,10 +281,10 @@ public class LotGroupageController {
 
     @GetMapping("/getLicenseNumberList")
     public ResponseEntity<?> getLicenseNumberList(
-            @RequestParam int marketId,
-            @RequestParam String buyerType) {
+            @RequestParam String buyerType,
+            @RequestParam(required = false) Integer marketId) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
-        rw.setContent(lotGroupageService.getLicenseNumberList(marketId, buyerType));
+        rw.setContent(lotGroupageService.getLicenseNumberList(buyerType, marketId));
         return ResponseEntity.ok(rw);
     }
 

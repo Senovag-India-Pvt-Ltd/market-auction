@@ -3710,6 +3710,23 @@ FROM
                   AND l.market_id = :marketId
                   AND lg.active = 1
                   AND (rvba.virtual_account_number IS NOT NULL OR evba.virtual_account_number IS NOT NULL)
+            UNION ALL
+                SELECT
+                    'D' AS TXN_TYPE,
+                    dt.AMOUNT,
+                    dt.CREATED_DATE,
+                    0 AS LOT_ID,
+                    dt.VIRTUAL_ACCOUNT,
+                    'Bank Transfer' AS FARMER_NAME,
+                    0 AS LOT_WEIGHT,
+                    0.0 AS RATE_PER_KG,
+                    0.0 AS MARKET_FEE,
+                    dt.AMOUNT AS TOTAL,
+                    0 AS QTY_NOS
+                FROM REELER_VID_DEBIT_TXN dt
+                WHERE CAST(dt.CREATED_DATE AS DATE) BETWEEN :fromDate AND :toDate
+                  AND dt.VIRTUAL_ACCOUNT = :vAccount
+                  AND dt.LOT_ID = 0
             ) AS I
             WHERE I.VIRTUAL_ACCOUNT = :vAccount
             ORDER BY I.CREATED_DATE ASC
@@ -3840,6 +3857,67 @@ SELECT
     public static final String BUYER_QUERY =BUYER_QUERYS;
     public static final String SEED_MARKET_CURRENT_BALANCE_QUERY =SEED_MARKET_CURRENT_BALANCE_QUERYS;
     public static final String SEED_MARKET_TRANSACTION_PASS_BOOK =SEED_MARKET_TRANSACTION_PASS_BOOK_QUERY;
+
+    public static final String SEED_MARKET_OPENING_BALANCE_QUERY = """
+            SELECT
+                COALESCE((SELECT SUM(AMOUNT)
+                          FROM REELER_VID_CREDIT_TXN
+                          WHERE VIRTUAL_ACCOUNT = :vAccount
+                            AND CAST(CREATED_DATE AS DATE) < :fromDate), 0)
+              - COALESCE((SELECT SUM(CAST(ISNULL(lg.sold_amount, 0) AS FLOAT) + ISNULL(lg.reeler_market_fee, 0))
+                          FROM lot_groupage lg
+                          INNER JOIN lot l ON l.lot_id = lg.lot_id
+                          LEFT JOIN reeler_virtual_bank_account rvba
+                              ON lg.buyer_type = 'Reeling'
+                              AND rvba.reeler_id = lg.buyer_id
+                              AND rvba.virtual_account_number = :vAccount
+                          LEFT JOIN eu_virtual_bank_account evba
+                              ON lg.buyer_type != 'Reeling'
+                              AND evba.eu_id = lg.external_unit_id
+                              AND evba.virtual_account_number = :vAccount
+                          WHERE CAST(lg.CREATED_DATE AS DATE) < :fromDate
+                            AND lg.active = 1
+                            AND (rvba.virtual_account_number IS NOT NULL OR evba.virtual_account_number IS NOT NULL)), 0)
+              - COALESCE((SELECT SUM(dt.AMOUNT)
+                          FROM REELER_VID_DEBIT_TXN dt
+                          WHERE dt.VIRTUAL_ACCOUNT = :vAccount
+                            AND CAST(dt.CREATED_DATE AS DATE) < :fromDate
+                            AND dt.LOT_ID = 0), 0)
+            AS opening_balance
+            """;
+
+    public static final String EU_OPENING_BALANCE_QUERY = """
+            SELECT
+                COALESCE(
+                    (SELECT CURRENT_BALANCE FROM REELER_VID_CURRENT_BALANCE
+                     WHERE reeler_virtual_account_number = :vAccount), 0)
+                + COALESCE((
+                    SELECT SUM(CAST(ISNULL(lg.sold_amount, 0) AS FLOAT))
+                    FROM lot_groupage lg
+                    LEFT JOIN eu_virtual_bank_account evba
+                        ON lg.buyer_type != 'Reeling'
+                        AND evba.eu_id = lg.external_unit_id
+                        AND evba.virtual_account_number = :vAccount
+                    WHERE CAST(lg.CREATED_DATE AS DATE) >= :fromDate
+                      AND lg.active = 1
+                      AND evba.virtual_account_number IS NOT NULL
+                ), 0)
+                + COALESCE((
+                    SELECT SUM(dt.AMOUNT)
+                    FROM REELER_VID_DEBIT_TXN dt
+                    WHERE dt.VIRTUAL_ACCOUNT = :vAccount
+                      AND CAST(dt.CREATED_DATE AS DATE) >= :fromDate
+                      AND dt.LOT_ID = 0
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(AMOUNT)
+                    FROM REELER_VID_CREDIT_TXN
+                    WHERE VIRTUAL_ACCOUNT = :vAccount
+                      AND CAST(CREATED_DATE AS DATE) >= :fromDate
+                ), 0)
+            AS opening_balance
+            """;
+
     public static final String CASH_BALANCE = CASH_BALANCE_QUERY ;
     public static final String CASH_BALANCE_WITH_LICENSE =CASH_BALANCE_WITH_LICENSE_QUERY ;
 

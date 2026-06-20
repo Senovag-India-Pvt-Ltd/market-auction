@@ -1360,6 +1360,20 @@ AND lg.active = true
             String virtualAccount
     );
 
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.SEED_MARKET_OPENING_BALANCE_QUERY)
+    Double getSeedMarketOpeningBalance(
+            @Param("vAccount") String vAccount,
+            @Param("fromDate") LocalDate fromDate
+    );
+
+    @Query(nativeQuery = true,
+            value = MarketAuctionQueryConstants.EU_OPENING_BALANCE_QUERY)
+    Double getEuOpeningBalance(
+            @Param("vAccount") String vAccount,
+            @Param("fromDate") LocalDate fromDate
+    );
+
 
     @Query(nativeQuery = true,
             value = MarketAuctionQueryConstants.SEED_MARKET_TRANSACTION_PASS_BOOK)
@@ -1475,4 +1489,12 @@ AND lg.active = true
             ORDER BY eur.name
             """)
     List<Object[]> getExternalUnitListByMarket(@Param("marketId") int marketId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT eur.external_unit_registration_id AS buyerId, eur.name, eur.license_number AS licenseNumber
+            FROM external_unit_registration eur
+            WHERE eur.active = 1
+            ORDER BY eur.name
+            """)
+    List<Object[]> getAllExternalUnits();
 }

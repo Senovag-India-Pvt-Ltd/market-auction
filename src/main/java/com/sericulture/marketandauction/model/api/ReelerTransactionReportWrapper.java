@@ -18,6 +18,7 @@ public class ReelerTransactionReportWrapper {
     Double totalPaymentAmount;
     Double totalMarketFee;
     Double totalPurchase;
+    Double totalBankTransfers;
     Double closingBalance;
     String name;
     String address;

@@ -1978,10 +1978,12 @@ public class LotGroupageService {
         return new FileInputStream(file);
     }
 
-    public List<Map<String, String>> getLicenseNumberList(int marketId, String buyerType) {
+    public List<Map<String, String>> getLicenseNumberList(String buyerType, Integer marketId) {
         List<Map<String, String>> result = new ArrayList<>();
         if ("REELING".equalsIgnoreCase(buyerType)) {
-            List<Object[]> rows = reelerAuctionRepository.getReelerListByMarket(marketId);
+            List<Object[]> rows = (marketId != null)
+                    ? reelerAuctionRepository.getReelerListByMarket(marketId)
+                    : reelerAuctionRepository.getAllReelers();
             for (Object[] row : rows) {
                 Map<String, String> map = new java.util.LinkedHashMap<>();
                 map.put("licenseNumber", row[2] != null ? row[2].toString() : "");
@@ -1989,7 +1991,9 @@ public class LotGroupageService {
                 result.add(map);
             }
         } else if ("EXTERNAL_UNIT".equalsIgnoreCase(buyerType)) {
-            List<Object[]> rows = lotGroupageRepository.getExternalUnitListByMarket(marketId);
+            List<Object[]> rows = (marketId != null)
+                    ? lotGroupageRepository.getExternalUnitListByMarket(marketId)
+                    : lotGroupageRepository.getAllExternalUnits();
             for (Object[] row : rows) {
                 Map<String, String> map = new java.util.LinkedHashMap<>();
                 map.put("licenseNumber", row[2] != null ? row[2].toString() : "");
@@ -2015,13 +2019,14 @@ public class LotGroupageService {
                 "ವಹಿವಾಟಿನ ದಿನಾಂಕ / Transaction Date",
                 "ವಿವರ / Description",
                 "ವಹಿವಾಟಿನ ವಿಧ / Transaction Type",
-                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ / Deposit Amount",
+                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ (ರೂ) / Deposit Amount (Rs)",
                 "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ / Quantity of seed cocoon purchased (in kg's)",
-                "ದರ (ಪ್ರತಿ ಕಿ.ಗ್ರಾ) / Rate / Kg",
-                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ / Cocoons Purchase Amount",
-                "ಮಾರು ಕಟ್ಟೆ ಶುಲ್ಕ @1% / Market fee @1%",
-                "ಒಟ್ಟು ಮೊತ್ತ / Total",
-                "ಉಳಿಕೆ ಮೊತ್ತ / Balance Amount"
+                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ (ರೂ)/ Rate per Kg (Rs)",
+                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ(ರೂ) / Cocoons Purchase Amount (Rs)",
+                "ಮಾರು ಕಟ್ಟೆ ಶುಲ್ಕ @1% (ರೂ) / Market fee @1% (Rs)",
+                "ಒಟ್ಟು ಮೊತ್ತ (ರೂ)/ Total (Rs)",
+                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ (ರೂ) / Refunded Amount (Rs)",
+                "ಉಳಿಕೆ ಮೊತ್ತ (ರೂ) / Balance Amount (Rs)"
         ));
 
         try {
@@ -2087,13 +2092,14 @@ public class LotGroupageService {
                             "ವಹಿವಾಟಿನ ದಿನಾಂಕ / Transaction Date",
                             "ವಿವರ / Description",
                             "ವಹಿವಾಟಿನ ವಿಧ / Transaction Type",
-                            "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ / Deposit Amount",
+                            "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ (ರೂ) / Deposit Amount (Rs)",
                             "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ / Quantity of seed cocoon purchased(in kg's)",
-                            "ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ (ಪ್ರತಿ ಕೆ.ಜಿಗೆ) / No. of Seed Cocoons per Kg",
+                            "ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ (ಪ್ರತಿ ಕೆ.ಜಿಗೆ) / No. of Seed Cocoons per Kg ",
                             "ಒಟ್ಟು ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ / Total No of Seed Cocoons (in No's)",
-                            "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ / Rate per Kg",
-                            "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ / Seed Cocoon Purchase Amount",
-                            "ಉಳಿಕೆ ಮೊತ್ತ / Balance Amount"
+                            "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ (ರೂ)/ Rate per Kg (Rs)",
+                            "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ (ರೂ) / Seed Cocoon Purchase Amount (Rs)",
+                            "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ (ರೂ) / Refunded Amount (Rs)",
+                            "ಉಳಿಕೆ ಮೊತ್ತ (ರೂ) / Balance Amount (Rs)"
                     ));
                     wrapper.setFruitsId("");
                 } else {
@@ -2101,46 +2107,16 @@ public class LotGroupageService {
                     wrapper.setFruitsId(buyerFruitsId);
                 }
 
-                // CURRENT BALANCE
-                List<Object[]> currentBalanceList =
-                        lotGroupageRepository
-                                .getSeedMarketCurrentBalance(
-                                        virtualAccountNumber);
-
-                if (currentBalanceList == null
-                        || currentBalanceList.isEmpty()) {
-
-                    wrapper.setOpeningBalance(0.0);
-                    wrapper.setReelerTransactionReports(new ArrayList<>());
-                    wrapper.setTotalDeposits(0.0);
-                    wrapper.setTotalPurchase(0.0);
-
-                    return wrapper;
-                }
-
-                Object[] currentBalanceResult =
-                        currentBalanceList.get(0);
-
-                ReportCurrentBalance reportCurrentBalance =
-                        new ReportCurrentBalance();
-
-                reportCurrentBalance.setCurrentBalance(
-                        ((BigDecimal) currentBalanceResult[0]).doubleValue());
-
-                reportCurrentBalance.setVirtualAccountNumber(
-                        (String) currentBalanceResult[1]);
-
-                reportCurrentBalance.setCreatedDate(
-                        ((Timestamp) currentBalanceResult[2])
-                                .toLocalDateTime());
-
-                // PASSBOOK
+                // PASSBOOK — use virtualAccountNumber directly.
+                // REELER_VID_CURRENT_BALANCE is skipped because external units
+                // may not have a row there, causing an early return and leaving
+                // the UI stuck on the previous search result.
                 List<Object[]> transactionList =
                         lotGroupageRepository
                                 .getSeedMarketTransactionPassBook(
                                         fromDate,
                                         toDate,
-                                        reportCurrentBalance.getVirtualAccountNumber(),
+                                        virtualAccountNumber,
                                         marketId
                                 );
 
@@ -2210,9 +2186,10 @@ public class LotGroupageService {
                 double totalLotWeight = 0.0;
                 double totalPaymentAmount = 0.0;
                 double totalMarketFee = 0.0;
+                double totalBankTransfers = 0.0;
 
-                double currentBalance =
-                        reportCurrentBalance.getCurrentBalance();
+                Double fetchedOpening = lotGroupageRepository.getSeedMarketOpeningBalance(virtualAccountNumber, fromDate);
+                double openingBalance = fetchedOpening != null ? fetchedOpening : 0.0;
 
                 List<ReelerTransactionReport> reports =
                         new ArrayList<>();
@@ -2231,29 +2208,35 @@ public class LotGroupageService {
                     if ("D".equalsIgnoreCase(
                             rat.getTransactionType())) {
 
-                        debitSum += rat.getTotal();
-                        totalLotWeight += rat.getLotWeight() != null ? rat.getLotWeight() : 0;
-                        totalPaymentAmount += rat.getAmount() != null ? rat.getAmount() : 0;
-                        totalMarketFee += rat.getMarketFee() != null ? rat.getMarketFee() : 0;
+                        if (rat.getLot() == 0) {
 
-                        report.setPaymentAmount(
-                                rat.getAmount());
+                            totalBankTransfers += rat.getAmount() != null ? rat.getAmount() : 0;
 
-                        report.setLotWeight(rat.getLotWeight());
+                            report.setRefundedAmount(rat.getAmount());
 
-                        report.setRatePerKg(rat.getRatePerKg());
+                            report.setOperationDescription(
+                                    "Transfer Back to " + buyerName);
 
-                        report.setMarketFee(rat.getMarketFee());
+                        } else {
 
-                        report.setTotal(rat.getTotal());
+                            report.setTotal(rat.getTotal());
+                            debitSum += rat.getTotal();
+                            totalLotWeight += rat.getLotWeight() != null ? rat.getLotWeight() : 0;
+                            totalPaymentAmount += rat.getAmount() != null ? rat.getAmount() : 0;
+                            totalMarketFee += rat.getMarketFee() != null ? rat.getMarketFee() : 0;
 
-                        report.setQtyNos(rat.getQtyNos());
+                            report.setPaymentAmount(rat.getAmount());
+                            report.setLotWeight(rat.getLotWeight());
+                            report.setRatePerKg(rat.getRatePerKg());
+                            report.setMarketFee(rat.getMarketFee());
+                            report.setQtyNos(rat.getQtyNos());
 
-                        report.setOperationDescription(
-                                "Paid to "
-                                        + rat.getFarmerName()
-                                        + ", for lot "
-                                        + rat.getLot());
+                            report.setOperationDescription(
+                                    "Paid to "
+                                            + rat.getFarmerName()
+                                            + ", for lot "
+                                            + rat.getLot());
+                        }
 
                     } else {
 
@@ -2269,9 +2252,6 @@ public class LotGroupageService {
                     reports.add(report);
                 }
 
-                double openingBalance =
-                        currentBalance - creditSum + debitSum;
-
                 double runningBalance =
                         openingBalance;
 
@@ -2280,9 +2260,9 @@ public class LotGroupageService {
                     if ("D".equalsIgnoreCase(
                             report.getTransactionType())) {
 
-                        runningBalance =
-                                runningBalance
-                                        - report.getTotal();
+                        double deduction = report.getTotal() != null ? report.getTotal()
+                                : (report.getRefundedAmount() != null ? report.getRefundedAmount() : 0.0);
+                        runningBalance = runningBalance - deduction;
 
                     } else {
 
@@ -2301,6 +2281,7 @@ public class LotGroupageService {
                 wrapper.setTotalPaymentAmount(totalPaymentAmount);
                 wrapper.setTotalMarketFee(totalMarketFee);
                 wrapper.setTotalPurchase(debitSum);
+                wrapper.setTotalBankTransfers(totalBankTransfers);
                 wrapper.setClosingBalance(runningBalance);
                 wrapper.setName(buyerName);
                 wrapper.setAddress(buyerAddress);
@@ -2416,368 +2397,277 @@ public class LotGroupageService {
 
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Seed Market Transaction Report");
+        final int COLS = 12;
 
-        final int COLS = 11;
+        // ── Number formats ────────────────────────────────────────────────────
+        DataFormat dataFmt = workbook.createDataFormat();
+        short numFmt2dp = dataFmt.getFormat("#,##0.00");
 
-        // ── Fonts ────────────────────────────────────────────────────────────
-        Font boldFont = workbook.createFont();
-        boldFont.setBold(true);
-        boldFont.setFontHeightInPoints((short) 12);
+        // ── Fonts ─────────────────────────────────────────────────────────────
+        Font fTitle = workbook.createFont(); fTitle.setBold(true); fTitle.setFontHeightInPoints((short) 14);
+        Font fSubTitle = workbook.createFont(); fSubTitle.setBold(true); fSubTitle.setFontHeightInPoints((short) 12);
+        Font fLabel = workbook.createFont(); fLabel.setBold(true); fLabel.setFontHeightInPoints((short) 9);
+        Font fValue = workbook.createFont(); fValue.setFontHeightInPoints((short) 9);
+        Font fHdr = workbook.createFont(); fHdr.setBold(true); fHdr.setFontHeightInPoints((short) 9); fHdr.setColor(IndexedColors.WHITE.getIndex());
+        Font fTotal = workbook.createFont(); fTotal.setBold(true); fTotal.setFontHeightInPoints((short) 9);
 
-        Font boldSmall = workbook.createFont();
-        boldSmall.setBold(true);
-        boldSmall.setFontHeightInPoints((short) 10);
+        // ── Styles ────────────────────────────────────────────────────────────
+        CellStyle sTitle = workbook.createCellStyle();
+        sTitle.setFont(fTitle); sTitle.setAlignment(HorizontalAlignment.CENTER);
+        sTitle.setVerticalAlignment(VerticalAlignment.CENTER); sTitle.setWrapText(true);
 
-        Font normalFont = workbook.createFont();
-        normalFont.setFontHeightInPoints((short) 10);
+        CellStyle sSubTitle = workbook.createCellStyle();
+        sSubTitle.setFont(fSubTitle); sSubTitle.setAlignment(HorizontalAlignment.CENTER);
+        sSubTitle.setVerticalAlignment(VerticalAlignment.CENTER); sSubTitle.setWrapText(true);
 
-        // ── Styles ───────────────────────────────────────────────────────────
-        CellStyle titleStyle = workbook.createCellStyle();
-        titleStyle.setFont(boldFont);
-        titleStyle.setAlignment(HorizontalAlignment.CENTER);
-        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        titleStyle.setWrapText(true);
+        // Info label: bold, light-yellow bg, thin borders, wrap
+        CellStyle sIL = workbook.createCellStyle();
+        sIL.setFont(fLabel); sIL.setWrapText(true); sIL.setVerticalAlignment(VerticalAlignment.CENTER);
+        sIL.setFillForegroundColor(IndexedColors.LEMON_CHIFFON.getIndex()); sIL.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        sIL.setBorderTop(BorderStyle.THIN); sIL.setBorderBottom(BorderStyle.THIN); sIL.setBorderLeft(BorderStyle.THIN); sIL.setBorderRight(BorderStyle.THIN);
 
-        CellStyle labelStyle = workbook.createCellStyle();
-        labelStyle.setFont(boldSmall);
-        labelStyle.setWrapText(true);
+        // Info value: normal, thin borders, wrap
+        CellStyle sIV = workbook.createCellStyle();
+        sIV.setFont(fValue); sIV.setWrapText(true); sIV.setVerticalAlignment(VerticalAlignment.CENTER);
+        sIV.setBorderTop(BorderStyle.THIN); sIV.setBorderBottom(BorderStyle.THIN); sIV.setBorderLeft(BorderStyle.THIN); sIV.setBorderRight(BorderStyle.THIN);
 
-        CellStyle valueStyle = workbook.createCellStyle();
-        valueStyle.setFont(normalFont);
-        valueStyle.setWrapText(true);
+        // Info numeric value: left-aligned (value starts at left of cell), formatted, borders
+        CellStyle sIN = workbook.createCellStyle();
+        sIN.setFont(fValue); sIN.setAlignment(HorizontalAlignment.LEFT); sIN.setVerticalAlignment(VerticalAlignment.CENTER);
+        sIN.setDataFormat(numFmt2dp);
+        sIN.setBorderTop(BorderStyle.THIN); sIN.setBorderBottom(BorderStyle.THIN); sIN.setBorderLeft(BorderStyle.THIN); sIN.setBorderRight(BorderStyle.THIN);
 
-        CellStyle colHeaderStyle = workbook.createCellStyle();
-        colHeaderStyle.setFont(boldSmall);
-        colHeaderStyle.setAlignment(HorizontalAlignment.CENTER);
-        colHeaderStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        colHeaderStyle.setWrapText(true);
-        colHeaderStyle.setBorderTop(BorderStyle.THIN);
-        colHeaderStyle.setBorderBottom(BorderStyle.THIN);
-        colHeaderStyle.setBorderLeft(BorderStyle.THIN);
-        colHeaderStyle.setBorderRight(BorderStyle.THIN);
-        colHeaderStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        colHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        // Column header: bold white on dark blue, center, wrap
+        CellStyle sColHdr = workbook.createCellStyle();
+        sColHdr.setFont(fHdr); sColHdr.setAlignment(HorizontalAlignment.CENTER);
+        sColHdr.setVerticalAlignment(VerticalAlignment.CENTER); sColHdr.setWrapText(true);
+        sColHdr.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex()); sColHdr.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        sColHdr.setBorderTop(BorderStyle.THIN); sColHdr.setBorderBottom(BorderStyle.THIN); sColHdr.setBorderLeft(BorderStyle.THIN); sColHdr.setBorderRight(BorderStyle.THIN);
 
-        CellStyle dataStyle = workbook.createCellStyle();
-        dataStyle.setFont(normalFont);
-        dataStyle.setBorderTop(BorderStyle.THIN);
-        dataStyle.setBorderBottom(BorderStyle.THIN);
-        dataStyle.setBorderLeft(BorderStyle.THIN);
-        dataStyle.setBorderRight(BorderStyle.THIN);
-        dataStyle.setAlignment(HorizontalAlignment.LEFT);
-        dataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        dataStyle.setWrapText(true);
+        // Data: center, borders, wrap
+        CellStyle sData = workbook.createCellStyle();
+        sData.setFont(fValue); sData.setAlignment(HorizontalAlignment.CENTER);
+        sData.setVerticalAlignment(VerticalAlignment.CENTER); sData.setWrapText(true);
+        sData.setBorderTop(BorderStyle.THIN); sData.setBorderBottom(BorderStyle.THIN); sData.setBorderLeft(BorderStyle.THIN); sData.setBorderRight(BorderStyle.THIN);
 
-        CellStyle centerDataStyle = workbook.createCellStyle();
-        centerDataStyle.setFont(normalFont);
-        centerDataStyle.setBorderTop(BorderStyle.THIN);
-        centerDataStyle.setBorderBottom(BorderStyle.THIN);
-        centerDataStyle.setBorderLeft(BorderStyle.THIN);
-        centerDataStyle.setBorderRight(BorderStyle.THIN);
-        centerDataStyle.setAlignment(HorizontalAlignment.LEFT);
-        centerDataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        // Description: left-align, wrap
+        CellStyle sDesc = workbook.createCellStyle();
+        sDesc.setFont(fValue); sDesc.setAlignment(HorizontalAlignment.LEFT);
+        sDesc.setVerticalAlignment(VerticalAlignment.CENTER); sDesc.setWrapText(true);
+        sDesc.setBorderTop(BorderStyle.THIN); sDesc.setBorderBottom(BorderStyle.THIN); sDesc.setBorderLeft(BorderStyle.THIN); sDesc.setBorderRight(BorderStyle.THIN);
 
-        CellStyle numberStyle = workbook.createCellStyle();
-        numberStyle.setFont(normalFont);
-        numberStyle.setBorderTop(BorderStyle.THIN);
-        numberStyle.setBorderBottom(BorderStyle.THIN);
-        numberStyle.setBorderLeft(BorderStyle.THIN);
-        numberStyle.setBorderRight(BorderStyle.THIN);
-        numberStyle.setAlignment(HorizontalAlignment.LEFT);
-        numberStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        // Numeric data: right-align, 2dp format
+        CellStyle sNum = workbook.createCellStyle();
+        sNum.setFont(fValue); sNum.setAlignment(HorizontalAlignment.CENTER);
+        sNum.setVerticalAlignment(VerticalAlignment.CENTER); sNum.setDataFormat(numFmt2dp);
+        sNum.setBorderTop(BorderStyle.THIN); sNum.setBorderBottom(BorderStyle.THIN); sNum.setBorderLeft(BorderStyle.THIN); sNum.setBorderRight(BorderStyle.THIN);
 
-        // ── Logo rows 0-1 ────────────────────────────────────────────────────
-        Row logoRow0 = sheet.createRow(0);
-        logoRow0.setHeightInPoints(36);
-        Row logoRow1 = sheet.createRow(1);
-        logoRow1.setHeightInPoints(36);
+        // Total label: bold, grey bg, medium top/bottom borders
+        CellStyle sTotalL = workbook.createCellStyle();
+        sTotalL.setFont(fTotal); sTotalL.setAlignment(HorizontalAlignment.CENTER); sTotalL.setVerticalAlignment(VerticalAlignment.CENTER);
+        sTotalL.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex()); sTotalL.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        sTotalL.setBorderTop(BorderStyle.MEDIUM); sTotalL.setBorderBottom(BorderStyle.MEDIUM); sTotalL.setBorderLeft(BorderStyle.THIN); sTotalL.setBorderRight(BorderStyle.THIN);
+
+        // Total number: bold, right, 2dp, grey bg, medium top/bottom borders
+        CellStyle sTotalN = workbook.createCellStyle();
+        sTotalN.setFont(fTotal); sTotalN.setAlignment(HorizontalAlignment.CENTER);
+        sTotalN.setVerticalAlignment(VerticalAlignment.CENTER); sTotalN.setDataFormat(numFmt2dp);
+        sTotalN.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex()); sTotalN.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        sTotalN.setBorderTop(BorderStyle.MEDIUM); sTotalN.setBorderBottom(BorderStyle.MEDIUM); sTotalN.setBorderLeft(BorderStyle.THIN); sTotalN.setBorderRight(BorderStyle.THIN);
+
+        // ── Rows 0-1: Logo centered across cols 4-7 ───────────────────────────
+        sheet.createRow(0).setHeightInPoints(45);
+        sheet.createRow(1).setHeightInPoints(45);
         try {
             org.springframework.core.io.ClassPathResource logoRes =
                     new org.springframework.core.io.ClassPathResource("images/kar_logo.png");
-            java.io.InputStream logoStream = logoRes.getInputStream();
-            byte[] logoBytes = logoStream.readAllBytes();
-            logoStream.close();
-            int pictureIdx = workbook.addPicture(logoBytes, org.apache.poi.ss.usermodel.Workbook.PICTURE_TYPE_PNG);
+            byte[] logoBytes = logoRes.getInputStream().readAllBytes();
+            int picIdx = workbook.addPicture(logoBytes, org.apache.poi.ss.usermodel.Workbook.PICTURE_TYPE_PNG);
             org.apache.poi.ss.usermodel.Drawing<?> drawing = sheet.createDrawingPatriarch();
-            org.apache.poi.ss.usermodel.ClientAnchor anchor =
-                    workbook.getCreationHelper().createClientAnchor();
-            anchor.setCol1(5); anchor.setRow1(0);
-            anchor.setAnchorType(org.apache.poi.ss.usermodel.ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
-            org.apache.poi.ss.usermodel.Picture logoPic = drawing.createPicture(anchor, pictureIdx);
-            logoPic.resize(0.3);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            org.apache.poi.ss.usermodel.ClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
+            anchor.setCol1(4); anchor.setRow1(0); anchor.setCol2(7); anchor.setRow2(2);
+            anchor.setAnchorType(org.apache.poi.ss.usermodel.ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+            drawing.createPicture(anchor, picIdx);
+        } catch (Exception ignored) {}
 
-        // ── Helper: merged title row ─────────────────────────────────────────
+        // ── Rows 2-5: Title section ───────────────────────────────────────────
         int rowIdx = 2;
+        Row rT0 = sheet.createRow(rowIdx++); rT0.setHeightInPoints(28);
+        Cell cT0 = rT0.createCell(0); cT0.setCellValue("ಕರ್ನಾಟಕ ಸರ್ಕಾರ"); cT0.setCellStyle(sTitle);
+        for (int i = 1; i < COLS; i++) rT0.createCell(i).setCellStyle(sTitle);
+        sheet.addMergedRegion(new CellRangeAddress(rT0.getRowNum(), rT0.getRowNum(), 0, COLS - 1));
 
-        // Row 2 — ಕರ್ನಾಟಕ ಸರ್ಕಾರ
-        Row r0 = sheet.createRow(rowIdx++);
-        r0.setHeightInPoints(22);
-        Cell c0 = r0.createCell(0);
-        c0.setCellValue("ಕರ್ನಾಟಕ ಸರ್ಕಾರ");
-        c0.setCellStyle(titleStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r0.getRowNum(), r0.getRowNum(), 0, COLS - 1));
+        Row rT1 = sheet.createRow(rowIdx++); rT1.setHeightInPoints(24);
+        Cell cT1 = rT1.createCell(0); cT1.setCellValue("ರೇಷ್ಮೆ, ಇಲಾಖೆ"); cT1.setCellStyle(sSubTitle);
+        for (int i = 1; i < COLS; i++) rT1.createCell(i).setCellStyle(sSubTitle);
+        sheet.addMergedRegion(new CellRangeAddress(rT1.getRowNum(), rT1.getRowNum(), 0, COLS - 1));
 
-        // Row 3 — ರೇಷ್ಮೆ, ಇಲಾಖೆ
-        Row r1 = sheet.createRow(rowIdx++);
-        r1.setHeightInPoints(20);
-        Cell c1 = r1.createCell(0);
-        c1.setCellValue("ರೇಷ್ಮೆ, ಇಲಾಖೆ");
-        c1.setCellStyle(titleStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r1.getRowNum(), r1.getRowNum(), 0, COLS - 1));
+        Row rT2 = sheet.createRow(rowIdx++); rT2.setHeightInPoints(22);
+        Cell cT2 = rT2.createCell(0); cT2.setCellValue("ಸರ್ಕಾರಿ ರೇಷ್ಮೆ ಗೂಡಿನ ಮಾರುಕಟ್ಟೆ, " + marketName); cT2.setCellStyle(sSubTitle);
+        for (int i = 1; i < COLS; i++) rT2.createCell(i).setCellStyle(sSubTitle);
+        sheet.addMergedRegion(new CellRangeAddress(rT2.getRowNum(), rT2.getRowNum(), 0, COLS - 1));
 
-        // Row 4 — Market name
-        Row r2 = sheet.createRow(rowIdx++);
-        r2.setHeightInPoints(20);
-        Cell c2 = r2.createCell(0);
-        c2.setCellValue("ಸರ್ಕಾರಿ ರೇಷ್ಮೆ ಗೂಡಿನ ಮಾರುಕಟ್ಟೆ, " + marketName);
-        c2.setCellStyle(titleStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r2.getRowNum(), r2.getRowNum(), 0, COLS - 1));
+        Row rT3 = sheet.createRow(rowIdx++); rT3.setHeightInPoints(22);
+        Cell cT3 = rT3.createCell(0); cT3.setCellValue("ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ವಹಿವಾಟು ವರದಿ"); cT3.setCellStyle(sSubTitle);
+        for (int i = 1; i < COLS; i++) rT3.createCell(i).setCellStyle(sSubTitle);
+        sheet.addMergedRegion(new CellRangeAddress(rT3.getRowNum(), rT3.getRowNum(), 0, COLS - 1));
 
-        // Row 5 — Report title
-        Row r3 = sheet.createRow(rowIdx++);
-        r3.setHeightInPoints(20);
-        Cell c3 = r3.createCell(0);
-        c3.setCellValue("ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ವಹಿವಾಟು ವರದಿ");
-        c3.setCellStyle(titleStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r3.getRowNum(), r3.getRowNum(), 0, COLS - 1));
+        // ── Row 6: Spacer ─────────────────────────────────────────────────────
+        sheet.createRow(rowIdx++).setHeightInPoints(6);
 
-        // Row 6 — blank
-        sheet.createRow(rowIdx++);
-
-        // Row 7 — License No | value | FRUITS ID | value | Date and Time Stamp | timestamp
-        Row r5 = sheet.createRow(rowIdx++);
-        r5.setHeightInPoints(18);
-        r5.createCell(0).setCellStyle(labelStyle);
-        r5.getCell(0).setCellValue("ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ರಪದಾರಿ ಸಂಖ್ಯೆ");
-        r5.createCell(1).setCellStyle(labelStyle);
-        r5.createCell(2).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r5.getRowNum(), r5.getRowNum(), 0, 2));
-        r5.createCell(3).setCellStyle(valueStyle);
-        r5.getCell(3).setCellValue(request.getLicenseNumber() != null ? request.getLicenseNumber() : "");
-        r5.createCell(4).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r5.getRowNum(), r5.getRowNum(), 3, 4));
-        r5.createCell(5).setCellStyle(labelStyle);
-        r5.getCell(5).setCellValue("FRUITS ID / FID");
-        r5.createCell(6).setCellStyle(valueStyle);
-        r5.getCell(6).setCellValue(wrapper.getFruitsId() != null ? wrapper.getFruitsId() : "");
-        r5.createCell(7).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r5.getRowNum(), r5.getRowNum(), 6, 7));
-        r5.createCell(8).setCellStyle(labelStyle);
-        r5.getCell(8).setCellValue("Date and Time Stamp");
+        // ── Date strings ──────────────────────────────────────────────────────
         String generatedAt = java.time.LocalDateTime.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-        r5.createCell(9).setCellStyle(valueStyle);
-        r5.getCell(9).setCellValue(generatedAt);
-        r5.createCell(10).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r5.getRowNum(), r5.getRowNum(), 9, COLS - 1));
-
-        // Row 8 — Buyer name | Amount in Rs
-        Row r6 = sheet.createRow(rowIdx++);
-        r6.setHeightInPoints(18);
-        r6.createCell(0).setCellStyle(labelStyle);
-        r6.getCell(0).setCellValue("ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ:");
-        r6.createCell(1).setCellStyle(labelStyle);
-        r6.createCell(2).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r6.getRowNum(), r6.getRowNum(), 0, 2));
-        String nameAndAddress = (wrapper.getName() != null ? wrapper.getName() : "")
-                + (wrapper.getAddress() != null ? wrapper.getAddress() : "");
-        r6.createCell(3).setCellStyle(valueStyle);
-        r6.getCell(3).setCellValue(nameAndAddress);
-        for (int i = 4; i <= 7; i++) r6.createCell(i).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r6.getRowNum(), r6.getRowNum(), 3, 7));
-        r6.createCell(8).setCellStyle(labelStyle);
-        r6.getCell(8).setCellValue("ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ");
-        r6.createCell(9).setCellStyle(labelStyle);
-        r6.createCell(10).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r6.getRowNum(), r6.getRowNum(), 8, COLS - 1));
-
-        // Row 9 — Transaction period
-        Row r7 = sheet.createRow(rowIdx++);
-        r7.setHeightInPoints(18);
-        r7.createCell(0).setCellStyle(labelStyle);
-        r7.getCell(0).setCellValue("ವಹಿವಾಟಿನ ಅವಧಿ :");
-        r7.createCell(1).setCellStyle(labelStyle);
-        r7.createCell(2).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r7.getRowNum(), r7.getRowNum(), 0, 2));
+                .format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
         String fromStr = request.getFromDate() != null
-                ? request.getFromDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+                ? request.getFromDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "";
         String toStr = request.getToDate() != null
-                ? request.getToDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
-        r7.createCell(3).setCellStyle(valueStyle);
-        r7.getCell(3).setCellValue(fromStr + " to " + toStr);
-        for (int i = 4; i <= COLS - 1; i++) r7.createCell(i).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r7.getRowNum(), r7.getRowNum(), 3, COLS - 1));
+                ? request.getToDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "";
+        String nameAndAddress = (wrapper.getName() != null ? wrapper.getName() : "")
+                + (wrapper.getAddress() != null && !wrapper.getAddress().isEmpty() ? ", " + wrapper.getAddress() : "");
 
-        // Row 10 — Opening balance
-        Row r8 = sheet.createRow(rowIdx++);
-        r8.setHeightInPoints(18);
-        r8.createCell(0).setCellStyle(labelStyle);
-        r8.getCell(0).setCellValue("ದಿನಾಂಕ " + fromStr + " ರಂದು ಇದ್ದ ಪ್ರಾರಂಭಿಕ ಉಳಿಕೆ ಮೊತ್ತ :");
-        r8.createCell(1).setCellStyle(labelStyle);
-        r8.createCell(2).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r8.getRowNum(), r8.getRowNum(), 0, 2));
-        r8.createCell(3).setCellStyle(numberStyle);
-        r8.getCell(3).setCellValue(wrapper.getOpeningBalance() != null ? wrapper.getOpeningBalance() : 0);
-        for (int i = 4; i <= COLS - 1; i++) r8.createCell(i).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(r8.getRowNum(), r8.getRowNum(), 4, COLS - 1));
+        // ── Rows 7-11: Info block (5 rows) ───────────────────────────────────
+        // Pattern: label [0-3] | value starts at col 4 — consistent across all rows
 
+        // Row 7: FID label [0-3] | FID value [4-5] | empty [6-10]
+        Row rI0 = sheet.createRow(rowIdx++); rI0.setHeightInPoints(22);
+        rI0.createCell(0).setCellValue("FRUITS ID / FID:"); rI0.getCell(0).setCellStyle(sIL);
+        rI0.createCell(1).setCellStyle(sIL); rI0.createCell(2).setCellStyle(sIL); rI0.createCell(3).setCellStyle(sIL);
+        sheet.addMergedRegion(new CellRangeAddress(rI0.getRowNum(), rI0.getRowNum(), 0, 3));
+        rI0.createCell(4).setCellValue(wrapper.getFruitsId() != null ? wrapper.getFruitsId() : ""); rI0.getCell(4).setCellStyle(sIV);
+        rI0.createCell(5).setCellStyle(sIV);
+        sheet.addMergedRegion(new CellRangeAddress(rI0.getRowNum(), rI0.getRowNum(), 4, 5));
+        for (int i = 6; i <= 10; i++) rI0.createCell(i).setCellStyle(sIV);
+        sheet.addMergedRegion(new CellRangeAddress(rI0.getRowNum(), rI0.getRowNum(), 6, 10));
 
-        // Row 9 — blank
-        sheet.createRow(rowIdx++);
+        // Row 8: License label [0-3] | Lic value [4-5] | Date label [6-7] | Timestamp [8-10]
+        Row rI1 = sheet.createRow(rowIdx++); rI1.setHeightInPoints(28);
+        rI1.createCell(0).setCellValue("ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ರಪದಾರಿ ಸಂಖ್ಯೆ:"); rI1.getCell(0).setCellStyle(sIL);
+        rI1.createCell(1).setCellStyle(sIL); rI1.createCell(2).setCellStyle(sIL); rI1.createCell(3).setCellStyle(sIL);
+        sheet.addMergedRegion(new CellRangeAddress(rI1.getRowNum(), rI1.getRowNum(), 0, 3));
+        rI1.createCell(4).setCellValue(request.getLicenseNumber() != null ? request.getLicenseNumber() : ""); rI1.getCell(4).setCellStyle(sIV);
+        rI1.createCell(5).setCellStyle(sIV);
+        sheet.addMergedRegion(new CellRangeAddress(rI1.getRowNum(), rI1.getRowNum(), 4, 5));
+        rI1.createCell(6).setCellValue("Date and Time Stamp:"); rI1.getCell(6).setCellStyle(sIL);
+        rI1.createCell(7).setCellStyle(sIL);
+        sheet.addMergedRegion(new CellRangeAddress(rI1.getRowNum(), rI1.getRowNum(), 6, 7));
+        rI1.createCell(8).setCellValue(generatedAt); rI1.getCell(8).setCellStyle(sIV);
+        rI1.createCell(9).setCellStyle(sIV); rI1.createCell(10).setCellStyle(sIV);
+        sheet.addMergedRegion(new CellRangeAddress(rI1.getRowNum(), rI1.getRowNum(), 8, 10));
 
-        // Row 10 — Combined Kannada / English column headers
-        Row colHeaderRow = sheet.createRow(rowIdx++);
-        colHeaderRow.setHeightInPoints(55);
-        String[] combinedHeaders = {
-                "ಕ್ರಮ ಸಂಖ್ಯೆ / SL No",
-                "ವಹಿವಾಟಿನ ದಿನಾಂಕ / Transaction Date",
-                "ವಿವರ / Description",
-                "ವಹಿವಾಟಿನ ವಿಧ / Transaction Type",
-                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ / Deposit Amount",
-                "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ / Quantity of seed cocoon purchased(in kg's)",
-                "ದರ (ಪ್ರತಿ ಕಿ.ಗ್ರಾ) / Rate / Kg",
-                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ / Cocoons Purchase Amount",
-                "ಮಾರು ಕಟ್ಟೆ ಶುಲ್ಕ @1% / Market fee @1%",
-                "ಒಟ್ಟು ಮೊತ್ತ / Total",
-                "ಉಳಿಕೆ ಮೊತ್ತ / Balance Amount"
+        // Row 9: Name label [0-3] | Name/Address value [4-10] — label and value on SAME row
+        Row rI2 = sheet.createRow(rowIdx++); rI2.setHeightInPoints(28);
+        rI2.createCell(0).setCellValue("ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ:"); rI2.getCell(0).setCellStyle(sIL);
+        rI2.createCell(1).setCellStyle(sIL); rI2.createCell(2).setCellStyle(sIL); rI2.createCell(3).setCellStyle(sIL);
+        sheet.addMergedRegion(new CellRangeAddress(rI2.getRowNum(), rI2.getRowNum(), 0, 3));
+        rI2.createCell(4).setCellValue(nameAndAddress); rI2.getCell(4).setCellStyle(sIV);
+        for (int i = 5; i <= 10; i++) rI2.createCell(i).setCellStyle(sIV);
+        sheet.addMergedRegion(new CellRangeAddress(rI2.getRowNum(), rI2.getRowNum(), 4, 10));
+
+        // Row 10: Period label [0-3] | Period value [4-10]
+        Row rI3 = sheet.createRow(rowIdx++); rI3.setHeightInPoints(22);
+        rI3.createCell(0).setCellValue("ವಹಿವಾಟಿನ ಅವಧಿ:"); rI3.getCell(0).setCellStyle(sIL);
+        rI3.createCell(1).setCellStyle(sIL); rI3.createCell(2).setCellStyle(sIL); rI3.createCell(3).setCellStyle(sIL);
+        sheet.addMergedRegion(new CellRangeAddress(rI3.getRowNum(), rI3.getRowNum(), 0, 3));
+        rI3.createCell(4).setCellValue(fromStr + " to " + toStr); rI3.getCell(4).setCellStyle(sIV);
+        for (int i = 5; i <= 10; i++) rI3.createCell(i).setCellStyle(sIV);
+        sheet.addMergedRegion(new CellRangeAddress(rI3.getRowNum(), rI3.getRowNum(), 4, 10));
+
+        // Row 11: Balance label [0-3] | Balance value [4-5] | empty [6-7] | ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ [8-10]
+        Row rI4 = sheet.createRow(rowIdx++); rI4.setHeightInPoints(25);
+        rI4.createCell(0).setCellValue("ದಿನಾಂಕ " + fromStr + " ರಂದು ಇದ್ದ ಪ್ರಾರಂಭಿಕ ಉಳಿಕೆ ಮೊತ್ತ:"); rI4.getCell(0).setCellStyle(sIL);
+        rI4.createCell(1).setCellStyle(sIL); rI4.createCell(2).setCellStyle(sIL); rI4.createCell(3).setCellStyle(sIL);
+        sheet.addMergedRegion(new CellRangeAddress(rI4.getRowNum(), rI4.getRowNum(), 0, 3));
+        rI4.createCell(4).setCellValue(wrapper.getOpeningBalance() != null ? wrapper.getOpeningBalance() : 0); rI4.getCell(4).setCellStyle(sIN);
+        rI4.createCell(5).setCellStyle(sIN);
+        sheet.addMergedRegion(new CellRangeAddress(rI4.getRowNum(), rI4.getRowNum(), 4, 5));
+        rI4.createCell(6).setCellStyle(sIV); rI4.createCell(7).setCellStyle(sIV);
+        sheet.addMergedRegion(new CellRangeAddress(rI4.getRowNum(), rI4.getRowNum(), 6, 7));
+        rI4.createCell(8).setCellValue("ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ"); rI4.getCell(8).setCellStyle(sIL);
+        rI4.createCell(9).setCellStyle(sIL); rI4.createCell(10).setCellStyle(sIL);
+        sheet.addMergedRegion(new CellRangeAddress(rI4.getRowNum(), rI4.getRowNum(), 8, 10));
+
+        // ── Row 11: Spacer ────────────────────────────────────────────────────
+        sheet.createRow(rowIdx++).setHeightInPoints(6);
+
+        // ── Row 12: Column headers ────────────────────────────────────────────
+        Row rHdr = sheet.createRow(rowIdx++); rHdr.setHeightInPoints(85);
+        String[] hdrs = {
+                "ಕ್ರಮ ಸಂಖ್ಯೆ\nSL No",
+                "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nTransaction Date",
+                "ವಿವರ\nDescription",
+                "ವಹಿವಾಟಿನ ವಿಧ\nTransaction Type",
+                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ \nDeposit Amount ",
+                "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ\nQuantity of Seed Cocoon Purchased (Kg)",
+                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ \nRate per Kg ",
+                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ \nCocoons Purchase Amount ",
+                "ಮಾರು ಕಟ್ಟೆ ಶುಲ್ಕ @1% \nMarket Fee @1% ",
+                "ಒಟ್ಟು ಮೊತ್ತ \nTotal ",
+                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ \nRefunded Amount ",
+                "ಉಳಿಕೆ ಮೊತ್ತ \nBalance Amount "
         };
-        for (int i = 0; i < combinedHeaders.length; i++) {
-            Cell cell = colHeaderRow.createCell(i);
-            cell.setCellValue(combinedHeaders[i]);
-            cell.setCellStyle(colHeaderStyle);
+        for (int i = 0; i < hdrs.length; i++) {
+            Cell hc = rHdr.createCell(i); hc.setCellValue(hdrs[i]); hc.setCellStyle(sColHdr);
         }
 
-        CellStyle totalRowStyle = workbook.createCellStyle();
-        totalRowStyle.setFont(boldSmall);
-        totalRowStyle.setBorderTop(BorderStyle.THIN);
-        totalRowStyle.setBorderBottom(BorderStyle.THIN);
-        totalRowStyle.setBorderLeft(BorderStyle.THIN);
-        totalRowStyle.setBorderRight(BorderStyle.THIN);
-        totalRowStyle.setAlignment(HorizontalAlignment.LEFT);
-        totalRowStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        totalRowStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        totalRowStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-        // ── Data rows ────────────────────────────────────────────────────────
+        // ── Data rows ─────────────────────────────────────────────────────────
         int slNo = 1;
-        double sumDeposit = 0, sumLotWeight = 0, sumPayment = 0, sumMarketFee = 0, sumTotal = 0;
+        double sumDeposit = 0, sumLotWeight = 0, sumPayment = 0, sumMarketFee = 0, sumTotal = 0, sumRefunded = 0;
         double lastBalance = 0;
         for (ReelerTransactionReport report : wrapper.getReelerTransactionReports()) {
-            Row row = sheet.createRow(rowIdx++);
-            row.setHeightInPoints(16);
-
-            Cell dc0 = row.createCell(0);
-            dc0.setCellValue(slNo++);
-            dc0.setCellStyle(centerDataStyle);
-
+            Row row = sheet.createRow(rowIdx++); row.setHeightInPoints(20);
+            Cell dc0 = row.createCell(0); dc0.setCellValue(slNo++); dc0.setCellStyle(sData);
             Cell dc1 = row.createCell(1);
-            dc1.setCellValue(report.getTransactionDate() != null ? report.getTransactionDate().toString() : "");
-            dc1.setCellStyle(centerDataStyle);
-
-            Cell dc2 = row.createCell(2);
-            dc2.setCellValue(report.getOperationDescription() != null ? report.getOperationDescription() : "");
-            dc2.setCellStyle(dataStyle);
-
-            Cell dc3 = row.createCell(3);
-            dc3.setCellValue(report.getTransactionType() != null ? report.getTransactionType() : "");
-            dc3.setCellStyle(centerDataStyle);
-
+            dc1.setCellValue(report.getTransactionDate() != null ? report.getTransactionDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "");
+            dc1.setCellStyle(sData);
+            Cell dc2 = row.createCell(2); dc2.setCellValue(report.getOperationDescription() != null ? report.getOperationDescription() : ""); dc2.setCellStyle(sDesc);
+            Cell dc3 = row.createCell(3); dc3.setCellValue(report.getTransactionType() != null ? report.getTransactionType() : ""); dc3.setCellStyle(sData);
             double depositVal = report.getDepositAmount() != null ? report.getDepositAmount() : 0;
-            Cell dc4 = row.createCell(4);
-            dc4.setCellValue(depositVal);
-            dc4.setCellStyle(numberStyle);
-            sumDeposit += depositVal;
-
+            Cell dc4 = row.createCell(4); dc4.setCellValue(depositVal); dc4.setCellStyle(sNum); sumDeposit += depositVal;
             double lotWeightVal = report.getLotWeight() != null ? report.getLotWeight() : 0;
-            Cell dc5 = row.createCell(5);
-            dc5.setCellValue(lotWeightVal);
-            dc5.setCellStyle(numberStyle);
-            sumLotWeight += lotWeightVal;
-
-            Cell dc6 = row.createCell(6);
-            dc6.setCellValue(report.getRatePerKg() != null ? report.getRatePerKg() : 0);
-            dc6.setCellStyle(numberStyle);
-
+            Cell dc5 = row.createCell(5); dc5.setCellValue(lotWeightVal); dc5.setCellStyle(sNum); sumLotWeight += lotWeightVal;
+            Cell dc6 = row.createCell(6); dc6.setCellValue(report.getRatePerKg() != null ? report.getRatePerKg() : 0); dc6.setCellStyle(sNum);
             double paymentVal = report.getPaymentAmount() != null ? report.getPaymentAmount() : 0;
-            Cell dc7 = row.createCell(7);
-            dc7.setCellValue(paymentVal);
-            dc7.setCellStyle(numberStyle);
-            sumPayment += paymentVal;
-
+            Cell dc7 = row.createCell(7); dc7.setCellValue(paymentVal); dc7.setCellStyle(sNum); sumPayment += paymentVal;
             double marketFeeVal = report.getMarketFee() != null ? report.getMarketFee() : 0;
-            Cell dc8 = row.createCell(8);
-            dc8.setCellValue(marketFeeVal);
-            dc8.setCellStyle(numberStyle);
-            sumMarketFee += marketFeeVal;
-
+            Cell dc8 = row.createCell(8); dc8.setCellValue(marketFeeVal); dc8.setCellStyle(sNum); sumMarketFee += marketFeeVal;
             double totalVal = report.getTotal() != null ? report.getTotal() : 0;
-            Cell dc9 = row.createCell(9);
-            dc9.setCellValue(totalVal);
-            dc9.setCellStyle(numberStyle);
-            sumTotal += totalVal;
-
+            Cell dc9 = row.createCell(9); dc9.setCellValue(totalVal); dc9.setCellStyle(sNum); sumTotal += totalVal;
+            double refundedVal = report.getRefundedAmount() != null ? report.getRefundedAmount() : 0;
+            Cell dc10 = row.createCell(10); dc10.setCellValue(refundedVal); dc10.setCellStyle(sNum); sumRefunded += refundedVal;
             lastBalance = report.getBalance() != null ? report.getBalance() : 0;
-            Cell dc10 = row.createCell(10);
-            dc10.setCellValue(lastBalance);
-            dc10.setCellStyle(numberStyle);
+            Cell dc11 = row.createCell(11); dc11.setCellValue(lastBalance); dc11.setCellStyle(sNum);
         }
 
-        // ── Totals row ───────────────────────────────────────────────────────
-        Row totalRow = sheet.createRow(rowIdx++);
-        totalRow.setHeightInPoints(18);
-        Cell tc0 = totalRow.createCell(0);
-        tc0.setCellValue("ಒಟ್ಟು");
-        tc0.setCellStyle(totalRowStyle);
-        sheet.addMergedRegion(new CellRangeAddress(totalRow.getRowNum(), totalRow.getRowNum(), 0, 3));
-        for (int i = 1; i <= 3; i++) totalRow.createCell(i).setCellStyle(totalRowStyle);
+        // ── Totals row ────────────────────────────────────────────────────────
+        Row rTot = sheet.createRow(rowIdx++); rTot.setHeightInPoints(22);
+        Cell tc0 = rTot.createCell(0); tc0.setCellValue("ಒಟ್ಟು / Total"); tc0.setCellStyle(sTotalL);
+        for (int i = 1; i <= 3; i++) rTot.createCell(i).setCellStyle(sTotalL);
+        sheet.addMergedRegion(new CellRangeAddress(rTot.getRowNum(), rTot.getRowNum(), 0, 3));
+        Cell tc4 = rTot.createCell(4); tc4.setCellValue(sumDeposit); tc4.setCellStyle(sTotalN);
+        Cell tc5 = rTot.createCell(5); tc5.setCellValue(sumLotWeight); tc5.setCellStyle(sTotalN);
+        Cell tc6 = rTot.createCell(6); tc6.setCellValue(""); tc6.setCellStyle(sTotalL);
+        Cell tc7 = rTot.createCell(7); tc7.setCellValue(sumPayment); tc7.setCellStyle(sTotalN);
+        Cell tc8 = rTot.createCell(8); tc8.setCellValue(sumMarketFee); tc8.setCellStyle(sTotalN);
+        Cell tc9 = rTot.createCell(9); tc9.setCellValue(sumTotal); tc9.setCellStyle(sTotalN);
+        Cell tc10 = rTot.createCell(10); tc10.setCellValue(sumRefunded); tc10.setCellStyle(sTotalN);
+        Cell tc11 = rTot.createCell(11); tc11.setCellValue(lastBalance); tc11.setCellStyle(sTotalN);
 
-        Cell tc4 = totalRow.createCell(4);
-        tc4.setCellValue(sumDeposit);
-        tc4.setCellStyle(totalRowStyle);
+        // ── Column widths: Transaction Type widened to 3000; total 34 500 POI ─
+        // Fits A4 landscape (~38 220 POI at 0.4" margins) — no unwanted scaling
+        int[] colWidths = { 1200, 3200, 5500, 3000, 3200, 4000, 2800, 3200, 3000, 3000, 3000, 3200 };
+        for (int i = 0; i < COLS; i++) sheet.setColumnWidth(i, colWidths[i]);
 
-        Cell tc5 = totalRow.createCell(5);
-        tc5.setCellValue(sumLotWeight);
-        tc5.setCellStyle(totalRowStyle);
-
-        Cell tc6 = totalRow.createCell(6);
-        tc6.setCellValue("");
-        tc6.setCellStyle(totalRowStyle);
-
-        Cell tc7 = totalRow.createCell(7);
-        tc7.setCellValue(sumPayment);
-        tc7.setCellStyle(totalRowStyle);
-
-        Cell tc8 = totalRow.createCell(8);
-        tc8.setCellValue(sumMarketFee);
-        tc8.setCellStyle(totalRowStyle);
-
-        Cell tc9 = totalRow.createCell(9);
-        tc9.setCellValue(sumTotal);
-        tc9.setCellStyle(totalRowStyle);
-
-        Cell tc10 = totalRow.createCell(10);
-        tc10.setCellValue(lastBalance);
-        tc10.setCellStyle(totalRowStyle);
-
-        // ── Column widths: auto-size per content, then clamp to min/max ────────
-        int[] minWidths = { 2000, 3500, 8000, 3000, 3500, 4000, 3000, 4500, 3500, 3500, 3500 };
-        int[] maxWidths = { 3000, 5000, 13000, 4500, 5500, 6000, 4500, 6000, 5000, 5000, 5000 };
-        for (int i = 0; i < COLS; i++) {
-            sheet.autoSizeColumn(i);
-            int w = sheet.getColumnWidth(i);
-            if (w < minWidths[i]) w = minWidths[i];
-            if (w > maxWidths[i]) w = maxWidths[i];
-            sheet.setColumnWidth(i, w);
-        }
-
+        // ── Print: A4 landscape, fit 1 page wide ─────────────────────────────
+        sheet.setMargin(org.apache.poi.ss.usermodel.Sheet.LeftMargin,   0.4);
+        sheet.setMargin(org.apache.poi.ss.usermodel.Sheet.RightMargin,  0.4);
+        sheet.setMargin(org.apache.poi.ss.usermodel.Sheet.TopMargin,    0.4);
+        sheet.setMargin(org.apache.poi.ss.usermodel.Sheet.BottomMargin, 0.4);
         sheet.getPrintSetup().setLandscape(true);
-        sheet.getPrintSetup().setPaperSize(org.apache.poi.ss.usermodel.PrintSetup.A3_PAPERSIZE);
+        sheet.getPrintSetup().setPaperSize(org.apache.poi.ss.usermodel.PrintSetup.A4_PAPERSIZE);
         sheet.setFitToPage(true);
         sheet.getPrintSetup().setFitWidth((short) 1);
         sheet.getPrintSetup().setFitHeight((short) 0);
+        sheet.setAutobreaks(true);
 
         File file = File.createTempFile("Seed_Market_Transaction_Report_", ".xlsx");
         FileOutputStream fos = new FileOutputStream(file);
@@ -2804,24 +2694,18 @@ public class LotGroupageService {
                         ? wrapper.getReelerTransactionReports()
                         : java.util.Collections.emptyList();
 
-        // ── dimensions ───────────────────────────────────────────────────────
-        int DPI    = 150;
-        int W      = (int)(16.54 * DPI);   // A3 landscape width
-        int MARGIN = 40;
-        int LOGO_H = 80;
-        int INFO_H = 30;
-        int HDR_H  = 55;
-        int ROW_H  = 32;
-        int TITLE_H = 30;
-        int titleLines = 4;
-        int infoLines  = 4;
-        int H = MARGIN + LOGO_H + 8
-                + titleLines * TITLE_H + 10
-                + infoLines * INFO_H + 10
-                + HDR_H
-                + reports.size() * ROW_H
-                + ROW_H          // totals row
-                + MARGIN;
+        // ── dimensions (fixed A4 landscape at 300 DPI) ───────────────────────
+        int DPI    = 300;
+        float PDF_W = 842f;                              // A4 landscape width  (pts)
+        float PDF_H = 595f;                              // A4 landscape height (pts)
+        int W      = Math.round(PDF_W * DPI / 72f);     // 3508 px
+        int H      = Math.round(PDF_H * DPI / 72f);     // 2479 px  (fixed – no gaps when printed)
+        int MARGIN  = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
+        int LOGO_H  = Math.round(40f * DPI / 72f);      // 167 px = 40 pt
+        int INFO_H  = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
+        int HDR_H   = Math.round(55f * DPI / 72f);      // 229 px = 55 pt
+        int ROW_H   = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
+        int TITLE_H = Math.round(11f * DPI / 72f);      // 46 px  = 11 pt
 
         java.awt.image.BufferedImage logoImg = null;
         try {
@@ -2832,27 +2716,27 @@ public class LotGroupageService {
 
         // ── column widths ─────────────────────────────────────────────────────
         int usable = W - 2 * MARGIN;
-        float[] proportions = {0.04f, 0.10f, 0.16f, 0.06f, 0.08f,
-                               0.07f, 0.07f, 0.10f, 0.08f, 0.10f, 0.14f};
-        int[] cw = new int[11];
+        float[] proportions = {0.04f, 0.06f, 0.13f, 0.05f, 0.08f,
+                               0.11f, 0.07f, 0.09f, 0.08f, 0.08f, 0.07f, 0.14f};
+        int[] cw = new int[12];
         int allocated = 0;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 11; i++) {
             cw[i] = (int)(usable * proportions[i]);
             allocated += cw[i];
         }
-        cw[10] = usable - allocated;
+        cw[11] = usable - allocated;
 
-        int[] cx = new int[11];
+        int[] cx = new int[12];
         cx[0] = MARGIN;
-        for (int i = 1; i < 11; i++) cx[i] = cx[i - 1] + cw[i - 1];
+        for (int i = 1; i < 12; i++) cx[i] = cx[i - 1] + cw[i - 1];
 
-        // ── fonts ─────────────────────────────────────────────────────────────
-        java.awt.Font base = loadKannadaPdfFont(15f);
-        java.awt.Font titleFnt  = base.deriveFont(java.awt.Font.BOLD, 18f);
-        java.awt.Font labelFnt  = base.deriveFont(java.awt.Font.BOLD, 11f);
-        java.awt.Font hdrFnt    = base.deriveFont(java.awt.Font.BOLD, 9f);
-        java.awt.Font dataFnt   = base.deriveFont(java.awt.Font.PLAIN, 9f);
-        java.awt.Font totalFnt  = base.deriveFont(java.awt.Font.BOLD, 9f);
+        // ── fonts (sized in pixels = pt × DPI/72 so they print at correct pt size) ──
+        java.awt.Font base     = loadKannadaPdfFont(Math.round(9f * DPI / 72f));             // 37 px = 9 pt
+        java.awt.Font titleFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
+        java.awt.Font labelFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(7f  * DPI / 72f));  // 29 px = 7 pt
+        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(6f  * DPI / 72f));  // 25 px = 6 pt
+        java.awt.Font dataFnt  = base.deriveFont(java.awt.Font.PLAIN, (float)Math.round(7f  * DPI / 72f));  // 29 px = 7 pt
+        java.awt.Font totalFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(7f  * DPI / 72f));  // 29 px = 7 pt
 
         java.awt.Color HDR_BG   = new java.awt.Color(0x1a, 0x6f, 0xaf);
         java.awt.Color TOT_BG   = new java.awt.Color(0xd9, 0xe8, 0xf5);
@@ -2865,8 +2749,10 @@ public class LotGroupageService {
                 new java.awt.image.BufferedImage(W, H, java.awt.image.BufferedImage.TYPE_INT_RGB);
         java.awt.Graphics2D g = img.createGraphics();
         g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,      java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
         g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS, java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,         java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,     java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g.setColor(java.awt.Color.WHITE);
         g.fillRect(0, 0, W, H);
 
@@ -2900,76 +2786,96 @@ public class LotGroupageService {
             drawCenteredPdf(g, line, MARGIN, y, usable, TITLE_H);
             y += TITLE_H;
         }
-        y += 10;
+        y += Math.round(18f * DPI / 72f);  // gap between title and farmer details
 
         // ── info block ────────────────────────────────────────────────────────
         g.setFont(labelFnt);
         String nameAndAddress = (wrapper.getName() != null ? wrapper.getName() : "")
                 + (wrapper.getAddress() != null ? wrapper.getAddress() : "");
         String[][] infoRows = {
-                {"ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ರಪದಾರಿ ಸಂಖ್ಯೆ",
+                {"ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ರಪದಾರಿ ಸಂಖ್ಯೆ :",
                  request.getLicenseNumber() != null ? request.getLicenseNumber() : "",
-                 "FRUITS ID / FID",
+                 "FRUITS ID / FID :",
                  wrapper.getFruitsId() != null ? wrapper.getFruitsId() : "",
-                 "Date and Time Stamp", generatedAt},
-                {"ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ",
-                 nameAndAddress, "ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ", "", "", ""},
-                {"ವಹಿವಾಟಿನ ಅವಧಿ", fromStr + " to " + toStr, "", "", "", ""},
-                {"ದಿನಾಂಕ " + fromStr + " ರಂದು ಇದ್ದ ಪ್ರಾರಂಭಿಕ ಉಳಿಕೆ ಮೊತ್ತ",
+                 "Date and Time Stamp :", generatedAt},
+                {"ರೇಷ್ಮೆ ನೂಲು ಬಿಚ್ಚಾಣಿಕೆದಾರರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ:",
+                 nameAndAddress, "", "", "ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ", ""},
+                {"ವಹಿವಾಟಿನ ಅವಧಿ :", fromStr + " to " + toStr, "", "", "", ""},
+                {"ದಿನಾಂಕ " + fromStr + " ರಂದು ಇದ್ದ ಪ್ರಾರಂಭಿಕ ಉಳಿಕೆ ಮೊತ್ತ :",
                  String.format("%.2f", wrapper.getOpeningBalance() != null ? wrapper.getOpeningBalance() : 0),
                  "", "", "", ""}
         };
+        int infoValGap = Math.round(10f * DPI / 72f);  // space between label and its value
         for (String[] row : infoRows) {
-            int sixth = usable / 6;
+            int third = usable / 3;
             int textY = y + INFO_H / 2 + 4;
+
+            // Zone 0 — first label:value pair
             g.setFont(labelFnt); g.setColor(DARK);
-            g.drawString(row[0], MARGIN + 4, textY);
-            g.setFont(dataFnt);
-            g.drawString(row[1], MARGIN + sixth + 4, textY);
+            int x0 = MARGIN + 4;
+            g.drawString(row[0], x0, textY);
+            int lw0 = g.getFontMetrics(labelFnt).stringWidth(row[0]);
+            g.setFont(dataFnt); g.setColor(DARK);
+            g.drawString(row[1], x0 + lw0 + infoValGap, textY);
+
+            // Zone 1 — second label:value pair
             if (!row[2].isEmpty()) {
+                int x2 = MARGIN + third + 4;
                 g.setFont(labelFnt); g.setColor(DARK);
-                g.drawString(row[2], MARGIN + 2 * sixth + 4, textY);
-                g.setFont(dataFnt);
-                g.drawString(row[3], MARGIN + 3 * sixth + 4, textY);
+                g.drawString(row[2], x2, textY);
+                int lw2 = g.getFontMetrics(labelFnt).stringWidth(row[2]);
+                g.setFont(dataFnt); g.setColor(DARK);
+                g.drawString(row[3], x2 + lw2 + infoValGap, textY);
             }
+
+            // Zone 2 — third label:value pair
             if (!row[4].isEmpty()) {
+                int x4 = MARGIN + 2 * third + 4;
                 g.setFont(labelFnt); g.setColor(DARK);
-                g.drawString(row[4], MARGIN + 4 * sixth + 4, textY);
-                g.setFont(dataFnt);
-                g.drawString(row[5], MARGIN + 5 * sixth + 4, textY);
+                g.drawString(row[4], x4, textY);
+                int lw4 = g.getFontMetrics(labelFnt).stringWidth(row[4]);
+                g.setFont(dataFnt); g.setColor(DARK);
+                g.drawString(row[5], x4 + lw4 + infoValGap, textY);
             }
+
             g.setColor(BORDER);
             g.drawLine(MARGIN, y + INFO_H, W - MARGIN, y + INFO_H);
             y += INFO_H;
         }
-        y += 10;
+        y += Math.round(12f * DPI / 72f);  // gap between farmer details and table
 
         // ── column headers ────────────────────────────────────────────────────
         String[] hdrs = {
                 "ಕ್ರಮ ಸಂಖ್ಯೆ\nSL No",
-                "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nDate",
+                "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nTransaction Date",
                 "ವಿವರ\nDescription",
-                "ವಹಿವಾಟಿನ ವಿಧ\nType",
-                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ\nDeposit",
-                "ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ\nQty (kg)",
-                "ದರ (ಪ್ರತಿ ಕಿ.ಗ್ರಾ)\nRate/Kg",
-                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ\nPurchase Amt",
-                "ಮಾರು ಕಟ್ಟೆ ಶುಲ್ಕ @1%\nMarket Fee",
-                "ಒಟ್ಟು ಮೊತ್ತ\nTotal",
-                "ಉಳಿಕೆ ಮೊತ್ತ\nBalance"
+                "ವಹಿವಾಟಿನ ವಿಧ\nTransaction Type",
+                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ (ರೂ)\nDeposit Amount (Rs)",
+                "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ\nQuantity of seed cocoon purchased (in kg's)",
+                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ (ರೂ)\nRate per Kg (Rs)",
+                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ (ರೂ)\nCocoons Purchase Amount (Rs)",
+                "ಮಾರು ಕಟ್ಟೆ ಶುಲ್ಕ @1% (ರೂ)\nMarket fee @1% (Rs)",
+                "ಒಟ್ಟು ಮೊತ್ತ (ರೂ)\nTotal (Rs)",
+                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ (ರೂ)\nRefunded Amount (Rs)",
+                "ಉಳಿಕೆ ಮೊತ್ತ (ರೂ)\nBalance Amount (Rs)"
         };
         g.setFont(hdrFnt);
-        for (int i = 0; i < 11; i++) {
+        java.awt.FontMetrics hdrFm = g.getFontMetrics(hdrFnt);
+        for (int i = 0; i < 12; i++) {
             g.setColor(HDR_BG);
             g.fillRect(cx[i], y, cw[i], HDR_H);
             g.setColor(BORDER);
             g.drawRect(cx[i], y, cw[i], HDR_H);
             g.setColor(java.awt.Color.WHITE);
-            String[] lines = hdrs[i].split("\n");
-            int lineH = HDR_H / (lines.length + 1);
-            for (int li = 0; li < lines.length; li++) {
-                drawCenteredPdf(g, lines[li], cx[i], y + lineH * li, cw[i], lineH);
-            }
+            java.util.List<String> wrLines = new java.util.ArrayList<>();
+            for (String part : hdrs[i].split("\n"))
+                wrLines.addAll(wrapTextPdf(hdrFm, part, cw[i] - 4));
+            int lineH = HDR_H / (wrLines.size() + 1);
+            java.awt.Shape prevClip = g.getClip();
+            g.setClip(cx[i] + 1, y + 1, cw[i] - 2, HDR_H - 2);
+            for (int li = 0; li < wrLines.size(); li++)
+                drawCenteredPdf(g, wrLines.get(li), cx[i], y + lineH * li, cw[i], lineH);
+            g.setClip(prevClip);
         }
         y += HDR_H;
 
@@ -2981,14 +2887,14 @@ public class LotGroupageService {
             g.fillRect(MARGIN, y, usable, ROW_H);
             g.setColor(BORDER);
             g.drawRect(MARGIN, y, usable, ROW_H);
-            for (int i = 1; i < 11; i++) {
+            for (int i = 1; i < 12; i++) {
                 g.drawLine(cx[i], y, cx[i], y + ROW_H);
             }
             g.setFont(dataFnt);
             g.setColor(DARK);
             String[] vals = {
                     String.valueOf(slNo++),
-                    rep.getTransactionDate() != null ? rep.getTransactionDate().toString() : "",
+                    rep.getTransactionDate() != null ? rep.getTransactionDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "",
                     rep.getOperationDescription() != null ? rep.getOperationDescription() : "",
                     rep.getTransactionType() != null ? rep.getTransactionType() : "",
                     fmt(rep.getDepositAmount()),
@@ -2997,15 +2903,14 @@ public class LotGroupageService {
                     fmt(rep.getPaymentAmount()),
                     fmt(rep.getMarketFee()),
                     fmt(rep.getTotal()),
+                    fmt(rep.getRefundedAmount()),
                     fmt(rep.getBalance())
             };
-            for (int i = 0; i < 11; i++) {
-                boolean isNum = i >= 4;
-                if (isNum) {
-                    drawRightPdf(g, vals[i], cx[i], y, cw[i], ROW_H);
-                } else {
-                    drawLeftPdf(g, vals[i], cx[i], y, cw[i], ROW_H);
-                }
+            for (int i = 0; i < 12; i++) {
+                java.awt.Shape prevClip = g.getClip();
+                g.setClip(cx[i] + 1, y + 1, cw[i] - 2, ROW_H - 2);
+                drawCenteredPdf(g, vals[i], cx[i], y, cw[i], ROW_H);
+                g.setClip(prevClip);
             }
             y += ROW_H;
         }
@@ -3015,18 +2920,19 @@ public class LotGroupageService {
         g.fillRect(MARGIN, y, usable, ROW_H);
         g.setColor(BORDER);
         g.drawRect(MARGIN, y, usable, ROW_H);
-        for (int i = 1; i < 11; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
+        for (int i = 1; i < 12; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
         g.setFont(totalFnt);
         g.setColor(DARK);
         drawCenteredPdf(g, "ಒಟ್ಟು / Total",
                 cx[0], y, cw[0] + cw[1] + cw[2] + cw[3], ROW_H);
-        drawRightPdf(g, fmt2(wrapper.getTotalDeposits()),       cx[4], y, cw[4], ROW_H);
-        drawRightPdf(g, fmt2(wrapper.getTotalLotWeight()),      cx[5], y, cw[5], ROW_H);
-        drawRightPdf(g, "",                                     cx[6], y, cw[6], ROW_H);
-        drawRightPdf(g, fmt2(wrapper.getTotalPaymentAmount()),  cx[7], y, cw[7], ROW_H);
-        drawRightPdf(g, fmt2(wrapper.getTotalMarketFee()),      cx[8], y, cw[8], ROW_H);
-        drawRightPdf(g, fmt2(wrapper.getTotalPurchase()),       cx[9], y, cw[9], ROW_H);
-        drawRightPdf(g, fmt2(wrapper.getClosingBalance()),      cx[10], y, cw[10], ROW_H);
+        drawCenteredPdf(g, fmt2(wrapper.getTotalDeposits()),       cx[4], y, cw[4], ROW_H);
+        drawCenteredPdf(g, fmt2(wrapper.getTotalLotWeight()),      cx[5], y, cw[5], ROW_H);
+        drawCenteredPdf(g, "",                                     cx[6], y, cw[6], ROW_H);
+        drawCenteredPdf(g, fmt2(wrapper.getTotalPaymentAmount()),  cx[7], y, cw[7], ROW_H);
+        drawCenteredPdf(g, fmt2(wrapper.getTotalMarketFee()),      cx[8], y, cw[8], ROW_H);
+        drawCenteredPdf(g, fmt2(wrapper.getTotalPurchase()),       cx[9], y, cw[9], ROW_H);
+        drawCenteredPdf(g, fmt2(wrapper.getTotalBankTransfers()),  cx[10], y, cw[10], ROW_H);
+        drawCenteredPdf(g, fmt2(wrapper.getClosingBalance()),      cx[11], y, cw[11], ROW_H);
 
         g.dispose();
 
@@ -3034,7 +2940,7 @@ public class LotGroupageService {
         java.io.File pdfFile = java.io.File.createTempFile("Seed_Market_Txn_Report_", ".pdf");
         try (org.apache.pdfbox.pdmodel.PDDocument doc = new org.apache.pdfbox.pdmodel.PDDocument()) {
             org.apache.pdfbox.pdmodel.common.PDRectangle rect =
-                    new org.apache.pdfbox.pdmodel.common.PDRectangle(W * 72f / DPI, H * 72f / DPI);
+                    new org.apache.pdfbox.pdmodel.common.PDRectangle(PDF_W, PDF_H);  // A4 landscape – fills page when printed
             org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(rect);
             doc.addPage(page);
             org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImg =
@@ -3063,312 +2969,255 @@ public class LotGroupageService {
 
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Egg Producer Transaction Report");
+        final int COLS = 12;
 
-        final int COLS = 11;
+        // ── Number formats ────────────────────────────────────────────────────
+        DataFormat epDataFmt = workbook.createDataFormat();
+        short epNumFmt2dp = epDataFmt.getFormat("#,##0.00");
 
-        // ── Fonts ──────────────────────────────────────────────────────────────
-        Font kannadaFont;
-        try {
-            java.io.File nirmala = new java.io.File("C:/Windows/Fonts/Nirmala.ttc");
-            if (nirmala.exists()) {
-                java.awt.Font[] awtFonts = java.awt.Font.createFonts(nirmala);
-                java.awt.Font awtFont = null;
-                for (java.awt.Font af : awtFonts) {
-                    if (af.canDisplay('ಕ')) { awtFont = af; break; }
-                }
-                if (awtFont != null) {
-                    kannadaFont = workbook.createFont();
-                    kannadaFont.setFontName(awtFont.getFamily());
-                } else { kannadaFont = workbook.createFont(); kannadaFont.setFontName("Arial"); }
-            } else { kannadaFont = workbook.createFont(); kannadaFont.setFontName("Arial"); }
-        } catch (Exception e) { kannadaFont = workbook.createFont(); kannadaFont.setFontName("Arial"); }
-        kannadaFont.setFontHeightInPoints((short) 11);
+        // ── Fonts ─────────────────────────────────────────────────────────────
+        Font epFTitle = workbook.createFont(); epFTitle.setBold(true); epFTitle.setFontHeightInPoints((short) 14);
+        Font epFSubTitle = workbook.createFont(); epFSubTitle.setBold(true); epFSubTitle.setFontHeightInPoints((short) 12);
+        Font epFLabel = workbook.createFont(); epFLabel.setBold(true); epFLabel.setFontHeightInPoints((short) 9);
+        Font epFValue = workbook.createFont(); epFValue.setFontHeightInPoints((short) 9);
+        Font epFHdr = workbook.createFont(); epFHdr.setBold(true); epFHdr.setFontHeightInPoints((short) 9); epFHdr.setColor(IndexedColors.WHITE.getIndex());
+        Font epFTotal = workbook.createFont(); epFTotal.setBold(true); epFTotal.setFontHeightInPoints((short) 9);
 
-        Font boldSmall = workbook.createFont();
-        boldSmall.setFontName(kannadaFont.getFontName());
-        boldSmall.setFontHeightInPoints((short) 9);
-        boldSmall.setBold(true);
+        // ── Styles ────────────────────────────────────────────────────────────
+        CellStyle epSTitle = workbook.createCellStyle();
+        epSTitle.setFont(epFTitle); epSTitle.setAlignment(HorizontalAlignment.CENTER);
+        epSTitle.setVerticalAlignment(VerticalAlignment.CENTER); epSTitle.setWrapText(true);
 
-        Font titleFont = workbook.createFont();
-        titleFont.setFontName(kannadaFont.getFontName());
-        titleFont.setFontHeightInPoints((short) 13);
-        titleFont.setBold(true);
+        CellStyle epSSubTitle = workbook.createCellStyle();
+        epSSubTitle.setFont(epFSubTitle); epSSubTitle.setAlignment(HorizontalAlignment.CENTER);
+        epSSubTitle.setVerticalAlignment(VerticalAlignment.CENTER); epSSubTitle.setWrapText(true);
 
-        // ── Styles ─────────────────────────────────────────────────────────────
-        CellStyle titleStyle = workbook.createCellStyle();
-        titleStyle.setFont(titleFont);
-        titleStyle.setAlignment(HorizontalAlignment.CENTER);
-        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        CellStyle epSIL = workbook.createCellStyle();
+        epSIL.setFont(epFLabel); epSIL.setWrapText(true); epSIL.setVerticalAlignment(VerticalAlignment.CENTER);
+        epSIL.setFillForegroundColor(IndexedColors.LEMON_CHIFFON.getIndex()); epSIL.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        epSIL.setBorderTop(BorderStyle.THIN); epSIL.setBorderBottom(BorderStyle.THIN); epSIL.setBorderLeft(BorderStyle.THIN); epSIL.setBorderRight(BorderStyle.THIN);
 
-        CellStyle labelStyle = workbook.createCellStyle();
-        labelStyle.setFont(boldSmall);
-        labelStyle.setBorderBottom(BorderStyle.THIN);
-        labelStyle.setBorderTop(BorderStyle.THIN);
-        labelStyle.setBorderLeft(BorderStyle.THIN);
-        labelStyle.setBorderRight(BorderStyle.THIN);
-        labelStyle.setWrapText(true);
+        CellStyle epSIV = workbook.createCellStyle();
+        epSIV.setFont(epFValue); epSIV.setWrapText(true); epSIV.setVerticalAlignment(VerticalAlignment.CENTER);
+        epSIV.setBorderTop(BorderStyle.THIN); epSIV.setBorderBottom(BorderStyle.THIN); epSIV.setBorderLeft(BorderStyle.THIN); epSIV.setBorderRight(BorderStyle.THIN);
 
-        CellStyle valueStyle = workbook.createCellStyle();
-        valueStyle.setFont(workbook.createFont());
-        valueStyle.setBorderBottom(BorderStyle.THIN);
-        valueStyle.setBorderTop(BorderStyle.THIN);
-        valueStyle.setBorderLeft(BorderStyle.THIN);
-        valueStyle.setBorderRight(BorderStyle.THIN);
-        valueStyle.setWrapText(true);
+        CellStyle epSIN = workbook.createCellStyle();
+        epSIN.setFont(epFValue); epSIN.setAlignment(HorizontalAlignment.LEFT); epSIN.setVerticalAlignment(VerticalAlignment.CENTER);
+        epSIN.setDataFormat(epNumFmt2dp);
+        epSIN.setBorderTop(BorderStyle.THIN); epSIN.setBorderBottom(BorderStyle.THIN); epSIN.setBorderLeft(BorderStyle.THIN); epSIN.setBorderRight(BorderStyle.THIN);
 
-        Font colHdrFont = workbook.createFont();
-        colHdrFont.setFontName(kannadaFont.getFontName());
-        colHdrFont.setFontHeightInPoints((short) 8);
-        colHdrFont.setBold(true);
-        colHdrFont.setColor(IndexedColors.WHITE.getIndex());
+        CellStyle epSColHdr = workbook.createCellStyle();
+        epSColHdr.setFont(epFHdr); epSColHdr.setAlignment(HorizontalAlignment.CENTER);
+        epSColHdr.setVerticalAlignment(VerticalAlignment.CENTER); epSColHdr.setWrapText(true);
+        epSColHdr.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex()); epSColHdr.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        epSColHdr.setBorderTop(BorderStyle.THIN); epSColHdr.setBorderBottom(BorderStyle.THIN); epSColHdr.setBorderLeft(BorderStyle.THIN); epSColHdr.setBorderRight(BorderStyle.THIN);
 
-        CellStyle colHeaderStyle = workbook.createCellStyle();
-        colHeaderStyle.setFont(colHdrFont);
-        colHeaderStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
-        colHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        colHeaderStyle.setAlignment(HorizontalAlignment.CENTER);
-        colHeaderStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        colHeaderStyle.setWrapText(true);
-        colHeaderStyle.setBorderBottom(BorderStyle.THIN);
-        colHeaderStyle.setBorderTop(BorderStyle.THIN);
-        colHeaderStyle.setBorderLeft(BorderStyle.THIN);
-        colHeaderStyle.setBorderRight(BorderStyle.THIN);
+        CellStyle epSData = workbook.createCellStyle();
+        epSData.setFont(epFValue); epSData.setAlignment(HorizontalAlignment.CENTER);
+        epSData.setVerticalAlignment(VerticalAlignment.CENTER); epSData.setWrapText(true);
+        epSData.setBorderTop(BorderStyle.THIN); epSData.setBorderBottom(BorderStyle.THIN); epSData.setBorderLeft(BorderStyle.THIN); epSData.setBorderRight(BorderStyle.THIN);
 
-        CellStyle numberStyle = workbook.createCellStyle();
-        numberStyle.setFont(workbook.createFont());
-        numberStyle.setAlignment(HorizontalAlignment.RIGHT);
-        numberStyle.setBorderBottom(BorderStyle.THIN);
-        numberStyle.setBorderTop(BorderStyle.THIN);
-        numberStyle.setBorderLeft(BorderStyle.THIN);
-        numberStyle.setBorderRight(BorderStyle.THIN);
+        CellStyle epSDesc = workbook.createCellStyle();
+        epSDesc.setFont(epFValue); epSDesc.setAlignment(HorizontalAlignment.LEFT);
+        epSDesc.setVerticalAlignment(VerticalAlignment.CENTER); epSDesc.setWrapText(true);
+        epSDesc.setBorderTop(BorderStyle.THIN); epSDesc.setBorderBottom(BorderStyle.THIN); epSDesc.setBorderLeft(BorderStyle.THIN); epSDesc.setBorderRight(BorderStyle.THIN);
 
-        CellStyle centerDataStyle = workbook.createCellStyle();
-        centerDataStyle.setFont(workbook.createFont());
-        centerDataStyle.setAlignment(HorizontalAlignment.CENTER);
-        centerDataStyle.setBorderBottom(BorderStyle.THIN);
-        centerDataStyle.setBorderTop(BorderStyle.THIN);
-        centerDataStyle.setBorderLeft(BorderStyle.THIN);
-        centerDataStyle.setBorderRight(BorderStyle.THIN);
+        CellStyle epSNum = workbook.createCellStyle();
+        epSNum.setFont(epFValue); epSNum.setAlignment(HorizontalAlignment.CENTER);
+        epSNum.setVerticalAlignment(VerticalAlignment.CENTER); epSNum.setDataFormat(epNumFmt2dp);
+        epSNum.setBorderTop(BorderStyle.THIN); epSNum.setBorderBottom(BorderStyle.THIN); epSNum.setBorderLeft(BorderStyle.THIN); epSNum.setBorderRight(BorderStyle.THIN);
 
-        CellStyle dataStyle = workbook.createCellStyle();
-        dataStyle.setFont(workbook.createFont());
-        dataStyle.setWrapText(true);
-        dataStyle.setBorderBottom(BorderStyle.THIN);
-        dataStyle.setBorderTop(BorderStyle.THIN);
-        dataStyle.setBorderLeft(BorderStyle.THIN);
-        dataStyle.setBorderRight(BorderStyle.THIN);
+        CellStyle epSTotalL = workbook.createCellStyle();
+        epSTotalL.setFont(epFTotal); epSTotalL.setAlignment(HorizontalAlignment.CENTER); epSTotalL.setVerticalAlignment(VerticalAlignment.CENTER);
+        epSTotalL.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex()); epSTotalL.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        epSTotalL.setBorderTop(BorderStyle.MEDIUM); epSTotalL.setBorderBottom(BorderStyle.MEDIUM); epSTotalL.setBorderLeft(BorderStyle.THIN); epSTotalL.setBorderRight(BorderStyle.THIN);
 
-        // ── Logo rows 0-2 ──────────────────────────────────────────────────────
-        Row epLogoRow0 = sheet.createRow(0); epLogoRow0.setHeightInPoints(30);
-        Row epLogoRow1 = sheet.createRow(1); epLogoRow1.setHeightInPoints(30);
-        Row epLogoRow2 = sheet.createRow(2); epLogoRow2.setHeightInPoints(30);
+        CellStyle epSTotalN = workbook.createCellStyle();
+        epSTotalN.setFont(epFTotal); epSTotalN.setAlignment(HorizontalAlignment.CENTER);
+        epSTotalN.setVerticalAlignment(VerticalAlignment.CENTER); epSTotalN.setDataFormat(epNumFmt2dp);
+        epSTotalN.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex()); epSTotalN.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        epSTotalN.setBorderTop(BorderStyle.MEDIUM); epSTotalN.setBorderBottom(BorderStyle.MEDIUM); epSTotalN.setBorderLeft(BorderStyle.THIN); epSTotalN.setBorderRight(BorderStyle.THIN);
+
+        // ── Rows 0-1: Logo centered cols 4-7 ─────────────────────────────────
+        sheet.createRow(0).setHeightInPoints(45);
+        sheet.createRow(1).setHeightInPoints(45);
         try {
             org.springframework.core.io.ClassPathResource logoRes =
                     new org.springframework.core.io.ClassPathResource("images/kar_logo.png");
-            java.io.InputStream epLogoStream = logoRes.getInputStream();
-            byte[] logoBytes = epLogoStream.readAllBytes();
-            epLogoStream.close();
-            int pictureIdx = workbook.addPicture(logoBytes, org.apache.poi.ss.usermodel.Workbook.PICTURE_TYPE_PNG);
+            byte[] logoBytes = logoRes.getInputStream().readAllBytes();
+            int picIdx = workbook.addPicture(logoBytes, org.apache.poi.ss.usermodel.Workbook.PICTURE_TYPE_PNG);
             org.apache.poi.ss.usermodel.Drawing<?> drawing = sheet.createDrawingPatriarch();
-            org.apache.poi.ss.usermodel.ClientAnchor anchor =
-                    workbook.getCreationHelper().createClientAnchor();
-            anchor.setCol1(5); anchor.setRow1(0);
-            anchor.setAnchorType(org.apache.poi.ss.usermodel.ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
-            org.apache.poi.ss.usermodel.Picture epLogoPic = drawing.createPicture(anchor, pictureIdx);
-            epLogoPic.resize(0.3);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            org.apache.poi.ss.usermodel.ClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
+            anchor.setCol1(4); anchor.setRow1(0); anchor.setCol2(7); anchor.setRow2(2);
+            anchor.setAnchorType(org.apache.poi.ss.usermodel.ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+            drawing.createPicture(anchor, picIdx);
+        } catch (Exception ignored) {}
 
-        int epRowIdx = 3;
-
-        Row ep0 = sheet.createRow(epRowIdx++); ep0.setHeightInPoints(22);
-        Cell epc0 = ep0.createCell(0); epc0.setCellValue("ಕರ್ನಾಟಕ ಸರ್ಕಾರ"); epc0.setCellStyle(titleStyle);
+        // ── Rows 2-5: Title section ───────────────────────────────────────────
+        int epRowIdx = 2;
+        Row ep0 = sheet.createRow(epRowIdx++); ep0.setHeightInPoints(28);
+        Cell epc0 = ep0.createCell(0); epc0.setCellValue("ಕರ್ನಾಟಕ ಸರ್ಕಾರ"); epc0.setCellStyle(epSTitle);
+        for (int i = 1; i < COLS; i++) ep0.createCell(i).setCellStyle(epSTitle);
         sheet.addMergedRegion(new CellRangeAddress(ep0.getRowNum(), ep0.getRowNum(), 0, COLS - 1));
 
-        Row ep1 = sheet.createRow(epRowIdx++); ep1.setHeightInPoints(20);
-        Cell epc1 = ep1.createCell(0); epc1.setCellValue("ರೇಷ್ಮೆ, ಇಲಾಖೆ"); epc1.setCellStyle(titleStyle);
+        Row ep1 = sheet.createRow(epRowIdx++); ep1.setHeightInPoints(24);
+        Cell epc1 = ep1.createCell(0); epc1.setCellValue("ರೇಷ್ಮೆ, ಇಲಾಖೆ"); epc1.setCellStyle(epSSubTitle);
+        for (int i = 1; i < COLS; i++) ep1.createCell(i).setCellStyle(epSSubTitle);
         sheet.addMergedRegion(new CellRangeAddress(ep1.getRowNum(), ep1.getRowNum(), 0, COLS - 1));
 
-        Row ep2 = sheet.createRow(epRowIdx++); ep2.setHeightInPoints(20);
-        Cell epc2 = ep2.createCell(0); epc2.setCellValue("ಸರ್ಕಾರಿ ರೇಷ್ಮೆ ಗೂಡಿನ ಮಾರುಕಟ್ಟೆ, " + marketName); epc2.setCellStyle(titleStyle);
+        Row ep2 = sheet.createRow(epRowIdx++); ep2.setHeightInPoints(22);
+        Cell epc2 = ep2.createCell(0); epc2.setCellValue("ಸರ್ಕಾರಿ ರೇಷ್ಮೆ ಗೂಡಿನ ಮಾರುಕಟ್ಟೆ, " + marketName); epc2.setCellStyle(epSSubTitle);
+        for (int i = 1; i < COLS; i++) ep2.createCell(i).setCellStyle(epSSubTitle);
         sheet.addMergedRegion(new CellRangeAddress(ep2.getRowNum(), ep2.getRowNum(), 0, COLS - 1));
 
-        Row ep3 = sheet.createRow(epRowIdx++); ep3.setHeightInPoints(20);
-        Cell epc3 = ep3.createCell(0); epc3.setCellValue("ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ವಹಿವಾಟು ವರದಿ"); epc3.setCellStyle(titleStyle);
+        Row ep3 = sheet.createRow(epRowIdx++); ep3.setHeightInPoints(22);
+        Cell epc3 = ep3.createCell(0); epc3.setCellValue("ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ವಹಿವಾಟು ವರದಿ"); epc3.setCellStyle(epSSubTitle);
+        for (int i = 1; i < COLS; i++) ep3.createCell(i).setCellStyle(epSSubTitle);
         sheet.addMergedRegion(new CellRangeAddress(ep3.getRowNum(), ep3.getRowNum(), 0, COLS - 1));
 
-        sheet.createRow(epRowIdx++); // blank
+        // ── Row 6: Spacer ─────────────────────────────────────────────────────
+        sheet.createRow(epRowIdx++).setHeightInPoints(6);
 
-        // ── Info row: registration number | Date and Time Stamp ─────────────────
+        // ── Date strings ──────────────────────────────────────────────────────
         String epTimestamp = java.time.LocalDateTime.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+                .format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
         String epFrom = request.getFromDate() != null
-                ? request.getFromDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
-        String epTo   = request.getToDate() != null
-                ? request.getToDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+                ? request.getFromDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "";
+        String epTo = request.getToDate() != null
+                ? request.getToDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "";
         String epNameAddr = (wrapper.getName() != null ? wrapper.getName() : "")
-                + (wrapper.getAddress() != null ? wrapper.getAddress() : "");
+                + (wrapper.getAddress() != null && !wrapper.getAddress().isEmpty() ? ", " + wrapper.getAddress() : "");
 
-        Row ep5 = sheet.createRow(epRowIdx++); ep5.setHeightInPoints(18);
-        ep5.createCell(0).setCellStyle(labelStyle);
-        ep5.getCell(0).setCellValue("ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ನೊಂದಣಿ ಸಂಖ್ಯೆ");
-        ep5.createCell(1).setCellStyle(labelStyle);
-        ep5.createCell(2).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep5.getRowNum(), ep5.getRowNum(), 0, 2));
-        ep5.createCell(3).setCellStyle(valueStyle);
-        ep5.getCell(3).setCellValue(request.getLicenseNumber() != null ? request.getLicenseNumber() : "");
-        for (int i = 4; i <= 7; i++) ep5.createCell(i).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep5.getRowNum(), ep5.getRowNum(), 3, 7));
-        ep5.createCell(8).setCellStyle(labelStyle);
-        ep5.getCell(8).setCellValue("Date and Time Stamp");
-        ep5.createCell(9).setCellStyle(valueStyle);
-        ep5.getCell(9).setCellValue(epTimestamp);
-        ep5.createCell(10).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep5.getRowNum(), ep5.getRowNum(), 9, 10));
+        // ── Rows 7-10: Info block (4 rows) ───────────────────────────────────
 
-        // ── Info row: name/address | amount in Rs ───────────────────────────────
-        Row ep6 = sheet.createRow(epRowIdx++); ep6.setHeightInPoints(18);
-        ep6.createCell(0).setCellStyle(labelStyle);
-        ep6.getCell(0).setCellValue("ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ:");
-        ep6.createCell(1).setCellStyle(labelStyle);
-        ep6.createCell(2).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep6.getRowNum(), ep6.getRowNum(), 0, 2));
-        ep6.createCell(3).setCellStyle(valueStyle);
-        ep6.getCell(3).setCellValue(epNameAddr);
-        for (int i = 4; i <= 7; i++) ep6.createCell(i).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep6.getRowNum(), ep6.getRowNum(), 3, 7));
-        ep6.createCell(8).setCellStyle(labelStyle);
-        ep6.getCell(8).setCellValue("ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ");
-        ep6.createCell(9).setCellStyle(labelStyle);
-        ep6.createCell(10).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep6.getRowNum(), ep6.getRowNum(), 8, 10));
+        // Row 7: Registration label [0-3] | value [4-5] | Date label [6-7] | Timestamp [8-10]
+        Row epI1 = sheet.createRow(epRowIdx++); epI1.setHeightInPoints(28);
+        epI1.createCell(0).setCellValue("ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ನೊಂದಣಿ ಸಂಖ್ಯೆ:"); epI1.getCell(0).setCellStyle(epSIL);
+        epI1.createCell(1).setCellStyle(epSIL); epI1.createCell(2).setCellStyle(epSIL); epI1.createCell(3).setCellStyle(epSIL);
+        sheet.addMergedRegion(new CellRangeAddress(epI1.getRowNum(), epI1.getRowNum(), 0, 3));
+        epI1.createCell(4).setCellValue(request.getLicenseNumber() != null ? request.getLicenseNumber() : ""); epI1.getCell(4).setCellStyle(epSIV);
+        epI1.createCell(5).setCellStyle(epSIV);
+        sheet.addMergedRegion(new CellRangeAddress(epI1.getRowNum(), epI1.getRowNum(), 4, 5));
+        epI1.createCell(6).setCellValue("Date and Time Stamp:"); epI1.getCell(6).setCellStyle(epSIL);
+        epI1.createCell(7).setCellStyle(epSIL);
+        sheet.addMergedRegion(new CellRangeAddress(epI1.getRowNum(), epI1.getRowNum(), 6, 7));
+        epI1.createCell(8).setCellValue(epTimestamp); epI1.getCell(8).setCellStyle(epSIV);
+        epI1.createCell(9).setCellStyle(epSIV); epI1.createCell(10).setCellStyle(epSIV);
+        sheet.addMergedRegion(new CellRangeAddress(epI1.getRowNum(), epI1.getRowNum(), 8, 10));
 
-        // ── Info row: transaction period ────────────────────────────────────────
-        Row ep7 = sheet.createRow(epRowIdx++); ep7.setHeightInPoints(18);
-        ep7.createCell(0).setCellStyle(labelStyle);
-        ep7.getCell(0).setCellValue("ವಹಿವಾಟಿನ ಅವಧಿ :");
-        ep7.createCell(1).setCellStyle(labelStyle);
-        ep7.createCell(2).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep7.getRowNum(), ep7.getRowNum(), 0, 2));
-        ep7.createCell(3).setCellStyle(valueStyle);
-        ep7.getCell(3).setCellValue(epFrom + " to " + epTo);
-        for (int i = 4; i <= 10; i++) ep7.createCell(i).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep7.getRowNum(), ep7.getRowNum(), 3, 10));
+        // Row 9: Name label [0-3] | Name/Address value [4-10]
+        Row epI2 = sheet.createRow(epRowIdx++); epI2.setHeightInPoints(28);
+        epI2.createCell(0).setCellValue("ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ:"); epI2.getCell(0).setCellStyle(epSIL);
+        epI2.createCell(1).setCellStyle(epSIL); epI2.createCell(2).setCellStyle(epSIL); epI2.createCell(3).setCellStyle(epSIL);
+        sheet.addMergedRegion(new CellRangeAddress(epI2.getRowNum(), epI2.getRowNum(), 0, 3));
+        epI2.createCell(4).setCellValue(epNameAddr); epI2.getCell(4).setCellStyle(epSIV);
+        for (int i = 5; i <= 10; i++) epI2.createCell(i).setCellStyle(epSIV);
+        sheet.addMergedRegion(new CellRangeAddress(epI2.getRowNum(), epI2.getRowNum(), 4, 10));
 
-        // ── Info row: opening balance ────────────────────────────────────────────
-        Row ep8 = sheet.createRow(epRowIdx++); ep8.setHeightInPoints(18);
-        ep8.createCell(0).setCellStyle(labelStyle);
-        ep8.getCell(0).setCellValue("ದಿನಾಂಕ " + epFrom + " ರಂದು ಇದ್ದ ಪ್ರಾರಂಭಿಕ ಉಳಿಕೆ ಮೊತ್ತ :");
-        ep8.createCell(1).setCellStyle(labelStyle);
-        ep8.createCell(2).setCellStyle(labelStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep8.getRowNum(), ep8.getRowNum(), 0, 2));
-        ep8.createCell(3).setCellStyle(numberStyle);
-        ep8.getCell(3).setCellValue(wrapper.getOpeningBalance() != null ? wrapper.getOpeningBalance() : 0);
-        for (int i = 4; i <= 10; i++) ep8.createCell(i).setCellStyle(valueStyle);
-        sheet.addMergedRegion(new CellRangeAddress(ep8.getRowNum(), ep8.getRowNum(), 4, 10));
+        // Row 10: Period label [0-3] | Period value [4-10]
+        Row epI3 = sheet.createRow(epRowIdx++); epI3.setHeightInPoints(22);
+        epI3.createCell(0).setCellValue("ವಹಿವಾಟಿನ ಅವಧಿ:"); epI3.getCell(0).setCellStyle(epSIL);
+        epI3.createCell(1).setCellStyle(epSIL); epI3.createCell(2).setCellStyle(epSIL); epI3.createCell(3).setCellStyle(epSIL);
+        sheet.addMergedRegion(new CellRangeAddress(epI3.getRowNum(), epI3.getRowNum(), 0, 3));
+        epI3.createCell(4).setCellValue(epFrom + " to " + epTo); epI3.getCell(4).setCellStyle(epSIV);
+        for (int i = 5; i <= 10; i++) epI3.createCell(i).setCellStyle(epSIV);
+        sheet.addMergedRegion(new CellRangeAddress(epI3.getRowNum(), epI3.getRowNum(), 4, 10));
 
-        sheet.createRow(epRowIdx++); // blank
+        // Row 11: Balance label [0-3] | Balance value [4-5] | empty [6-7] | ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ [8-10]
+        Row epI4 = sheet.createRow(epRowIdx++); epI4.setHeightInPoints(25);
+        epI4.createCell(0).setCellValue("ದಿನಾಂಕ " + epFrom + " ರಂದು ಇದ್ದ ಪ್ರಾರಂಭಿಕ ಉಳಿಕೆ ಮೊತ್ತ:"); epI4.getCell(0).setCellStyle(epSIL);
+        epI4.createCell(1).setCellStyle(epSIL); epI4.createCell(2).setCellStyle(epSIL); epI4.createCell(3).setCellStyle(epSIL);
+        sheet.addMergedRegion(new CellRangeAddress(epI4.getRowNum(), epI4.getRowNum(), 0, 3));
+        epI4.createCell(4).setCellValue(wrapper.getOpeningBalance() != null ? wrapper.getOpeningBalance() : 0); epI4.getCell(4).setCellStyle(epSIN);
+        epI4.createCell(5).setCellStyle(epSIN);
+        sheet.addMergedRegion(new CellRangeAddress(epI4.getRowNum(), epI4.getRowNum(), 4, 5));
+        epI4.createCell(6).setCellStyle(epSIV); epI4.createCell(7).setCellStyle(epSIV);
+        sheet.addMergedRegion(new CellRangeAddress(epI4.getRowNum(), epI4.getRowNum(), 6, 7));
+        epI4.createCell(8).setCellValue("ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ"); epI4.getCell(8).setCellStyle(epSIL);
+        epI4.createCell(9).setCellStyle(epSIL); epI4.createCell(10).setCellStyle(epSIL);
+        sheet.addMergedRegion(new CellRangeAddress(epI4.getRowNum(), epI4.getRowNum(), 8, 10));
 
-        // ── Column headers ─────────────────────────────────────────────────────
-        Row epColHdr = sheet.createRow(epRowIdx++); epColHdr.setHeightInPoints(55);
+        // ── Row 12: Spacer ────────────────────────────────────────────────────
+        sheet.createRow(epRowIdx++).setHeightInPoints(6);
+
+        // ── Row 13: Column headers ────────────────────────────────────────────
+        Row epColHdr = sheet.createRow(epRowIdx++); epColHdr.setHeightInPoints(85);
         String[] epHeaders = {
-                "ಕ್ರಮ ಸಂಖ್ಯೆ / SL No",
-                "ವಹಿವಾಟಿನ ದಿನಾಂಕ / Transaction Date",
-                "ವಿವರ / Description",
-                "ವಹಿವಾಟಿನ ವಿಧ / Transaction Type",
-                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ / Deposit Amount",
-                "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ / Quantity of seed cocoon purchased(in kg's)",
-                "ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ (ಪ್ರತಿ ಕೆ.ಜಿಗೆ) / No. of Seed Cocoons per Kg",
-                "ಒಟ್ಟು ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ / Total No of Seed Cocoons (in No's)",
-                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ / Rate per Kg",
-                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ / Seed Cocoon Purchase Amount",
-                "ಉಳಿಕೆ ಮೊತ್ತ / Balance Amount"
+                "ಕ್ರಮ ಸಂಖ್ಯೆ\nSL No",
+                "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nTransaction Date",
+                "ವಿವರ\nDescription",
+                "ವಹಿವಾಟಿನ ವಿಧ\nTransaction Type",
+                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ \nDeposit Amount ",
+                "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ\nQuantity of Seed Cocoon Purchased (Kg)",
+                "ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ (ಪ್ರತಿ ಕೆ.ಜಿಗೆ)\nSeed Cocoons per Kg",
+                "ಒಟ್ಟು ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ\nTotal Seed Cocoons (Nos)",
+                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ \nRate per Kg ",
+                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ \nSeed Cocoon Purchase Amount ",
+                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ \nRefunded Amount ",
+                "ಉಳಿಕೆ ಮೊತ್ತ \nBalance Amount "
         };
         for (int i = 0; i < epHeaders.length; i++) {
-            Cell c = epColHdr.createCell(i); c.setCellValue(epHeaders[i]); c.setCellStyle(colHeaderStyle);
+            Cell c = epColHdr.createCell(i); c.setCellValue(epHeaders[i]); c.setCellStyle(epSColHdr);
         }
 
-        CellStyle epTotalStyle = workbook.createCellStyle();
-        epTotalStyle.setFont(boldSmall);
-        epTotalStyle.setBorderTop(BorderStyle.THIN); epTotalStyle.setBorderBottom(BorderStyle.THIN);
-        epTotalStyle.setBorderLeft(BorderStyle.THIN); epTotalStyle.setBorderRight(BorderStyle.THIN);
-        epTotalStyle.setAlignment(HorizontalAlignment.LEFT);
-        epTotalStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        epTotalStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        epTotalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-        // ── Data rows ──────────────────────────────────────────────────────────
+        // ── Data rows ─────────────────────────────────────────────────────────
         int epSlNo = 1;
-        double epSumDeposit = 0, epSumLotWeight = 0, epSumTotalCocoons = 0, epSumPayment = 0;
-        double epLastBalance = 0;
-        double epRunBalance = wrapper.getOpeningBalance() != null ? wrapper.getOpeningBalance() : 0;
+        double epSumDeposit = 0, epSumLotWeight = 0, epSumTotalCocoons = 0, epSumPayment = 0, epSumRefunded = 0;
 
         for (ReelerTransactionReport report : wrapper.getReelerTransactionReports()) {
-            Row row = sheet.createRow(epRowIdx++); row.setHeightInPoints(16);
-
-            Cell d0 = row.createCell(0); d0.setCellValue(epSlNo++); d0.setCellStyle(centerDataStyle);
-            Cell d1 = row.createCell(1); d1.setCellValue(report.getTransactionDate() != null ? report.getTransactionDate().toString() : ""); d1.setCellStyle(centerDataStyle);
-            Cell d2 = row.createCell(2); d2.setCellValue(report.getOperationDescription() != null ? report.getOperationDescription() : ""); d2.setCellStyle(dataStyle);
-            Cell d3 = row.createCell(3); d3.setCellValue(report.getTransactionType() != null ? report.getTransactionType() : ""); d3.setCellStyle(centerDataStyle);
-
+            Row row = sheet.createRow(epRowIdx++); row.setHeightInPoints(20);
+            Cell d0 = row.createCell(0); d0.setCellValue(epSlNo++); d0.setCellStyle(epSData);
+            Cell d1 = row.createCell(1);
+            d1.setCellValue(report.getTransactionDate() != null ? report.getTransactionDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "");
+            d1.setCellStyle(epSData);
+            Cell d2 = row.createCell(2); d2.setCellValue(report.getOperationDescription() != null ? report.getOperationDescription() : ""); d2.setCellStyle(epSDesc);
+            Cell d3 = row.createCell(3); d3.setCellValue(report.getTransactionType() != null ? report.getTransactionType() : ""); d3.setCellStyle(epSData);
             double depositVal = report.getDepositAmount() != null ? report.getDepositAmount() : 0;
-            Cell d4 = row.createCell(4); d4.setCellValue(depositVal); d4.setCellStyle(numberStyle);
-            epSumDeposit += depositVal;
-
+            Cell d4 = row.createCell(4); d4.setCellValue(depositVal); d4.setCellStyle(epSNum); epSumDeposit += depositVal;
             double lwVal = report.getLotWeight() != null ? report.getLotWeight() : 0;
-            Cell d5 = row.createCell(5); d5.setCellValue(lwVal); d5.setCellStyle(numberStyle);
-            epSumLotWeight += lwVal;
-
+            Cell d5 = row.createCell(5); d5.setCellValue(lwVal); d5.setCellStyle(epSNum); epSumLotWeight += lwVal;
             int qtyNosVal = report.getQtyNos() != null ? report.getQtyNos() : 0;
-            Cell d6 = row.createCell(6); d6.setCellValue(qtyNosVal); d6.setCellStyle(numberStyle);
-
+            Cell d6 = row.createCell(6); d6.setCellValue(qtyNosVal); d6.setCellStyle(epSData);
             double totalCocoons = lwVal * qtyNosVal;
-            Cell d7 = row.createCell(7); d7.setCellValue(totalCocoons); d7.setCellStyle(numberStyle);
-            epSumTotalCocoons += totalCocoons;
-
-            Cell d8 = row.createCell(8); d8.setCellValue(report.getRatePerKg() != null ? report.getRatePerKg() : 0); d8.setCellStyle(numberStyle);
-
+            Cell d7 = row.createCell(7); d7.setCellValue(totalCocoons); d7.setCellStyle(epSNum); epSumTotalCocoons += totalCocoons;
+            Cell d8 = row.createCell(8); d8.setCellValue(report.getRatePerKg() != null ? report.getRatePerKg() : 0); d8.setCellStyle(epSNum);
             double payVal = report.getPaymentAmount() != null ? report.getPaymentAmount() : 0;
-            Cell d9 = row.createCell(9); d9.setCellValue(payVal); d9.setCellStyle(numberStyle);
-            epSumPayment += payVal;
-
-            if ("C".equalsIgnoreCase(report.getTransactionType())) {
-                epRunBalance += depositVal;
-            } else {
-                epRunBalance -= payVal;
-            }
-            epLastBalance = epRunBalance;
-            Cell d10 = row.createCell(10); d10.setCellValue(epLastBalance); d10.setCellStyle(numberStyle);
+            Cell d9 = row.createCell(9); d9.setCellValue(payVal); d9.setCellStyle(epSNum); epSumPayment += payVal;
+            double refundedVal = report.getRefundedAmount() != null ? report.getRefundedAmount() : 0;
+            Cell d10 = row.createCell(10); d10.setCellValue(refundedVal); d10.setCellStyle(epSNum); epSumRefunded += refundedVal;
+            double balanceVal = report.getBalance() != null ? report.getBalance() : 0;
+            Cell d11 = row.createCell(11); d11.setCellValue(balanceVal); d11.setCellStyle(epSNum);
         }
 
-        // ── Totals row ─────────────────────────────────────────────────────────
-        Row epTotal = sheet.createRow(epRowIdx++); epTotal.setHeightInPoints(18);
-        Cell etc0 = epTotal.createCell(0); etc0.setCellValue("ಒಟ್ಟು"); etc0.setCellStyle(epTotalStyle);
+        // ── Totals row ────────────────────────────────────────────────────────
+        Row epTotal = sheet.createRow(epRowIdx++); epTotal.setHeightInPoints(22);
+        Cell etc0 = epTotal.createCell(0); etc0.setCellValue("ಒಟ್ಟು / Total"); etc0.setCellStyle(epSTotalL);
+        for (int i = 1; i <= 3; i++) epTotal.createCell(i).setCellStyle(epSTotalL);
         sheet.addMergedRegion(new CellRangeAddress(epTotal.getRowNum(), epTotal.getRowNum(), 0, 3));
-        for (int i = 1; i <= 3; i++) epTotal.createCell(i).setCellStyle(epTotalStyle);
-        Cell etc4 = epTotal.createCell(4); etc4.setCellValue(epSumDeposit); etc4.setCellStyle(epTotalStyle);
-        Cell etc5 = epTotal.createCell(5); etc5.setCellValue(epSumLotWeight); etc5.setCellStyle(epTotalStyle);
-        Cell etc6 = epTotal.createCell(6); etc6.setCellValue(""); etc6.setCellStyle(epTotalStyle);
-        Cell etc7 = epTotal.createCell(7); etc7.setCellValue(epSumTotalCocoons); etc7.setCellStyle(epTotalStyle);
-        Cell etc8 = epTotal.createCell(8); etc8.setCellValue(""); etc8.setCellStyle(epTotalStyle);
-        Cell etc9 = epTotal.createCell(9); etc9.setCellValue(epSumPayment); etc9.setCellStyle(epTotalStyle);
-        Cell etc10 = epTotal.createCell(10); etc10.setCellValue(epLastBalance); etc10.setCellStyle(epTotalStyle);
+        Cell etc4 = epTotal.createCell(4); etc4.setCellValue(epSumDeposit); etc4.setCellStyle(epSTotalN);
+        Cell etc5 = epTotal.createCell(5); etc5.setCellValue(epSumLotWeight); etc5.setCellStyle(epSTotalN);
+        Cell etc6 = epTotal.createCell(6); etc6.setCellValue(""); etc6.setCellStyle(epSTotalL);
+        Cell etc7 = epTotal.createCell(7); etc7.setCellValue(epSumTotalCocoons); etc7.setCellStyle(epSTotalN);
+        Cell etc8 = epTotal.createCell(8); etc8.setCellValue(""); etc8.setCellStyle(epSTotalL);
+        Cell etc9 = epTotal.createCell(9); etc9.setCellValue(epSumPayment); etc9.setCellStyle(epSTotalN);
+        Cell etc10 = epTotal.createCell(10); etc10.setCellValue(epSumRefunded); etc10.setCellStyle(epSTotalN);
+        Cell etc11 = epTotal.createCell(11); etc11.setCellValue(wrapper.getClosingBalance() != null ? wrapper.getClosingBalance() : 0); etc11.setCellStyle(epSTotalN);
 
-        int[] epMin = { 2000, 3500, 8000, 3000, 3500, 4000, 4000, 4500, 3500, 4500, 3500 };
-        int[] epMax = { 3000, 5000, 13000, 4500, 5500, 6000, 6000, 6500, 5000, 6000, 5000 };
-        for (int i = 0; i < COLS; i++) {
-            sheet.autoSizeColumn(i);
-            int w = sheet.getColumnWidth(i);
-            if (w < epMin[i]) w = epMin[i];
-            if (w > epMax[i]) w = epMax[i];
-            sheet.setColumnWidth(i, w);
-        }
+        // ── Column widths (same as Seed Market, total 34 500 POI) ────────────
+        int[] epColWidths = { 1200, 3200, 5500, 3000, 3200, 4000, 2800, 3200, 3000, 3000, 3000, 3200 };
+        for (int i = 0; i < COLS; i++) sheet.setColumnWidth(i, epColWidths[i]);
+
+        // ── Print: A4 landscape, fit 1 page wide ─────────────────────────────
+        sheet.setMargin(org.apache.poi.ss.usermodel.Sheet.LeftMargin,   0.4);
+        sheet.setMargin(org.apache.poi.ss.usermodel.Sheet.RightMargin,  0.4);
+        sheet.setMargin(org.apache.poi.ss.usermodel.Sheet.TopMargin,    0.4);
+        sheet.setMargin(org.apache.poi.ss.usermodel.Sheet.BottomMargin, 0.4);
         sheet.getPrintSetup().setLandscape(true);
-        sheet.getPrintSetup().setPaperSize(org.apache.poi.ss.usermodel.PrintSetup.A3_PAPERSIZE);
+        sheet.getPrintSetup().setPaperSize(org.apache.poi.ss.usermodel.PrintSetup.A4_PAPERSIZE);
         sheet.setFitToPage(true);
         sheet.getPrintSetup().setFitWidth((short) 1);
         sheet.getPrintSetup().setFitHeight((short) 0);
+        sheet.setAutobreaks(true);
 
         File epFile = File.createTempFile("Egg_Producer_Transaction_Report_", ".xlsx");
         FileOutputStream epFos = new FileOutputStream(epFile);
@@ -3394,21 +3243,18 @@ public class LotGroupageService {
                         ? wrapper.getReelerTransactionReports()
                         : java.util.Collections.emptyList();
 
-        int DPI = 150;
-        int W = (int)(16.54 * DPI);
-        int MARGIN = 40;
-        int LOGO_H = 80;
-        int INFO_H = 30;
-        int HDR_H  = 55;
-        int ROW_H  = 32;
-        int TITLE_H = 30;
-        int H = MARGIN + LOGO_H + 8
-                + 4 * TITLE_H + 10
-                + 4 * INFO_H + 10
-                + HDR_H
-                + reports.size() * ROW_H
-                + ROW_H
-                + MARGIN;
+        // ── dimensions (fixed A4 landscape at 300 DPI) ───────────────────────
+        int DPI    = 300;
+        float PDF_W = 842f;                              // A4 landscape width  (pts)
+        float PDF_H = 595f;                              // A4 landscape height (pts)
+        int W      = Math.round(PDF_W * DPI / 72f);     // 3508 px
+        int H      = Math.round(PDF_H * DPI / 72f);     // 2479 px  (fixed – no gaps when printed)
+        int MARGIN  = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
+        int LOGO_H  = Math.round(40f * DPI / 72f);      // 167 px = 40 pt
+        int INFO_H  = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
+        int HDR_H   = Math.round(55f * DPI / 72f);      // 229 px = 55 pt
+        int ROW_H   = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
+        int TITLE_H = Math.round(11f * DPI / 72f);      // 46 px  = 11 pt
 
         java.awt.image.BufferedImage logoImg = null;
         try {
@@ -3418,21 +3264,22 @@ public class LotGroupageService {
         } catch (Exception ignored) {}
 
         int usable = W - 2 * MARGIN;
-        float[] proportions = {0.04f, 0.10f, 0.16f, 0.06f, 0.08f, 0.07f, 0.08f, 0.08f, 0.09f, 0.10f, 0.14f};
-        int[] cw = new int[11];
+        float[] proportions = {0.04f, 0.07f, 0.10f, 0.06f, 0.08f, 0.11f, 0.07f, 0.09f, 0.08f, 0.08f, 0.08f, 0.14f};
+        int[] cw = new int[12];
         int allocated = 0;
-        for (int i = 0; i < 10; i++) { cw[i] = (int)(usable * proportions[i]); allocated += cw[i]; }
-        cw[10] = usable - allocated;
-        int[] cx = new int[11];
+        for (int i = 0; i < 11; i++) { cw[i] = (int)(usable * proportions[i]); allocated += cw[i]; }
+        cw[11] = usable - allocated;
+        int[] cx = new int[12];
         cx[0] = MARGIN;
-        for (int i = 1; i < 11; i++) cx[i] = cx[i - 1] + cw[i - 1];
+        for (int i = 1; i < 12; i++) cx[i] = cx[i - 1] + cw[i - 1];
 
-        java.awt.Font base = loadKannadaPdfFont(15f);
-        java.awt.Font titleFnt = base.deriveFont(java.awt.Font.BOLD, 18f);
-        java.awt.Font labelFnt = base.deriveFont(java.awt.Font.BOLD, 11f);
-        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD, 9f);
-        java.awt.Font dataFnt  = base.deriveFont(java.awt.Font.PLAIN, 9f);
-        java.awt.Font totalFnt = base.deriveFont(java.awt.Font.BOLD, 9f);
+        // ── fonts (sized in pixels = pt × DPI/72 so they print at correct pt size) ──
+        java.awt.Font base     = loadKannadaPdfFont(Math.round(10f * DPI / 72f));            // 42 px = 10 pt
+        java.awt.Font titleFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(10f * DPI / 72f));  // 42 px = 10 pt
+        java.awt.Font labelFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(8f  * DPI / 72f));  // 33 px = 8 pt
+        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(7f  * DPI / 72f));  // 29 px = 7 pt
+        java.awt.Font dataFnt  = base.deriveFont(java.awt.Font.PLAIN, (float)Math.round(8f  * DPI / 72f));  // 33 px = 8 pt
+        java.awt.Font totalFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(8f  * DPI / 72f));  // 33 px = 8 pt
 
         java.awt.Color HDR_BG = new java.awt.Color(0x1a, 0x6f, 0xaf);
         java.awt.Color TOT_BG = new java.awt.Color(0xd9, 0xe8, 0xf5);
@@ -3444,8 +3291,10 @@ public class LotGroupageService {
                 new java.awt.image.BufferedImage(W, H, java.awt.image.BufferedImage.TYPE_INT_RGB);
         java.awt.Graphics2D g = img.createGraphics();
         g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,      java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
         g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS, java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,         java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,     java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g.setColor(java.awt.Color.WHITE);
         g.fillRect(0, 0, W, H);
 
@@ -3476,135 +3325,150 @@ public class LotGroupageService {
             drawCenteredPdf(g, line, MARGIN, y, usable, TITLE_H);
             y += TITLE_H;
         }
-        y += 10;
+        y += Math.round(18f * DPI / 72f);  // gap between title and farmer details
 
         g.setFont(labelFnt);
         String epNameAddr = (wrapper.getName() != null ? wrapper.getName() : "")
                 + (wrapper.getAddress() != null ? wrapper.getAddress() : "");
         String[][] epInfoRows = {
-                {"ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ನೊಂದಣಿ ಸಂಖ್ಯೆ",
+                {"ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ನೊಂದಣಿ ಸಂಖ್ಯೆ :",
                  request.getLicenseNumber() != null ? request.getLicenseNumber() : "",
-                 "Date and Time Stamp", epGenAt, "", ""},
-                {"ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ",
-                 epNameAddr, "ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ", "", "", ""},
-                {"ವಹಿವಾಟಿನ ಅವಧಿ", epFromStr + " to " + epToStr, "", "", "", ""},
-                {"ದಿನಾಂಕ " + epFromStr + " ರಂದು ಇದ್ದ ಪ್ರಾರಂಭಿಕ ಉಳಿಕೆ ಮೊತ್ತ",
+                 "", "", "Date and Time Stamp :", epGenAt},
+                {"ನೊಂದಾಯಿತ ರೇಷ್ಮೆ ಮೊಟ್ಟೆ ಉತ್ಪಾದಕರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ :",
+                 epNameAddr, "", "", "ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ", ""},
+                {"ವಹಿವಾಟಿನ ಅವಧಿ :", epFromStr + " to " + epToStr, "", "", "", ""},
+                {"ದಿನಾಂಕ " + epFromStr + " ರಂದು ಇದ್ದ ಪ್ರಾರಂಭಿಕ ಉಳಿಕೆ ಮೊತ್ತ :",
                  String.format("%.2f", wrapper.getOpeningBalance() != null ? wrapper.getOpeningBalance() : 0),
                  "", "", "", ""}
         };
+        int epInfoValGap = Math.round(10f * DPI / 72f);  // space between label and its value
         for (String[] infoRow : epInfoRows) {
-            int sixth = usable / 6;
+            int third = usable / 3;
             int textY = y + INFO_H / 2 + 4;
+
+            int x0 = MARGIN + 4;
             g.setFont(labelFnt); g.setColor(DARK);
-            g.drawString(infoRow[0], MARGIN + 4, textY);
-            g.setFont(dataFnt);
-            g.drawString(infoRow[1], MARGIN + sixth + 4, textY);
+            g.drawString(infoRow[0], x0, textY);
+            int lw0 = g.getFontMetrics(labelFnt).stringWidth(infoRow[0]);
+            g.setFont(dataFnt); g.setColor(DARK);
+            g.drawString(infoRow[1], x0 + lw0 + epInfoValGap, textY);
+
             if (!infoRow[2].isEmpty()) {
+                int x2 = MARGIN + third + 4;
                 g.setFont(labelFnt); g.setColor(DARK);
-                g.drawString(infoRow[2], MARGIN + 2 * sixth + 4, textY);
-                g.setFont(dataFnt);
-                g.drawString(infoRow[3], MARGIN + 3 * sixth + 4, textY);
+                g.drawString(infoRow[2], x2, textY);
+                int lw2 = g.getFontMetrics(labelFnt).stringWidth(infoRow[2]);
+                g.setFont(dataFnt); g.setColor(DARK);
+                g.drawString(infoRow[3], x2 + lw2 + epInfoValGap, textY);
             }
+
             if (!infoRow[4].isEmpty()) {
+                int x4 = MARGIN + 2 * third + 4;
                 g.setFont(labelFnt); g.setColor(DARK);
-                g.drawString(infoRow[4], MARGIN + 4 * sixth + 4, textY);
-                g.setFont(dataFnt);
-                g.drawString(infoRow[5], MARGIN + 5 * sixth + 4, textY);
+                g.drawString(infoRow[4], x4, textY);
+                int lw4 = g.getFontMetrics(labelFnt).stringWidth(infoRow[4]);
+                g.setFont(dataFnt); g.setColor(DARK);
+                g.drawString(infoRow[5], x4 + lw4 + epInfoValGap, textY);
             }
+
             g.setColor(BORDER); g.drawLine(MARGIN, y + INFO_H, W - MARGIN, y + INFO_H);
             y += INFO_H;
         }
-        y += 10;
+        y += Math.round(12f * DPI / 72f);  // gap between farmer details and table
 
         String[] epHdrs = {
                 "ಕ್ರಮ ಸಂಖ್ಯೆ\nSL No",
-                "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nDate",
+                "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nTransaction Date",
                 "ವಿವರ\nDescription",
-                "ವಹಿವಾಟಿನ ವಿಧ\nType",
-                "ಠೇವಣಿ ಮೊತ್ತ\nDeposit",
-                "ಬಿತ್ತನೆ ಗೂಡಿನ ಪರಿಮಾಣ\nQty (kg)",
-                "ಗೂಡಿನ ಸಂಖ್ಯೆ/ಕೆ.ಜಿ\nCocoons/Kg",
-                "ಒಟ್ಟು ಗೂಡಿನ ಸಂಖ್ಯೆ\nTotal Cocoons",
-                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ\nRate/Kg",
-                "ಖರೀದಿ ಮೊತ್ತ\nPayment Amt",
-                "ಉಳಿಕೆ ಮೊತ್ತ\nBalance"
+                "ವಹಿವಾಟಿನ ವಿಧ\nTransaction Type",
+                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ (ರೂ)\nDeposit Amount (Rs)",
+                "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ\nQuantity of seed cocoon purchased(in kg's)",
+                "ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ (ಪ್ರತಿ ಕೆ.ಜಿಗೆ)\nNo. of Seed Cocoons per Kg",
+                "ಒಟ್ಟು ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ\nTotal No of Seed Cocoons (in No's)",
+                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ (ರೂ)\nRate per Kg (Rs)",
+                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ (ರೂ)\nSeed Cocoon Purchase Amount (Rs)",
+                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ (ರೂ)\nRefunded Amount (Rs)",
+                "ಉಳಿಕೆ ಮೊತ್ತ (ರೂ)\nBalance Amount (Rs)"
         };
         g.setFont(hdrFnt);
-        for (int i = 0; i < 11; i++) {
+        java.awt.FontMetrics epHdrFm = g.getFontMetrics(hdrFnt);
+        for (int i = 0; i < 12; i++) {
             g.setColor(HDR_BG); g.fillRect(cx[i], y, cw[i], HDR_H);
             g.setColor(BORDER); g.drawRect(cx[i], y, cw[i], HDR_H);
             g.setColor(java.awt.Color.WHITE);
-            String[] lines = epHdrs[i].split("\n");
-            int lineH = HDR_H / (lines.length + 1);
-            for (int li = 0; li < lines.length; li++) {
-                drawCenteredPdf(g, lines[li], cx[i], y + lineH * li, cw[i], lineH);
-            }
+            java.util.List<String> wrLines = new java.util.ArrayList<>();
+            for (String part : epHdrs[i].split("\n"))
+                wrLines.addAll(wrapTextPdf(epHdrFm, part, cw[i] - 4));
+            int lineH = HDR_H / (wrLines.size() + 1);
+            java.awt.Shape prevClip = g.getClip();
+            g.setClip(cx[i] + 1, y + 1, cw[i] - 2, HDR_H - 2);
+            for (int li = 0; li < wrLines.size(); li++)
+                drawCenteredPdf(g, wrLines.get(li), cx[i], y + lineH * li, cw[i], lineH);
+            g.setClip(prevClip);
         }
         y += HDR_H;
 
         int epPdfSlNo = 1;
-        double epPdfSumDeposit = 0, epPdfSumLotWeight = 0, epPdfSumTotalCocoons = 0, epPdfSumPayment = 0;
-        double epPdfLastBalance = wrapper.getOpeningBalance() != null ? wrapper.getOpeningBalance() : 0;
+        double epPdfSumDeposit = 0, epPdfSumLotWeight = 0, epPdfSumTotalCocoons = 0, epPdfSumPayment = 0, epPdfSumRefunded = 0;
 
         for (ReelerTransactionReport rep : reports) {
             boolean alt = (epPdfSlNo % 2 == 0);
             g.setColor(alt ? ALT_BG : java.awt.Color.WHITE); g.fillRect(MARGIN, y, usable, ROW_H);
             g.setColor(BORDER); g.drawRect(MARGIN, y, usable, ROW_H);
-            for (int i = 1; i < 11; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
+            for (int i = 1; i < 12; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
 
-            double depV = rep.getDepositAmount() != null ? rep.getDepositAmount() : 0;
-            double lwV  = rep.getLotWeight()     != null ? rep.getLotWeight()     : 0;
-            int    qnV  = rep.getQtyNos()        != null ? rep.getQtyNos()        : 0;
+            double depV = rep.getDepositAmount()  != null ? rep.getDepositAmount()  : 0;
+            double lwV  = rep.getLotWeight()      != null ? rep.getLotWeight()      : 0;
+            int    qnV  = rep.getQtyNos()         != null ? rep.getQtyNos()         : 0;
             double tcV  = lwV * qnV;
-            double rpV  = rep.getRatePerKg()     != null ? rep.getRatePerKg()     : 0;
-            double pyV  = rep.getPaymentAmount() != null ? rep.getPaymentAmount() : 0;
+            double rpV  = rep.getRatePerKg()      != null ? rep.getRatePerKg()      : 0;
+            double pyV  = rep.getPaymentAmount()  != null ? rep.getPaymentAmount()  : 0;
+            double rfV  = rep.getRefundedAmount() != null ? rep.getRefundedAmount() : 0;
 
-            if ("C".equalsIgnoreCase(rep.getTransactionType())) {
-                epPdfLastBalance += depV;
-            } else {
-                epPdfLastBalance -= pyV;
-            }
             epPdfSumDeposit += depV; epPdfSumLotWeight += lwV;
-            epPdfSumTotalCocoons += tcV; epPdfSumPayment += pyV;
+            epPdfSumTotalCocoons += tcV; epPdfSumPayment += pyV; epPdfSumRefunded += rfV;
 
             g.setFont(dataFnt); g.setColor(DARK);
             String[] vals = {
                     String.valueOf(epPdfSlNo++),
-                    rep.getTransactionDate() != null ? rep.getTransactionDate().toString() : "",
-                    rep.getOperationDescription() != null ? rep.getOperationDescription() : "",
-                    rep.getTransactionType() != null ? rep.getTransactionType() : "",
+                    rep.getTransactionDate() != null ? rep.getTransactionDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "-",
+                    rep.getOperationDescription() != null ? rep.getOperationDescription() : "-",
+                    rep.getTransactionType() != null ? rep.getTransactionType() : "-",
                     fmt(depV), fmt(lwV),
-                    qnV == 0 ? "" : String.valueOf(qnV),
-                    tcV == 0 ? "" : fmt(tcV),
-                    rpV == 0 ? "" : fmt(rpV),
-                    fmt(pyV), fmt(epPdfLastBalance)
+                    qnV == 0 ? "-" : String.valueOf(qnV),
+                    tcV == 0 ? "-" : fmt(tcV),
+                    rpV == 0 ? "-" : fmt(rpV),
+                    fmt(pyV), fmt(rfV), fmt(rep.getBalance())
             };
-            for (int i = 0; i < 11; i++) {
-                if (i >= 4) drawRightPdf(g, vals[i], cx[i], y, cw[i], ROW_H);
-                else        drawLeftPdf (g, vals[i], cx[i], y, cw[i], ROW_H);
+            for (int i = 0; i < 12; i++) {
+                java.awt.Shape prevClip = g.getClip();
+                g.setClip(cx[i] + 1, y + 1, cw[i] - 2, ROW_H - 2);
+                drawCenteredPdf(g, vals[i], cx[i], y, cw[i], ROW_H);
+                g.setClip(prevClip);
             }
             y += ROW_H;
         }
 
         g.setColor(TOT_BG); g.fillRect(MARGIN, y, usable, ROW_H);
         g.setColor(BORDER); g.drawRect(MARGIN, y, usable, ROW_H);
-        for (int i = 1; i < 11; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
+        for (int i = 1; i < 12; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
         g.setFont(totalFnt); g.setColor(DARK);
         drawCenteredPdf(g, "ಒಟ್ಟು / Total", cx[0], y, cw[0] + cw[1] + cw[2] + cw[3], ROW_H);
-        drawRightPdf(g, fmt2(epPdfSumDeposit),      cx[4], y, cw[4], ROW_H);
-        drawRightPdf(g, fmt2(epPdfSumLotWeight),     cx[5], y, cw[5], ROW_H);
-        drawRightPdf(g, "",                          cx[6], y, cw[6], ROW_H);
-        drawRightPdf(g, fmt2(epPdfSumTotalCocoons),  cx[7], y, cw[7], ROW_H);
-        drawRightPdf(g, "",                          cx[8], y, cw[8], ROW_H);
-        drawRightPdf(g, fmt2(epPdfSumPayment),       cx[9], y, cw[9], ROW_H);
-        drawRightPdf(g, fmt2(epPdfLastBalance),      cx[10], y, cw[10], ROW_H);
+        drawCenteredPdf(g, fmt2(epPdfSumDeposit),       cx[4], y, cw[4], ROW_H);
+        drawCenteredPdf(g, fmt2(epPdfSumLotWeight),      cx[5], y, cw[5], ROW_H);
+        drawCenteredPdf(g, "",                           cx[6], y, cw[6], ROW_H);
+        drawCenteredPdf(g, fmt2(epPdfSumTotalCocoons),   cx[7], y, cw[7], ROW_H);
+        drawCenteredPdf(g, "",                           cx[8], y, cw[8], ROW_H);
+        drawCenteredPdf(g, fmt2(epPdfSumPayment),        cx[9], y, cw[9], ROW_H);
+        drawCenteredPdf(g, fmt2(epPdfSumRefunded),                  cx[10], y, cw[10], ROW_H);
+        drawCenteredPdf(g, fmt2(wrapper.getClosingBalance()),       cx[11], y, cw[11], ROW_H);
 
         g.dispose();
 
         java.io.File pdfFile = java.io.File.createTempFile("Egg_Producer_Txn_Report_", ".pdf");
         try (org.apache.pdfbox.pdmodel.PDDocument doc = new org.apache.pdfbox.pdmodel.PDDocument()) {
             org.apache.pdfbox.pdmodel.common.PDRectangle rect =
-                    new org.apache.pdfbox.pdmodel.common.PDRectangle(W * 72f / DPI, H * 72f / DPI);
+                    new org.apache.pdfbox.pdmodel.common.PDRectangle(PDF_W, PDF_H);  // A4 landscape – fills page when printed
             org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(rect);
             doc.addPage(page);
             org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImg =
@@ -3648,6 +3512,25 @@ public class LotGroupageService {
         } catch (Exception e) {
             return new java.awt.Font("SansSerif", java.awt.Font.PLAIN, (int) size);
         }
+    }
+
+    private java.util.List<String> wrapTextPdf(java.awt.FontMetrics fm, String text, int maxW) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        if (text == null || text.isEmpty()) return out;
+        if (fm.stringWidth(text) <= maxW) { out.add(text); return out; }
+        String[] words = text.split(" ");
+        StringBuilder cur = new StringBuilder();
+        for (String w : words) {
+            String candidate = cur.length() == 0 ? w : cur + " " + w;
+            if (fm.stringWidth(candidate) <= maxW) {
+                cur = new StringBuilder(candidate);
+            } else {
+                if (cur.length() > 0) { out.add(cur.toString()); cur = new StringBuilder(w); }
+                else { out.add(w); }
+            }
+        }
+        if (cur.length() > 0) out.add(cur.toString());
+        return out;
     }
 
     private void drawCenteredPdf(java.awt.Graphics2D g, String text, int x, int y, int w, int h) {
