@@ -2716,8 +2716,8 @@ public class LotGroupageService {
 
         // ── column widths ─────────────────────────────────────────────────────
         int usable = W - 2 * MARGIN;
-        float[] proportions = {0.04f, 0.06f, 0.13f, 0.05f, 0.08f,
-                               0.11f, 0.07f, 0.09f, 0.08f, 0.08f, 0.07f, 0.14f};
+        float[] proportions = {0.04f, 0.06f, 0.15f, 0.05f, 0.08f,
+                               0.10f, 0.07f, 0.09f, 0.08f, 0.08f, 0.06f, 0.14f};
         int[] cw = new int[12];
         int allocated = 0;
         for (int i = 0; i < 11; i++) {
@@ -2850,14 +2850,14 @@ public class LotGroupageService {
                 "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nTransaction Date",
                 "ವಿವರ\nDescription",
                 "ವಹಿವಾಟಿನ ವಿಧ\nTransaction Type",
-                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ (ರೂ)\nDeposit Amount (Rs)",
+                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ \nDeposit Amount ",
                 "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ\nQuantity of seed cocoon purchased (in kg's)",
-                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ (ರೂ)\nRate per Kg (Rs)",
-                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ (ರೂ)\nCocoons Purchase Amount (Rs)",
-                "ಮಾರು ಕಟ್ಟೆ ಶುಲ್ಕ @1% (ರೂ)\nMarket fee @1% (Rs)",
-                "ಒಟ್ಟು ಮೊತ್ತ (ರೂ)\nTotal (Rs)",
-                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ (ರೂ)\nRefunded Amount (Rs)",
-                "ಉಳಿಕೆ ಮೊತ್ತ (ರೂ)\nBalance Amount (Rs)"
+                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ \nRate per Kg ",
+                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ \nCocoons Purchase Amount ",
+                "ಮಾರು ಕಟ್ಟೆ ಶುಲ್ಕ @1% \nMarket fee @1% ",
+                "ಒಟ್ಟು ಮೊತ್ತ \nTotal ",
+                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ \nRefunded Amount ",
+                "ಉಳಿಕೆ ಮೊತ್ತ \nBalance Amount "
         };
         g.setFont(hdrFnt);
         java.awt.FontMetrics hdrFm = g.getFontMetrics(hdrFnt);
@@ -2879,75 +2879,153 @@ public class LotGroupageService {
         }
         y += HDR_H;
 
-        // ── data rows ─────────────────────────────────────────────────────────
-        int slNo = 1;
-        for (ReelerTransactionReport rep : reports) {
-            boolean alt = (slNo % 2 == 0);
-            g.setColor(alt ? ALT_BG : java.awt.Color.WHITE);
-            g.fillRect(MARGIN, y, usable, ROW_H);
-            g.setColor(BORDER);
-            g.drawRect(MARGIN, y, usable, ROW_H);
-            for (int i = 1; i < 12; i++) {
-                g.drawLine(cx[i], y, cx[i], y + ROW_H);
+        // ── pagination: calculate rows per page ──────────────────────────────
+        int firstPageDataStartY = y;
+        int rowsOnFirstPage     = (H - firstPageDataStartY - ROW_H) / ROW_H;  // reserve ROW_H for totals
+        int subseqHdrH          = MARGIN + HDR_H;
+        int rowsOnSubseqPage    = (H - subseqHdrH - ROW_H) / ROW_H;
+
+        // split reports into per-page slices
+        java.util.List<java.util.List<ReelerTransactionReport>> pageSlices = new java.util.ArrayList<>();
+        {
+            int ri = 0;
+            int fc = Math.min(rowsOnFirstPage, reports.size());
+            pageSlices.add(new java.util.ArrayList<>(reports.subList(0, fc)));
+            ri = fc;
+            while (ri < reports.size()) {
+                int cnt = Math.min(rowsOnSubseqPage, reports.size() - ri);
+                pageSlices.add(new java.util.ArrayList<>(reports.subList(ri, ri + cnt)));
+                ri += cnt;
             }
-            g.setFont(dataFnt);
-            g.setColor(DARK);
-            String[] vals = {
-                    String.valueOf(slNo++),
-                    rep.getTransactionDate() != null ? rep.getTransactionDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "",
-                    rep.getOperationDescription() != null ? rep.getOperationDescription() : "",
-                    rep.getTransactionType() != null ? rep.getTransactionType() : "",
-                    fmt(rep.getDepositAmount()),
-                    fmt(rep.getLotWeight()),
-                    fmt(rep.getRatePerKg()),
-                    fmt(rep.getPaymentAmount()),
-                    fmt(rep.getMarketFee()),
-                    fmt(rep.getTotal()),
-                    fmt(rep.getRefundedAmount()),
-                    fmt(rep.getBalance())
-            };
-            for (int i = 0; i < 12; i++) {
-                java.awt.Shape prevClip = g.getClip();
-                g.setClip(cx[i] + 1, y + 1, cw[i] - 2, ROW_H - 2);
-                drawCenteredPdf(g, vals[i], cx[i], y, cw[i], ROW_H);
-                g.setClip(prevClip);
-            }
-            y += ROW_H;
         }
 
-        // ── totals row ────────────────────────────────────────────────────────
-        g.setColor(TOT_BG);
-        g.fillRect(MARGIN, y, usable, ROW_H);
-        g.setColor(BORDER);
-        g.drawRect(MARGIN, y, usable, ROW_H);
-        for (int i = 1; i < 12; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
-        g.setFont(totalFnt);
-        g.setColor(DARK);
-        drawCenteredPdf(g, "ಒಟ್ಟು / Total",
-                cx[0], y, cw[0] + cw[1] + cw[2] + cw[3], ROW_H);
-        drawCenteredPdf(g, fmt2(wrapper.getTotalDeposits()),       cx[4], y, cw[4], ROW_H);
-        drawCenteredPdf(g, fmt2(wrapper.getTotalLotWeight()),      cx[5], y, cw[5], ROW_H);
-        drawCenteredPdf(g, "",                                     cx[6], y, cw[6], ROW_H);
-        drawCenteredPdf(g, fmt2(wrapper.getTotalPaymentAmount()),  cx[7], y, cw[7], ROW_H);
-        drawCenteredPdf(g, fmt2(wrapper.getTotalMarketFee()),      cx[8], y, cw[8], ROW_H);
-        drawCenteredPdf(g, fmt2(wrapper.getTotalPurchase()),       cx[9], y, cw[9], ROW_H);
-        drawCenteredPdf(g, fmt2(wrapper.getTotalBankTransfers()),  cx[10], y, cw[10], ROW_H);
-        drawCenteredPdf(g, fmt2(wrapper.getClosingBalance()),      cx[11], y, cw[11], ROW_H);
+        // page 1 image already has the header; subsequent pages are created below
+        java.util.List<java.awt.image.BufferedImage> pageImages = new java.util.ArrayList<>();
+        pageImages.add(img);
+
+        int globalSlNo = 1;
+
+        for (int pi = 0; pi < pageSlices.size(); pi++) {
+            java.util.List<ReelerTransactionReport> slice = pageSlices.get(pi);
+            boolean isLastPage  = (pi == pageSlices.size() - 1);
+            boolean isFirstPage = (pi == 0);
+
+            java.awt.Graphics2D pg;
+            int py;
+
+            if (isFirstPage) {
+                pg = g;
+                py = firstPageDataStartY;
+            } else {
+                // new page: white background + column headers only
+                java.awt.image.BufferedImage newImg =
+                        new java.awt.image.BufferedImage(W, H, java.awt.image.BufferedImage.TYPE_INT_RGB);
+                java.awt.Graphics2D ng = newImg.createGraphics();
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,      java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS, java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,         java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,     java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                ng.setColor(java.awt.Color.WHITE);
+                ng.fillRect(0, 0, W, H);
+                pg = ng;
+                py = MARGIN;
+
+                // column headers
+                pg.setFont(hdrFnt);
+                java.awt.FontMetrics hdrFmN = pg.getFontMetrics(hdrFnt);
+                for (int i = 0; i < 12; i++) {
+                    pg.setColor(HDR_BG);  pg.fillRect(cx[i], py, cw[i], HDR_H);
+                    pg.setColor(BORDER);  pg.drawRect(cx[i], py, cw[i], HDR_H);
+                    pg.setColor(java.awt.Color.WHITE);
+                    java.util.List<String> wl = new java.util.ArrayList<>();
+                    for (String part : hdrs[i].split("\n"))
+                        wl.addAll(wrapTextPdf(hdrFmN, part, cw[i] - 4));
+                    int lhN = HDR_H / (wl.size() + 1);
+                    java.awt.Shape pc2 = pg.getClip();
+                    pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, HDR_H - 2);
+                    for (int li = 0; li < wl.size(); li++)
+                        drawCenteredPdf(pg, wl.get(li), cx[i], py + lhN * li, cw[i], lhN);
+                    pg.setClip(pc2);
+                }
+                py += HDR_H;
+                pageImages.add(newImg);
+            }
+
+            // ── data rows for this page ───────────────────────────────────────
+            for (ReelerTransactionReport rep : slice) {
+                boolean alt = (globalSlNo % 2 == 0);
+                pg.setColor(alt ? ALT_BG : java.awt.Color.WHITE);
+                pg.fillRect(MARGIN, py, usable, ROW_H);
+                pg.setColor(BORDER);
+                pg.drawRect(MARGIN, py, usable, ROW_H);
+                for (int i = 1; i < 12; i++) pg.drawLine(cx[i], py, cx[i], py + ROW_H);
+                pg.setFont(dataFnt);
+                pg.setColor(DARK);
+                String[] vals = {
+                        String.valueOf(globalSlNo++),
+                        rep.getTransactionDate() != null ? rep.getTransactionDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "",
+                        rep.getOperationDescription() != null ? rep.getOperationDescription() : "",
+                        rep.getTransactionType() != null ? rep.getTransactionType() : "",
+                        fmt(rep.getDepositAmount()),
+                        fmt(rep.getLotWeight()),
+                        fmt(rep.getRatePerKg()),
+                        fmt(rep.getPaymentAmount()),
+                        fmt(rep.getMarketFee()),
+                        fmt(rep.getTotal()),
+                        fmt(rep.getRefundedAmount()),
+                        fmt(rep.getBalance())
+                };
+                for (int i = 0; i < 12; i++) {
+                    java.awt.Shape prevClip = pg.getClip();
+                    pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, ROW_H - 2);
+                    if (i == 2) drawLeftPdf(pg, vals[i], cx[i], py, cw[i], ROW_H);
+                    else        drawCenteredPdf(pg, vals[i], cx[i], py, cw[i], ROW_H);
+                    pg.setClip(prevClip);
+                }
+                py += ROW_H;
+            }
+
+            // ── totals row on last page only ──────────────────────────────────
+            if (isLastPage) {
+                pg.setColor(TOT_BG);
+                pg.fillRect(MARGIN, py, usable, ROW_H);
+                pg.setColor(BORDER);
+                pg.drawRect(MARGIN, py, usable, ROW_H);
+                for (int i = 1; i < 12; i++) pg.drawLine(cx[i], py, cx[i], py + ROW_H);
+                pg.setFont(totalFnt);
+                pg.setColor(DARK);
+                drawCenteredPdf(pg, "ಒಟ್ಟು / Total",
+                        cx[0], py, cw[0] + cw[1] + cw[2] + cw[3], ROW_H);
+                drawCenteredPdf(pg, fmt2(wrapper.getTotalDeposits()),       cx[4], py, cw[4], ROW_H);
+                drawCenteredPdf(pg, fmt2(wrapper.getTotalLotWeight()),      cx[5], py, cw[5], ROW_H);
+                drawCenteredPdf(pg, "",                                     cx[6], py, cw[6], ROW_H);
+                drawCenteredPdf(pg, fmt2(wrapper.getTotalPaymentAmount()),  cx[7], py, cw[7], ROW_H);
+                drawCenteredPdf(pg, fmt2(wrapper.getTotalMarketFee()),      cx[8], py, cw[8], ROW_H);
+                drawCenteredPdf(pg, fmt2(wrapper.getTotalPurchase()),       cx[9], py, cw[9], ROW_H);
+                drawCenteredPdf(pg, fmt2(wrapper.getTotalBankTransfers()),  cx[10], py, cw[10], ROW_H);
+                drawCenteredPdf(pg, fmt2(wrapper.getClosingBalance()),      cx[11], py, cw[11], ROW_H);
+            }
+
+            if (!isFirstPage) pg.dispose();
+        }
 
         g.dispose();
 
-        // ── embed in PDFBox ───────────────────────────────────────────────────
+        // ── embed in PDFBox (one page per image) ──────────────────────────────
         java.io.File pdfFile = java.io.File.createTempFile("Seed_Market_Txn_Report_", ".pdf");
         try (org.apache.pdfbox.pdmodel.PDDocument doc = new org.apache.pdfbox.pdmodel.PDDocument()) {
             org.apache.pdfbox.pdmodel.common.PDRectangle rect =
-                    new org.apache.pdfbox.pdmodel.common.PDRectangle(PDF_W, PDF_H);  // A4 landscape – fills page when printed
-            org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(rect);
-            doc.addPage(page);
-            org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImg =
-                    org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory.createFromImage(doc, img);
-            try (org.apache.pdfbox.pdmodel.PDPageContentStream cs =
-                         new org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page)) {
-                cs.drawImage(pdImg, 0, 0, rect.getWidth(), rect.getHeight());
+                    new org.apache.pdfbox.pdmodel.common.PDRectangle(PDF_W, PDF_H);
+            for (java.awt.image.BufferedImage pageImg : pageImages) {
+                org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(rect);
+                doc.addPage(page);
+                org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImg =
+                        org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory.createFromImage(doc, pageImg);
+                try (org.apache.pdfbox.pdmodel.PDPageContentStream cs =
+                             new org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page)) {
+                    cs.drawImage(pdImg, 0, 0, rect.getWidth(), rect.getHeight());
+                }
             }
             doc.save(pdfFile);
         }
@@ -3264,7 +3342,7 @@ public class LotGroupageService {
         } catch (Exception ignored) {}
 
         int usable = W - 2 * MARGIN;
-        float[] proportions = {0.04f, 0.07f, 0.10f, 0.06f, 0.08f, 0.11f, 0.07f, 0.09f, 0.08f, 0.08f, 0.08f, 0.14f};
+        float[] proportions = {0.04f, 0.06f, 0.13f, 0.06f, 0.08f, 0.10f, 0.07f, 0.09f, 0.08f, 0.08f, 0.07f, 0.14f};
         int[] cw = new int[12];
         int allocated = 0;
         for (int i = 0; i < 11; i++) { cw[i] = (int)(usable * proportions[i]); allocated += cw[i]; }
@@ -3381,14 +3459,14 @@ public class LotGroupageService {
                 "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nTransaction Date",
                 "ವಿವರ\nDescription",
                 "ವಹಿವಾಟಿನ ವಿಧ\nTransaction Type",
-                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ (ರೂ)\nDeposit Amount (Rs)",
+                "ಠೇವಣಿ ಮಾಡಿದ ಮೊತ್ತ \nDeposit Amount ",
                 "ಖರೀದಿಸಿದ ಬಿತ್ತನೆ ರೇಷ್ಮೆ ಗೂಡಿನ ಪರಿಮಾಣ\nQuantity of seed cocoon purchased(in kg's)",
                 "ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ (ಪ್ರತಿ ಕೆ.ಜಿಗೆ)\nNo. of Seed Cocoons per Kg",
                 "ಒಟ್ಟು ಬಿತ್ತನೆ ಗೂಡಿನ ಸಂಖ್ಯೆ\nTotal No of Seed Cocoons (in No's)",
-                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ (ರೂ)\nRate per Kg (Rs)",
-                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ (ರೂ)\nSeed Cocoon Purchase Amount (Rs)",
-                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ (ರೂ)\nRefunded Amount (Rs)",
-                "ಉಳಿಕೆ ಮೊತ್ತ (ರೂ)\nBalance Amount (Rs)"
+                "ದರ ಪ್ರತಿ ಕೆ.ಜಿ.ಗೆ \nRate per Kg ",
+                "ಖರೀದಿಸಿದ ರೇಷ್ಮೆ ಗೂಡಿನ ಮೊತ್ತ \nSeed Cocoon Purchase Amount ",
+                "ಮರುಪಾವತಿಸಿದ ಮೊತ್ತ \nRefunded Amount ",
+                "ಉಳಿಕೆ ಮೊತ್ತ \nBalance Amount "
         };
         g.setFont(hdrFnt);
         java.awt.FontMetrics epHdrFm = g.getFontMetrics(hdrFnt);
@@ -3408,74 +3486,163 @@ public class LotGroupageService {
         }
         y += HDR_H;
 
-        int epPdfSlNo = 1;
-        double epPdfSumDeposit = 0, epPdfSumLotWeight = 0, epPdfSumTotalCocoons = 0, epPdfSumPayment = 0, epPdfSumRefunded = 0;
-
-        for (ReelerTransactionReport rep : reports) {
-            boolean alt = (epPdfSlNo % 2 == 0);
-            g.setColor(alt ? ALT_BG : java.awt.Color.WHITE); g.fillRect(MARGIN, y, usable, ROW_H);
-            g.setColor(BORDER); g.drawRect(MARGIN, y, usable, ROW_H);
-            for (int i = 1; i < 12; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
-
-            double depV = rep.getDepositAmount()  != null ? rep.getDepositAmount()  : 0;
-            double lwV  = rep.getLotWeight()      != null ? rep.getLotWeight()      : 0;
-            int    qnV  = rep.getQtyNos()         != null ? rep.getQtyNos()         : 0;
-            double tcV  = lwV * qnV;
-            double rpV  = rep.getRatePerKg()      != null ? rep.getRatePerKg()      : 0;
-            double pyV  = rep.getPaymentAmount()  != null ? rep.getPaymentAmount()  : 0;
-            double rfV  = rep.getRefundedAmount() != null ? rep.getRefundedAmount() : 0;
-
-            epPdfSumDeposit += depV; epPdfSumLotWeight += lwV;
-            epPdfSumTotalCocoons += tcV; epPdfSumPayment += pyV; epPdfSumRefunded += rfV;
-
-            g.setFont(dataFnt); g.setColor(DARK);
-            String[] vals = {
-                    String.valueOf(epPdfSlNo++),
-                    rep.getTransactionDate() != null ? rep.getTransactionDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "-",
-                    rep.getOperationDescription() != null ? rep.getOperationDescription() : "-",
-                    rep.getTransactionType() != null ? rep.getTransactionType() : "-",
-                    fmt(depV), fmt(lwV),
-                    qnV == 0 ? "-" : String.valueOf(qnV),
-                    tcV == 0 ? "-" : fmt(tcV),
-                    rpV == 0 ? "-" : fmt(rpV),
-                    fmt(pyV), fmt(rfV), fmt(rep.getBalance())
-            };
-            for (int i = 0; i < 12; i++) {
-                java.awt.Shape prevClip = g.getClip();
-                g.setClip(cx[i] + 1, y + 1, cw[i] - 2, ROW_H - 2);
-                drawCenteredPdf(g, vals[i], cx[i], y, cw[i], ROW_H);
-                g.setClip(prevClip);
-            }
-            y += ROW_H;
+        // ── pre-compute EU totals for the last-page totals row ───────────────
+        double epPdfSumDeposit = 0, epPdfSumLotWeight = 0, epPdfSumTotalCocoons = 0,
+               epPdfSumPayment = 0, epPdfSumRefunded = 0;
+        for (ReelerTransactionReport r : reports) {
+            double rlw = r.getLotWeight() != null ? r.getLotWeight() : 0;
+            int    rqn = r.getQtyNos()    != null ? r.getQtyNos()    : 0;
+            epPdfSumDeposit      += r.getDepositAmount()  != null ? r.getDepositAmount()  : 0;
+            epPdfSumLotWeight    += rlw;
+            epPdfSumTotalCocoons += rlw * rqn;
+            epPdfSumPayment      += r.getPaymentAmount()  != null ? r.getPaymentAmount()  : 0;
+            epPdfSumRefunded     += r.getRefundedAmount() != null ? r.getRefundedAmount() : 0;
         }
 
-        g.setColor(TOT_BG); g.fillRect(MARGIN, y, usable, ROW_H);
-        g.setColor(BORDER); g.drawRect(MARGIN, y, usable, ROW_H);
-        for (int i = 1; i < 12; i++) g.drawLine(cx[i], y, cx[i], y + ROW_H);
-        g.setFont(totalFnt); g.setColor(DARK);
-        drawCenteredPdf(g, "ಒಟ್ಟು / Total", cx[0], y, cw[0] + cw[1] + cw[2] + cw[3], ROW_H);
-        drawCenteredPdf(g, fmt2(epPdfSumDeposit),       cx[4], y, cw[4], ROW_H);
-        drawCenteredPdf(g, fmt2(epPdfSumLotWeight),      cx[5], y, cw[5], ROW_H);
-        drawCenteredPdf(g, "",                           cx[6], y, cw[6], ROW_H);
-        drawCenteredPdf(g, fmt2(epPdfSumTotalCocoons),   cx[7], y, cw[7], ROW_H);
-        drawCenteredPdf(g, "",                           cx[8], y, cw[8], ROW_H);
-        drawCenteredPdf(g, fmt2(epPdfSumPayment),        cx[9], y, cw[9], ROW_H);
-        drawCenteredPdf(g, fmt2(epPdfSumRefunded),                  cx[10], y, cw[10], ROW_H);
-        drawCenteredPdf(g, fmt2(wrapper.getClosingBalance()),       cx[11], y, cw[11], ROW_H);
+        // ── pagination setup ──────────────────────────────────────────────────
+        int firstPageDataStartY = y;
+        int rowsOnFirstPage     = (H - firstPageDataStartY - ROW_H) / ROW_H;
+        int subseqHdrH          = MARGIN + HDR_H;
+        int rowsOnSubseqPage    = (H - subseqHdrH - ROW_H) / ROW_H;
+
+        java.util.List<java.util.List<ReelerTransactionReport>> pageSlices = new java.util.ArrayList<>();
+        {
+            int ri = 0;
+            int fc = Math.min(rowsOnFirstPage, reports.size());
+            pageSlices.add(new java.util.ArrayList<>(reports.subList(0, fc)));
+            ri = fc;
+            while (ri < reports.size()) {
+                int cnt = Math.min(rowsOnSubseqPage, reports.size() - ri);
+                pageSlices.add(new java.util.ArrayList<>(reports.subList(ri, ri + cnt)));
+                ri += cnt;
+            }
+        }
+
+        java.util.List<java.awt.image.BufferedImage> pageImages = new java.util.ArrayList<>();
+        pageImages.add(img);
+
+        int globalSlNo = 1;
+
+        for (int pi = 0; pi < pageSlices.size(); pi++) {
+            java.util.List<ReelerTransactionReport> slice = pageSlices.get(pi);
+            boolean isLastPage  = (pi == pageSlices.size() - 1);
+            boolean isFirstPage = (pi == 0);
+
+            java.awt.Graphics2D pg;
+            int py;
+
+            if (isFirstPage) {
+                pg = g;
+                py = firstPageDataStartY;
+            } else {
+                java.awt.image.BufferedImage newImg =
+                        new java.awt.image.BufferedImage(W, H, java.awt.image.BufferedImage.TYPE_INT_RGB);
+                java.awt.Graphics2D ng = newImg.createGraphics();
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,      java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS, java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,         java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+                ng.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,     java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                ng.setColor(java.awt.Color.WHITE);
+                ng.fillRect(0, 0, W, H);
+                pg = ng;
+                py = MARGIN;
+
+                // column headers on this page
+                pg.setFont(hdrFnt);
+                java.awt.FontMetrics epHdrFmN = pg.getFontMetrics(hdrFnt);
+                for (int i = 0; i < 12; i++) {
+                    pg.setColor(HDR_BG);  pg.fillRect(cx[i], py, cw[i], HDR_H);
+                    pg.setColor(BORDER);  pg.drawRect(cx[i], py, cw[i], HDR_H);
+                    pg.setColor(java.awt.Color.WHITE);
+                    java.util.List<String> wl = new java.util.ArrayList<>();
+                    for (String part : epHdrs[i].split("\n"))
+                        wl.addAll(wrapTextPdf(epHdrFmN, part, cw[i] - 4));
+                    int lhN = HDR_H / (wl.size() + 1);
+                    java.awt.Shape pc2 = pg.getClip();
+                    pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, HDR_H - 2);
+                    for (int li = 0; li < wl.size(); li++)
+                        drawCenteredPdf(pg, wl.get(li), cx[i], py + lhN * li, cw[i], lhN);
+                    pg.setClip(pc2);
+                }
+                py += HDR_H;
+                pageImages.add(newImg);
+            }
+
+            // ── data rows for this page ───────────────────────────────────────
+            for (ReelerTransactionReport rep : slice) {
+                boolean alt = (globalSlNo % 2 == 0);
+                pg.setColor(alt ? ALT_BG : java.awt.Color.WHITE);
+                pg.fillRect(MARGIN, py, usable, ROW_H);
+                pg.setColor(BORDER);
+                pg.drawRect(MARGIN, py, usable, ROW_H);
+                for (int i = 1; i < 12; i++) pg.drawLine(cx[i], py, cx[i], py + ROW_H);
+
+                double depV = rep.getDepositAmount()  != null ? rep.getDepositAmount()  : 0;
+                double lwV  = rep.getLotWeight()      != null ? rep.getLotWeight()      : 0;
+                int    qnV  = rep.getQtyNos()         != null ? rep.getQtyNos()         : 0;
+                double tcV  = lwV * qnV;
+                double rpV  = rep.getRatePerKg()      != null ? rep.getRatePerKg()      : 0;
+                double pmtV = rep.getPaymentAmount()  != null ? rep.getPaymentAmount()  : 0;
+                double rfV  = rep.getRefundedAmount() != null ? rep.getRefundedAmount() : 0;
+
+                pg.setFont(dataFnt); pg.setColor(DARK);
+                String[] vals = {
+                        String.valueOf(globalSlNo++),
+                        rep.getTransactionDate() != null ? rep.getTransactionDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "-",
+                        rep.getOperationDescription() != null ? rep.getOperationDescription() : "-",
+                        rep.getTransactionType() != null ? rep.getTransactionType() : "-",
+                        fmt(depV), fmt(lwV),
+                        qnV == 0 ? "-" : String.valueOf(qnV),
+                        tcV == 0 ? "-" : fmt(tcV),
+                        rpV == 0 ? "-" : fmt(rpV),
+                        fmt(pmtV), fmt(rfV), fmt(rep.getBalance())
+                };
+                for (int i = 0; i < 12; i++) {
+                    java.awt.Shape prevClip = pg.getClip();
+                    pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, ROW_H - 2);
+                    if (i == 2) drawLeftPdf(pg, vals[i], cx[i], py, cw[i], ROW_H);
+                    else        drawCenteredPdf(pg, vals[i], cx[i], py, cw[i], ROW_H);
+                    pg.setClip(prevClip);
+                }
+                py += ROW_H;
+            }
+
+            // ── totals row on last page only ──────────────────────────────────
+            if (isLastPage) {
+                pg.setColor(TOT_BG); pg.fillRect(MARGIN, py, usable, ROW_H);
+                pg.setColor(BORDER); pg.drawRect(MARGIN, py, usable, ROW_H);
+                for (int i = 1; i < 12; i++) pg.drawLine(cx[i], py, cx[i], py + ROW_H);
+                pg.setFont(totalFnt); pg.setColor(DARK);
+                drawCenteredPdf(pg, "ಒಟ್ಟು / Total", cx[0], py, cw[0] + cw[1] + cw[2] + cw[3], ROW_H);
+                drawCenteredPdf(pg, fmt2(epPdfSumDeposit),       cx[4],  py, cw[4],  ROW_H);
+                drawCenteredPdf(pg, fmt2(epPdfSumLotWeight),     cx[5],  py, cw[5],  ROW_H);
+                drawCenteredPdf(pg, "",                          cx[6],  py, cw[6],  ROW_H);
+                drawCenteredPdf(pg, fmt2(epPdfSumTotalCocoons),  cx[7],  py, cw[7],  ROW_H);
+                drawCenteredPdf(pg, "",                          cx[8],  py, cw[8],  ROW_H);
+                drawCenteredPdf(pg, fmt2(epPdfSumPayment),       cx[9],  py, cw[9],  ROW_H);
+                drawCenteredPdf(pg, fmt2(epPdfSumRefunded),      cx[10], py, cw[10], ROW_H);
+                drawCenteredPdf(pg, fmt2(wrapper.getClosingBalance()), cx[11], py, cw[11], ROW_H);
+            }
+
+            if (!isFirstPage) pg.dispose();
+        }
 
         g.dispose();
 
         java.io.File pdfFile = java.io.File.createTempFile("Egg_Producer_Txn_Report_", ".pdf");
         try (org.apache.pdfbox.pdmodel.PDDocument doc = new org.apache.pdfbox.pdmodel.PDDocument()) {
             org.apache.pdfbox.pdmodel.common.PDRectangle rect =
-                    new org.apache.pdfbox.pdmodel.common.PDRectangle(PDF_W, PDF_H);  // A4 landscape – fills page when printed
-            org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(rect);
-            doc.addPage(page);
-            org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImg =
-                    org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory.createFromImage(doc, img);
-            try (org.apache.pdfbox.pdmodel.PDPageContentStream cs =
-                         new org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page)) {
-                cs.drawImage(pdImg, 0, 0, rect.getWidth(), rect.getHeight());
+                    new org.apache.pdfbox.pdmodel.common.PDRectangle(PDF_W, PDF_H);
+            for (java.awt.image.BufferedImage pageImg : pageImages) {
+                org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(rect);
+                doc.addPage(page);
+                org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImg =
+                        org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory.createFromImage(doc, pageImg);
+                try (org.apache.pdfbox.pdmodel.PDPageContentStream cs =
+                             new org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page)) {
+                    cs.drawImage(pdImg, 0, 0, rect.getWidth(), rect.getHeight());
+                }
             }
             doc.save(pdfFile);
         }
