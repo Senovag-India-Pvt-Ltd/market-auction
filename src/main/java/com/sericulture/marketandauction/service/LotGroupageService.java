@@ -261,6 +261,7 @@ public class LotGroupageService {
                 markDisposalEntry(
                         lotGroupageRequest.getFruitsId(),
                         lotGroupageRequest.getLotParentLevel(),
+                        lotGroupageRequest.getDflLotNumber(),
                         lotGroupageRequest.getSaleDisposalId()
                 );
             }
@@ -782,6 +783,7 @@ public class LotGroupageService {
                 markDisposalEntry(
                         lotGroupageRequestEdit.getFruitsId(),
                         lotGroupageRequestEdit.getLotParentLevel(),
+                        lotGroupageRequestEdit.getDflLotNumber(),
                         lotGroupageRequestEdit.getSaleDisposalId()
                 );
             }
@@ -815,7 +817,7 @@ public class LotGroupageService {
      *   - raises a clear ValidationException (HTTP 400, not a 500) when several match and no
      *     selection was sent, so the UI can show the options and let the user choose.
      */
-    private void markDisposalEntry(String fruitsId, String lotNumber, Integer saleDisposalId) {
+    private void markDisposalEntry(String fruitsId, String lotNumber, Long noOfDfls, Integer saleDisposalId) {
         // Explicit user selection wins — mark exactly the chosen row.
         if (saleDisposalId != null) {
             SaleAndDisposalOfDfls chosen = saleAndDisposalOfDflsRepository
@@ -827,11 +829,12 @@ public class LotGroupageService {
             return;
         }
 
-        // No explicit selection — look up all matching rows by fruitsId + lotNumber. The List finder
-        // avoids the non-unique-result crash when more than one row exists.
+        // No explicit selection — look up all matching rows by fruitsId + lotNumber + noOfDfls. The
+        // List finder avoids the non-unique-result crash when more than one row exists. A row whose
+        // DFL count differs won't match here, so it is left out of the ambiguity entirely.
         List<SaleAndDisposalOfDfls> entries = saleAndDisposalOfDflsRepository
-                .findAllByFruitsIdAndLotNumberAndIsVerifiedAndActive(
-                        fruitsId, lotNumber, 1, true);
+                .findAllByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
+                        fruitsId, lotNumber, noOfDfls, 1, true);
 
         if (entries == null || entries.isEmpty()) {
             return; // nothing to mark
@@ -853,15 +856,17 @@ public class LotGroupageService {
     }
 
     /**
-     * Returns every disposal row matching a fruitsId + lotNumber so the UI can display them and let
-     * the user pick which one to mark as disposed. Used to resolve the ambiguity that
-     * {@link #markDisposalEntry} reports. Keyed on fruitsId + lotNumber only (see repository note).
+     * Returns every disposal row matching a fruitsId + lotNumber + number of DFLs so the UI can
+     * display them and let the user pick which one to mark as disposed. Used to resolve the
+     * ambiguity that {@link #markDisposalEntry} reports. A record with a different DFL count is a
+     * different disposal and is intentionally excluded from this list.
      */
     public List<SaleDisposalCandidateResponse> getSaleDisposalCandidates(SaleDisposalLookupRequest request) {
         List<SaleAndDisposalOfDfls> entries = saleAndDisposalOfDflsRepository
-                .findAllByFruitsIdAndLotNumberAndIsVerifiedAndActive(
+                .findAllByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
                         request.getFruitsId(),
                         request.getLotParentLevel(),
+                        request.getDflLotNumber(),
                         1,
                         true);
 

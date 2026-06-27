@@ -17,13 +17,11 @@ public interface SaleAndDisposalOfDflsRepository extends JpaRepository<SaleAndDi
 
     SaleAndDisposalOfDfls findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(String fruitsId, String lotNumber,Long noOfDfls,Integer isVerified,boolean active);
 
-    // List-returning variant keyed on fruitsId + lotNumber only. A single fruitsId + lotNumber can
-    // have more than one disposal row, which makes the single-result finders above throw
-    // IncorrectResultSizeDataAccessException. We deliberately do NOT filter on numberOfDflsDisposed:
-    // that column is the disposed-count, not the market-auction dfl lot number, so matching it
-    // against dflLotNumber wrongly excluded valid rows (lookup returned 0 → disposal silently skipped).
-    // isVerified + active keep us to live, verified disposals.
-    List<SaleAndDisposalOfDfls> findAllByFruitsIdAndLotNumberAndIsVerifiedAndActive(String fruitsId, String lotNumber,Integer isVerified,boolean active);
+    // List-returning variant: a single fruitsId + lotNumber + numberOfDflsDisposed can have more than
+    // one row, which makes the single-result finder above throw IncorrectResultSizeDataAccessException.
+    // We match on numberOfDflsDisposed too so a disposal with a different DFL count is treated as a
+    // different record (not offered as a candidate) — only true duplicates surface for selection.
+    List<SaleAndDisposalOfDfls> findAllByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(String fruitsId, String lotNumber,Long noOfDfls,Integer isVerified,boolean active);
 
     public SaleAndDisposalOfDfls findByFruitsIdAndIdAndActiveIn(@Param("fruitsId") String fruitsId,@Param("id") long id, @Param("active") Set<Boolean> active);
 
