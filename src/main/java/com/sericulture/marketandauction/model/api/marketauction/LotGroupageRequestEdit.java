@@ -94,4 +94,10 @@ public class LotGroupageRequestEdit extends RequestBody {
     @Schema(name = "isMarketPaid", example = "0",
             description = "0 = market fee not yet collected, 1 = market fee paid")
     private Integer isMarketPaid;
+
+    @Schema(name = "saleDisposalId", example = "5",
+            description = "Chosen sale_and_disposal_of_dfls id when multiple disposal rows match the same "
+                    + "fruitsId + lotNumber. Set by the UI after the user selects one; the backend marks "
+                    + "only this row as disposed.")
+    private Integer saleDisposalId;
 }

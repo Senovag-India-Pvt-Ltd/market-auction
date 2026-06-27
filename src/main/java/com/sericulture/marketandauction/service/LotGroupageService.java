@@ -254,22 +254,15 @@ public class LotGroupageService {
             }
             lotGroupage.setStatus(status.getLabel());
 
-            // Fetch disposal entry
-            SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
-                    .findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
-                            lotGroupageRequest.getFruitsId(),
-                            lotGroupageRequest.getLotParentLevel(),
-                            lotGroupageRequest.getDflLotNumber(),
-                            1,
-                            true
-                    );
-
-            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0
+            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0.
+            // markDisposalEntry handles the multi-row case (a single fruitsId + lotNumber can map
+            // to more than one disposal record) using the saleDisposalId the user picked on the UI.
             if (remainingCocoon == null || remainingCocoon == 0) {
-                if (disposalEntry != null) {
-                    disposalEntry.setIsDisposed(1);
-                    saleAndDisposalOfDflsRepository.save(disposalEntry);
-                }
+                markDisposalEntry(
+                        lotGroupageRequest.getFruitsId(),
+                        lotGroupageRequest.getLotParentLevel(),
+                        lotGroupageRequest.getSaleDisposalId()
+                );
             }
 
             String buyerType = lotGroupageRequest.getBuyerType();
@@ -782,22 +775,15 @@ public class LotGroupageService {
             }
             lotGroupage.setStatus(editStatus.getLabel());
 
-            // Fetch disposal entry
-            SaleAndDisposalOfDfls disposalEntry = saleAndDisposalOfDflsRepository
-                    .findByFruitsIdAndLotNumberAndNumberOfDflsDisposedAndIsVerifiedAndActive(
-                            lotGroupageRequestEdit.getFruitsId(),
-                            lotGroupageRequestEdit.getLotParentLevel(),
-                            lotGroupageRequestEdit.getDflLotNumber(),
-                            1,
-                            true
-                    );
-
-            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0
+            // Update SaleAndDisposalOfDfls only if remainingCocoon = null or 0.
+            // markDisposalEntry handles the multi-row case (a single fruitsId + lotNumber can map
+            // to more than one disposal record) using the saleDisposalId the user picked on the UI.
             if (remainingCocoon == null || remainingCocoon == 0) {
-                if (disposalEntry != null) {
-                    disposalEntry.setIsDisposed(1);
-                    saleAndDisposalOfDflsRepository.save(disposalEntry);
-                }
+                markDisposalEntry(
+                        lotGroupageRequestEdit.getFruitsId(),
+                        lotGroupageRequestEdit.getLotParentLevel(),
+                        lotGroupageRequestEdit.getSaleDisposalId()
+                );
             }
 
             // Save LotGroupage
@@ -818,7 +804,89 @@ public class LotGroupageService {
         return responses; // Return the list of responses
     }
 
+    /**
+     * Marks the matching sale_and_disposal_of_dfls row as disposed (is_disposed = 1).
+     *
+     * A single fruitsId + lotNumber can map to MORE THAN ONE disposal row. The old single-result
+     * finder threw IncorrectResultSizeDataAccessException in that case. This method instead:
+     *   - uses the user-selected {@code saleDisposalId} when provided (the UI sends it after the
+     *     user picks one of the candidates returned by {@link #getSaleDisposalCandidates}),
+     *   - auto-marks the row when exactly one matches,
+     *   - raises a clear ValidationException (HTTP 400, not a 500) when several match and no
+     *     selection was sent, so the UI can show the options and let the user choose.
+     */
+    private void markDisposalEntry(String fruitsId, String lotNumber, Integer saleDisposalId) {
+        // Explicit user selection wins — mark exactly the chosen row.
+        if (saleDisposalId != null) {
+            SaleAndDisposalOfDfls chosen = saleAndDisposalOfDflsRepository
+                    .findByIdAndActive(saleDisposalId, true)
+                    .orElseThrow(() -> new ValidationException(
+                            "Selected disposal record (saleDisposalId " + saleDisposalId + ") was not found."));
+            chosen.setIsDisposed(1);
+            saleAndDisposalOfDflsRepository.save(chosen);
+            return;
+        }
 
+        // No explicit selection — look up all matching rows by fruitsId + lotNumber. The List finder
+        // avoids the non-unique-result crash when more than one row exists.
+        List<SaleAndDisposalOfDfls> entries = saleAndDisposalOfDflsRepository
+                .findAllByFruitsIdAndLotNumberAndIsVerifiedAndActive(
+                        fruitsId, lotNumber, 1, true);
+
+        if (entries == null || entries.isEmpty()) {
+            return; // nothing to mark
+        }
+
+        if (entries.size() == 1) {
+            SaleAndDisposalOfDfls entry = entries.get(0);
+            entry.setIsDisposed(1);
+            saleAndDisposalOfDflsRepository.save(entry);
+            return;
+        }
+
+        // Multiple matches and no saleDisposalId chosen — ambiguous.
+        // The UI must call getSaleDisposalCandidates, let the user pick, then resend with saleDisposalId.
+        throw new ValidationException(
+                "Multiple disposal records (" + entries.size() + ") found for fruitsId " + fruitsId
+                        + " and lot number " + lotNumber
+                        + ". Please select which disposal record to mark as disposed.");
+    }
+
+    /**
+     * Returns every disposal row matching a fruitsId + lotNumber so the UI can display them and let
+     * the user pick which one to mark as disposed. Used to resolve the ambiguity that
+     * {@link #markDisposalEntry} reports. Keyed on fruitsId + lotNumber only (see repository note).
+     */
+    public List<SaleDisposalCandidateResponse> getSaleDisposalCandidates(SaleDisposalLookupRequest request) {
+        List<SaleAndDisposalOfDfls> entries = saleAndDisposalOfDflsRepository
+                .findAllByFruitsIdAndLotNumberAndIsVerifiedAndActive(
+                        request.getFruitsId(),
+                        request.getLotParentLevel(),
+                        1,
+                        true);
+
+        List<SaleDisposalCandidateResponse> candidates = new ArrayList<>();
+        if (entries == null) {
+            return candidates;
+        }
+        for (SaleAndDisposalOfDfls entry : entries) {
+            candidates.add(SaleDisposalCandidateResponse.builder()
+                    .saleDisposalId(entry.getId())
+                    .fruitsId(entry.getFruitsId())
+                    .lotNumber(entry.getLotNumber())
+                    .numberOfDflsDisposed(entry.getNumberOfDflsDisposed())
+                    .eggSheetNumbers(entry.getEggSheetNumbers())
+                    .raceId(entry.getRaceId())
+                    .releaseDate(entry.getReleaseDate())
+                    .dateOfDisposal(entry.getDateOfDisposal())
+                    .nameAndAddressOfTheFarm(entry.getNameAndAddressOfTheFarm())
+                    .invoiceNumber(entry.getInvoiceNumber())
+                    .receiptNo(entry.getReceiptNo())
+                    .isDisposed(entry.getIsDisposed())
+                    .build());
+        }
+        return candidates;
+    }
 
     public ResponseEntity<?> validateReelerBalanceForLotGroupage(LotGroupageDetailsRequest lotGroupageDetailsRequest) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(List.class);
