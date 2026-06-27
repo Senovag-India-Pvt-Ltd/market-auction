@@ -286,7 +286,7 @@ public class LotGroupageService {
                 double soldAmount = lotGroupageRequest.getSoldAmount().doubleValue();
                 double marketFee = lotGroupage.getMarketFee() != null ? lotGroupage.getMarketFee() : 0.0;
                 boolean isReeling = "Reeling".equals(lotGroupageRequest.getBuyerType());
-                double totalDebitAmount = isReeling ? soldAmount + marketFee : soldAmount;
+                double totalDebitAmount = Math.round(isReeling ? soldAmount + marketFee : soldAmount);
                 int buyerId = "RSP".equals(lotGroupageRequest.getBuyerType())
                         ? (lotGroupageRequest.getExternalUnitId() != null ? lotGroupageRequest.getExternalUnitId().intValue() : 0)
                         : (lotGroupageRequest.getBuyerId() != null ? lotGroupageRequest.getBuyerId().intValue() : 0);
@@ -666,7 +666,7 @@ public class LotGroupageService {
                             : (lotGroupageRequestEdit.getBuyerId() != null ? lotGroupageRequestEdit.getBuyerId().intValue() : 0);
                     boolean isReeling = "Reeling".equals(editBuyerType);
                     double marketFee = lotGroupage.getMarketFee() != null ? lotGroupage.getMarketFee() : 0.0;
-                    double totalDebitDifference = isReeling ? debitDifference + marketFee : (double) debitDifference;
+                    double totalDebitDifference = Math.round(isReeling ? debitDifference + marketFee : (double) debitDifference);
                     ReelerVidDebitTxn editDebitTxn = new ReelerVidDebitTxn(
                             lotGroupageRequestEdit.getAllottedLotId().intValue(),
                             lotGroupageRequestEdit.getMarketId(),
@@ -2287,8 +2287,9 @@ public class LotGroupageService {
 
                         } else {
 
-                            report.setTotal(rat.getTotal());
-                            debitSum += rat.getTotal();
+                            double roundedTotal = Math.round(rat.getTotal() != null ? rat.getTotal() : 0.0);
+                            report.setTotal(roundedTotal);
+                            debitSum += roundedTotal;
                             totalLotWeight += rat.getLotWeight() != null ? rat.getLotWeight() : 0;
                             totalPaymentAmount += rat.getAmount() != null ? rat.getAmount() : 0;
                             totalMarketFee += rat.getMarketFee() != null ? rat.getMarketFee() : 0;
@@ -2784,8 +2785,8 @@ public class LotGroupageService {
 
         // ── column widths ─────────────────────────────────────────────────────
         int usable = W - 2 * MARGIN;
-        float[] proportions = {0.04f, 0.06f, 0.15f, 0.05f, 0.08f,
-                               0.10f, 0.07f, 0.09f, 0.08f, 0.08f, 0.06f, 0.14f};
+        float[] proportions = {0.04f, 0.06f, 0.15f, 0.08f, 0.08f,
+                               0.10f, 0.05f, 0.09f, 0.07f, 0.08f, 0.06f, 0.14f};
         int[] cw = new int[12];
         int allocated = 0;
         for (int i = 0; i < 11; i++) {
@@ -2801,16 +2802,31 @@ public class LotGroupageService {
         // ── fonts (sized in pixels = pt × DPI/72 so they print at correct pt size) ──
         java.awt.Font base     = loadKannadaPdfFont(Math.round(9f * DPI / 72f));             // 37 px = 9 pt
         java.awt.Font titleFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
-        java.awt.Font labelFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(7f  * DPI / 72f));  // 29 px = 7 pt
-        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(6f  * DPI / 72f));  // 25 px = 6 pt
-        java.awt.Font dataFnt  = base.deriveFont(java.awt.Font.PLAIN, (float)Math.round(7f  * DPI / 72f));  // 29 px = 7 pt
-        java.awt.Font totalFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(7f  * DPI / 72f));  // 29 px = 7 pt
+        java.awt.Font labelFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
+        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(8f  * DPI / 72f));  // 33 px = 8 pt
+        java.awt.Font dataFnt  = base.deriveFont(java.awt.Font.PLAIN, (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
+        java.awt.Font totalFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
 
         java.awt.Color HDR_BG   = new java.awt.Color(0x1a, 0x6f, 0xaf);
         java.awt.Color TOT_BG   = new java.awt.Color(0xd9, 0xe8, 0xf5);
         java.awt.Color BORDER   = new java.awt.Color(0xb0, 0xc4, 0xd8);
         java.awt.Color ALT_BG   = new java.awt.Color(0xea, 0xf4, 0xfb);
         java.awt.Color DARK     = new java.awt.Color(0x1a, 0x1a, 0x1a);
+
+        // ── pre-measure description font for dynamic row heights ──────────────
+        java.awt.image.BufferedImage _mImg = new java.awt.image.BufferedImage(1, 1, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        java.awt.Graphics2D _mG = _mImg.createGraphics();
+        _mG.setFont(dataFnt);
+        java.awt.FontMetrics dataFm = _mG.getFontMetrics();
+        _mG.dispose();
+        int dataLineH = dataFm.getHeight();
+        int descColW  = cw[2] - 8;
+        int[] rowHeights = new int[reports.size()];
+        for (int k = 0; k < reports.size(); k++) {
+            String dk = reports.get(k).getOperationDescription();
+            int nl = (dk != null && !dk.isEmpty()) ? wrapTextPdf(dataFm, dk, descColW).size() : 1;
+            rowHeights[k] = Math.max(ROW_H, nl * dataLineH + 8);
+        }
 
         // ── render ───────────────────────────────────────────────────────────
         java.awt.image.BufferedImage img =
@@ -2911,6 +2927,7 @@ public class LotGroupageService {
             y += INFO_H;
         }
         y += Math.round(12f * DPI / 72f);  // gap between farmer details and table
+        g.setStroke(new java.awt.BasicStroke(4f));
 
         // ── column headers ────────────────────────────────────────────────────
         String[] hdrs = {
@@ -2947,24 +2964,28 @@ public class LotGroupageService {
         }
         y += HDR_H;
 
-        // ── pagination: calculate rows per page ──────────────────────────────
+        // ── pagination: split by cumulative row heights ───────────────────────
         int firstPageDataStartY = y;
-        int rowsOnFirstPage     = (H - firstPageDataStartY - ROW_H) / ROW_H;  // reserve ROW_H for totals
-        int subseqHdrH          = MARGIN + HDR_H;
-        int rowsOnSubseqPage    = (H - subseqHdrH - ROW_H) / ROW_H;
+        int availFirstPage  = H - firstPageDataStartY - ROW_H;
+        int availSubseqPage = H - MARGIN - HDR_H - ROW_H;
 
-        // split reports into per-page slices
         java.util.List<java.util.List<ReelerTransactionReport>> pageSlices = new java.util.ArrayList<>();
         {
-            int ri = 0;
-            int fc = Math.min(rowsOnFirstPage, reports.size());
-            pageSlices.add(new java.util.ArrayList<>(reports.subList(0, fc)));
-            ri = fc;
-            while (ri < reports.size()) {
-                int cnt = Math.min(rowsOnSubseqPage, reports.size() - ri);
-                pageSlices.add(new java.util.ArrayList<>(reports.subList(ri, ri + cnt)));
-                ri += cnt;
+            java.util.List<ReelerTransactionReport> cur = new java.util.ArrayList<>();
+            int usedH = 0;
+            boolean onFirstPage = true;
+            for (int k = 0; k < reports.size(); k++) {
+                int avail = onFirstPage ? availFirstPage : availSubseqPage;
+                if (!cur.isEmpty() && usedH + rowHeights[k] > avail) {
+                    pageSlices.add(cur);
+                    cur = new java.util.ArrayList<>();
+                    usedH = 0;
+                    onFirstPage = false;
+                }
+                cur.add(reports.get(k));
+                usedH += rowHeights[k];
             }
+            if (!cur.isEmpty()) pageSlices.add(cur);
         }
 
         // page 1 image already has the header; subsequent pages are created below
@@ -2972,6 +2993,7 @@ public class LotGroupageService {
         pageImages.add(img);
 
         int globalSlNo = 1;
+        int globalRowIdx = 0;
 
         for (int pi = 0; pi < pageSlices.size(); pi++) {
             java.util.List<ReelerTransactionReport> slice = pageSlices.get(pi);
@@ -2998,6 +3020,7 @@ public class LotGroupageService {
                 ng.fillRect(0, 0, W, H);
                 pg = ng;
                 py = MARGIN;
+                pg.setStroke(new java.awt.BasicStroke(4f));
 
                 // column headers
                 pg.setFont(hdrFnt);
@@ -3022,12 +3045,13 @@ public class LotGroupageService {
 
             // ── data rows for this page ───────────────────────────────────────
             for (ReelerTransactionReport rep : slice) {
+                int curRowH = rowHeights[globalRowIdx++];
                 boolean alt = (globalSlNo % 2 == 0);
                 pg.setColor(alt ? ALT_BG : java.awt.Color.WHITE);
-                pg.fillRect(MARGIN, py, usable, ROW_H);
+                pg.fillRect(MARGIN, py, usable, curRowH);
                 pg.setColor(BORDER);
-                pg.drawRect(MARGIN, py, usable, ROW_H);
-                for (int i = 1; i < 12; i++) pg.drawLine(cx[i], py, cx[i], py + ROW_H);
+                pg.drawRect(MARGIN, py, usable, curRowH);
+                for (int i = 1; i < 12; i++) pg.drawLine(cx[i], py, cx[i], py + curRowH);
                 pg.setFont(dataFnt);
                 pg.setColor(DARK);
                 String[] vals = {
@@ -3046,12 +3070,21 @@ public class LotGroupageService {
                 };
                 for (int i = 0; i < 12; i++) {
                     java.awt.Shape prevClip = pg.getClip();
-                    pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, ROW_H - 2);
-                    if (i == 2) drawLeftPdf(pg, vals[i], cx[i], py, cw[i], ROW_H);
-                    else        drawCenteredPdf(pg, vals[i], cx[i], py, cw[i], ROW_H);
+                    pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, curRowH - 2);
+                    if (i == 2) {
+                        java.util.List<String> dLines = wrapTextPdf(dataFm, vals[2], descColW);
+                        int totalTH = dLines.size() * dataLineH;
+                        int textY = py + Math.max(4, (curRowH - totalTH) / 2);
+                        for (String dl : dLines) {
+                            pg.drawString(dl, cx[2] + 4, textY + dataFm.getAscent());
+                            textY += dataLineH;
+                        }
+                    } else {
+                        drawCenteredPdf(pg, vals[i], cx[i], py, cw[i], curRowH);
+                    }
                     pg.setClip(prevClip);
                 }
-                py += ROW_H;
+                py += curRowH;
             }
 
             // ── totals row on last page only ──────────────────────────────────
@@ -3410,7 +3443,7 @@ public class LotGroupageService {
         } catch (Exception ignored) {}
 
         int usable = W - 2 * MARGIN;
-        float[] proportions = {0.04f, 0.06f, 0.13f, 0.06f, 0.08f, 0.10f, 0.07f, 0.09f, 0.08f, 0.08f, 0.07f, 0.14f};
+        float[] proportions = {0.04f, 0.06f, 0.13f, 0.08f, 0.08f, 0.10f, 0.06f, 0.09f, 0.07f, 0.08f, 0.07f, 0.14f};
         int[] cw = new int[12];
         int allocated = 0;
         for (int i = 0; i < 11; i++) { cw[i] = (int)(usable * proportions[i]); allocated += cw[i]; }
@@ -3422,16 +3455,31 @@ public class LotGroupageService {
         // ── fonts (sized in pixels = pt × DPI/72 so they print at correct pt size) ──
         java.awt.Font base     = loadKannadaPdfFont(Math.round(10f * DPI / 72f));            // 42 px = 10 pt
         java.awt.Font titleFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(10f * DPI / 72f));  // 42 px = 10 pt
-        java.awt.Font labelFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(8f  * DPI / 72f));  // 33 px = 8 pt
-        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(7f  * DPI / 72f));  // 29 px = 7 pt
-        java.awt.Font dataFnt  = base.deriveFont(java.awt.Font.PLAIN, (float)Math.round(8f  * DPI / 72f));  // 33 px = 8 pt
-        java.awt.Font totalFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(8f  * DPI / 72f));  // 33 px = 8 pt
+        java.awt.Font labelFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(10f * DPI / 72f));  // 42 px = 10 pt
+        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
+        java.awt.Font dataFnt  = base.deriveFont(java.awt.Font.PLAIN, (float)Math.round(10f * DPI / 72f));  // 42 px = 10 pt
+        java.awt.Font totalFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(10f * DPI / 72f));  // 42 px = 10 pt
 
         java.awt.Color HDR_BG = new java.awt.Color(0x1a, 0x6f, 0xaf);
         java.awt.Color TOT_BG = new java.awt.Color(0xd9, 0xe8, 0xf5);
         java.awt.Color BORDER = new java.awt.Color(0xb0, 0xc4, 0xd8);
         java.awt.Color ALT_BG = new java.awt.Color(0xea, 0xf4, 0xfb);
         java.awt.Color DARK   = new java.awt.Color(0x1a, 0x1a, 0x1a);
+
+        // ── pre-measure description font for dynamic row heights ──────────────
+        java.awt.image.BufferedImage _mImg = new java.awt.image.BufferedImage(1, 1, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        java.awt.Graphics2D _mG = _mImg.createGraphics();
+        _mG.setFont(dataFnt);
+        java.awt.FontMetrics dataFm = _mG.getFontMetrics();
+        _mG.dispose();
+        int dataLineH = dataFm.getHeight();
+        int descColW  = cw[2] - 8;
+        int[] rowHeights = new int[reports.size()];
+        for (int k = 0; k < reports.size(); k++) {
+            String dk = reports.get(k).getOperationDescription();
+            int nl = (dk != null && !dk.isEmpty()) ? wrapTextPdf(dataFm, dk, descColW).size() : 1;
+            rowHeights[k] = Math.max(ROW_H, nl * dataLineH + 8);
+        }
 
         java.awt.image.BufferedImage img =
                 new java.awt.image.BufferedImage(W, H, java.awt.image.BufferedImage.TYPE_INT_RGB);
@@ -3521,6 +3569,7 @@ public class LotGroupageService {
             y += INFO_H;
         }
         y += Math.round(12f * DPI / 72f);  // gap between farmer details and table
+        g.setStroke(new java.awt.BasicStroke(4f));
 
         String[] epHdrs = {
                 "ಕ್ರಮ ಸಂಖ್ಯೆ\nSL No",
@@ -3567,29 +3616,35 @@ public class LotGroupageService {
             epPdfSumRefunded     += r.getRefundedAmount() != null ? r.getRefundedAmount() : 0;
         }
 
-        // ── pagination setup ──────────────────────────────────────────────────
+        // ── pagination: split by cumulative row heights ───────────────────────
         int firstPageDataStartY = y;
-        int rowsOnFirstPage     = (H - firstPageDataStartY - ROW_H) / ROW_H;
-        int subseqHdrH          = MARGIN + HDR_H;
-        int rowsOnSubseqPage    = (H - subseqHdrH - ROW_H) / ROW_H;
+        int availFirstPage  = H - firstPageDataStartY - ROW_H;
+        int availSubseqPage = H - MARGIN - HDR_H - ROW_H;
 
         java.util.List<java.util.List<ReelerTransactionReport>> pageSlices = new java.util.ArrayList<>();
         {
-            int ri = 0;
-            int fc = Math.min(rowsOnFirstPage, reports.size());
-            pageSlices.add(new java.util.ArrayList<>(reports.subList(0, fc)));
-            ri = fc;
-            while (ri < reports.size()) {
-                int cnt = Math.min(rowsOnSubseqPage, reports.size() - ri);
-                pageSlices.add(new java.util.ArrayList<>(reports.subList(ri, ri + cnt)));
-                ri += cnt;
+            java.util.List<ReelerTransactionReport> cur = new java.util.ArrayList<>();
+            int usedH = 0;
+            boolean onFirstPage = true;
+            for (int k = 0; k < reports.size(); k++) {
+                int avail = onFirstPage ? availFirstPage : availSubseqPage;
+                if (!cur.isEmpty() && usedH + rowHeights[k] > avail) {
+                    pageSlices.add(cur);
+                    cur = new java.util.ArrayList<>();
+                    usedH = 0;
+                    onFirstPage = false;
+                }
+                cur.add(reports.get(k));
+                usedH += rowHeights[k];
             }
+            if (!cur.isEmpty()) pageSlices.add(cur);
         }
 
         java.util.List<java.awt.image.BufferedImage> pageImages = new java.util.ArrayList<>();
         pageImages.add(img);
 
         int globalSlNo = 1;
+        int globalRowIdx = 0;
 
         for (int pi = 0; pi < pageSlices.size(); pi++) {
             java.util.List<ReelerTransactionReport> slice = pageSlices.get(pi);
@@ -3639,12 +3694,13 @@ public class LotGroupageService {
 
             // ── data rows for this page ───────────────────────────────────────
             for (ReelerTransactionReport rep : slice) {
+                int curRowH = rowHeights[globalRowIdx++];
                 boolean alt = (globalSlNo % 2 == 0);
                 pg.setColor(alt ? ALT_BG : java.awt.Color.WHITE);
-                pg.fillRect(MARGIN, py, usable, ROW_H);
+                pg.fillRect(MARGIN, py, usable, curRowH);
                 pg.setColor(BORDER);
-                pg.drawRect(MARGIN, py, usable, ROW_H);
-                for (int i = 1; i < 12; i++) pg.drawLine(cx[i], py, cx[i], py + ROW_H);
+                pg.drawRect(MARGIN, py, usable, curRowH);
+                for (int i = 1; i < 12; i++) pg.drawLine(cx[i], py, cx[i], py + curRowH);
 
                 double depV = rep.getDepositAmount()  != null ? rep.getDepositAmount()  : 0;
                 double lwV  = rep.getLotWeight()      != null ? rep.getLotWeight()      : 0;
@@ -3668,12 +3724,21 @@ public class LotGroupageService {
                 };
                 for (int i = 0; i < 12; i++) {
                     java.awt.Shape prevClip = pg.getClip();
-                    pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, ROW_H - 2);
-                    if (i == 2) drawLeftPdf(pg, vals[i], cx[i], py, cw[i], ROW_H);
-                    else        drawCenteredPdf(pg, vals[i], cx[i], py, cw[i], ROW_H);
+                    pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, curRowH - 2);
+                    if (i == 2) {
+                        java.util.List<String> dLines = wrapTextPdf(dataFm, vals[2], descColW);
+                        int totalTH = dLines.size() * dataLineH;
+                        int textY = py + Math.max(4, (curRowH - totalTH) / 2);
+                        for (String dl : dLines) {
+                            pg.drawString(dl, cx[2] + 4, textY + dataFm.getAscent());
+                            textY += dataLineH;
+                        }
+                    } else {
+                        drawCenteredPdf(pg, vals[i], cx[i], py, cw[i], curRowH);
+                    }
                     pg.setClip(prevClip);
                 }
-                py += ROW_H;
+                py += curRowH;
             }
 
             // ── totals row on last page only ──────────────────────────────────
