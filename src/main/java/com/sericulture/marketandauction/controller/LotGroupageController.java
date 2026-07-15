@@ -55,6 +55,19 @@ public class LotGroupageController {
         return lotGroupageService.getReelingLotNumberDetails();
     }
 
+    /**
+     * Returns all disposal rows matching a fruitsId + lotNumber so the UI can show them and let the
+     * user pick which one to mark as disposed. The chosen row's id is then sent back as
+     * {@code saleDisposalId} in the save/update payload. Resolves the "multiple disposal records"
+     * ambiguity instead of letting the lookup crash.
+     */
+    @PostMapping("/getSaleDisposalCandidates")
+    public ResponseEntity<?> getSaleDisposalCandidates(@RequestBody SaleDisposalLookupRequest request) {
+        ResponseWrapper rw = ResponseWrapper.createWrapper(SaleDisposalCandidateResponse.class);
+        rw.setContent(lotGroupageService.getSaleDisposalCandidates(request));
+        return ResponseEntity.ok(rw);
+    }
+
     @PostMapping("/updateLotGroupage")
     public ResponseEntity<?> editLotGroupage(@RequestBody LotGroupageDetailsRequestEdit lotGroupageDetailsRequestEdit){
         ResponseWrapper rw = ResponseWrapper.createWrapper(LotGroupageResponse.class);

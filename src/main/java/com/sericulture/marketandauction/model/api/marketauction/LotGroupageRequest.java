@@ -94,4 +94,10 @@ public class LotGroupageRequest extends RequestBody {
     @Schema(name = "previousSoldAmount", example = "0",
             description = "Already-debited sold amount for edit scenario; 0 or null for new saves")
     private Long previousSoldAmount;
+
+    @Schema(name = "saleDisposalId", example = "5",
+            description = "Chosen sale_and_disposal_of_dfls id when multiple disposal rows match the same "
+                    + "fruitsId + lotNumber. Set by the UI after the user selects one; the backend marks "
+                    + "only this row as disposed.")
+    private Integer saleDisposalId;
 }
