@@ -188,13 +188,13 @@ public class LotGroupageService {
                         break;
                 }
 
-                double mf = marketFee.setScale(2, RoundingMode.HALF_UP).doubleValue();
+                double mf = marketFee.setScale(0, RoundingMode.HALF_UP).doubleValue();
                 lotGroupage.setMarketFee(mf);
                 lotGroupage.setFarmerMarketFee(mf);
                 lotGroupage.setReelerMarketFee("Reeling".equals(lotGroupageRequest.getBuyerType()) ? mf : null);
             }
 
-            // Fetch market master for ONLINE debit (validation done via separate API)
+            // Fetch market master for ONLINE debit
             MarketMaster marketMaster = marketMasterRepository.findById(lotGroupageRequest.getMarketId());
             String buyerVirtualAccount = null;
             if (marketMaster != null && PAYMENTMODE.ONLINE.getLabel().equalsIgnoreCase(marketMaster.getPaymentMode())) {
@@ -716,7 +716,7 @@ public class LotGroupageService {
                         break;
                 }
 
-                double editMf = marketFee.setScale(2, RoundingMode.HALF_UP).doubleValue();
+                double editMf = marketFee.setScale(0, RoundingMode.HALF_UP).doubleValue();
                 lotGroupage.setMarketFee(editMf);
                 lotGroupage.setFarmerMarketFee(editMf);
                 lotGroupage.setReelerMarketFee("Reeling".equals(lotGroupageRequestEdit.getBuyerType()) ? editMf : null);
@@ -2330,7 +2330,7 @@ public class LotGroupageService {
                 for (Object[] obj : objectList) {
 
                     totalPurchase =
-                            ((BigDecimal) obj[9]).doubleValue();
+                            ((Number) obj[9]).doubleValue();
 
                     buyerName =
                             (String) obj[6];
@@ -2341,7 +2341,7 @@ public class LotGroupageService {
                     report.setTransactionType("Cash");
 
                     report.setPaymentAmount(
-                            ((BigDecimal) obj[0]).doubleValue());
+                            ((Number) obj[0]).doubleValue());
 
                     report.setTransactionDate(
                             ((java.sql.Date) obj[2]).toLocalDate());
@@ -2409,7 +2409,7 @@ public class LotGroupageService {
         Font fSubTitle = workbook.createFont(); fSubTitle.setBold(true); fSubTitle.setFontHeightInPoints((short) 12);
         Font fLabel = workbook.createFont(); fLabel.setBold(true); fLabel.setFontHeightInPoints((short) 9);
         Font fValue = workbook.createFont(); fValue.setFontHeightInPoints((short) 9);
-        Font fHdr = workbook.createFont(); fHdr.setBold(true); fHdr.setFontHeightInPoints((short) 9); fHdr.setColor(IndexedColors.WHITE.getIndex());
+        Font fHdr = workbook.createFont(); fHdr.setBold(true); fHdr.setFontHeightInPoints((short) 11); fHdr.setColor(IndexedColors.WHITE.getIndex());
         Font fTotal = workbook.createFont(); fTotal.setBold(true); fTotal.setFontHeightInPoints((short) 9);
 
         // ── Styles ────────────────────────────────────────────────────────────
@@ -2591,7 +2591,9 @@ public class LotGroupageService {
         sheet.createRow(rowIdx++).setHeightInPoints(6);
 
         // ── Row 12: Column headers ────────────────────────────────────────────
-        Row rHdr = sheet.createRow(rowIdx++); rHdr.setHeightInPoints(85);
+        // Height is generous so the larger header font still has room to wrap
+        // onto extra lines instead of being clipped at the row boundary.
+        Row rHdr = sheet.createRow(rowIdx++); rHdr.setHeightInPoints(130);
         String[] hdrs = {
                 "ಕ್ರಮ ಸಂಖ್ಯೆ\nSL No",
                 "ವಹಿವಾಟಿನ ದಿನಾಂಕ\nTransaction Date",
@@ -2653,9 +2655,10 @@ public class LotGroupageService {
         Cell tc10 = rTot.createCell(10); tc10.setCellValue(sumRefunded); tc10.setCellStyle(sTotalN);
         Cell tc11 = rTot.createCell(11); tc11.setCellValue(lastBalance); tc11.setCellStyle(sTotalN);
 
-        // ── Column widths: Transaction Type widened to 3000; total 34 500 POI ─
-        // Fits A4 landscape (~38 220 POI at 0.4" margins) — no unwanted scaling
-        int[] colWidths = { 1200, 3200, 5500, 3000, 3200, 4000, 2800, 3200, 3000, 3000, 3000, 3200 };
+        // ── Column widths: Transaction Type widened to 3000; Quantity widened ──
+        // to 4500 so the longer header text needs fewer wrapped lines.
+        // Sheet prints fit-to-1-page-wide regardless, so this doesn't affect layout.
+        int[] colWidths = { 1200, 3200, 5500, 3000, 3200, 4500, 2800, 3200, 3000, 3000, 3000, 3200 };
         for (int i = 0; i < COLS; i++) sheet.setColumnWidth(i, colWidths[i]);
 
         // ── Print: A4 landscape, fit 1 page wide ─────────────────────────────
@@ -2704,7 +2707,7 @@ public class LotGroupageService {
         int MARGIN  = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
         int LOGO_H  = Math.round(40f * DPI / 72f);      // 167 px = 40 pt
         int INFO_H  = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
-        int HDR_H   = Math.round(55f * DPI / 72f);      // 229 px = 55 pt
+        int HDR_H   = Math.round(75f * DPI / 72f);      // 313 px = 75 pt
         int ROW_H   = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
         int TITLE_H = Math.round(11f * DPI / 72f);      // 46 px  = 11 pt
 
@@ -2717,8 +2720,8 @@ public class LotGroupageService {
 
         // ── column widths ─────────────────────────────────────────────────────
         int usable = W - 2 * MARGIN;
-        float[] proportions = {0.04f, 0.06f, 0.15f, 0.08f, 0.08f,
-                               0.10f, 0.05f, 0.09f, 0.07f, 0.08f, 0.06f, 0.14f};
+        float[] proportions = {0.04f, 0.10f, 0.12f, 0.08f, 0.08f,
+                               0.08f, 0.07f, 0.07f, 0.05f, 0.07f, 0.11f, 0.13f};
         int[] cw = new int[12];
         int allocated = 0;
         for (int i = 0; i < 11; i++) {
@@ -2735,7 +2738,9 @@ public class LotGroupageService {
         java.awt.Font base     = loadKannadaPdfFont(Math.round(9f * DPI / 72f));             // 37 px = 9 pt
         java.awt.Font titleFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
         java.awt.Font labelFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
-        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(8f  * DPI / 72f));  // 33 px = 8 pt
+        boolean isExternalUnitReport = "EXTERNAL_UNIT".equalsIgnoreCase(wrapper.getReportType());
+        float   hdrFntPt = isExternalUnitReport ? 12f : 10f;  // bigger header text for External Unit report only
+        java.awt.Font hdrFnt   = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(hdrFntPt * DPI / 72f));
         java.awt.Font dataFnt  = base.deriveFont(java.awt.Font.PLAIN, (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
         java.awt.Font totalFnt = base.deriveFont(java.awt.Font.BOLD,  (float)Math.round(9f  * DPI / 72f));  // 37 px = 9 pt
 
@@ -2824,39 +2829,56 @@ public class LotGroupageService {
         int infoValGap = Math.round(10f * DPI / 72f);  // space between label and its value
         for (String[] row : infoRows) {
             int third = usable / 3;
+            int x0 = MARGIN + 4;
+            g.setFont(labelFnt);
+            int lw0 = g.getFontMetrics(labelFnt).stringWidth(row[0]);
+
+            // cap the zone-0 value width so a long name/address wraps instead of
+            // running into zone 1/2's label (e.g. "ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ")
+            int zone0MaxW = !row[2].isEmpty()
+                    ? third - lw0 - infoValGap - 8
+                    : !row[4].isEmpty()
+                            ? 2 * third - lw0 - infoValGap - 8
+                            : usable - lw0 - infoValGap - 8;
+            java.util.List<String> valueLines = wrapTextPdf(dataFm, row[1], Math.max(zone0MaxW, 1));
+            if (valueLines.isEmpty()) valueLines.add("");
+            int rowH = Math.max(INFO_H, valueLines.size() * dataLineH + 8);
             int textY = y + INFO_H / 2 + 4;
 
-            // Zone 0 — first label:value pair
+            // Zone 0 — first label:value pair (value may wrap across multiple lines)
             g.setFont(labelFnt); g.setColor(DARK);
-            int x0 = MARGIN + 4;
-            g.drawString(row[0], x0, textY);
-            int lw0 = g.getFontMetrics(labelFnt).stringWidth(row[0]);
+            drawStringShaped(g, row[0], x0, textY);
             g.setFont(dataFnt); g.setColor(DARK);
-            g.drawString(row[1], x0 + lw0 + infoValGap, textY);
+            int valueX = x0 + lw0 + infoValGap;
+            int lineY = textY;
+            for (String line : valueLines) {
+                drawStringShaped(g, line, valueX, lineY);
+                lineY += dataLineH;
+            }
 
             // Zone 1 — second label:value pair
             if (!row[2].isEmpty()) {
                 int x2 = MARGIN + third + 4;
                 g.setFont(labelFnt); g.setColor(DARK);
-                g.drawString(row[2], x2, textY);
+                drawStringShaped(g, row[2], x2, textY);
                 int lw2 = g.getFontMetrics(labelFnt).stringWidth(row[2]);
                 g.setFont(dataFnt); g.setColor(DARK);
-                g.drawString(row[3], x2 + lw2 + infoValGap, textY);
+                drawStringShaped(g, row[3], x2 + lw2 + infoValGap, textY);
             }
 
             // Zone 2 — third label:value pair
             if (!row[4].isEmpty()) {
                 int x4 = MARGIN + 2 * third + 4;
                 g.setFont(labelFnt); g.setColor(DARK);
-                g.drawString(row[4], x4, textY);
+                drawStringShaped(g, row[4], x4, textY);
                 int lw4 = g.getFontMetrics(labelFnt).stringWidth(row[4]);
                 g.setFont(dataFnt); g.setColor(DARK);
-                g.drawString(row[5], x4 + lw4 + infoValGap, textY);
+                drawStringShaped(g, row[5], x4 + lw4 + infoValGap, textY);
             }
 
             g.setColor(BORDER);
-            g.drawLine(MARGIN, y + INFO_H, W - MARGIN, y + INFO_H);
-            y += INFO_H;
+            g.drawLine(MARGIN, y + rowH, W - MARGIN, y + rowH);
+            y += rowH;
         }
         y += Math.round(12f * DPI / 72f);  // gap between farmer details and table
         g.setStroke(new java.awt.BasicStroke(4f));
@@ -2878,20 +2900,33 @@ public class LotGroupageService {
         };
         g.setFont(hdrFnt);
         java.awt.FontMetrics hdrFm = g.getFontMetrics(hdrFnt);
+        int hdrLineH = hdrFm.getHeight();
+        // Pre-wrap every header and grow HDR_H to fit whichever column needs the
+        // most lines, so a heading that would otherwise be cut off instead wraps
+        // onto additional lines within a taller header row.
+        java.util.List<java.util.List<String>> hdrWrapped = new java.util.ArrayList<>();
+        int maxHdrLines = 1;
+        for (int i = 0; i < 12; i++) {
+            java.util.List<String> wl = new java.util.ArrayList<>();
+            for (String part : hdrs[i].split("\n"))
+                wl.addAll(wrapTextPdf(hdrFm, part, cw[i] - 4));
+            hdrWrapped.add(wl);
+            maxHdrLines = Math.max(maxHdrLines, wl.size());
+        }
+        HDR_H = Math.max(HDR_H, maxHdrLines * hdrLineH + Math.round(10f * DPI / 72f));
         for (int i = 0; i < 12; i++) {
             g.setColor(HDR_BG);
             g.fillRect(cx[i], y, cw[i], HDR_H);
             g.setColor(BORDER);
             g.drawRect(cx[i], y, cw[i], HDR_H);
             g.setColor(java.awt.Color.WHITE);
-            java.util.List<String> wrLines = new java.util.ArrayList<>();
-            for (String part : hdrs[i].split("\n"))
-                wrLines.addAll(wrapTextPdf(hdrFm, part, cw[i] - 4));
-            int lineH = HDR_H / (wrLines.size() + 1);
+            java.util.List<String> wrLines = hdrWrapped.get(i);
+            int blockH = wrLines.size() * hdrLineH;
+            int startY = y + Math.max(0, (HDR_H - blockH) / 2);
             java.awt.Shape prevClip = g.getClip();
             g.setClip(cx[i] + 1, y + 1, cw[i] - 2, HDR_H - 2);
             for (int li = 0; li < wrLines.size(); li++)
-                drawCenteredPdf(g, wrLines.get(li), cx[i], y + lineH * li, cw[i], lineH);
+                drawCenteredPdf(g, wrLines.get(li), cx[i], startY + hdrLineH * li, cw[i], hdrLineH);
             g.setClip(prevClip);
         }
         y += HDR_H;
@@ -2954,21 +2989,19 @@ public class LotGroupageService {
                 py = MARGIN;
                 pg.setStroke(new java.awt.BasicStroke(4f));
 
-                // column headers
+                // column headers (reuses the wrapping/height computed for page 1)
                 pg.setFont(hdrFnt);
-                java.awt.FontMetrics hdrFmN = pg.getFontMetrics(hdrFnt);
                 for (int i = 0; i < 12; i++) {
                     pg.setColor(HDR_BG);  pg.fillRect(cx[i], py, cw[i], HDR_H);
                     pg.setColor(BORDER);  pg.drawRect(cx[i], py, cw[i], HDR_H);
                     pg.setColor(java.awt.Color.WHITE);
-                    java.util.List<String> wl = new java.util.ArrayList<>();
-                    for (String part : hdrs[i].split("\n"))
-                        wl.addAll(wrapTextPdf(hdrFmN, part, cw[i] - 4));
-                    int lhN = HDR_H / (wl.size() + 1);
+                    java.util.List<String> wl = hdrWrapped.get(i);
+                    int blockHN = wl.size() * hdrLineH;
+                    int startYN = py + Math.max(0, (HDR_H - blockHN) / 2);
                     java.awt.Shape pc2 = pg.getClip();
                     pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, HDR_H - 2);
                     for (int li = 0; li < wl.size(); li++)
-                        drawCenteredPdf(pg, wl.get(li), cx[i], py + lhN * li, cw[i], lhN);
+                        drawCenteredPdf(pg, wl.get(li), cx[i], startYN + hdrLineH * li, cw[i], hdrLineH);
                     pg.setClip(pc2);
                 }
                 py += HDR_H;
@@ -3363,7 +3396,7 @@ public class LotGroupageService {
         int MARGIN  = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
         int LOGO_H  = Math.round(40f * DPI / 72f);      // 167 px = 40 pt
         int INFO_H  = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
-        int HDR_H   = Math.round(55f * DPI / 72f);      // 229 px = 55 pt
+        int HDR_H   = Math.round(75f * DPI / 72f);      // 313 px = 75 pt
         int ROW_H   = Math.round(15f * DPI / 72f);      // 63 px  = 15 pt
         int TITLE_H = Math.round(11f * DPI / 72f);      // 46 px  = 11 pt
 
@@ -3375,7 +3408,7 @@ public class LotGroupageService {
         } catch (Exception ignored) {}
 
         int usable = W - 2 * MARGIN;
-        float[] proportions = {0.04f, 0.06f, 0.13f, 0.08f, 0.08f, 0.10f, 0.06f, 0.09f, 0.07f, 0.08f, 0.07f, 0.14f};
+        float[] proportions = {0.04f, 0.08f, 0.16f, 0.07f, 0.07f, 0.085f, 0.085f, 0.075f, 0.06f, 0.07f, 0.09f, 0.115f};
         int[] cw = new int[12];
         int allocated = 0;
         for (int i = 0; i < 11; i++) { cw[i] = (int)(usable * proportions[i]); allocated += cw[i]; }
@@ -3470,14 +3503,31 @@ public class LotGroupageService {
         int epInfoValGap = Math.round(10f * DPI / 72f);  // space between label and its value
         for (String[] infoRow : epInfoRows) {
             int third = usable / 3;
+            int x0 = MARGIN + 4;
+            g.setFont(labelFnt);
+            int lw0 = g.getFontMetrics(labelFnt).stringWidth(infoRow[0]);
+
+            // cap the zone-0 value width so a long name/address wraps instead of
+            // running into zone 1/2's label (e.g. "ಮೊತ್ತ: ರೂ ಗಳಲ್ಲಿ")
+            int zone0MaxW = !infoRow[2].isEmpty()
+                    ? third - lw0 - epInfoValGap - 8
+                    : !infoRow[4].isEmpty()
+                            ? 2 * third - lw0 - epInfoValGap - 8
+                            : usable - lw0 - epInfoValGap - 8;
+            java.util.List<String> valueLines = wrapTextPdf(dataFm, infoRow[1], Math.max(zone0MaxW, 1));
+            if (valueLines.isEmpty()) valueLines.add("");
+            int rowH = Math.max(INFO_H, valueLines.size() * dataLineH + 8);
             int textY = y + INFO_H / 2 + 4;
 
-            int x0 = MARGIN + 4;
             g.setFont(labelFnt); g.setColor(DARK);
             g.drawString(infoRow[0], x0, textY);
-            int lw0 = g.getFontMetrics(labelFnt).stringWidth(infoRow[0]);
             g.setFont(dataFnt); g.setColor(DARK);
-            g.drawString(infoRow[1], x0 + lw0 + epInfoValGap, textY);
+            int valueX = x0 + lw0 + epInfoValGap;
+            int lineY = textY;
+            for (String line : valueLines) {
+                g.drawString(line, valueX, lineY);
+                lineY += dataLineH;
+            }
 
             if (!infoRow[2].isEmpty()) {
                 int x2 = MARGIN + third + 4;
@@ -3497,8 +3547,8 @@ public class LotGroupageService {
                 g.drawString(infoRow[5], x4 + lw4 + epInfoValGap, textY);
             }
 
-            g.setColor(BORDER); g.drawLine(MARGIN, y + INFO_H, W - MARGIN, y + INFO_H);
-            y += INFO_H;
+            g.setColor(BORDER); g.drawLine(MARGIN, y + rowH, W - MARGIN, y + rowH);
+            y += rowH;
         }
         y += Math.round(12f * DPI / 72f);  // gap between farmer details and table
         g.setStroke(new java.awt.BasicStroke(4f));
@@ -3519,18 +3569,32 @@ public class LotGroupageService {
         };
         g.setFont(hdrFnt);
         java.awt.FontMetrics epHdrFm = g.getFontMetrics(hdrFnt);
+        int epHdrLineH = epHdrFm.getHeight();
+        // Pre-wrap every header and grow HDR_H to fit whichever column needs the
+        // most lines, so a heading that would otherwise be squeezed into an
+        // undersized line height (and look congested/overlapping) instead wraps
+        // onto additional lines within a taller header row.
+        java.util.List<java.util.List<String>> epHdrWrapped = new java.util.ArrayList<>();
+        int epMaxHdrLines = 1;
+        for (int i = 0; i < 12; i++) {
+            java.util.List<String> wl = new java.util.ArrayList<>();
+            for (String part : epHdrs[i].split("\n"))
+                wl.addAll(wrapTextPdf(epHdrFm, part, cw[i] - 4));
+            epHdrWrapped.add(wl);
+            epMaxHdrLines = Math.max(epMaxHdrLines, wl.size());
+        }
+        HDR_H = Math.max(HDR_H, epMaxHdrLines * epHdrLineH + Math.round(10f * DPI / 72f));
         for (int i = 0; i < 12; i++) {
             g.setColor(HDR_BG); g.fillRect(cx[i], y, cw[i], HDR_H);
             g.setColor(BORDER); g.drawRect(cx[i], y, cw[i], HDR_H);
             g.setColor(java.awt.Color.WHITE);
-            java.util.List<String> wrLines = new java.util.ArrayList<>();
-            for (String part : epHdrs[i].split("\n"))
-                wrLines.addAll(wrapTextPdf(epHdrFm, part, cw[i] - 4));
-            int lineH = HDR_H / (wrLines.size() + 1);
+            java.util.List<String> wrLines = epHdrWrapped.get(i);
+            int blockH = wrLines.size() * epHdrLineH;
+            int startY = y + Math.max(0, (HDR_H - blockH) / 2);
             java.awt.Shape prevClip = g.getClip();
             g.setClip(cx[i] + 1, y + 1, cw[i] - 2, HDR_H - 2);
             for (int li = 0; li < wrLines.size(); li++)
-                drawCenteredPdf(g, wrLines.get(li), cx[i], y + lineH * li, cw[i], lineH);
+                drawCenteredPdf(g, wrLines.get(li), cx[i], startY + epHdrLineH * li, cw[i], epHdrLineH);
             g.setClip(prevClip);
         }
         y += HDR_H;
@@ -3603,21 +3667,19 @@ public class LotGroupageService {
                 pg = ng;
                 py = MARGIN;
 
-                // column headers on this page
+                // column headers on this page (reuses the wrapping/height computed for page 1)
                 pg.setFont(hdrFnt);
-                java.awt.FontMetrics epHdrFmN = pg.getFontMetrics(hdrFnt);
                 for (int i = 0; i < 12; i++) {
                     pg.setColor(HDR_BG);  pg.fillRect(cx[i], py, cw[i], HDR_H);
                     pg.setColor(BORDER);  pg.drawRect(cx[i], py, cw[i], HDR_H);
                     pg.setColor(java.awt.Color.WHITE);
-                    java.util.List<String> wl = new java.util.ArrayList<>();
-                    for (String part : epHdrs[i].split("\n"))
-                        wl.addAll(wrapTextPdf(epHdrFmN, part, cw[i] - 4));
-                    int lhN = HDR_H / (wl.size() + 1);
+                    java.util.List<String> wl = epHdrWrapped.get(i);
+                    int blockHN = wl.size() * epHdrLineH;
+                    int startYN = py + Math.max(0, (HDR_H - blockHN) / 2);
                     java.awt.Shape pc2 = pg.getClip();
                     pg.setClip(cx[i] + 1, py + 1, cw[i] - 2, HDR_H - 2);
                     for (int li = 0; li < wl.size(); li++)
-                        drawCenteredPdf(pg, wl.get(li), cx[i], py + lhN * li, cw[i], lhN);
+                        drawCenteredPdf(pg, wl.get(li), cx[i], startYN + epHdrLineH * li, cw[i], epHdrLineH);
                     pg.setClip(pc2);
                 }
                 py += HDR_H;
@@ -3765,27 +3827,38 @@ public class LotGroupageService {
         return out;
     }
 
+    // Kannada (and other Indic) text has combining vowel signs that plain
+    // drawString does not reposition/reorder correctly — it needs TextLayout
+    // to run proper script shaping, or matras render as stray marks above the line.
+    private void drawStringShaped(java.awt.Graphics2D g, String text, int x, int y) {
+        if (text == null || text.isEmpty()) return;
+        java.awt.font.TextLayout layout = new java.awt.font.TextLayout(text, g.getFont(), g.getFontRenderContext());
+        layout.draw(g, x, y);
+    }
+
     private void drawCenteredPdf(java.awt.Graphics2D g, String text, int x, int y, int w, int h) {
         if (text == null || text.isEmpty()) return;
         java.awt.FontMetrics fm = g.getFontMetrics();
-        int tx = x + Math.max(0, (w - fm.stringWidth(text)) / 2);
+        java.awt.font.TextLayout layout = new java.awt.font.TextLayout(text, g.getFont(), g.getFontRenderContext());
+        int tx = x + Math.max(0, (int) ((w - layout.getAdvance()) / 2));
         int ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
-        g.drawString(text, tx, ty);
+        layout.draw(g, tx, ty);
     }
 
     private void drawLeftPdf(java.awt.Graphics2D g, String text, int x, int y, int w, int h) {
         if (text == null || text.isEmpty()) return;
         java.awt.FontMetrics fm = g.getFontMetrics();
         int ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
-        g.drawString(text, x + 4, ty);
+        drawStringShaped(g, text, x + 4, ty);
     }
 
     private void drawRightPdf(java.awt.Graphics2D g, String text, int x, int y, int w, int h) {
         if (text == null || text.isEmpty()) return;
         java.awt.FontMetrics fm = g.getFontMetrics();
-        int tx = x + w - fm.stringWidth(text) - 4;
+        java.awt.font.TextLayout layout = new java.awt.font.TextLayout(text, g.getFont(), g.getFontRenderContext());
+        int tx = x + w - (int) layout.getAdvance() - 4;
         int ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
-        g.drawString(text, tx, ty);
+        layout.draw(g, tx, ty);
     }
 
     private String fmt(Double v) {

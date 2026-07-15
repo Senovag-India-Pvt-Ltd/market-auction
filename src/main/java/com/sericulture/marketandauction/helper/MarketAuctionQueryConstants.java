@@ -3710,6 +3710,40 @@ FROM
                   AND l.market_id = :marketId
                   AND lg.active = 1
                   AND (rvba.virtual_account_number IS NOT NULL OR evba.virtual_account_number IS NOT NULL)
+                  AND lg.CREATED_DATE >= COALESCE(rvba.created_date, evba.created_date)
+                  AND COALESCE((
+                          SELECT SUM(ct_bal.AMOUNT)
+                          FROM REELER_VID_CREDIT_TXN ct_bal
+                          WHERE ct_bal.VIRTUAL_ACCOUNT = :vAccount
+                            AND ct_bal.CREATED_DATE <= lg.CREATED_DATE
+                      ), 0)
+                      >=
+                      COALESCE((
+                          SELECT SUM(CAST(ISNULL(lg_bal.sold_amount, 0) AS FLOAT) + ISNULL(lg_bal.reeler_market_fee, 0))
+                          FROM lot_groupage lg_bal
+                          INNER JOIN lot l_bal ON l_bal.lot_id = lg_bal.lot_id
+                          LEFT JOIN reeler_virtual_bank_account rvba_bal
+                              ON lg_bal.buyer_type = 'Reeling'
+                              AND rvba_bal.reeler_id = lg_bal.buyer_id
+                              AND rvba_bal.virtual_account_number = :vAccount
+                          LEFT JOIN eu_virtual_bank_account evba_bal
+                              ON lg_bal.buyer_type != 'Reeling'
+                              AND evba_bal.eu_id = lg_bal.external_unit_id
+                              AND evba_bal.virtual_account_number = :vAccount
+                          WHERE lg_bal.active = 1
+                            AND l_bal.market_id = :marketId
+                            AND (rvba_bal.virtual_account_number IS NOT NULL OR evba_bal.virtual_account_number IS NOT NULL)
+                            AND lg_bal.CREATED_DATE >= COALESCE(rvba_bal.created_date, evba_bal.created_date)
+                            AND lg_bal.CREATED_DATE <= lg.CREATED_DATE
+                      ), 0)
+                      +
+                      COALESCE((
+                          SELECT SUM(dt_bal.AMOUNT)
+                          FROM REELER_VID_DEBIT_TXN dt_bal
+                          WHERE dt_bal.VIRTUAL_ACCOUNT = :vAccount
+                            AND dt_bal.LOT_ID = 0
+                            AND dt_bal.CREATED_DATE <= lg.CREATED_DATE
+                      ), 0)
             UNION ALL
                 SELECT
                     'D' AS TXN_TYPE,
@@ -3727,6 +3761,39 @@ FROM
                 WHERE CAST(dt.CREATED_DATE AS DATE) BETWEEN :fromDate AND :toDate
                   AND dt.VIRTUAL_ACCOUNT = :vAccount
                   AND dt.LOT_ID = 0
+                  AND COALESCE((
+                          SELECT SUM(ct_bal.AMOUNT)
+                          FROM REELER_VID_CREDIT_TXN ct_bal
+                          WHERE ct_bal.VIRTUAL_ACCOUNT = :vAccount
+                            AND ct_bal.CREATED_DATE <= dt.CREATED_DATE
+                      ), 0)
+                      >=
+                      COALESCE((
+                          SELECT SUM(CAST(ISNULL(lg_bal.sold_amount, 0) AS FLOAT) + ISNULL(lg_bal.reeler_market_fee, 0))
+                          FROM lot_groupage lg_bal
+                          INNER JOIN lot l_bal ON l_bal.lot_id = lg_bal.lot_id
+                          LEFT JOIN reeler_virtual_bank_account rvba_bal
+                              ON lg_bal.buyer_type = 'Reeling'
+                              AND rvba_bal.reeler_id = lg_bal.buyer_id
+                              AND rvba_bal.virtual_account_number = :vAccount
+                          LEFT JOIN eu_virtual_bank_account evba_bal
+                              ON lg_bal.buyer_type != 'Reeling'
+                              AND evba_bal.eu_id = lg_bal.external_unit_id
+                              AND evba_bal.virtual_account_number = :vAccount
+                          WHERE lg_bal.active = 1
+                            AND l_bal.market_id = :marketId
+                            AND (rvba_bal.virtual_account_number IS NOT NULL OR evba_bal.virtual_account_number IS NOT NULL)
+                            AND lg_bal.CREATED_DATE >= COALESCE(rvba_bal.created_date, evba_bal.created_date)
+                            AND lg_bal.CREATED_DATE <= dt.CREATED_DATE
+                      ), 0)
+                      +
+                      COALESCE((
+                          SELECT SUM(dt_bal.AMOUNT)
+                          FROM REELER_VID_DEBIT_TXN dt_bal
+                          WHERE dt_bal.VIRTUAL_ACCOUNT = :vAccount
+                            AND dt_bal.LOT_ID = 0
+                            AND dt_bal.CREATED_DATE <= dt.CREATED_DATE
+                      ), 0)
             ) AS I
             WHERE I.VIRTUAL_ACCOUNT = :vAccount
             ORDER BY I.CREATED_DATE ASC
@@ -3877,12 +3944,75 @@ SELECT
                               AND evba.virtual_account_number = :vAccount
                           WHERE CAST(lg.CREATED_DATE AS DATE) < :fromDate
                             AND lg.active = 1
-                            AND (rvba.virtual_account_number IS NOT NULL OR evba.virtual_account_number IS NOT NULL)), 0)
+                            AND (rvba.virtual_account_number IS NOT NULL OR evba.virtual_account_number IS NOT NULL)
+                            AND lg.CREATED_DATE >= COALESCE(rvba.created_date, evba.created_date)
+                            AND COALESCE((
+                                    SELECT SUM(ct_bal.AMOUNT)
+                                    FROM REELER_VID_CREDIT_TXN ct_bal
+                                    WHERE ct_bal.VIRTUAL_ACCOUNT = :vAccount
+                                      AND ct_bal.CREATED_DATE <= lg.CREATED_DATE
+                                ), 0)
+                                >=
+                                COALESCE((
+                                    SELECT SUM(CAST(ISNULL(lg_bal.sold_amount, 0) AS FLOAT) + ISNULL(lg_bal.reeler_market_fee, 0))
+                                    FROM lot_groupage lg_bal
+                                    LEFT JOIN reeler_virtual_bank_account rvba_bal
+                                        ON lg_bal.buyer_type = 'Reeling'
+                                        AND rvba_bal.reeler_id = lg_bal.buyer_id
+                                        AND rvba_bal.virtual_account_number = :vAccount
+                                    LEFT JOIN eu_virtual_bank_account evba_bal
+                                        ON lg_bal.buyer_type != 'Reeling'
+                                        AND evba_bal.eu_id = lg_bal.external_unit_id
+                                        AND evba_bal.virtual_account_number = :vAccount
+                                    WHERE lg_bal.active = 1
+                                      AND (rvba_bal.virtual_account_number IS NOT NULL OR evba_bal.virtual_account_number IS NOT NULL)
+                                      AND lg_bal.CREATED_DATE >= COALESCE(rvba_bal.created_date, evba_bal.created_date)
+                                      AND lg_bal.CREATED_DATE <= lg.CREATED_DATE
+                                ), 0)
+                                +
+                                COALESCE((
+                                    SELECT SUM(dt_bal.AMOUNT)
+                                    FROM REELER_VID_DEBIT_TXN dt_bal
+                                    WHERE dt_bal.VIRTUAL_ACCOUNT = :vAccount
+                                      AND dt_bal.LOT_ID = 0
+                                      AND dt_bal.CREATED_DATE <= lg.CREATED_DATE
+                                ), 0)), 0)
               - COALESCE((SELECT SUM(dt.AMOUNT)
                           FROM REELER_VID_DEBIT_TXN dt
                           WHERE dt.VIRTUAL_ACCOUNT = :vAccount
                             AND CAST(dt.CREATED_DATE AS DATE) < :fromDate
-                            AND dt.LOT_ID = 0), 0)
+                            AND dt.LOT_ID = 0
+                            AND COALESCE((
+                                    SELECT SUM(ct_bal.AMOUNT)
+                                    FROM REELER_VID_CREDIT_TXN ct_bal
+                                    WHERE ct_bal.VIRTUAL_ACCOUNT = :vAccount
+                                      AND ct_bal.CREATED_DATE <= dt.CREATED_DATE
+                                ), 0)
+                                >=
+                                COALESCE((
+                                    SELECT SUM(CAST(ISNULL(lg_bal.sold_amount, 0) AS FLOAT) + ISNULL(lg_bal.reeler_market_fee, 0))
+                                    FROM lot_groupage lg_bal
+                                    LEFT JOIN reeler_virtual_bank_account rvba_bal
+                                        ON lg_bal.buyer_type = 'Reeling'
+                                        AND rvba_bal.reeler_id = lg_bal.buyer_id
+                                        AND rvba_bal.virtual_account_number = :vAccount
+                                    LEFT JOIN eu_virtual_bank_account evba_bal
+                                        ON lg_bal.buyer_type != 'Reeling'
+                                        AND evba_bal.eu_id = lg_bal.external_unit_id
+                                        AND evba_bal.virtual_account_number = :vAccount
+                                    WHERE lg_bal.active = 1
+                                      AND (rvba_bal.virtual_account_number IS NOT NULL OR evba_bal.virtual_account_number IS NOT NULL)
+                                      AND lg_bal.CREATED_DATE >= COALESCE(rvba_bal.created_date, evba_bal.created_date)
+                                      AND lg_bal.CREATED_DATE <= dt.CREATED_DATE
+                                ), 0)
+                                +
+                                COALESCE((
+                                    SELECT SUM(dt_bal.AMOUNT)
+                                    FROM REELER_VID_DEBIT_TXN dt_bal
+                                    WHERE dt_bal.VIRTUAL_ACCOUNT = :vAccount
+                                      AND dt_bal.LOT_ID = 0
+                                      AND dt_bal.CREATED_DATE <= dt.CREATED_DATE
+                                ), 0)), 0)
             AS opening_balance
             """;
 
