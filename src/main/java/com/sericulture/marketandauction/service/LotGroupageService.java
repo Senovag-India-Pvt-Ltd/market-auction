@@ -1606,7 +1606,9 @@ public class LotGroupageService {
         // ❌ Block delete if distributed or payment done
         List<String> blockedStatuses = List.of(
                 LotStatus.DISTRIBUTED.getLabel(),
-                LotStatus.PAYMENTFAILED.getLabel()
+                LotStatus.PAYMENTFAILED.getLabel(),
+                LotStatus.PAYMENTCOMPLETED.getLabel(),
+                LotStatus.PAYMENTSUCCESS.getLabel()
         );
         int count = lotGroupageRepository.countByLotIdAndStatusIn(id,blockedStatuses);
         if (count > 0) {

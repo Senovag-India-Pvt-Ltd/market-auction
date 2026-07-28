@@ -895,7 +895,7 @@ WHERE
         l.ALLOTTED_LOT_ID AS lotNo,
         l.AUCTION_DATE AS transactionDate,
         f.FIRST_NAME AS farmerName,
-        lg.LOT_WEIGHT AS totalWeight,
+        l.LOT_WEIGHT_AFTER_WEIGHMENT AS totalWeight,
         lg.SOLD_AMOUNT AS transactionAmount
     FROM LOT l
         LEFT JOIN MARKET_AUCTION ma ON l.MARKET_AUCTION_ID = ma.market_auction_id 

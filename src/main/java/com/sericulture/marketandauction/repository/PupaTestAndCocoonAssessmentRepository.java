@@ -82,9 +82,9 @@ public interface PupaTestAndCocoonAssessmentRepository extends PagingAndSortingR
         LEFT JOIN
             village v ON pa.VILLAGE_ID = v.VILLAGE_ID AND v.active = 1
         INNER JOIN
-            market_auction ma ON ma.farmer_id = f.farmer_id
+            market_auction ma ON ma.farmer_id = f.farmer_id AND ma.active = 1
         INNER JOIN
-        lot l ON l.market_auction_id = ma.market_auction_id
+        lot l ON l.market_auction_id = ma.market_auction_id AND l.active = 1
         LEFT JOIN
             race_master rm ON rm.race_id = ma.lot_variety AND rm.active = 1
         LEFT JOIN
