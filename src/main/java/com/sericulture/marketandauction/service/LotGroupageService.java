@@ -1587,17 +1587,17 @@ public class LotGroupageService {
         return response;
     }
 
-    public List<Map<String, Object>> getLotDetails(LocalDate date, int lotNo) {
+    public List<Map<String, Object>> getLotDetails(LocalDate date, int lotNo, int marketId) {
 
         // ✅ ADD THIS VALIDATION
         List<Lot> lots = lotRepository.findByAllottedLotIdAndAuctionDateActiveTrue(lotNo, date);
 
-        if (lots == null || lots.isEmpty()) {
+        if (lots == null || lots.isEmpty() || lots.stream().noneMatch(lot -> lot.getMarketId() == marketId)) {
             throw new RuntimeException("Lot not found");
         }
 
         // Then fetch details
-        return lotGroupageRepository.getLotDetails(date, lotNo);
+        return lotGroupageRepository.getLotDetails(date, lotNo, marketId);
     }
     @Transactional
     public String deleteLot(int lotId, LocalDate date) {

@@ -893,6 +893,7 @@ WHERE
     SELECT 
         l.LOT_ID AS lotId,
         l.ALLOTTED_LOT_ID AS lotNo,
+        l.MARKET_ID AS marketId,
         l.AUCTION_DATE AS transactionDate,
         f.FIRST_NAME AS farmerName,
         l.LOT_WEIGHT_AFTER_WEIGHMENT AS totalWeight,
@@ -903,11 +904,13 @@ WHERE
     LEFT JOIN LOT_GROUPAGE lg ON l.LOT_ID = lg.LOT_ID AND lg.ACTIVE = 1
     WHERE l.AUCTION_DATE = :date
       AND l.ALLOTTED_LOT_ID = :lotNo
+      AND l.MARKET_ID = :marketId
     AND l.ACTIVE = 1
 """, nativeQuery = true)
     List<Map<String, Object>> getLotDetails(
             @Param("date") LocalDate date,
-            @Param("lotNo") int lotNo
+            @Param("lotNo") int lotNo,
+            @Param("marketId") int marketId
     );
 
     @Query("SELECT COUNT(lg) FROM LotGroupage lg WHERE lg.id= :lotId AND lg.status IN (:statuses)")

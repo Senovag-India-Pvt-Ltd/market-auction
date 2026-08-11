@@ -156,12 +156,13 @@ public class LotGroupageController {
     @GetMapping("/getdetails")
     public ResponseEntity<?> getLotDetails(
             @RequestParam LocalDate date,
-            @RequestParam int lotNo
+            @RequestParam int lotNo,
+            @RequestParam int marketId
     ) {
         ResponseWrapper rw = ResponseWrapper.createWrapper(Map.class);
 
         rw.setContent(
-                lotGroupageService.getLotDetails(date, lotNo)
+                lotGroupageService.getLotDetails(date, lotNo, marketId)
         );
 
         return ResponseEntity.ok(rw);
