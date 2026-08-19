@@ -273,6 +273,16 @@ public class LotGroupageService {
                 lotGroupage.setIsMarketPaid(1);
             }
 
+            // The row's stored AUCTION_DATE should reflect the day this distribution actually
+            // happened, which can differ from the bidding-slip date used above purely to look up
+            // the parent market_auction/lot. Falls back to auctionDate when distributionDate isn't
+            // sent, so older callers of this endpoint are unaffected.
+            lotGroupage.setAuctionDate(
+                    lotGroupageRequest.getDistributionDate() != null
+                            ? lotGroupageRequest.getDistributionDate()
+                            : lotGroupageRequest.getAuctionDate()
+            );
+
             // Save LotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);
 
@@ -415,7 +425,8 @@ public class LotGroupageService {
                 lg.purpose_for_rejection,
                 lg.rejection_quantity,
                 lg.moving_to_another_market,
-                lg.moving_market_reason
+                lg.moving_market_reason,
+                lg.auction_date AS distribution_date
                 FROM FARMER f
                     INNER JOIN market_auction ma
                         ON ma.farmer_id = f.FARMER_ID
@@ -550,6 +561,11 @@ public class LotGroupageService {
                             : null)
                     .movingToAnotherMarket(toBoolean(lotWeightDetails[47]))
                     .movingMarketReason(Util.objectToString(lotWeightDetails[48]))
+                    // Per-row distribution date (lot_groupage.auction_date), distinct from the
+                    // lot's original bidding-slip auction_date used above as the search key.
+                    // Lets each buyer row keep the actual date it was distributed on, so
+                    // re-saving an existing lot on a later date doesn't overwrite earlier rows.
+                    .transactionDate(Util.objectToString(lotWeightDetails[49]))
                     .build();
             responses.add(lotDistributeResponse);
         }
@@ -787,6 +803,14 @@ public class LotGroupageService {
                         lotGroupageRequestEdit.getSaleDisposalId()
                 );
             }
+
+            // Same as the save-path: store the row's real distribution date, not the
+            // bidding-slip lookup date, when the UI sent one.
+            lotGroupage.setAuctionDate(
+                    lotGroupageRequestEdit.getDistributionDate() != null
+                            ? lotGroupageRequestEdit.getDistributionDate()
+                            : lotGroupageRequestEdit.getAuctionDate()
+            );
 
             // Save LotGroupage
             lotGroupage = lotGroupageRepository.save(lotGroupage);

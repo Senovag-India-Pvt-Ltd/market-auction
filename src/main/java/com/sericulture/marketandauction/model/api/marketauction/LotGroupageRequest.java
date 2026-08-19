@@ -48,8 +48,17 @@ public class LotGroupageRequest extends RequestBody {
 //    @Schema(name="id", example = "1")
 //    BigInteger id;
 
+    // Kept as the LOOKUP key: must equal the bidding slip's / market_auction's fixed date so
+    // getMarketAuctionIdByAllottedLotIdAndMarketAuctionDate can resolve the parent lot/market
+    // auction. Do not use this for "when was this row actually distributed" — see distributionDate.
     @Schema(name="auctionDate", example = "1")
     LocalDate auctionDate;
+
+    @Schema(name = "distributionDate", example = "2026-08-18",
+            description = "The actual date this buyer row was distributed on (may differ from "
+                    + "auctionDate, e.g. when the remainder of a lot is distributed days after the "
+                    + "bidding slip date). Stored on the row; falls back to auctionDate when absent.")
+    private LocalDate distributionDate;
 
     @Schema(name="invoiceNumber", example = "1")
     String invoiceNumber;
