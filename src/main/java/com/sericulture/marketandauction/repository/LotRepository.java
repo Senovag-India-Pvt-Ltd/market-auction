@@ -521,18 +521,17 @@ INNER JOIN dbo.lot l
 
 INNER JOIN dbo.lot_groupage lg
     ON lg.lot_id = l.lot_id
-    AND lg.auction_date = ma.market_auction_date
 
 -- Reeler
 LEFT JOIN dbo.reeler r
     ON lg.buyer_type = 'Reeling'
-    AND r.reeler_id = lg.buyer_id 
+    AND r.reeler_id = lg.buyer_id
 
 LEFT JOIN dbo.reeler_virtual_bank_account rvba
     ON lg.buyer_type = 'Reeling'
     AND rvba.reeler_id = r.reeler_id
     AND rvba.market_master_id = ma.market_id
-    
+
         -- External
         LEFT JOIN dbo.external_unit_registration eur
     ON (lg.buyer_type <> 'Reeling' OR lg.buyer_type IS NULL)
@@ -620,7 +619,6 @@ INNER JOIN dbo.lot l
 
 INNER JOIN dbo.lot_groupage lg
     ON lg.lot_id = l.lot_id
-    AND lg.auction_date = ma.market_auction_date
 
 -- Reeler
 LEFT JOIN dbo.reeler r

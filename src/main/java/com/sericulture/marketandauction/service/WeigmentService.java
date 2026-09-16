@@ -370,19 +370,46 @@ public class WeigmentService {
             lotStatusRequest.setAuctionDate(Util.getISTLocalDate());
         }
         Query nativeQuery = entityManager.createNativeQuery("""
-                select  f.farmer_number,f.fruits_id,f.first_name ,f.middle_name,f.last_name,
-                ma.RACE_MASTER_ID,v.VILLAGE_NAME,mm.market_name,rm.race_name,sm.source_name,mm.box_weight,l.status
-                from
-                FARMER f
-                INNER JOIN market_auction ma ON ma.farmer_id = f.FARMER_ID
-                INNER JOIN lot l ON l.market_auction_id =ma.market_auction_id
-                LEFT JOIN farmer_address fa ON f.FARMER_ID = fa.FARMER_ID and fa.default_address = 1
-                LEFT JOIN  Village v ON   fa.Village_ID = v.village_id  and f.ACTIVE = 1
-                LEFT JOIN market_master mm ON mm.market_master_id = ma.market_id
-                LEFT JOIN race_master rm ON rm.race_id = ma.RACE_MASTER_ID
-                LEFT JOIN source_master sm ON sm.source_id = ma.SOURCE_MASTER_ID
-                where l.allotted_lot_id = ? and l.auction_date = ? and l.market_id = ?
-                and f.ACTIVE =1 and ma.active = 1  """);
+                SELECT
+                    f.farmer_number,
+                    f.fruits_id,
+                    f.first_name,
+                    f.middle_name,
+                    f.last_name,
+                    ma.RACE_MASTER_ID,
+                    v.VILLAGE_NAME,
+                    mm.market_name,
+                    rm.race_name,
+                    sm.source_name,
+                    mm.box_weight,
+                    l.status
+                FROM FARMER f
+                INNER JOIN market_auction ma
+                    ON ma.farmer_id = f.FARMER_ID
+                    AND ma.active = 1
+                INNER JOIN lot l
+                    ON l.market_auction_id = ma.market_auction_id
+                    AND l.active = 1
+                LEFT JOIN farmer_address fa
+                    ON f.FARMER_ID = fa.FARMER_ID
+                    AND fa.default_address = 1
+                    AND fa.active = 1
+                LEFT JOIN Village v
+                    ON fa.Village_ID = v.village_id
+                    AND v.active = 1
+                LEFT JOIN market_master mm
+                    ON mm.market_master_id = ma.market_id
+                    AND mm.active = 1
+                LEFT JOIN race_master rm
+                    ON rm.race_id = ma.RACE_MASTER_ID
+                    AND rm.active = 1
+                LEFT JOIN source_master sm
+                    ON sm.source_id = ma.SOURCE_MASTER_ID
+                    AND sm.active = 1
+                WHERE l.allotted_lot_id = ?
+                  AND l.auction_date = ?
+                  AND l.market_id = ?
+                  AND f.ACTIVE = 1 """);
 
         nativeQuery.setParameter(1, lotStatusRequest.getAllottedLotId());
 //        nativeQuery.setParameter(2, Util.getISTLocalDate());
